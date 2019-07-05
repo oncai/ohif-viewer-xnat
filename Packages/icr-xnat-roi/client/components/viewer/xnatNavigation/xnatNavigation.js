@@ -16,8 +16,6 @@ export default class XNATNavigation extends React.Component {
     };
   }
 
-  //
-
   /**
    * componentDidMount - On mounting, fetch a list of available projects from XNAT.
    *

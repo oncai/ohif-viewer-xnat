@@ -20,6 +20,7 @@ import "./segmentationMenu.styl";
 
 const brushModule = cornerstoneTools.store.modules.brush;
 
+//
 /**
  * @class SegmentationMenu - Renders a menu for importing, exporting, creating
  * and renaming Segments. As well as setting configuration settings for

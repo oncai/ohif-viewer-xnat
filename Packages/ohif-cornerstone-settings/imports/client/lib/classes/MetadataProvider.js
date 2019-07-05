@@ -407,6 +407,7 @@ export class MetadataProvider {
       ? PerFrameFunctionalGroupsSequenceI.elements["x00289110"]
       : null;
 
+    // IF null, use the shared group, if it exists.
     pixelMeasuresSequence =
       pixelMeasuresSequence ||
       SharedFunctionalGroupsSequenceDataSet.elements["x00289110"];
