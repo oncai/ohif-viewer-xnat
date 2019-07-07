@@ -411,8 +411,8 @@ export class MetadataProvider {
       pixelMeasuresSequence ||
       SharedFunctionalGroupsSequenceDataSet.elements["x00289110"];
 
-    if (perFramePixelMeasuresSequence) {
-      instance.pixelSpacing = perFramePixelMeasuresSequence.items[0].dataSet.string(
+    if (pixelMeasuresSequence) {
+      instance.pixelSpacing = pixelMeasuresSequence.items[0].dataSet.string(
         "x00280030"
       );
     }
