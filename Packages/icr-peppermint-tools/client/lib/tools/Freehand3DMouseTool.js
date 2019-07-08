@@ -70,9 +70,7 @@ export default class Freehand3DMouseTool extends FreehandMouseTool {
 
     if (!goodEventData) {
       console.error(
-        `required eventData not supplied to tool ${
-          this.name
-        }'s createNewMeasurement`
+        `required eventData not supplied to tool ${this.name}'s createNewMeasurement`
       );
 
       return;
@@ -86,6 +84,10 @@ export default class Freehand3DMouseTool extends FreehandMouseTool {
     const referencedROIContour = freehand3DStore.getters.activeROIContour(
       seriesInstanceUid
     );
+
+    console.log(`createNewMeasurement:`);
+    console.log(referencedROIContour);
+    console.log(referencedStructureSet);
 
     const measurementData = {
       uid: generateUID(),
@@ -464,6 +466,7 @@ export default class Freehand3DMouseTool extends FreehandMouseTool {
 
     for (let i = 0; i < toolState.data.length; i++) {
       const data = toolState.data[i];
+
       const structureSet = data.referencedStructureSet;
       const ROIContour = data.referencedROIContour;
 

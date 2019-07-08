@@ -13,6 +13,7 @@ const globalToolStateManager =
  * @param {string} seriesInstanceUid  The UID of the series on which the ROIs
  *                                    reside.
  * @param {string} structureSetUid    The uid of the newly created structureSet.
+ * @returns {null}
  */
 export default function(seriesInstanceUid, structureSetUid) {
   const freehand3DStore = modules.freehand3D;
@@ -46,24 +47,20 @@ export default function(seriesInstanceUid, structureSetUid) {
   const toolStateManager = globalToolStateManager.saveToolState();
 
   Object.keys(toolStateManager).forEach(elementId => {
-    // Only get polygons from this series
-    if (getSeriesInstanceUidFromImageId(elementId) === seriesInstanceUid) {
-      // grab the freehand tool for this DICOM instance
+    // Filter for imageIds in this series that contain freehand toolData.
+    if (
+      getSeriesInstanceUidFromImageId(elementId) === seriesInstanceUid &&
+      toolStateManager[elementId] &&
+      toolStateManager[elementId].freehandMouse
+    ) {
+      const toolState = toolStateManager[elementId].freehandMouse;
+      const toolData = toolState.data;
 
-      if (
-        toolStateManager &&
-        toolStateManager[elementId] &&
-        toolStateManager[elementId].freehandMouse
-      ) {
-        const toolState = toolStateManager[elementId].freehandMouse;
-        const toolData = toolState.data;
-
-        movePolygonsInInstance(
-          workingStructureSet,
-          toolData,
-          seriesInstanceUid
-        );
-      }
+      movePolygonsInStructureSetToDefault(
+        structureSet.uid,
+        toolData,
+        seriesInstanceUid
+      );
     }
   });
 
@@ -79,35 +76,61 @@ export default function(seriesInstanceUid, structureSetUid) {
 }
 
 /**
- * Moves the ROIs defined by the seriesInstanceUid, roiCollectionName
- * and exportMask from the working directory to a new named roiCollection.
+ * movePolygonsInStructureSetToDefault - Move the polygons from the structureSetUid to the
+ *                          default structureSet.
  *
- * @param  {Object} exportData  An object containing the required information
- *                              to execute the move opperation.
+ * @param  {string} structureSetUid   The structure set to move.
+ * @param  {Object} toolData          freehand tool data for a specific imageId.
+ * @param  {string} seriesInstanceUid The seriesInstanceUid of the stack.
+ * @returns {null}
  */
-function movePolygonsInInstance(
-  workingStructureSet,
+function movePolygonsInStructureSetToDefault(
+  structureSetUid,
   toolData,
   seriesInstanceUid
 ) {
   const freehand3DStore = modules.freehand3D;
 
+  const defaultStructureSet = freehand3DStore.getters.structureSet(
+    seriesInstanceUid,
+    "DEFAULT"
+  );
+
   for (let i = 0; i < toolData.length; i++) {
     const data = toolData[i];
 
-    const referencedROIContour = freehand3DStore.getters.ROIContour(
-      seriesInstanceUid,
-      "DEFAULT",
-      data.ROIContourUid
-    );
-
-    const referencedStructureSet = freehand3DStore.getters.structureSet(
-      seriesInstanceUid,
-      "DEFAULT"
-    );
-
-    data.structureSetUid = "DEFAULT";
-    data.referencedROIContour = referencedROIContour;
-    data.referencedStructureSet = referencedStructureSet;
+    if (data.structureSetUid === structureSetUid) {
+      movePolygonToDefaultStructureSet(
+        data,
+        seriesInstanceUid,
+        defaultStructureSet
+      );
+    }
   }
+}
+
+/**
+ * movePolygonToDefaultStructureSet - Move a single polygon to refernce the
+ *                                    new ROI on the default structureSet.
+ *
+ * @param  {Object} toolDataI           The toolData for the polygon.
+ * @param  {string} seriesInstanceUid   The series instance UID of the stack.
+ * @param  {Object} defaultStructureSet The default structure set.
+ * @returns {null}
+ */
+function movePolygonToDefaultStructureSet(
+  toolDataI,
+  seriesInstanceUid,
+  defaultStructureSet
+) {
+  const freehand3DStore = modules.freehand3D;
+  const referencedROIContour = freehand3DStore.getters.ROIContour(
+    seriesInstanceUid,
+    "DEFAULT",
+    toolDataI.ROIContourUid
+  );
+
+  toolDataI.structureSetUid = "DEFAULT";
+  toolDataI.referencedROIContour = referencedROIContour;
+  toolDataI.referencedStructureSet = defaultStructureSet;
 }
