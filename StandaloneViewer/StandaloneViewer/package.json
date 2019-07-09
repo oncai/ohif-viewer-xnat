@@ -7,7 +7,7 @@
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.55",
     "cornerstone-web-image-loader": "^2.1.0",
-    "dcmjs": "^0.4.7",
+    "dcmjs": "^0.5.1",
     "gpu.js": "^1.10.4",
     "graham-scan-convex-hull": "^0.4.0",
     "loglevel": "^1.6.1",
