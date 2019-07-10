@@ -18,6 +18,7 @@ import "./roiContourMenu.styl";
 
 const modules = cornerstoneTools.store.modules;
 
+//
 /**
  * @class RoiContourMenu - Renders a menu for importing, exporting, creating
  * and renaming ROI Contours. As well as setting configuration settings for

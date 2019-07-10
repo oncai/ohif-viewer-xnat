@@ -7,6 +7,8 @@ import { sessionMap } from "meteor/icr:series-info-provider";
 
 import "./xnatNavigation.styl";
 
+//
+
 export default class XNATNavigation extends React.Component {
   constructor(props = {}) {
     super(props);
