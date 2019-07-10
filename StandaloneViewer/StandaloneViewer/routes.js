@@ -34,11 +34,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
   Session.set('rootUrl', rootUrl);
   Session.set('viewerRoot', viewerRoot);
 
-  console.log(`origin: ${origin}`);
-  console.log(`urlExtention ${urlExtention}`);
-  console.log(`rootUrl: ${rootUrl}`);
-  console.log(`viewerRoot" ${viewerRoot}`);
-
   Router.configure({
       loadingTemplate: 'loading'
   });

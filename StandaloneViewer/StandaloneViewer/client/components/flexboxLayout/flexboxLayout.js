@@ -1,6 +1,7 @@
 import { Template } from 'meteor/templating';
 import { components as peppermintComponents } from "meteor/icr:peppermint-tools";
 import { components as icrXnatRoiComponents } from 'meteor/icr:xnat-roi';
+import { icrXnatRoiSession } from "meteor/icr:xnat-roi-namespace";
 
 const { RoiContourMenu, SegmentationMenu } = peppermintComponents;
 const { XNATNavigation, MaskImportList, MaskExportList, RoiImportList, RoiExportList } = icrXnatRoiComponents;
@@ -80,13 +81,14 @@ Template.flexboxLayout.helpers({
     return Math.random().toString();
   },
   roiContourMenuImportComponent() {
-    console.log(`roiContourMenuImportComponent:`);
-    console.log(RoiImportList);
+    const readPermissions = icrXnatRoiSession.get("readPermissions");
 
-    return RoiImportList;
+    return readPermissions ? RoiImportList : null;
   },
   roiContourMenuExportComponent() {
-    return RoiExportList;
+    const writePermissions = icrXnatRoiSession.get("writePermissions");
+
+    return writePermissions ? RoiExportList : null;
   },
   SegmentationMenu() {
     return SegmentationMenu;
@@ -105,10 +107,14 @@ Template.flexboxLayout.helpers({
     return Math.random().toString();
   },
   segmentationMenuImportComponent() {
-    return MaskImportList;
+    const readPermissions = icrXnatRoiSession.get("readPermissions");
+
+    return readPermissions ? MaskImportList : null;
   },
   segmentationMenuExportComponent() {
-    return MaskExportList;
+    const writePermissions = icrXnatRoiSession.get("writePermissions");
+
+    return writePermissions ? MaskExportList : null;
   },
   XNATNavigation() {
     return XNATNavigation;
