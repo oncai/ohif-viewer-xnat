@@ -101,8 +101,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
               experimentLabel
             });
 
-            sessionMap.setExperiment(experimentId);
-
             // Build JSON GET url.
             const jsonRequestUrl = `${Session.get('rootUrl')}/xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
@@ -313,7 +311,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
                   sessionMap.setProject('ITCRdemo');
                   sessionMap.setParentProject('ITCRdemo');
                   sessionMap.setSubject('XNAT_JPETTS_S00011');
-                  sessionMap.setExperiment('XNAT_JPETTS_E00014')
 
                   this.data = parsedJSON
 

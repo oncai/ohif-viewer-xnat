@@ -152,23 +152,14 @@ const sessionMap = {
   },
 
   /**
-   * Sets the experimentId of the view.
-   *
-   * @param {string} experimentId The experimentId of the view.
-   *
-   * @returns {null}
-   */
-  setExperiment: experimentId => {
-    _map.experiment = experimentId;
-  },
-
-  /**
-   * Returns the experimentId of the view.
+   * Returns the experimentId if in a single session view.
    *
    * @returns {string}
    */
   getExperiment: () => {
-    return _map.experiment;
+    if (_map.sessions.length === 1) {
+      return _map.sessions[0].experimentId;
+    }
   }
 };
 
