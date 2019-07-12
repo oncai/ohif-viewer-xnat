@@ -73,13 +73,13 @@ To build this app for production we need to do two things:
 
 ### Building the OHIF client
 
-The viewer is built in `Meteor`, a full stack framework, however we require a client only build, possible with `meteor-build-client-fixed2`. Install it using `npm`:
+The viewer is built in `Meteor`, a full stack framework, however we require a client-only build, possible with `meteor-build-client-fixed2`. Install it using `npm`:
 
 ```bash
 npm install meteor-build-client-fixed2 -g
 ```
 
-Now cross your fingers and enter this beast of a command in the `StandaloneViewer/StandaloneViewer` directory (you might want to wrap it in its own bash function if you are going to do this frequently):
+Now you can build the client-only build from within the `StandaloneViewer/StandaloneViewer` directory (you might want to wrap it in its own bash function if you are going to do this frequently):
 
 ```bash
 METEOR_PACKAGE_DIRS="../../Packages" meteor-build-client-fixed2 ../myOutputFolder -u VIEWER -s ../settings.json -p "" --legacy
@@ -90,7 +90,7 @@ where:
 - `myOutputFolder` is the directory you want the build to appear in.
 - `-u VIEWER` specifies the extension the viewer is on in XNAT. Leave this as is.
 - `-s ../settings.json` specifies a settings file with some configuration options. The file included in the repo just makes sure the left sidebar is open by default.
-- `--legacy` sets IE11 as a target. Its kind of flakey though, and in my experience static asssets such as SVGs aren't linked properly. The solution for better support is... to move to OHIF 2.0 ¯\\\_(ツ)\_/¯.
+- `--legacy` sets IE11 as a target. Its kind of flakey though, and sometimes static asssets such as SVGs aren't linked properly. The solution for better support is... to move to OHIF 2.0 ¯\\\_(ツ)\_/¯.
 
 The resulting build will be present in `StandaloneViewer/myOutputFolder`, which we'll use in the next step.
 
