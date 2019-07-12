@@ -1,3 +1,11 @@
+// TODO -> This was a pet project that never quite got finished.
+// I'm not sure that this the best approach. Probably easier to wrap OHIF in Electron
+// using XNAT-Scaffold (https://bitbucket.org/rherrick/xnat-scaffold), when its finished.
+// You could then run web workers to do that backup locally, which would be a lot better
+// Than trying to shove labelmaps into the browser's indexedDB. If doing
+// day-long segmentations, this is probably the way to go.
+
+/*
 import { SeriesInfoProvider } from "meteor/icr:series-info-provider";
 import { cornerstone, cornerstoneTools } from "meteor/ohif:cornerstone";
 import { OHIF } from "meteor/ohif:core";
@@ -92,11 +100,6 @@ function _loadDataIfDisplaySetHasBackup(displaySet) {
   };
 }
 
-/** @private @async
- * _awaitOverwriteConfirmationUI - Awaits user input for confirmation.
- *
- * @return {Promise} A promise that resolves on accept and rejects on cancel.
- */
 async function _awaitOverwriteConfirmationUI(seriesDescription) {
   function keyConfirmEventHandler(e) {
     console.log("keyConfirmEventHandler");
@@ -307,11 +310,9 @@ function prepareToolStateManager(toolStateManager, imageId, toolType) {
 //
 // DISABLED for now. Contours work well, but mask based backup is super slow/breaks the db.
 
-/*
-setInterval(
-  saveBackUpForActiveSeries, 60000
-);
-*/
+//setInterval(
+//  saveBackUpForActiveSeries, 60000
+//);
 
 function checkBackupOnExport() {
   console.log("checkBackupOnExport:");
@@ -513,12 +514,6 @@ function createBrushObjectForFrame(brushMouseToolStateI) {
   return brushObjectForFrame;
 }
 
-/**
- * hash - credit: https://github.com/mstdokumaci/string-hash-64 MIT Licensed.
- *
- * @param  {string} str The string to generate a hashcode from.
- * @return {number}     The hash code.
- */
 function generateHashCode(str) {
   let i = str.length;
   let hash1 = 5381;
@@ -532,3 +527,5 @@ function generateHashCode(str) {
 
   return (hash1 >>> 0) * 4096 + (hash2 >>> 0);
 }
+
+*/

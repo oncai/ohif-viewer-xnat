@@ -47,8 +47,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
 
           const next = this.next;
 
-          console.log(this.params);
-
           // Query params:
           //
           // Single Session:
@@ -63,23 +61,18 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
           // Subject in shared project:
           //  projectId, subjectId, parentProjectId
 
-          let subjectId;
-          let projectId;
-          let experimentId;
-          let experimentLabel;
-          let parentProjectId;
-
-          if (this.params.query) {
-            const query = this.params.query;
-
-            experimentId = query.experimentId;
-            experimentLabel = query.experimentLabel;
-            subjectId = query.subjectId;
-            projectId = query.projectId;
-            parentProjectId = query.parentProjectId ? query.parentProjectId : projectId;
-          } else {
+          if (!this.params.query) {
             console.error('insufficient query parameters.');
           }
+
+          const {
+            projectId,
+            subjectId,
+            experimentId,
+            experimentLabel
+          } = query;
+
+          const parentProjectId = query.parentProjectId ? query.parentProjectId : projectId;
 
           if (parentProjectId) {
             console.log(`This experiment is shared view of ${experimentId} from ${parentProjectId}`);
@@ -94,13 +87,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
             // Single Session
             checkAndSetPermissions(projectId, parentProjectId);
 
-            sessionMap.setSession({
-              projectId,
-              subjectId,
-              experimentId,
-              experimentLabel
-            });
-
             // Build JSON GET url.
             const jsonRequestUrl = `${Session.get('rootUrl')}/xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
@@ -112,7 +98,7 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
                   return;
               }
 
-              sessionMap.setScan(json, {
+              sessionMap.setSession(json, {
                 experimentId,
                 experimentLabel,
                 subjectId,
@@ -154,15 +140,6 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
 
               for (let i = 0; i < experimentList.length; i++) {
                 const experimentIdI = experimentList[i].ID;
-                const experimentLabelI = experimentList[i].label;
-
-                sessionMap.setSession({
-                  projectId,
-                  subjectId,
-                  experimentId: experimentIdI,
-                  experimentLabel: experimentLabelI
-                });
-
                 const experimentJSONFetchUrl = `${Session.get('rootUrl')}/xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
 
                 results[i] = getJson(experimentJSONFetchUrl);
@@ -180,7 +157,7 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
                   const experimentJsonI = jsonFiles[i];
                   const studiesI = experimentJsonI.studies;
 
-                  sessionMap.setScan(experimentJsonI, {
+                  sessionMap.setSession(experimentJsonI, {
                     experimentId: experimentList[i].ID,
                     experimentLabel: experimentList[i].label,
                     subjectId,
@@ -293,24 +270,17 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
 
                   const parsedJSON = JSON.parse(oReq.responseText);
 
-                  sessionMap.setScan(parsedJSON, {
+                  sessionMap.setProject('ITCRdemo');
+                  sessionMap.setParentProject('ITCRdemo');
+                  sessionMap.setSubject('XNAT_JPETTS_S00011');
+
+                  sessionMap.setSession(parsedJSON, {
                     experimentId: 'XNAT_JPETTS_E00014',
                     experimentLabel: 'Patient2',
                     subjectId: 'XNAT_JPETTS_S00011',
                     projectId: 'ITCRdemo',
                     parentProjectId: 'ITCRdemo'
                   });
-
-                  sessionMap.setSession({
-                    projectId: 'ITCRdemo',
-                    subjectId: 'XNAT_JPETTS_S00011',
-                    experimentId: 'XNAT_JPETTS_E00014',
-                    experimentLabel: 'Patient2'
-                  });
-
-                  sessionMap.setProject('ITCRdemo');
-                  sessionMap.setParentProject('ITCRdemo');
-                  sessionMap.setSubject('XNAT_JPETTS_S00011');
 
                   this.data = parsedJSON
 

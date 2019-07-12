@@ -5,8 +5,11 @@ const sessionMap = {
    * @param {string} seriesInstanceUid  The seriesInstanceUid of the scan.
    * @param {string} [property] A particular property to return.
    *
-   * @returns {Object||string} An object if no property is specified, or the
-   *                           value of the specified property.
+   * @returns {Object[]|Object|string} An array of scans if no seriesInstanceUid
+   *                                   is specified. If seriesInstanceUid is
+   *                                   specified but property isn't: the scan
+   *                                   metadata object. If both are specified,
+   *                                   returns the specified property.
    */
   getScan: (seriesInstanceUid, property) => {
     if (!seriesInstanceUid) {
@@ -27,15 +30,24 @@ const sessionMap = {
   /**
    * Extracts all of the scans contained in the JSON manifest in the sessionMap,
    * and stores them as scan entries with seriesInstanceUid, seriesDescription,
-   * seriesNumber, and additional supplied metadata.
+   * seriesNumber, and additional supplied metadata. Also stores a Session
+   * metadata object.
    *
    * @param {Object} json A JSON manifest to parse.
    * @param {Object} metadata Metadata to add to the scans entries.
    *
    * @returns {null}
    */
-  setScan: (json, metadata) => {
+  setSession: (json, metadata) => {
     console.log(json);
+
+    // Set the session metadata
+    _map.sessions.push({
+      projectId: metadata.projectId,
+      subjectId: metadata.subjectId,
+      experimentId: metadata.experimentId,
+      experimentLabeL: metadata.experimentLabel
+    });
 
     const studies = json.studies;
 
@@ -53,17 +65,6 @@ const sessionMap = {
         });
       }
     }
-  },
-
-  /**
-   * Adds metadata to the sessions metadata array.
-   *
-   * @param {Object} metadata Metadata to add to the session entries.
-   *
-   * @returns {null}
-   */
-  setSession: metadata => {
-    _map.sessions.push(metadata);
   },
 
   /**

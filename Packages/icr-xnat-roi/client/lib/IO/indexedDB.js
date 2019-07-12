@@ -1,3 +1,4 @@
+/*
 import localBackup from "./localBackup.js";
 
 // Create an instance of a db object for us to store the open database in
@@ -7,7 +8,7 @@ export { db };
 
 // TODO -> Ressurect this at some point.
 
-/*
+
 window.onload = function() {
   // Open our database; it is created if it doesn't already exist
   // (see onupgradeneeded below)
