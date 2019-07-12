@@ -2,10 +2,11 @@
 
 The OHIF-XNAT viewer is currently based on a fork of [OHIF/Viewers 1.x](https://github.com/OHIF/Viewers/tree/v1.x). This version has a hard dependency on [`Meteor`](https://www.meteor.com/), which is an full stack JavaScript development framework. Going forwards, OHIF-XNAT needs to migrate to [OHIF Viewer 2.0](ohif-xnat-viewer-2x.md). This README describes developing/compiling the current version, and in the future will serve as a legacy maintainance guide.
 
-####Disclaimer
+#### Disclaimer
+
 All these instructions will assume you are using a Unix system, the commands/package managers will be different if you are using Windows, and you might have to perform a little Googling to translate the commands. You could also join the brave new world of users using [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10), and follow this guide to the letter on windows.
 
-##Setup {#setup}
+## Setup
 
 First you must install `Meteor` globally on your system if you have not already done so:
 
@@ -33,7 +34,7 @@ meteor npm install
 
 Your packages should now be installed and you are ready for development!
 
-## Local Development {#local-development}
+## Local Development
 
 To run a development server, from `/StandaloneViewer/StandaloneViewer` folder you are currently in:
 
@@ -63,7 +64,7 @@ If you want to host it at a different port you can specify a different `ROOT_URL
 METEOR_PACKAGE_DIRS="../../Packages" ROOT_URL=http://localhost:3666 meteor
 ```
 
-## Building for Production {#building-for-production}
+## Building for Production
 
 To build this app for production we need to do two things:
 
@@ -119,7 +120,7 @@ Great, now your viewer build is wrapped in an XNAT plugin, you are ready to buil
 
 And if all is successful your resulting XNAT plugin jar will be located in `build/libs`.
 
-## Depolyment {#deployment}
+## Depolyment
 
 Move your built jar to the plugin folder of your XNAT. `ohif-viewer-XNAT-plugin` depends on the [xnat-roi-plugin](https://bitbucket.org/icrimaginginformatics/xnat-roi-plugin). At the time of writing the pre-releases aren't following semantic versioning, hwoever this will change in the near future. Currently, a compatible version of the plugin is sitting in the `ohif-viewer-XNAT-plugin` repo under `dist/`. Copy over this plugin to your XNAT plugin directory also. Restart Tomcat (or your xnat-web) container if using [`xnat-docker-compose`](https://github.com/NrgXnat/xnat-docker-compose).
 
