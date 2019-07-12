@@ -16,7 +16,7 @@ export default class XNATSession extends React.Component {
     const active =
       this.props.projectId === sessionMap.getProject() &&
       this.props.subjectId === sessionMap.getSubject() &&
-      this.props.ID === sessionMap.getExperiment();
+      sessionMap.getView() === "session";
 
     const shared = this.props.parentProjectId !== this.props.projectId;
 

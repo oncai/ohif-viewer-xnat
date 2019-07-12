@@ -161,6 +161,26 @@ const sessionMap = {
     if (_map.sessions.length === 1) {
       return _map.sessions[0].experimentId;
     }
+  },
+
+  /**
+   * Sets the view mode, session or subject.
+   *
+   * @param {string} view The view mode.
+   *
+   * @returns {null}
+   */
+  setView: view => {
+    _map.view = view;
+  },
+
+  /**
+   * Gets the view mode, session or subject.
+   *
+   * @returns {string} The view mode.
+   */
+  getView: view => {
+    return _map.view;
   }
 };
 
@@ -170,7 +190,8 @@ _map = {
   subject: "",
   project: "",
   parentProject: "",
-  experiment: ""
+  experiment: "",
+  view: ""
 };
 
 export { sessionMap };

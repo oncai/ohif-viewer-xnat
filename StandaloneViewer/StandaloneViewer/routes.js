@@ -65,6 +65,8 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
             console.error('insufficient query parameters.');
           }
 
+          const query = this.params.query;
+
           const {
             projectId,
             subjectId,
@@ -85,6 +87,7 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
 
           if (experimentId) {
             // Single Session
+            sessionMap.setView('session');
             checkAndSetPermissions(projectId, parentProjectId);
 
             // Build JSON GET url.
@@ -123,7 +126,7 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
             });
           } else {
             // Whole Subject.
-            //
+            sessionMap.setView('subject');
 
             const subjectExperimentListUrl = `${Session.get('rootUrl')}/data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
 
@@ -270,6 +273,7 @@ if (Meteor.isClient && !Meteor.isDevelopment) {
 
                   const parsedJSON = JSON.parse(oReq.responseText);
 
+                  sessionMap.setView('session');
                   sessionMap.setProject('ITCRdemo');
                   sessionMap.setParentProject('ITCRdemo');
                   sessionMap.setSubject('XNAT_JPETTS_S00011');
