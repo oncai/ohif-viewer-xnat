@@ -4,7 +4,7 @@ The OHIF-XNAT viewer is currently based on a fork of [OHIF/Viewers 1.x](https://
 
 #### Disclaimer
 
-All these instructions will assume you are using a Unix system, the commands/package managers will be different if you are using Windows, and you might have to perform a little Googling to translate the commands. You could also join the brave new world of users using [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10), and follow this guide to the letter on windows.
+All these instructions will assume you are using a Unix system, the commands will be different on windows systems.
 
 ## Setup
 
