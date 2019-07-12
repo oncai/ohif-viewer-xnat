@@ -1,6 +1,6 @@
 # OHIF-Viewer-XNAT
 
-The OHIF-XNAT viewer is currently based on a fork of [OHIF/Viewers 1.x](https://github.com/OHIF/Viewers/tree/v1.x). This version has a hard dependency on [`Meteor`](https://www.meteor.com/), which is an full stack JavaScript development framework. Going forwards, OHIF-XNAT needs to migrate to [OHIF Viewer 2.0](ohif-xnat-viewer-2x.md). This README describes developing/compiling the current version, and in the future will serve as a legacy maintainance guide.
+The OHIF-XNAT viewer is currently based on a fork of [OHIF/Viewers 1.x](https://github.com/OHIF/Viewers/tree/v1.x). This version has a hard dependency on [`Meteor`](https://www.meteor.com/), which is an full stack JavaScript development framework. Going forwards, OHIF-XNAT needs to migrate to [OHIF Viewer 2.0](https://github.com/OHIF/Viewers). This README describes developing/compiling the current version, and in the future will serve as a legacy maintainance guide.
 
 #### Disclaimer
 
@@ -73,9 +73,7 @@ To build this app for production we need to do two things:
 
 ### Building the OHIF client
 
-If you've been following along closely so far, you might have noticed that we need a client only build of the viewer... which is built in `Meteor`, a full-stack framework. This is the most painful part of the process and why OHIF 2.0 is built in `React`.
-
-Introducing `meteor-build-client-fixed2`. `meteor-build-client` was a build tool created by Github user [frozeman](https://github.com/frozeman/meteor-build-client) that removes all the server components of a meteor application and produced a standalone client-only build of a `Meteor` project. Frozeman quickly got interested in Ethereum development and the project was not maintained. After a lot of drama about passing ownership of the repo to other users etc, the repo was eventually forked... twice. We ended up with a _semi-maintained_ build tool, working at the time of writing: `meteor-build-client-fixed2`. Install it using `npm`:
+The viewer is built in `Meteor`, a full stack framework, however we require a client only build, possible with `meteor-build-client-fixed2`. Install it using `npm`:
 
 ```bash
 npm install meteor-build-client-fixed2 -g
