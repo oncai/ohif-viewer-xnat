@@ -98,7 +98,7 @@ The resulting build will be present in `StandaloneViewer/myOutputFolder`, which 
 
 ### Building the XNAT plugin.
 
-Clone the `ohif-XNAT-viewer-plugin` repo and switch to the `dev` branch (TODO: Move this to the ICR-informatics bitbucket)
+Clone the `ohif-XNAT-viewer-plugin` repo and switch to the `dev` (new features) or `master` (more stable) branch:
 
 ```bash
 git clone https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin
