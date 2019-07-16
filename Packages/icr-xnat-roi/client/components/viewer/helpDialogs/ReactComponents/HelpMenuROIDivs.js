@@ -35,6 +35,11 @@ const draw = (
         ROI for drawing.
       </li>
       <li>Double-click a contour node to change the name of an ROI.</li>
+      <li>
+        Clicking 'delete' whilst drawing will cancel the contour you are
+        drawing.
+      </li>
+      <li> Clicking escape whilst drawing will quickly close the contour.</li>
     </ul>
   </div>
 );
