@@ -1,7 +1,6 @@
 import React from "react";
 import HelpMenuROI from "./HelpMenuROI.js";
 import HelpMenuMask from "./HelpMenuMask.js";
-import HelpMenuXNAT from "./HelpMenuXNAT.js";
 
 export default class HelpDialog extends React.Component {
   constructor(props = {}) {
@@ -18,10 +17,6 @@ export default class HelpDialog extends React.Component {
           name: "Mask",
           xlinkHref:
             "packages/icr_peppermint-tools/assets/icons.svg#icon-segmentation-menu"
-        },
-        {
-          name: "XNAT",
-          xlinkHref: "packages/icr_xnat-roi/assets/icons.svg#icon-xnat-logo"
         }
       ],
       selected: "ROI"
@@ -54,8 +49,6 @@ export default class HelpDialog extends React.Component {
         return <HelpMenuROI />;
       case "Mask":
         return <HelpMenuMask />;
-      case "XNAT":
-        return <HelpMenuXNAT />;
     }
   }
 

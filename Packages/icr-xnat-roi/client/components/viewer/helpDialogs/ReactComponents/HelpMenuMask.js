@@ -23,12 +23,7 @@ export default class HelpMenuMask extends React.Component {
             "packages/icr_peppermint-tools/assets/icons.svg#icon-brush-auto"
         },
         {
-          name: "Settings",
-          xlinkHref:
-            "packages/icr_peppermint-tools/assets/icons.svg#icon-brush-settings"
-        },
-        {
-          name: "Seg Management",
+          name: "Segments",
           xlinkHref:
             "packages/icr_peppermint-tools/assets/icons.svg#icon-seg-management-menu"
         }
@@ -59,10 +54,8 @@ export default class HelpMenuMask extends React.Component {
         return divs.smartCt;
       case "Auto":
         return divs.auto;
-      case "Settings":
-        return divs.settings;
-      case "Seg Management":
-        return divs.segManagement;
+      case "Segments":
+        return divs.segments;
     }
   }
 

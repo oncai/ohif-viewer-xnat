@@ -1,11 +1,7 @@
 import React from "react";
 
-const manual = (
-  <div>
-    <p>
-      The Manual Brush tool allows you to segment images with a circular brush.
-    </p>
-
+const brushInstructions = (
+  <>
     <h5>Painting with the brush</h5>
     <ul>
       <li>Click on the canvas to paint with the selected color.</li>
@@ -17,6 +13,22 @@ const manual = (
         Use the N key to quickly switch to the first unused segmentation color.
       </li>
     </ul>
+  </>
+);
+
+const brushSettingsInstructions = (
+  <p>
+    Holes/artifacts are filled and stray pixels removed, based on the settings
+    configured in the Segments side panel.
+  </p>
+);
+
+const manual = (
+  <div>
+    <p>
+      The Manual Brush tool allows you to segment images with a circular brush.
+    </p>
+    {brushInstructions}
   </div>
 );
 
@@ -27,23 +39,8 @@ const smartCt = (
       images based on a pair of Hounsfield Units (HU). The tissue type can be
       chosen in the Brush Settings menu, as well as a custom HU gate.
     </p>
-
-    <p>
-      Holes/artifacts are filled and stray pixels removed, based on the settings
-      configured in the Brush Settings Menu.
-    </p>
-
-    <h5>Painting with the brush</h5>
-    <ul>
-      <li>Click on the canvas to paint with the selected color.</li>
-      <li>Drag to make brush strokes.</li>
-      <li>Use the + and - keys to increase/decrease the brush size.</li>
-      <li>Use the [ and ] keys to change the mask color.</li>
-      <li>Ctrl + click with the brush to erase that mask color.</li>
-      <li>
-        Use the N key to quickly switch to the first unused segmentation color.
-      </li>
-    </ul>
+    {brushSettingsInstructions}
+    {brushInstructions}
   </div>
 );
 
@@ -54,36 +51,17 @@ const auto = (
       brush radius when pressing down the mouse. Dragging after pressing down
       the mouse will only fill in pixels within this band.
     </p>
-
-    <p>
-      Holes/artifacts are filled and stray pixels removed, based on the settings
-      configured in the Brush Settings Menu.
-    </p>
-
-    <h5>Painting with the brush</h5>
-    <ul>
-      <li>Click on the canvas to paint with the selected color.</li>
-      <li>Drag to make brush strokes.</li>
-      <li>Use the + and - keys to increase/decrease the brush size.</li>
-      <li>Use the [ and ] keys to change the mask color.</li>
-      <li>Ctrl + click with the brush to erase that mask color.</li>
-      <li>
-        Use the N key to quickly switch to the first unused segmentation color.
-      </li>
-    </ul>
+    {brushSettingsInstructions}
+    {brushInstructions}
   </div>
 );
 
-const settings = (
-  <div>
-    <p>
-      The Brush Settings menu allows you to configure the properties of the
-      Smart CT and Auto Brush tools.
-    </p>
+const smartSettings = (
+  <>
     <h5>Smart CT Gate Selection</h5>
     <p>
-      This option allows you to select the tissue type to paint with the Smart
-      CT Brush. You can also specify a custom gate.
+      This option allows you to select the tissue type the Smart CT brush uses.
+      You can also specify a custom gate in Hounsfield Units.
     </p>
     <h5>Smart/Auto Gate Settings</h5>
     <p>These settings affect both the Smart CT and Auto Brush tools.</p>
@@ -98,39 +76,46 @@ const settings = (
         circle. Regions smaller than this threshold will not be painted.
       </li>
     </ul>
-  </div>
+  </>
 );
 
-const segManagement = (
+const segments = (
   <div>
     <p>
-      The Seg Management menu allows you to view and edit the metadata
-      associated with each segmentation. The first line lists the name of the
-      ROI Collection. If you have yet to export the collection to XNAT 'New SEG
-      ROI Collection' will be displayed. Once you save the collection, the
-      collections name, label and type will be displayed in the menu. This is
-      also true if you import an existing ROI Collection.
+      A segment is defined as a 3D mask of a particular color, defining one
+      region of interest. The Segments side panel displays a list of segments
+      displayed on the scan in the active viewport, as well as some global
+      settings for brush tools.
     </p>
-    <h5>Segmentation Interface</h5>
+
+    <h5>Segment List</h5>
     <ul>
-      <li>Label - The human-readable label given to the segmentation.</li>
-      <li>Category - The annotomical category of the segmentation.</li>
-      <li>Type - The specific segmentation type.</li>
+      <li>Click on the "+ Segment" button to add a new segment.</li>
       <li>
-        Paint - Displays the active color. You can select a color by clicking on
-        it.
+        Click on a button in the Paint column to select which color to paint.
       </li>
-      <li>Hide - Toggle the segmentation's visibility.</li>
-      <li>Edit - Edit the metadata of the segmentation.</li>
+      <li>Click on a segment's label or type to edit its metadata.</li>
+      <li>Click hide to hide a segment.</li>
       <li>
-        Delete - Delete the segmentation. You will be prompted to confirm this.
+        Click delete to delete a segment from your working collection. You will
+        be asked to confirm your choice, as this can't be done.
       </li>
     </ul>
+
+    <h5>Import</h5>
     <p>
-      Clicking on '+ Segmentation' will generate a new segmentation with the
-      next unused color.
+      You may overlay one labelmap on a scan at a time. This limitation is due
+      to memory limitations within the browser, and will be improved in the
+      future. You may edit the labelmap and re-save it as a new ROI Collection.
     </p>
+
+    <h5>Export</h5>
+    <p>
+      You can export the labelmap. Overlapping segments are valid and can be
+      exported.
+    </p>
+    {smartSettings}
   </div>
 );
 
-export { manual, smartCt, auto, settings, segManagement };
+export { manual, smartCt, auto, segments };
