@@ -1,6 +1,6 @@
-export default function fetchXNAT(url, responseType, fullRoute) {
+export default function fetchXNAT(url, responseType, prependHost) {
   return new Promise((resolve, reject) => {
-      if (!fullRoute) {
+      if (prependHost) {
           url = `${Session.get("rootUrl")}${url}`;
       }
 

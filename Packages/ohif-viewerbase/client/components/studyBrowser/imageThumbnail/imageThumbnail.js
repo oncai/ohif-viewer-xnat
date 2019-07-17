@@ -2,27 +2,9 @@ import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
 import { OHIF } from 'meteor/ohif:core';
-import fetchXNAT from "../../../lib/IO/fetchXNAT.js";
+import { fetchXNAT } from 'meteor/icr:xnat-rest';
+import updateQueryStringParameter from '../../../lib/updateQueryStringParameter.js';
 
-
-/**
- * Asynchronous wrapper around Cornerstone's renderToCanvas method.
- *
- * @param {HTMLElement} canvasElement An HTML <canvas> element
- * @param {Image} image A Cornerstone Image
- *
- * @return {Promise} A promise tracking the progress of the rendering. Resolves empty.
- */
-function renderAsync(canvasElement, image) {
-  return new Promise((resolve, reject) => {
-    try {
-      cornerstone.renderToCanvas(canvasElement, image);
-      resolve();
-    } catch(error) {
-      reject(error);
-    }
-  });
-}
 
 Template.imageThumbnail.onCreated(() => {
     const instance = Template.instance();
@@ -67,43 +49,20 @@ Template.imageThumbnail.onRendered(() => {
         // Clear the previous image
         imageElement.removeAttribute('src');
 
-        // // Define a handler for success on image load
-        // const loadSuccess = image => {
-        //     // This is an off-screen canvas. It's used to get dataURL images by using
-        //     // cornerstone.renderToCanvas function.
-        //     const canvasElement = document.createElement('canvas');
-        //     canvasElement.width = 193;
-        //     canvasElement.height = 123;
-        //
-        //     // Render the image to canvas to be able to get its dataURL
-        //     renderAsync(canvasElement, image).then(() => {
-        //       instance.isLoading.set(false);
-        //
-        //       imageElement.src = canvasElement.toDataURL('image/jpeg', 1);
-        //     });
-        // };
-        //
-        // // Define a handler for error on image load
-        // const loadError = () => {
-        //     instance.isLoading.set(false);
-        //     instance.hasLoadingError.set(true);
-        // };
-
-        // // Call cornerstone image loader with the defined handlers
-        // cornerstone.loadAndCacheImage(instance.imageId).then(loadSuccess, loadError);
-
-        // remove host spec since it'll be dicomweb:// and I don't know whether to replace with http or https
-        const protocol = `${Session.get("rootUrl")}`.replace(/:\/\/.*$/,'');
-        const url = instance.imageId.replace(/^dicomweb/,protocol) + '?format=image/jpeg';
-        fetchXNAT(url, "blob", true).then(function(image) {
+        // replace dicomweb with protocol (http or https)
+        const protocol = window.location.protocol;
+        const url = updateQueryStringParameter(instance.imageId.replace(/^dicomweb:/,protocol), 'format', 'image/jpeg');
+        fetchXNAT(url, 'blob').then(image => {
             if (!image) {
-                instance.hasLoadingError.set(true);
-            } else {
-                imageElement.src = window.URL.createObjectURL(image);
-                imageElement.width = "193";
-                imageElement.height = "123";
+                throw new Error('No image fetched');
             }
+            imageElement.src = window.URL.createObjectURL(image);
+            imageElement.width = '193';
+            imageElement.height = '123';
             instance.isLoading.set(false);
+        }).catch(err => {
+            instance.isLoading.set(false);
+            instance.hasLoadingError.set(true);
         });
     };
 
