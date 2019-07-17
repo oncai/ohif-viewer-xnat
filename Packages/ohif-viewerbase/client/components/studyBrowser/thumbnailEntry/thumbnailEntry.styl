@@ -64,6 +64,23 @@ $seriesCountBackgroundColor = #678696
       white-space: nowrap
       width: calc(100% - 15px)
 
+    .roi-icon-flex
+      display: flex
+
+      .roi-icon
+        theme('color', '$activeColor')
+        display: inline
+        float: left
+        width: 18px
+        height: 18px
+
+        .roi-icon-svg
+          theme('stroke', '$textPrimaryColor')
+          width: 16px
+          height: 16px
+          x: 0px
+          y: 0px
+
     .icon
       theme('color', '$activeColor')
       display: inline-block

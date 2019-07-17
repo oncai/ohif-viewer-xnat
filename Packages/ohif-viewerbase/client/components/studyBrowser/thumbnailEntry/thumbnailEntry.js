@@ -1,6 +1,9 @@
 import { Template } from "meteor/templating";
 import { _ } from "meteor/underscore";
 import { Session } from "meteor/session";
+import { cornerstoneTools } from "meteor/ohif:cornerstone";
+
+const modules = cornerstoneTools.store.modules;
 
 import { OHIF } from "meteor/ohif:core";
 import { thumbnailDragHandlers } from "../../../lib/thumbnailDragHandlers";
@@ -133,5 +136,51 @@ Template.thumbnailEntry.helpers({
     }
 
     return stringArray.join(" ");
+  },
+  hasROIContours() {
+    Session.get("refreshRoiContourMenu");
+
+    const instance = Template.instance();
+    const seriesInstanceUid = instance.data.thumbnail.stack.seriesInstanceUid;
+    const freehand3DModule = modules.freehand3D;
+
+    const roiOnSeries = freehand3DModule.getters.series(seriesInstanceUid);
+
+    if (!roiOnSeries) {
+      return false;
+    }
+
+    const structureSetCollection = roiOnSeries.structureSetCollection;
+
+    let hasRoi = false;
+
+    for (let i = 0; i < structureSetCollection.length; i++) {
+      const structureSetCollectionI = structureSetCollection[i];
+
+      if (structureSetCollectionI.ROIContourCollection.length) {
+        hasRoi = true;
+        break;
+      }
+    }
+
+    return hasRoi;
+  },
+  hasSegments() {
+    Session.get("refreshSegmentationMenu");
+
+    const instance = Template.instance();
+
+    const seriesInstanceUid = instance.data.thumbnail.stack.seriesInstanceUid;
+    const brushModule = modules.brush;
+
+    const seriesMetadata = brushModule.getters.metadata(seriesInstanceUid);
+
+    if (seriesMetadata && seriesMetadata.length) {
+      console.log(seriesMetadata);
+
+      return seriesMetadata.some(element => element !== undefined);
+    }
+
+    return false;
   }
 });

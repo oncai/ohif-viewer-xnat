@@ -34,5 +34,7 @@ export default function deleteSegment(seriesInstanceUid, segmentIndex) {
     }
   }
 
+  Session.set("refreshSegmentationMenu", Math.random().toString);
+
   cornerstone.updateImage(activeEnabledElement.element);
 }

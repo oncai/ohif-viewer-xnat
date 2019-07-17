@@ -13,7 +13,6 @@ Package.onUse(function(api) {
   api.use([
     "ohif:design",
     "ohif:cornerstone",
-    "ohif:viewerbase",
     "ohif:core",
     "ohif:hotkeys",
     "ohif:log",
