@@ -27,8 +27,6 @@ class StackSynchronizer {
       return;
     }
 
-    console.log(`changingSyncStrategy: ${newStrategy}`);
-
     let activeElements = this[this.synchronizationStrategy].getSourceElements();
 
     // Make a hardcopy of activeElements to avoid errors whilst adding or removing.

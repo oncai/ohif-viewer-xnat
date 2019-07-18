@@ -169,15 +169,12 @@ Template.thumbnailEntry.helpers({
     Session.get("refreshSegmentationMenu");
 
     const instance = Template.instance();
-
     const seriesInstanceUid = instance.data.thumbnail.stack.seriesInstanceUid;
     const brushModule = modules.brush;
 
     const seriesMetadata = brushModule.getters.metadata(seriesInstanceUid);
 
     if (seriesMetadata && seriesMetadata.length) {
-      console.log(seriesMetadata);
-
       return seriesMetadata.some(element => element !== undefined);
     }
 

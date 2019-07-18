@@ -18,8 +18,6 @@ Template.studyBrowser.helpers({
     const instance = Template.instance();
     instance.data.callRender.get();
 
-    console.log("showHideButton");
-
     if (study.selected) {
       return "fa fa-minus-square";
     }
@@ -29,10 +27,6 @@ Template.studyBrowser.helpers({
   isStudyVisable: study => {
     const instance = Template.instance();
     instance.data.callRender.get();
-
-    console.log("isStudyVisable");
-
-    console.log(study);
 
     if (study.selected) {
       return "isVisible";
@@ -47,8 +41,6 @@ Template.studyBrowser.events({
     const studyInstanceUid = event.currentTarget.attributes.id.value;
 
     OHIF.viewer.Studies.all().forEach(study => {
-      console.log(study.studyInstanceUid);
-
       if (study.studyInstanceUid === studyInstanceUid) {
         study.selected = !study.selected;
       }

@@ -31,8 +31,6 @@ function closeProgressDialog() {
  * @returns {null}
  */
 function updateProgressDialog(content) {
-  console.log("updating progress dialog");
-
   if (content.notificationText) {
     document.getElementById("ioNotificationText").innerHTML =
       content.notificationText;

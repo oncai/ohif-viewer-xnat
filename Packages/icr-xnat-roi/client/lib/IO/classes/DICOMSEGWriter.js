@@ -65,8 +65,6 @@ export default class DICOMSEGWriter {
             options
           );
 
-          console.log(segBlob);
-
           resolve(segBlob);
         })
         .catch(err => console.log(err));

@@ -44,8 +44,8 @@ export default class DICOMSEGExporter {
       throw Error("PUT failed, check logs above.");
     }
 
-    console.log("wrote SEG");
-    console.log("PUT succesful, resolving");
+    console.log("PUT succesful");
+
     return;
   }
 

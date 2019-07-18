@@ -30,7 +30,6 @@ export default class AIMReader {
     this._roiCollectionName = roiCollectionName;
     this._roiCollectionLabel = roiCollectionLabel;
     this._extractAnnotations();
-    console.log(this._polygons);
   }
 
   /**
@@ -86,7 +85,7 @@ export default class AIMReader {
 
     for (let i = 0; i < imageSeriesList.length; i++) {
       const seriesInstanceUid = this._getSeriesInstanceUid(imageSeriesList[i]);
-      console.log(`imageSeries: ${i}, seriesInstanceUid: ${seriesInstanceUid}`);
+
       if (seriesInstanceUid === this._seriesInstanceUidToImport) {
         this._appendSopInstances(sopInstancesInSeries, imageSeriesList[i]);
       }
@@ -154,7 +153,6 @@ export default class AIMReader {
     const ROIContourUid = this._createNewVolumeAndGetUid(children);
     const markupEntitys = annotation.getElementsByTagName("MarkupEntity");
 
-    console.log(`Number of Polygons in annotation: ${markupEntitys.length}`);
     for (let i = 0; i < markupEntitys.length; i++) {
       this._addMarkupEntityIfPolygon(markupEntitys[i], ROIContourUid);
     }
@@ -188,7 +186,6 @@ export default class AIMReader {
 
     // Don't extract polygon if it doesn't belong to the series being imported
     if (!this._sopInstancesInSeries.includes(sopInstanceUid)) {
-      console.log("referencedSopInstance not in active series");
       return;
     }
 

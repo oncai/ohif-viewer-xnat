@@ -83,8 +83,6 @@ export default class MaskExportListDialog extends React.Component {
         roiCollectionName
       );
 
-      console.log("seg exporter... ready!");
-
       dicomSegExporter
         .exportToXNAT(false)
         .then(success => {
@@ -101,11 +99,6 @@ export default class MaskExportListDialog extends React.Component {
           });
 
           this.props.onExportComplete();
-
-          // TODO -> Work on backup mechanism, disabled for now.
-          //console.log('=====checking backup:=====');
-          //localBackup.checkBackupOnExport();
-          //console.log('=====checking backup DONE=====');
         })
         .catch(error => {
           console.log(error);

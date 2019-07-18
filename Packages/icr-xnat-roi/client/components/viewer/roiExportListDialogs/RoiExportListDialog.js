@@ -40,8 +40,6 @@ export default class RoiExportListDialog extends React.Component {
   }
 
   onTextInputChange(evt) {
-    console.log(evt.target.value);
-
     this._roiCollectionName = evt.target.value;
   }
 
@@ -69,8 +67,6 @@ export default class RoiExportListDialog extends React.Component {
       return;
     }
 
-    console.log(exportMask);
-
     this.setState({ exporting: true });
 
     const roiExtractor = new RoiExtractor(this._seriesInstanceUid);
@@ -88,8 +84,6 @@ export default class RoiExportListDialog extends React.Component {
       .exportToXNAT()
       .then(success => {
         console.log("PUT successful.");
-        console.log(roiCollectionName);
-        console.log(lockStructureSet);
 
         //lockExportedROIs(
         lockStructureSet(
@@ -98,10 +92,7 @@ export default class RoiExportListDialog extends React.Component {
           roiCollectionName,
           label
         );
-        //console.log('=====checking backup:=====');
-        //localBackup.checkBackupOnExport();
-        //console.log('=====checking backup DONE=====');
-        Session.set("refreshRoiContourMenu", Math.random().toString());
+
         this.props.onExportComplete();
       })
       .catch(error => {
