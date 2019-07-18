@@ -18,9 +18,6 @@ export default class AIMExporter {
       "experimentId"
     );
 
-    console.log(this._projectID);
-    console.log(this._experimentID);
-
     this._label = aimWriter.label;
   }
 
@@ -41,8 +38,6 @@ export default class AIMExporter {
       this._label
     }?type=AIM&overwrite=false&${csrfTokenParameter}`;
 
-    console.log(putUrl);
-
     await this._PUTAIM(putUrl).catch(error => {
       putFailed = true;
       console.log(error);
@@ -52,7 +47,7 @@ export default class AIMExporter {
       throw Error("PUT failed, check logs above.");
     }
 
-    console.log("PUT succesful, resolving");
+    console.log("PUT succesful");
 
     return;
   }

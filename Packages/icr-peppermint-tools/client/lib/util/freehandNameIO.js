@@ -75,6 +75,9 @@ export function setVolumeName(
   function setVolumeNameCallback(name) {
     ROIContour.name = name;
 
+    // JamesAPetts
+    Session.set("refreshRoiContourMenu", Math.random().toString());
+
     if (typeof callback === "function") {
       callback(name);
     }

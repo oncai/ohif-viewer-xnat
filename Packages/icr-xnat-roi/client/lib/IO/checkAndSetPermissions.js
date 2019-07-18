@@ -16,17 +16,12 @@ export async function checkAndSetPermissions(projectId, parentProjectId) {
     "rootUrl"
   )}/xapi/roi/projects/${parentProjectId}/permissions/RoiCollection`;
 
-  console.log(`checkAndSetPermissions: ${url}`);
-
   icrXnatRoiSession.set("writePermissions", true);
   icrXnatRoiSession.set("readPermissions", true);
   icrXnatRoiSession.set("editPermissions", true);
 
   getPermissionsJson(url)
     .then(result => {
-      console.log("checkAndSetPermissions GET result:");
-      console.log(result);
-
       const { status, response } = result;
 
       if (status === 200) {

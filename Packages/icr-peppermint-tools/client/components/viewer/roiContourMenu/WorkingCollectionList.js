@@ -53,7 +53,7 @@ export default class WorkingRoiCollectionList extends React.Component {
               className="roi-contour-menu-new-button btn btn-sm btn-primary"
               onClick={onNewRoiButtonClick}
             >
-              <i className="fa fa-plus-circle" /> ROI
+              <i className="fa fa-plus-circle" /> ROI Contour
             </a>
           </th>
         </tr>

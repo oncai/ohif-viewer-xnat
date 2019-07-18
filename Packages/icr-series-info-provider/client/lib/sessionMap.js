@@ -39,8 +39,6 @@ const sessionMap = {
    * @returns {null}
    */
   setSession: (json, metadata) => {
-    console.log(json);
-
     // Set the session metadata
     _map.sessions.push({
       projectId: metadata.projectId,
@@ -55,8 +53,6 @@ const sessionMap = {
       const seriesList = studies[i].seriesList;
 
       for (let j = 0; j < seriesList.length; j++) {
-        console.log(`series [${i}, ${j}]`);
-
         _map.scans.push({
           seriesInstanceUid: seriesList[j].seriesInstanceUid,
           seriesDescription: seriesList[j].seriesDescription,

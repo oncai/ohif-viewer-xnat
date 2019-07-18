@@ -13,7 +13,6 @@ Package.onUse(function(api) {
   api.use([
     "ohif:design",
     "ohif:cornerstone",
-    "ohif:viewerbase",
     "ohif:core",
     "ohif:hotkeys",
     "ohif:log",
@@ -28,7 +27,6 @@ Package.onUse(function(api) {
 
   // ===== Interface =====
   api.addFiles("client/viewportFunctions.js", "client");
-  api.addFiles("client/test.js", "client");
 
   // ===== Components =====
   api.addFiles("client/components/viewer/ioDialogs/ioDialogs.html", "client");

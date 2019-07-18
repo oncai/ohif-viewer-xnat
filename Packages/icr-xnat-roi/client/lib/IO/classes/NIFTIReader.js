@@ -49,10 +49,6 @@ export default class NIFTIReader {
   read(niftiArrayBuffer, imageIds, dimensions) {
     this._niftiArrayBuffer = niftiArrayBuffer;
 
-    console.log("_niftiArrayBuffer");
-
-    console.log("decompressing if nifti is zipped...");
-
     // Decompress if zipped
     this._decompressIfZipped();
 
@@ -61,9 +57,6 @@ export default class NIFTIReader {
     }
 
     this._extractHeaders();
-
-    console.log("valid nifti header:");
-    console.log(this._niftiHeader.toFormattedString());
 
     if (this._isValidDimensionality() === false) {
       throw `Parser unsure how to parse ${
@@ -86,19 +79,17 @@ export default class NIFTIReader {
       metadataOfFirstImage.instance.sliceThickness ||
       rowPixelSpacing;
 
-    //console.log(this._niftiHeader);
-
     let firstVoxelInNeurologicalFrame;
 
     if (this._niftiHeader.sform_code > 0) {
-      console.log("Can do full affine transform!");
+      console.log("Mapping NIFTI using affine transformation.");
       firstVoxelInNeurologicalFrame = this._fullAffineTransformToWorldSpace(
         0,
         0,
         0
       );
     } else if (this._niftiHeader.qform_code > 0) {
-      console.log("Can do Quartenion transformation!");
+      console.log("Mapping NIFTI using Quartenion transformation.");
       firstVoxelInNeurologicalFrame = this._quarternionTransformToWorldSpace(
         0,
         0,
@@ -289,11 +280,9 @@ export default class NIFTIReader {
    */
   _compareSliceDirection(imagePositionPatient, firstVoxelInDicomPCSFrame, tol) {
     if (Math.abs(imagePositionPatient.z - firstVoxelInDicomPCSFrame[2]) < tol) {
-      console.log("slice direction same as referenced image");
       return "ascending";
     }
 
-    console.log("slice direction opposite of referenced image");
     return "descending";
   }
 
@@ -340,13 +329,11 @@ export default class NIFTIReader {
         Math.sign(firstVoxelInDicomPCSFrame[0])
       ) {
         // Same direction, each slice has same X-Y mapping.
-        console.log("each slice same orientation as the DICOM.");
         return "same";
       }
-      //TODO -> Maybe only one is flipped? You'd assume either it was in Radialogical or
+      // TODO -> Maybe only one direction is flipped? You'd assume either it was in Radialogical or
       // Neurological frame of reference, but perhaps we could get some ugly half way house?
       // Assume flipped in x and y per slice.
-      console.log("each slice same orientation as the DICOM.");
       return "reverse";
     }
 

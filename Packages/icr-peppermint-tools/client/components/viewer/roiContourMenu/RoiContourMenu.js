@@ -111,6 +111,8 @@ export default class RoiContourMenu extends React.Component {
     const workingCollection = this._workingCollection();
     const lockedCollections = this._lockedCollections();
 
+    Session.set("refreshRoiContourMenu", Math.random().toString());
+
     this.setState({
       workingCollection,
       lockedCollections,
@@ -376,8 +378,6 @@ export default class RoiContourMenu extends React.Component {
         </div>
       );
     } else {
-      console.log(lockedCollections.length);
-
       component = (
         <div className="roi-contour-menu-component">
           <div className="roi-contour-menu-header">

@@ -18,19 +18,9 @@ export default class HelpMenuROI extends React.Component {
             "packages/ohif_viewerbase/assets/icons.svg#icon-freehand-sculpt"
         },
         {
-          name: "ROI Management",
+          name: "Contours",
           xlinkHref:
             "packages/icr_peppermint-tools/assets/icons.svg#icon-freehand-switch-volume"
-        },
-        {
-          name: "Stats",
-          xlinkHref:
-            "packages/icr_peppermint-tools/assets/icons.svg#icon-freehand-switch-volume"
-        },
-        {
-          name: "Interpolate",
-          xlinkHref:
-            "packages/icr_peppermint-tools/assets/icons.svg#icon-freehand-interpolate-on-no-highlight"
         }
       ],
       selected: "Draw"
@@ -57,12 +47,8 @@ export default class HelpMenuROI extends React.Component {
         return divs.draw;
       case "Sculpt":
         return divs.sculpt;
-      case "ROI Management":
-        return divs.roiManagement;
-      case "Stats":
-        return divs.stats;
-      case "Interpolate":
-        return divs.interpolate;
+      case "Contours":
+        return divs.contours;
     }
   }
 

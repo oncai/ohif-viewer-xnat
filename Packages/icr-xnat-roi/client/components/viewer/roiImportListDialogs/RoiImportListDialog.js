@@ -17,8 +17,6 @@ export default class RoiImportListDialog extends React.Component {
 
     selectedCheckboxes = [];
 
-    console.log("RoiImportListDialog");
-
     this.state = {
       selectAllChecked: true,
       selectedCheckboxes,
@@ -125,9 +123,6 @@ export default class RoiImportListDialog extends React.Component {
 
     const sessions = sessionMap.getSession();
 
-    console.log(`sessions:`);
-    console.log(sessions);
-
     this._subjectId = sessionMap.getSubject();
     this._projectId = sessionMap.getProject();
 
@@ -149,9 +144,6 @@ export default class RoiImportListDialog extends React.Component {
 
     Promise.all(promises).then(sessionAssessorLists => {
       const roiCollectionPromises = [];
-
-      console.log(`sessionAssessorLists:`);
-      console.log(sessionAssessorLists);
 
       for (let i = 0; i < sessionAssessorLists.length; i++) {
         const sessionAssessorList = sessionAssessorLists[i];
@@ -184,9 +176,6 @@ export default class RoiImportListDialog extends React.Component {
           }
         }
       }
-
-      console.log(`roiCollectionPromises:`);
-      console.log(roiCollectionPromises);
 
       if (!roiCollectionPromises.length) {
         this.setState({ importListReady: true });
@@ -226,8 +215,6 @@ export default class RoiImportListDialog extends React.Component {
         for (let i = 0; i < importList.length; i++) {
           selectedCheckboxes.push(true);
         }
-
-        console.log(importList);
 
         this.setState({
           importList,
@@ -436,8 +423,6 @@ export default class RoiImportListDialog extends React.Component {
     } = this.state;
 
     let importBody;
-
-    console.log(importList);
 
     if (importListReady) {
       if (importing) {

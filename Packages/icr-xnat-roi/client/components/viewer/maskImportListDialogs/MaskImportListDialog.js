@@ -35,7 +35,7 @@ export default class MaskImportListDialog extends React.Component {
 
     this._cancelablePromises = [];
     this._validTypes = ["SEG", "NIFTI"];
-    this.onExportButtonClick = this.onExportButtonClick.bind(this);
+    this.onImportButtonClick = this.onImportButtonClick.bind(this);
     this.onCloseButtonClick = this.onCloseButtonClick.bind(this);
     this._collectionEligibleForImport = this._collectionEligibleForImport.bind(
       this
@@ -48,8 +48,6 @@ export default class MaskImportListDialog extends React.Component {
   }
 
   onSelectedScanChange(evt) {
-    console.log(evt.target.value);
-
     const val = evt.target.value;
 
     this.setState({ scanSelected: val });
@@ -63,15 +61,9 @@ export default class MaskImportListDialog extends React.Component {
     this.setState({ segmentationSelected: index });
   }
 
-  async onExportButtonClick() {
+  async onImportButtonClick() {
     const { importList, scanSelected, segmentationSelected } = this.state;
-
-    console.log(`onExportButtonClick:`);
-
     const scan = importList[scanSelected];
-
-    console.log(`scan:`);
-    console.log(scan);
 
     if (this._hasExistingMaskData(scan.referencedSeriesInstanceUid)) {
       confirmed = await awaitConfirmationDialog(overwriteConfirmationContent);
@@ -83,12 +75,6 @@ export default class MaskImportListDialog extends React.Component {
 
     this._updateImportingText("");
     this.setState({ importing: true });
-
-    console.log(`segmentationSelected:`);
-    console.log(segmentationSelected);
-
-    console.log(`segmentation:`);
-    console.log(scan.segmentations[segmentationSelected]);
 
     this._importRoiCollection(scan.segmentations[segmentationSelected], scan);
   }
@@ -145,9 +131,6 @@ export default class MaskImportListDialog extends React.Component {
 
     const sessions = sessionMap.getSession();
 
-    console.log(`sessions`);
-    console.log(sessions);
-
     this._subjectId = sessionMap.getSubject();
     this._projectId = sessionMap.getProject();
 
@@ -167,9 +150,6 @@ export default class MaskImportListDialog extends React.Component {
 
     Promise.all(promises).then(sessionAssessorLists => {
       const roiCollectionPromises = [];
-
-      console.log(`sessionAssessorLists:`);
-      console.log(sessionAssessorLists);
 
       for (let i = 0; i < sessionAssessorLists.length; i++) {
         const sessionAssessorList = sessionAssessorLists[i];
@@ -202,9 +182,6 @@ export default class MaskImportListDialog extends React.Component {
           }
         }
       }
-
-      console.log(`roiCollectionPromises:`);
-      console.log(roiCollectionPromises);
 
       if (!roiCollectionPromises.length) {
         this.setState({ importListReady: true });
@@ -254,8 +231,6 @@ export default class MaskImportListDialog extends React.Component {
             });
           }
         });
-
-        console.log(importList);
 
         const activeSeriesInstanceUid = SeriesInfoProvider.getActiveSeriesInstanceUid();
 
@@ -314,9 +289,6 @@ export default class MaskImportListDialog extends React.Component {
     const seriesInstanceUid = scan.referencedSeriesInstanceUid;
     const maskImporter = new MaskImporter(seriesInstanceUid);
 
-    console.log(`_getAndImportFile, seriesInstanceUid:`);
-    console.log(seriesInstanceUid);
-
     switch (segmentation.collectionType) {
       case "SEG":
         this._updateImportingText(segmentation.name);
@@ -332,6 +304,8 @@ export default class MaskImportListDialog extends React.Component {
         const segArrayBuffer = await fetchArrayBuffer(uri).promise;
 
         await maskImporter.importDICOMSEG(segArrayBuffer);
+
+        this.props.onImportComplete();
         break;
 
       case "NIFTI":
@@ -348,6 +322,7 @@ export default class MaskImportListDialog extends React.Component {
         const niftiArrayBuffer = await fetchArrayBuffer(uri).promise;
 
         maskImporter.importNIFTI(niftiArrayBuffer);
+        this.props.onImportComplete();
         break;
 
       default:
@@ -355,8 +330,6 @@ export default class MaskImportListDialog extends React.Component {
           `MaskImportListDialog._getAndImportFile not configured for filetype: ${fileType}.`
         );
     }
-
-    this.props.onImportComplete();
   }
 
   /** @private
@@ -509,7 +482,7 @@ export default class MaskImportListDialog extends React.Component {
           {importing ? null : (
             <a
               className="mask-import-list-confirm btn btn-sm btn-primary"
-              onClick={this.onExportButtonClick}
+              onClick={this.onImportButtonClick}
             >
               <svg stroke="#fff">
                 <use xlinkHref="packages/icr_xnat-roi/assets/icons.svg#icon-xnat-import" />

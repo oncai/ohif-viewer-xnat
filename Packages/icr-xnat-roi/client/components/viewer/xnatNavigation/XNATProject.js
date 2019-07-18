@@ -13,8 +13,6 @@ export default class XNATProject extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    console.log(`XNAT PROJECT: ${this.props.ID}, ${sessionMap.getProject()}`);
-
     const active = this.props.ID === sessionMap.getProject();
 
     this.state = {
@@ -30,7 +28,6 @@ export default class XNATProject extends React.Component {
 
   componentWillUnmount() {
     if (this._cancelablePromise) {
-      console.log("canceling promise");
       this._cancelablePromise.cancel();
     }
   }
@@ -52,7 +49,6 @@ export default class XNATProject extends React.Component {
         }
 
         const subjects = result.ResultSet.Result;
-        console.log(subjects);
 
         subjects.sort((a, b) => compareOnProperty(a, b, "label"));
 

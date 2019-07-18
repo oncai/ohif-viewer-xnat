@@ -26,14 +26,10 @@ Template.ioDialogs.helpers({
   messageDialogTitle() {
     const instance = Template.instance();
 
-    console.log(instance.data.messageDialogTitle.get());
-
     return instance.data.messageDialogTitle.get();
   },
   messageDialogBody() {
     const instance = Template.instance();
-
-    console.log(instance.data.messageDialogBody.get());
 
     return instance.data.messageDialogBody.get();
   }

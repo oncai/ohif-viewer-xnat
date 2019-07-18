@@ -1,27 +1,31 @@
-import { cornerstoneTools } from 'meteor/ohif:cornerstone';
+import { cornerstoneTools } from "meteor/ohif:cornerstone";
 
-Session.set('defaultStackSync', false);
+Session.set("defaultStackSync", false);
 
 // JamesAPetts
 
 class StackSynchronizer {
-  constructor () {
-    this.Index = new cornerstoneTools.Synchronizer('cornerstonenewimage', cornerstoneTools.stackImageIndexSynchronizer);
-    this.Position = new cornerstoneTools.Synchronizer('cornerstonenewimage', cornerstoneTools.stackImagePositionSynchronizer);
-    this.synchronizationStrategy = 'Position';
+  constructor() {
+    this.Index = new cornerstoneTools.Synchronizer(
+      "cornerstonenewimage",
+      cornerstoneTools.stackImageIndexSynchronizer
+    );
+    this.Position = new cornerstoneTools.Synchronizer(
+      "cornerstonenewimage",
+      cornerstoneTools.stackImagePositionSynchronizer
+    );
+    this.synchronizationStrategy = "Position";
   }
 
-  changeSynchronizationStrategy (newStrategy) {
-    if (newStrategy !== 'Index' && newStrategy !== 'Position') {
+  changeSynchronizationStrategy(newStrategy) {
+    if (newStrategy !== "Index" && newStrategy !== "Position") {
       throw new Error(`Invalid stack synchronization strategy: ${newStrategy}`);
     }
 
     if (newStrategy === this.synchronizationStrategy) {
-      console.log('Trying to change to same strategy, abort');
+      console.log("Trying to change to same strategy, abort");
       return;
     }
-
-    console.log(`changingSyncStrategy: ${newStrategy}`);
 
     let activeElements = this[this.synchronizationStrategy].getSourceElements();
 
@@ -43,17 +47,15 @@ class StackSynchronizer {
     this.synchronizationStrategy = newStrategy;
   }
 
-  add (element) {
+  add(element) {
     this[this.synchronizationStrategy].add(element);
   }
 
-  remove (element) {
+  remove(element) {
     this[this.synchronizationStrategy].remove(element);
   }
 }
 
-const stackSynchronizer =  new StackSynchronizer();
+const stackSynchronizer = new StackSynchronizer();
 
-export {
-  stackSynchronizer
-}
+export { stackSynchronizer };

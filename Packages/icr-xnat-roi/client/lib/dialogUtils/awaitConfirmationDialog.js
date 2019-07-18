@@ -6,8 +6,6 @@
  */
 export default async function awaitConfirmationDialog(content) {
   function keyConfirmEventHandler(e) {
-    console.log("keyConfirmEventHandler");
-
     if (e.which === 13) {
       // If Enter is pressed accept and close the dialog
       confirmEventHandler();

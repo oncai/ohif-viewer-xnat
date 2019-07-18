@@ -40,8 +40,6 @@ export default class XNATSubject extends React.Component {
     this.onExpandIconClick = onExpandIconClick.bind(this);
 
     this._cancelablePromises = [];
-
-    console.log(this);
   }
 
   componentWillUnmount() {

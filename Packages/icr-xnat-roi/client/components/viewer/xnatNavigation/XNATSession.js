@@ -80,9 +80,6 @@ export default class XNATSession extends React.Component {
   _routeToSessionView() {
     const { projectId, parentProjectId, subjectId, ID, label } = this.props;
 
-    console.log(this.props);
-    console.log(subjectId);
-
     subjectRouter = new SessionRouter(
       projectId,
       parentProjectId,

@@ -52,7 +52,6 @@ export default class RTStructReader {
       dataSet = dicomParser.parseDicom(byteArray);
     } catch (err) {
       console.error(err.message);
-      console.log("File is not a valid DICOM file!");
     }
 
     return dataSet;
@@ -263,9 +262,6 @@ export default class RTStructReader {
 
     // Don't extract polygon if it doesn't belong to the series being imported
     if (!this._sopInstancesInSeries.includes(referencedSopInstanceUid)) {
-      console.log(
-        `referencedSopInstanceUid: ${referencedSopInstanceUid} not in reference list`
-      );
       return;
     }
 

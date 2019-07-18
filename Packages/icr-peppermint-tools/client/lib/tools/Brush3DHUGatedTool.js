@@ -501,22 +501,4 @@ export default class Brush3DHUGatedTool extends Brush3DTool {
   _isCtrlDown(eventData) {
     return (eventData.event && eventData.event.ctrlKey) || eventData.ctrlKey;
   }
-
-  // TEMP
-  _tempPrintData(data) {
-    for (let j = 0; j < data[0].length; j++) {
-      const line = [];
-
-      for (let i = 0; i < data.length; i++) {
-        line.push(data[i][j]);
-      }
-
-      console.log(
-        line
-          .join(" ")
-          .replace(/-1/g, "_")
-          .replace(/2/g, "F") + `   ${j}`
-      );
-    }
-  }
 }

@@ -381,8 +381,6 @@ export default class AIMWriter extends XMLWriter {
     );
     const name = structureSet.ROIContourCollection[ROIContourIndex].name;
 
-    console.log(`name: ${name}`);
-
     this._addProperty("name", "value", name);
   }
 

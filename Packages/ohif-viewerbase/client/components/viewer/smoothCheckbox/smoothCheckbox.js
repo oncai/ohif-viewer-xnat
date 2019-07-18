@@ -1,36 +1,28 @@
-import { Template } from 'meteor/templating';
-import { viewportUtils } from '../../../lib/viewportUtils';
-import { getElementIfNotEmpty } from '../../../lib/getElementIfNotEmpty.js';
-import { OHIF } from 'meteor/ohif:core';
-import { cornerstone } from 'meteor/ohif:cornerstone';
-
+import { Template } from "meteor/templating";
+import { viewportUtils } from "../../../lib/viewportUtils";
+import { getElementIfNotEmpty } from "../../../lib/getElementIfNotEmpty.js";
+import { OHIF } from "meteor/ohif:core";
+import { cornerstone } from "meteor/ohif:cornerstone";
 
 /**
  * @author JamesAPetts
  */
- // JamesAPetts
- Template.smoothCheckbox.onCreated(() => {
-     const instance = Template.instance();
+// JamesAPetts
+Template.smoothCheckbox.onCreated(() => {
+  const instance = Template.instance();
 
-     instance.data.smooth = new ReactiveVar(false);
-
-     instance.autorun(function() {
-         const isSynced = Session.get('defaultStackSync');
-         instance.data.synced.set(isSynced);
-     });
- });
-
-
+  instance.data.smooth = new ReactiveVar(true);
+});
 
 Template.smoothCheckbox.helpers({
   isChecked() {
-    Session.get('CornerstoneImageRendered' + this.viewportIndex);
+    Session.get("CornerstoneImageRendered" + this.viewportIndex);
 
     const smooth = this.smooth.get();
     const element = getElementIfNotEmpty(this.viewportIndex);
 
     if (!element) {
-        return;
+      return;
     }
 
     const enabledElement = cornerstone.getEnabledElement(element);
@@ -41,7 +33,7 @@ Template.smoothCheckbox.helpers({
         cornerstone.updateImage(enabledElement.element);
       }
 
-      return 'checked';
+      return "checked";
     }
 
     if (!enabledElement.viewport.pixelReplication) {
@@ -58,7 +50,7 @@ Template.smoothCheckbox.events({
    * Toggles the smoothing of pixels on the current image.
    *
    */
-  'click .js-smooth-check'(event) {
+  "click .js-smooth-check"(event) {
     this.smooth.set(!this.smooth.get());
   }
 });

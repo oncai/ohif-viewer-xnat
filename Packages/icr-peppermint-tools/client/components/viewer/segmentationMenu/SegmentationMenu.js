@@ -96,6 +96,8 @@ export default class SegmentationMenu extends React.Component {
     const segments = this._segments();
     const visibleSegments = this._visableSegmentsForElement();
 
+    Session.set("refreshSegmentationMenu", Math.random().toString());
+
     this.setState({
       importMetadata,
       segments,

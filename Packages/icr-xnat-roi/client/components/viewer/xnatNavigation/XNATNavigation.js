@@ -29,14 +29,7 @@ export default class XNATNavigation extends React.Component {
         }
 
         const otherProjects = result.ResultSet.Result;
-
-        console.log(otherProjects);
-
         const activeProjectId = sessionMap.getProject();
-
-        console.log("XNATNavigation::::");
-        console.log(activeProjectId);
-        console.log(sessionMap);
 
         const thisProjectIndex = otherProjects.findIndex(
           element => element.ID === activeProjectId
