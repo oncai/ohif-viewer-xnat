@@ -13,6 +13,9 @@ Template.helpDialogs.onRendered(() => {
   dialogPolyfill.registerDialog(dialog.get(0));
 });
 
+/**
+ * Blaze wrapper around the React component.
+ */
 Template.helpDialogs.helpers({
   HelpDialog() {
     return HelpDialog;

@@ -42,6 +42,12 @@ export default class XNATSubject extends React.Component {
     this._cancelablePromises = [];
   }
 
+  /**
+   * componentWillUnmount - If any promises are active, cancel them to avoid
+   * memory leakage by referencing `this`.
+   *
+   * @returns {null}
+   */
   componentWillUnmount() {
     const cancelablePromises = this._cancelablePromises;
 
@@ -90,7 +96,7 @@ export default class XNATSubject extends React.Component {
    * onViewSubjectClick - Check if there are any unsaved annotations and warn
    * the user if there. Then route to subject view.
    *
-   * @returns {type}  description
+   * @returns {null}
    */
   onViewSubjectClick() {
     if (this.state.subjectViewActive) {

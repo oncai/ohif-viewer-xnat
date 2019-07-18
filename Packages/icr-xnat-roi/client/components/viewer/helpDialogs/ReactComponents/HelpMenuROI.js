@@ -31,14 +31,32 @@ export default class HelpMenuROI extends React.Component {
     this.insertHelpSection = this.insertHelpSection.bind(this);
   }
 
+  /**
+   * isSelected - Returns a CSS class name based on whether the given name is
+   * currently selected.
+   *
+   * @param  {string} name The menu name.
+   * @returns {string}      The classname for the UI element.
+   */
   isSelected(name) {
     return this.state.selected === name ? "pressed" : "depressed";
   }
 
+  /**
+   * onButtonClick - Sets the button name as selected.
+   *
+   * @param  {string} name The button name
+   * @returns {null}
+   */
   onButtonClick(name) {
     this.setState({ selected: name });
   }
 
+  /**
+   * insertHelpSection - Returns the div to render.
+   *
+   * @returns {React.Component} A React component to render.
+   */
   insertHelpSection() {
     const { selected } = this.state;
 

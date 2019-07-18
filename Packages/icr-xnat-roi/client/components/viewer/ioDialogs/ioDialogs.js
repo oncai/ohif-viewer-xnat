@@ -19,6 +19,9 @@ Template.ioDialogs.onRendered(() => {
   });
 });
 
+/**
+ * Blaze wrapper around the React component.
+ */
 Template.ioDialogs.helpers({
   MessageDialog() {
     return MessageDialog;

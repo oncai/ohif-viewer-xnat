@@ -35,10 +35,21 @@ export default class MaskExportListDialog extends React.Component {
     this._roiCollectionName = label;
   }
 
+  /**
+   * onTextInputChange - Updates the roiCollectionName on text input.
+   *
+   * @param  {Object} evt The event.
+   * @returns {null}
+   */
   onTextInputChange(evt) {
     this._roiCollectionName = evt.target.value;
   }
 
+  /**
+   * async onExportButtonClick - Exports the current mask to XNAT.
+   *
+   * @returns {null}
+   */
   async onExportButtonClick() {
     const { importMetadata, segList, label, dateTime } = this.state;
     const roiCollectionName = this._roiCollectionName;
@@ -110,6 +121,11 @@ export default class MaskExportListDialog extends React.Component {
     });
   }
 
+  /**
+   * onCloseButtonClick - Closes the dialog.
+   *
+   * @returns {null}
+   */
   onCloseButtonClick() {
     this.props.onExportCancel();
   }
@@ -131,9 +147,9 @@ export default class MaskExportListDialog extends React.Component {
   }
 
   /**
-   * componentDidMount - On mounting, fetch a list of available projects from XNAT.
+   * componentDidMount - On mount, fetch a list of available projects from XNAT.
    *
-   * @returns {type}  description
+   * @returns {null}
    */
   componentDidMount() {
     if (this.props.id === "NOT_ACTIVE") {

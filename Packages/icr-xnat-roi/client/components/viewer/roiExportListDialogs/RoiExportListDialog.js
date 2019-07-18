@@ -39,10 +39,21 @@ export default class RoiExportListDialog extends React.Component {
     this._roiCollectionName = label;
   }
 
+  /**
+   * onTextInputChange - Updates the roiCollectionName on text input.
+   *
+   * @param  {Object} evt The event.
+   * @returns {null}
+   */
   onTextInputChange(evt) {
     this._roiCollectionName = evt.target.value;
   }
 
+  /**
+   * async onExportButtonClick - Exports the current mask to XNAT.
+   *
+   * @returns {null}
+   */
   async onExportButtonClick() {
     const { roiContourList, selectedCheckboxes, label, dateTime } = this.state;
     const roiCollectionName = this._roiCollectionName;
@@ -104,10 +115,21 @@ export default class RoiExportListDialog extends React.Component {
       });
   }
 
+  /**
+   * onCloseButtonClick - Closes the dialog.
+   *
+   * @returns {null}
+   */
   onCloseButtonClick() {
     this.props.onExportCancel();
   }
 
+  /**
+   * onChangeSelectAllCheckbox - Check all checkboxes.
+   *
+   * @param  {Object} evt The event.
+   * @returns {null}
+   */
   onChangeSelectAllCheckbox(evt) {
     const selectedCheckboxes = this.state.selectedCheckboxes;
     const checked = evt.target.checked;
@@ -119,6 +141,13 @@ export default class RoiExportListDialog extends React.Component {
     this.setState({ selectAllChecked: evt.target.checked, selectedCheckboxes });
   }
 
+  /**
+   * onChangeCheckbox - Check/uncheck a checkbox.
+   *
+   * @param  {Object} evt   The event.
+   * @param  {number} index number
+   * @returns {null}
+   */
   onChangeCheckbox(evt, index) {
     const selectedCheckboxes = this.state.selectedCheckboxes;
 
@@ -195,11 +224,6 @@ export default class RoiExportListDialog extends React.Component {
     }
 
     this.setState({ roiContourList, selectedCheckboxes });
-  }
-
-  _closeDialog() {
-    const dialog = document.getElementById("roiExportListDialog");
-    dialog.close();
   }
 
   render() {

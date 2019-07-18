@@ -47,20 +47,44 @@ export default class MaskImportListDialog extends React.Component {
     this._updateImportingText = this._updateImportingText.bind(this);
   }
 
+  /**
+   * onSelectedScanChange - Update the scanSelected state.
+   *
+   * @param  {Object} evt  The event.
+   * @returns {null}
+   */
   onSelectedScanChange(evt) {
     const val = evt.target.value;
 
     this.setState({ scanSelected: val });
   }
 
+  /**
+   * onCloseButtonClick - Cancel the import and switch back to the
+   * SegmentationMenu view.
+   *
+   * @returns {null}
+   */
   onCloseButtonClick() {
     this.props.onImportCancel();
   }
 
+  /**
+   * onChangeRadio - Update the segmentationSelected index on radio input.
+   *
+   * @param  {Object} evt   The event.
+   * @param  {number} index The index of the radio button.
+   * @returns {null}
+   */
   onChangeRadio(evt, index) {
     this.setState({ segmentationSelected: index });
   }
 
+  /**
+   * async onImportButtonClick - Import the mask after a possible overwrite confirmation.
+   *
+   * @returns {null}
+   */
   async onImportButtonClick() {
     const { importList, scanSelected, segmentationSelected } = this.state;
     const scan = importList[scanSelected];
@@ -248,12 +272,25 @@ export default class MaskImportListDialog extends React.Component {
     });
   }
 
+  /**
+   * _updateImportingText - Updates the progressText state.
+   *
+   * @param  {string} roiCollectionLabel The label of the ROI Collection.
+   * @returns {null}
+   */
   _updateImportingText(roiCollectionLabel) {
     this.setState({
       progressText: roiCollectionLabel
     });
   }
 
+  /**
+   * async _importRoiCollection - Imports a segmentation.
+   *
+   * @param  {Object} segmentation The segmentation JSON catalog fetched from XNAT.
+   * @param  {Object} scan         The scan to import onto.
+   * @returns {null}
+   */
   async _importRoiCollection(segmentation, scan) {
     const roiList = await fetchJSON(segmentation.getFilesUri).promise;
     const result = roiList.ResultSet.Result;
@@ -275,8 +312,8 @@ export default class MaskImportListDialog extends React.Component {
     }
   }
 
-  /** @private @async
-   * _getAndImportFile - Imports the file from the REST url and loads it into
+  /**
+   * async _getAndImportFile - Imports the file from the REST url and loads it into
    *                     cornerstoneTools toolData.
    *
    * @param  {string} uri             The REST URI of the file.
@@ -332,11 +369,11 @@ export default class MaskImportListDialog extends React.Component {
     }
   }
 
-  /** @private
+  /**
    * _collectionEligibleForImport - Returns true if the roiCollection references
    * the active series, and hasn't already been imported.
    *
-   * @param  {object} collectionInfoJSON  An object containing information about
+   * @param  {Object} collectionInfoJSON  An object containing information about
    *                                      the collection.
    * @returns {boolean}                    Whether the collection is eligible
    *                                      for import.
@@ -354,6 +391,13 @@ export default class MaskImportListDialog extends React.Component {
     return true;
   }
 
+  /**
+   * _getReferencedScan - If the collectionInfoJSON contains a scan from the sessionMap,
+   * return that scan object from the sessionMap.
+   *
+   * @param  {Object} collectionInfoJSON The collection info fetched from XNAT.
+   * @returns {Object|null}
+   */
   _getReferencedScan(collectionInfoJSON) {
     const item = collectionInfoJSON.items[0];
     const children = item.children;

@@ -28,19 +28,42 @@ export default class HelpDialog extends React.Component {
     this.insertSubMenu = this.insertSubMenu.bind(this);
   }
 
-  onCloseButtonClick(evt) {
+  /**
+   * onCloseButtonClick - Closes the dialog.
+   *
+   * @returns {null}
+   */
+  onCloseButtonClick() {
     const dialog = document.getElementById("showHelpDialog");
     dialog.close();
   }
 
+  /**
+   * isSelected - Returns a CSS class name based on whether the given name is
+   * currently selected.
+   *
+   * @param  {string} name The menu name.
+   * @returns {string}      The classname for the UI element.
+   */
   isSelected(name) {
     return this.state.selected === name ? "pressed" : "depressed";
   }
 
+  /**
+   * onButtonClick - Sets the button name as selected.
+   *
+   * @param  {string} name The button name
+   * @returns {null}
+   */
   onButtonClick(name) {
     this.setState({ selected: name });
   }
 
+  /**
+   * insertSubMenu - Returns the menu component to render.
+   *
+   * @returns {React.Component} A React component to render.
+   */
   insertSubMenu() {
     const { selected } = this.state;
 

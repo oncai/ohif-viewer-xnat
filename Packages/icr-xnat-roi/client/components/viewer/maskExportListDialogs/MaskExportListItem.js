@@ -14,6 +14,12 @@ export default class MaskExportListItem extends React.Component {
     this._getColor = this._getColor.bind(this);
   }
 
+  /**
+   * _getColor - Returns a CSS formatted color for the given segIndex.
+   *
+   * @param  {number} segIndex The segment index.
+   * @returns {string}
+   */
   _getColor(segIndex) {
     const colorArray = this._colormap.getColor(segIndex);
 

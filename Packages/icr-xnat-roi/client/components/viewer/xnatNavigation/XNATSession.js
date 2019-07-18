@@ -143,6 +143,14 @@ export default class XNATSession extends React.Component {
       .catch(err => console.log(err));
   }
 
+  /**
+   * _getRoiCollectionCounts - Given a list of assessors, count the number
+   * of ROI Contour collections and Segmentation collections.
+   *
+   * @param  {Object} assessors The JSON object containing assessor info fetched
+   * from XNAT.
+   * @returns {null}
+   */
   _getRoiCollectionCounts(assessors) {
     const promises = [];
 

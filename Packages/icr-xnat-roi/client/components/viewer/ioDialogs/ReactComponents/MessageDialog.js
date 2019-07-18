@@ -7,6 +7,11 @@ export default class MessageDialog extends React.Component {
     this.onCloseButtonClick = this.onCloseButtonClick.bind(this);
   }
 
+  /**
+   * onCloseButtonClick - Closes the dialog.
+   *
+   * @returns {null}
+   */
   onCloseButtonClick() {
     const dialog = document.getElementById("ioMessage");
     dialog.close();

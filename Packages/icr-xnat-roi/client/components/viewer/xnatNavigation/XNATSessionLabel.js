@@ -7,10 +7,13 @@ export default class XNATSessionLabel extends React.Component {
     super(props);
   }
 
+  /**
+   * _headerLabel - Returns a JSX component for the header.
+   *
+   * @returns {Object} The JSX component.
+   */
   _headerLabel() {
     const { label, ID, active } = this.props;
-
-    //<h6>{`ID: ${ID}`}</h6>
 
     if (active) {
       return (
@@ -27,6 +30,11 @@ export default class XNATSessionLabel extends React.Component {
     );
   }
 
+  /**
+   * _roiCollectionCountLabel - Returns the label of ROI Collection counts.
+   *
+   * @returns {React.component} The component.
+   */
   _roiCollectionCountLabel() {
     const { contourCount, maskCount, hasRois } = this.props;
 

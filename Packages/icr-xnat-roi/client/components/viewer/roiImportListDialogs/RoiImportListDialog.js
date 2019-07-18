@@ -45,17 +45,21 @@ export default class RoiImportListDialog extends React.Component {
     );
   }
 
+  /**
+   * onCloseButtonClick - Closes the dialog.
+   *
+   * @returns {null}
+   */
   onCloseButtonClick() {
     this.props.onImportCancel();
   }
 
-  onChangeCheckbox(evt, index) {
-    const selectedCheckboxes = this.state.selectedCheckboxes;
-
-    selectedCheckboxes[index] = evt.target.checked;
-    this.setState({ selectedCheckboxes });
-  }
-
+  /**
+   * onChangeSelectAllCheckbox - Check all checkboxes.
+   *
+   * @param  {Object} evt The event.
+   * @returns {null}
+   */
   onChangeSelectAllCheckbox(evt) {
     const selectedCheckboxes = this.state.selectedCheckboxes;
     const checked = evt.target.checked;
@@ -67,6 +71,25 @@ export default class RoiImportListDialog extends React.Component {
     this.setState({ selectAllChecked: evt.target.checked, selectedCheckboxes });
   }
 
+  /**
+   * onChangeCheckbox - Check/uncheck a checkbox.
+   *
+   * @param  {Object} evt   The event.
+   * @param  {number} index number
+   * @returns {null}
+   */
+  onChangeCheckbox(evt, index) {
+    const selectedCheckboxes = this.state.selectedCheckboxes;
+
+    selectedCheckboxes[index] = evt.target.checked;
+    this.setState({ selectedCheckboxes });
+  }
+
+  /**
+   * async onExportButtonClick - Exports the current mask to XNAT.
+   *
+   * @returns {null}
+   */
   onExportButtonClick() {
     const { importList, selectedCheckboxes } = this.state;
 
@@ -225,11 +248,12 @@ export default class RoiImportListDialog extends React.Component {
     });
   }
 
-  _closeDialog() {
-    const dialog = document.getElementById("roiImportListDialog");
-    dialog.close();
-  }
-
+  /**
+   * _updateImportingText - Update the importing text.
+   *
+   * @param  {string} roiCollectionLabel The lable of the ROI Collection.
+   * @returns {null}
+   */
   _updateImportingText(roiCollectionLabel) {
     this.setState({
       progressText: `${roiCollectionLabel} ${this._numCollectionsParsed}/${
@@ -238,6 +262,12 @@ export default class RoiImportListDialog extends React.Component {
     });
   }
 
+  /**
+   * async _importRoiCollection - Fetch and import the ROI collection from XNAT.
+   *
+   * @param  {Object} roiCollectionInfo The collection info for the ROI Collection.
+   * @returns {null}
+   */
   async _importRoiCollection(roiCollectionInfo) {
     const roiList = await fetchJSON(roiCollectionInfo.getFilesUri).promise;
     const result = roiList.ResultSet.Result;
@@ -259,12 +289,12 @@ export default class RoiImportListDialog extends React.Component {
     }
   }
 
-  /** @private @async
-   * _getAndImportFile - Imports the file from the REST url and loads it into
+  /**
+   * async _getAndImportFile - Imports the file from the REST url and loads it into
    *                     cornerstoneTools toolData.
    *
    * @param  {string} uri             The REST URI of the file.
-   * @param  {object} collectionInfo  An object describing the roiCollection to
+   * @param  {Object} collectionInfo  An object describing the roiCollection to
    *                                  import.
    * @returns {null}
    */
@@ -311,7 +341,7 @@ export default class RoiImportListDialog extends React.Component {
     this._incrementNumCollectionsParsed(roiCollectionInfo.name);
   }
 
-  /** @private
+  /**
    * _incrementNumCollectionsParsed - Increases the number of collections
    * parsed, and closes the progress dialog if the collections have all been
    * imported.
@@ -329,11 +359,11 @@ export default class RoiImportListDialog extends React.Component {
     }
   }
 
-  /** @private
+  /**
    * _collectionEligibleForImport - Returns true if the roiCollection references
    * the active series, and hasn't already been imported.
    *
-   * @param  {object} collectionInfoJSON  An object containing information about
+   * @param  {Object} collectionInfoJSON  An object containing information about
    *                                      the collection.
    * @returns {boolean}                    Whether the collection is eligible
    *                                      for import.
@@ -362,6 +392,13 @@ export default class RoiImportListDialog extends React.Component {
     return true;
   }
 
+  /**
+   * _getReferencedScan - If the collectionInfoJSON contains a scan from the sessionMap,
+   * return that scan object from the sessionMap.
+   *
+   * @param  {Object} collectionInfoJSON The collection info fetched from XNAT.
+   * @returns {Object|null}
+   */
   _getReferencedScan(collectionInfoJSON) {
     const item = collectionInfoJSON.items[0];
     const children = item.children;
@@ -385,7 +422,7 @@ export default class RoiImportListDialog extends React.Component {
     }
   }
 
-  /** @private
+  /**
    * _getVolumeManagementLabels - Construct a list of roiCollections
    *                               already imported.
    *
