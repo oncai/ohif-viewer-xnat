@@ -6,6 +6,9 @@ import { fetchXNAT } from "meteor/icr:xnat-rest";
 import { cornerstone } from "meteor/ohif:cornerstone";
 import updateQueryStringParameter from "../../../lib/updateQueryStringParameter.js";
 
+// XNAT_DIFF: Added route to get XNAT cached jpegs as it scales better whilst we
+// are grabbing full multiframes for now.
+
 /**
  * Asynchronous wrapper around Cornerstone's renderToCanvas method.
  *
@@ -100,9 +103,6 @@ Template.imageThumbnail.onRendered(() => {
         .then(loadSuccess, loadError);
     } else {
       // replace dicomweb with protocol (http or https)
-      //
-      //
-      console.log("XNAT SPECIFIC THUMBNAIL FETCH");
       //
       const protocol = window.location.protocol;
       const url = updateQueryStringParameter(
