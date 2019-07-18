@@ -74,7 +74,30 @@ Template.imageThumbnail.onRendered(() => {
     // Clear the previous image
     imageElement.removeAttribute("src");
 
-    if (Meteor.isDevelopment) {
+    if (!Meteor.isDevelopment && instance.imageId.includes("?frame=")) {
+      // Fetch a cached JPEG image from XNAT, instead of grabbing the full multiframe.
+      // replace dicomweb with protocol to access XNAT (http or https)
+      const protocol = window.location.protocol;
+      const url = updateQueryStringParameter(
+        instance.imageId.replace(/^dicomweb:/, protocol),
+        "format",
+        "image/jpeg"
+      );
+      fetchXNAT(url, "blob")
+        .then(image => {
+          if (!image) {
+            throw new Error("No image fetched");
+          }
+          imageElement.src = window.URL.createObjectURL(image);
+          imageElement.width = "193";
+          imageElement.height = "123";
+          instance.isLoading.set(false);
+        })
+        .catch(err => {
+          instance.isLoading.set(false);
+          instance.hasLoadingError.set(true);
+        });
+    } else {
       // Define a handler for success on image load
       const loadSuccess = image => {
         // This is an off-screen canvas. It's used to get dataURL images by using
@@ -101,29 +124,6 @@ Template.imageThumbnail.onRendered(() => {
       cornerstone
         .loadAndCacheImage(instance.imageId)
         .then(loadSuccess, loadError);
-    } else {
-      // replace dicomweb with protocol (http or https)
-      //
-      const protocol = window.location.protocol;
-      const url = updateQueryStringParameter(
-        instance.imageId.replace(/^dicomweb:/, protocol),
-        "format",
-        "image/jpeg"
-      );
-      fetchXNAT(url, "blob")
-        .then(image => {
-          if (!image) {
-            throw new Error("No image fetched");
-          }
-          imageElement.src = window.URL.createObjectURL(image);
-          imageElement.width = "193";
-          imageElement.height = "123";
-          instance.isLoading.set(false);
-        })
-        .catch(err => {
-          instance.isLoading.set(false);
-          instance.hasLoadingError.set(true);
-        });
     }
   };
 
