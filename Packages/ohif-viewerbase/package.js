@@ -24,7 +24,8 @@ Package.onUse(function(api) {
         'ohif:cornerstone-settings',
         'ohif:hotkeys',
         'ohif:log',
-        'icr:peppermint-tools'
+        'icr:peppermint-tools',
+        'icr:xnat-rest'
     ]);
 
     const assets = [
