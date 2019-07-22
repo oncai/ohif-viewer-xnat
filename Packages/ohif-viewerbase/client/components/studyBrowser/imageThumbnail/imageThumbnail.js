@@ -1,8 +1,13 @@
-import { Meteor } from 'meteor/meteor';
-import { Template } from 'meteor/templating';
-import { Session } from 'meteor/session';
-import { OHIF } from 'meteor/ohif:core';
-import { cornerstone } from 'meteor/ohif:cornerstone';
+import { Meteor } from "meteor/meteor";
+import { Template } from "meteor/templating";
+import { Session } from "meteor/session";
+import { OHIF } from "meteor/ohif:core";
+import { fetchXNAT } from "meteor/icr:xnat-rest";
+import { cornerstone } from "meteor/ohif:cornerstone";
+import updateQueryStringParameter from "../../../lib/updateQueryStringParameter.js";
+
+// XNAT_DIFF: Added route to get XNAT cached jpegs as it scales better whilst we
+// are grabbing full multiframes for now.
 
 /**
  * Asynchronous wrapper around Cornerstone's renderToCanvas method.
@@ -17,136 +22,170 @@ function renderAsync(canvasElement, image) {
     try {
       cornerstone.renderToCanvas(canvasElement, image);
       resolve();
-    } catch(error) {
+    } catch (error) {
       reject(error);
     }
   });
 }
 
 Template.imageThumbnail.onCreated(() => {
-    const instance = Template.instance();
+  const instance = Template.instance();
 
-    instance.isLoading = new ReactiveVar(false);
-    instance.hasLoadingError = new ReactiveVar(false);
+  instance.isLoading = new ReactiveVar(false);
+  instance.hasLoadingError = new ReactiveVar(false);
 
-    // Get the image ID for current thumbnail
-    instance.getThumbnailImageId = () => {
-        const settingPath = 'public.ui.useMiddleSeriesInstanceAsThumbnail';
-        const useMiddleFrame = OHIF.utils.ObjectPath.get(Meteor.settings, settingPath);
-        const stack = instance.data.thumbnail.stack;
-        const lastIndex = (stack.numImageFrames || stack.images.length || 1) - 1;
-        let imageIndex = useMiddleFrame ? Math.floor(lastIndex / 2) : 0;
-        let imageInstance;
+  // Get the image ID for current thumbnail
+  instance.getThumbnailImageId = () => {
+    const settingPath = "public.ui.useMiddleSeriesInstanceAsThumbnail";
+    const useMiddleFrame = OHIF.utils.ObjectPath.get(
+      Meteor.settings,
+      settingPath
+    );
+    const stack = instance.data.thumbnail.stack;
+    const lastIndex = (stack.numImageFrames || stack.images.length || 1) - 1;
+    let imageIndex = useMiddleFrame ? Math.floor(lastIndex / 2) : 0;
+    let imageInstance;
 
-        if (stack.isMultiFrame) {
-            imageInstance = stack.images[0];
-        } else {
-            imageInstance = stack.images[imageIndex];
-            imageIndex = undefined;
-        }
+    if (stack.isMultiFrame) {
+      imageInstance = stack.images[0];
+    } else {
+      imageInstance = stack.images[imageIndex];
+      imageIndex = undefined;
+    }
 
-        return imageInstance.getImageId(imageIndex, true);
-    };
+    return imageInstance.getImageId(imageIndex, true);
+  };
 });
 
 Template.imageThumbnail.onRendered(() => {
-    const instance = Template.instance();
+  const instance = Template.instance();
 
-    // Declare DOM and jQuery objects
-    const $parent = instance.$('.imageThumbnail');
-    const $thumbnailElement = $parent.find('.imageThumbnailCanvas');
+  // Declare DOM and jQuery objects
+  const $parent = instance.$(".imageThumbnail");
+  const $thumbnailElement = $parent.find(".imageThumbnailCanvas");
 
-    instance.refreshImage = () => {
-        const imageElement = $thumbnailElement.find('img').get(0);
+  instance.refreshImage = () => {
+    const imageElement = $thumbnailElement.find("img").get(0);
 
-        // Activate the loading state
-        instance.isLoading.set(true);
-        instance.hasLoadingError.set(false);
+    // Activate the loading state
+    instance.isLoading.set(true);
+    instance.hasLoadingError.set(false);
 
-        // Clear the previous image
-        imageElement.removeAttribute('src');
+    // Clear the previous image
+    imageElement.removeAttribute("src");
 
-        // Define a handler for success on image load
-        const loadSuccess = image => {
-            // This is an off-screen canvas. It's used to get dataURL images by using
-            // cornerstone.renderToCanvas function.
-            const canvasElement = document.createElement('canvas');
-            canvasElement.width = 193;
-            canvasElement.height = 123;
+    if (!Meteor.isDevelopment && instance.imageId.includes("?frame=")) {
+      // Fetch a cached JPEG image from XNAT, instead of grabbing the full multiframe.
+      // replace dicomweb with protocol to access XNAT (http or https)
+      const protocol = window.location.protocol;
+      const url = updateQueryStringParameter(
+        instance.imageId.replace(/^dicomweb:/, protocol),
+        "format",
+        "image/jpeg"
+      );
+      fetchXNAT(url, "blob")
+        .then(image => {
+          if (!image) {
+            throw new Error("No image fetched");
+          }
+          imageElement.src = window.URL.createObjectURL(image);
+          imageElement.width = "193";
+          imageElement.height = "123";
+          instance.isLoading.set(false);
+        })
+        .catch(err => {
+          instance.isLoading.set(false);
+          instance.hasLoadingError.set(true);
+        });
+    } else {
+      // Define a handler for success on image load
+      const loadSuccess = image => {
+        // This is an off-screen canvas. It's used to get dataURL images by using
+        // cornerstone.renderToCanvas function.
+        const canvasElement = document.createElement("canvas");
+        canvasElement.width = 193;
+        canvasElement.height = 123;
 
-            // Render the image to canvas to be able to get its dataURL
-            renderAsync(canvasElement, image).then(() => {
-              instance.isLoading.set(false);
+        // Render the image to canvas to be able to get its dataURL
+        renderAsync(canvasElement, image).then(() => {
+          instance.isLoading.set(false);
 
-              imageElement.src = canvasElement.toDataURL('image/jpeg', 1);
-            });
-        };
+          imageElement.src = canvasElement.toDataURL("image/jpeg", 1);
+        });
+      };
 
-        // Define a handler for error on image load
-        const loadError = () => {
-            instance.isLoading.set(false);
-            instance.hasLoadingError.set(true);
-        };
+      // Define a handler for error on image load
+      const loadError = () => {
+        instance.isLoading.set(false);
+        instance.hasLoadingError.set(true);
+      };
 
-        // Call cornerstone image loader with the defined handlers
-        cornerstone.loadAndCacheImage(instance.imageId).then(loadSuccess, loadError);
-    };
+      // Call cornerstone image loader with the defined handlers
+      cornerstone
+        .loadAndCacheImage(instance.imageId)
+        .then(loadSuccess, loadError);
+    }
+  };
 
-    // Run this computation every time the current study is changed
-    instance.autorun(() => {
-        // Check if there is a reactive var set for current study
-        if (instance.data.currentStudy) {
-            // Register a dependency from this computation on current study
-            instance.data.currentStudy.dep.depend();
-        }
+  // Run this computation every time the current study is changed
+  instance.autorun(() => {
+    // Check if there is a reactive var set for current study
+    if (instance.data.currentStudy) {
+      // Register a dependency from this computation on current study
+      instance.data.currentStudy.dep.depend();
+    }
 
-        // Depend on external data and re-run this computation when it changes
-        Template.currentData();
+    // Depend on external data and re-run this computation when it changes
+    Template.currentData();
 
-        // Get the image ID. If it is the same as the currently rendered imageId,
-        // refresh the image.
-        const imageId = instance.getThumbnailImageId();
-        if (imageId !== instance.imageId) {
-          instance.imageId = imageId;
+    // Get the image ID. If it is the same as the currently rendered imageId,
+    // refresh the image.
+    const imageId = instance.getThumbnailImageId();
+    if (imageId !== instance.imageId) {
+      instance.imageId = imageId;
 
-          instance.refreshImage();
-        }
-    });
+      instance.refreshImage();
+    }
+  });
 });
 
 Template.imageThumbnail.helpers({
-    // Executed every time the thumbnail image loading progress is changed
-    percentComplete() {
-        const instance = Template.instance();
+  // Executed every time the thumbnail image loading progress is changed
+  percentComplete() {
+    const instance = Template.instance();
 
-        // Get the encoded image ID for thumbnail
-        const encodedImageId = OHIF.string.encodeId(instance.imageId);
+    // Get the encoded image ID for thumbnail
+    const encodedImageId = OHIF.string.encodeId(instance.imageId);
 
-        // Register a dependency from this computation on Session key
-        const percentComplete = Session.get('CornerstoneThumbnailLoadProgress' + encodedImageId);
+    // Register a dependency from this computation on Session key
+    const percentComplete = Session.get(
+      "CornerstoneThumbnailLoadProgress" + encodedImageId
+    );
 
-        // Return the complete percent amount of the image loading
-        if (percentComplete && percentComplete !== 100) {
-            return percentComplete + '%';
-        }
-    },
-
-    // Return how much the stack has already loaded
-    stackPercentComplete() {
-        const stack = Template.instance().data.thumbnail.stack;
-        const progress = Session.get(`StackProgress:${stack.displaySetInstanceUid}`);
-        return progress && progress.percentComplete;
-    },
-
-    showStackLoadingProgressBar() {
-        return OHIF.uiSettings.showStackLoadingProgressBar;
-    },
-
-    isLoading() {
-      return Template.instance().isLoading.get();
-    },
-
-    hasLoadingError() {
-      return Template.instance().hasLoadingError.get();
+    // Return the complete percent amount of the image loading
+    if (percentComplete && percentComplete !== 100) {
+      return percentComplete + "%";
     }
+  },
+
+  // Return how much the stack has already loaded
+  stackPercentComplete() {
+    const stack = Template.instance().data.thumbnail.stack;
+    const progress = Session.get(
+      `StackProgress:${stack.displaySetInstanceUid}`
+    );
+    return progress && progress.percentComplete;
+  },
+
+  showStackLoadingProgressBar() {
+    return OHIF.uiSettings.showStackLoadingProgressBar;
+  },
+
+  isLoading() {
+    return Template.instance().isLoading.get();
+  },
+
+  hasLoadingError() {
+    return Template.instance().hasLoadingError.get();
+  }
 });

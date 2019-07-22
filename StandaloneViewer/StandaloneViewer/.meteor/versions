@@ -46,6 +46,7 @@ htmljs@1.0.11
 http@1.4.1
 icr:peppermint-tools@0.1.0
 icr:series-info-provider@1.0.0
+icr:xnat-rest@0.1.0
 icr:xnat-roi@0.1.0
 icr:xnat-roi-namespace@1.0.0
 icr:xnat-roi-scaling@0.1.0
