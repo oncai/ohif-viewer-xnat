@@ -31,8 +31,6 @@ export default class MaskExportListDialog extends React.Component {
     this.onCloseButtonClick = this.onCloseButtonClick.bind(this);
     this.onTextInputChange = this.onTextInputChange.bind(this);
     this.onExportButtonClick = this.onExportButtonClick.bind(this);
-
-    this._roiCollectionName = label;
   }
 
   /**
@@ -184,17 +182,19 @@ export default class MaskExportListDialog extends React.Component {
       }
     }
 
-    this.setState({ segList });
-  }
-
-  render() {
-    const { label, segList, exporting, importMetadata } = this.state;
-
     let defaultName = "";
 
     if (segList && segList.length === 1) {
       defaultName = segList[0].metadata.SegmentLabel;
     }
+
+    this._roiCollectionName = defaultName;
+
+    this.setState({ segList });
+  }
+
+  render() {
+    const { label, segList, exporting, importMetadata } = this.state;
 
     let segExportListBody;
 
@@ -270,7 +270,7 @@ export default class MaskExportListDialog extends React.Component {
               className="form-themed form-control"
               onChange={this.onTextInputChange}
               type="text"
-              defaultValue={defaultName}
+              defaultValue={this._roiCollectionName}
               tabIndex="-1"
               autoComplete="off"
             />

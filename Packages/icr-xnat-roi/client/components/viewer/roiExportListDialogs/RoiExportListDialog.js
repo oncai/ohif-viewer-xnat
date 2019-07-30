@@ -223,6 +223,14 @@ export default class RoiExportListDialog extends React.Component {
       selectedCheckboxes.push(true);
     }
 
+    let defaultName = "";
+
+    if (roiContourList && roiContourList.length === 1) {
+      defaultName = roiContourList[0].ROIContourReference.name;
+    }
+
+    this._roiCollectionName = defaultName;
+
     this.setState({ roiContourList, selectedCheckboxes });
   }
 
@@ -234,12 +242,6 @@ export default class RoiExportListDialog extends React.Component {
       label,
       exporting
     } = this.state;
-
-    let defaultName = "";
-
-    if (roiContourList && roiContourList.length === 1) {
-      defaultName = roiContourList[0].ROIContourReference.name;
-    }
 
     let roiExportListBody;
 
@@ -320,7 +322,7 @@ export default class RoiExportListDialog extends React.Component {
             <input
               className="form-themed form-control"
               type="text"
-              defaultValue={defaultName}
+              defaultValue={this._roiCollectionName}
               onChange={this.onTextInputChange}
               tabIndex="-1"
               autoComplete="off"
