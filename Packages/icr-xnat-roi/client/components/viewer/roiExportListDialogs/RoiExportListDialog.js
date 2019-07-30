@@ -245,6 +245,12 @@ export default class RoiExportListDialog extends React.Component {
 
     let roiExportListBody;
 
+    let defaultName = "";
+
+    if (roiContourList && roiContourList.length === 1) {
+      defaultName = roiContourList[0].ROIContourReference.name;
+    }
+
     if (exporting) {
       roiExportListBody = (
         <>
@@ -322,7 +328,7 @@ export default class RoiExportListDialog extends React.Component {
             <input
               className="form-themed form-control"
               type="text"
-              defaultValue={this._roiCollectionName}
+              defaultValue={defaultName}
               onChange={this.onTextInputChange}
               tabIndex="-1"
               autoComplete="off"

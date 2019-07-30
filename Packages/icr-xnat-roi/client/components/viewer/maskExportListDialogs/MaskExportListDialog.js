@@ -198,6 +198,12 @@ export default class MaskExportListDialog extends React.Component {
 
     let segExportListBody;
 
+    let defaultName = "";
+
+    if (segList && segList.length === 1) {
+      defaultName = segList[0].metadata.SegmentLabel;
+    }
+
     if (exporting) {
       segExportListBody = (
         <>
@@ -270,7 +276,7 @@ export default class MaskExportListDialog extends React.Component {
               className="form-themed form-control"
               onChange={this.onTextInputChange}
               type="text"
-              defaultValue={this._roiCollectionName}
+              defaultValue={defaultName}
               tabIndex="-1"
               autoComplete="off"
             />

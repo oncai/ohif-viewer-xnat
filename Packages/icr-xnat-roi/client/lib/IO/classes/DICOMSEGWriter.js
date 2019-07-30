@@ -59,6 +59,8 @@ export default class DICOMSEGWriter {
             ContentTime: time
           };
 
+          console.log(images);
+
           const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
             images,
             brushData,
