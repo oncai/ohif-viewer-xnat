@@ -16,8 +16,9 @@ export function displayExportFailedDialog(seriesInstanceUid) {
   const title = "Export Failed";
   const body =
     `Export of ROIs to ${projectId}/${experimentLabel}` +
-    " failed. This may be due a bad internet connection. The ROIs have not been locked, if you want" +
-    " to try again. If you have a good connection to XNAT and this problem persists, please contact" +
+    " failed. This may be due a bad internet connection, or you may have been logged out. Please re-log on in another tab." +
+    " The ROIs have not been locked, if you want to try exporting again after logging back in." +
+    " If you have a good connection to XNAT and this problem persists, please contact" +
     " your XNAT administrator.";
   messageDialog(title, body);
 }
