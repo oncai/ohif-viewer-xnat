@@ -29,7 +29,7 @@ export default class FreehandSetNameDialog extends React.Component {
   }
 
   /**
-   * onTextInputKeyDown - If Enter/Esc is pressed, confirm/reject.
+   * onTextInputKeyDown - If Enter is pressed, confirm.
    *
    * @param  {Object} evt The key down event.
    * @returns {null}
@@ -38,8 +38,6 @@ export default class FreehandSetNameDialog extends React.Component {
     // Check if Enter was pressed.
     if (evt.keyCode === 13) {
       this.onConfirmButtonClick();
-    } else if (evt.keyCode === 27) {
-      this._closeDialog();
     }
   }
 

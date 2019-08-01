@@ -55,6 +55,7 @@ export default class BrushMetadataDialog extends React.Component {
     this.onCancelButtonClick = this.onCancelButtonClick.bind(this);
     this.onConfirmButtonClick = this.onConfirmButtonClick.bind(this);
     this.onTextInputChange = this.onTextInputChange.bind(this);
+    this.onTextInputKeyDown = this.onTextInputKeyDown.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
     this.onTypeChange = this.onTypeChange.bind(this);
     this.onModifierChange = this.onModifierChange.bind(this);
@@ -83,6 +84,19 @@ export default class BrushMetadataDialog extends React.Component {
       this.setState({ validName: true });
     } else if (name.length === 0 && validName) {
       this.setState({ validName: false });
+    }
+  }
+
+  /**
+   * onTextInputKeyDown - If Enter is pressed, confirm (only confirm if valid).
+   *
+   * @param  {Object} evt The key down event.
+   * @returns {null}
+   */
+  onTextInputKeyDown(evt) {
+    // Check if Enter was pressed.
+    if (evt.keyCode === 13) {
+      this.onConfirmButtonClick();
     }
   }
 
@@ -166,6 +180,10 @@ export default class BrushMetadataDialog extends React.Component {
    * @returns {null}
    */
   onConfirmButtonClick() {
+    if (!this._isValidInput()) {
+      return;
+    }
+
     const { categoryUID, typeUID, modifierUID } = this.state;
     const { segIndex } = this.props;
     const data = {
@@ -351,8 +369,10 @@ export default class BrushMetadataDialog extends React.Component {
           <div className="brush-metadata-horizontal-box">
             <input
               name="brushMetadataLabelInput"
+              autoFocus
               className="brush-metadata-input brush-metadata-label-input form-themed form-control"
               onChange={this.onTextInputChange}
+              onKeyDown={this.onTextInputKeyDown}
               type="text"
               autoComplete="off"
               defaultValue={defaultName}
