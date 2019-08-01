@@ -36,7 +36,6 @@ export default class FreehandSetNameDialog extends React.Component {
    */
   onTextInputKeyDown(evt) {
     // Check if Enter was pressed.
-    console.log(evt.keyCode);
     if (evt.keyCode === 13) {
       this.onConfirmButtonClick();
     } else if (evt.keyCode === 27) {
