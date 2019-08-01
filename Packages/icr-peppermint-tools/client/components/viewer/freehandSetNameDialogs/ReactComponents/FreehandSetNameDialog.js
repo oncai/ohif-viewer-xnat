@@ -11,6 +11,7 @@ export default class FreehandSetNameDialog extends React.Component {
     this.onCancelButtonClick = this.onCancelButtonClick.bind(this);
     this.onConfirmButtonClick = this.onConfirmButtonClick.bind(this);
     this.onTextInputChange = this.onTextInputChange.bind(this);
+    this.onTextInputKeyDown = this.onTextInputKeyDown.bind(this);
 
     this._closeDialog = this._closeDialog.bind(this);
 
@@ -25,6 +26,22 @@ export default class FreehandSetNameDialog extends React.Component {
    */
   onTextInputChange(evt) {
     this._roiContourName = evt.target.value;
+  }
+
+  /**
+   * onTextInputKeyDown - If Enter/Esc is pressed, confirm/reject.
+   *
+   * @param  {Object} evt The key down event.
+   * @returns {null}
+   */
+  onTextInputKeyDown(evt) {
+    // Check if Enter was pressed.
+    console.log(evt.keyCode);
+    if (evt.keyCode === 13) {
+      this.onConfirmButtonClick();
+    } else if (evt.keyCode === 27) {
+      this._closeDialog();
+    }
   }
 
   /**
@@ -84,9 +101,11 @@ export default class FreehandSetNameDialog extends React.Component {
             name="freehandTextInput"
             className="form-themed form-control"
             type="text"
+            autoFocus
             defaultValue={defaultName}
             placeholder="Enter ROI name.."
             onChange={this.onTextInputChange}
+            onKeyDown={this.onTextInputKeyDown}
           />
           <a
             className="btn btn-sm btn-primary"
