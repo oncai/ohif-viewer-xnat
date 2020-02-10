@@ -7,12 +7,18 @@
 export default function isDisplaySetReconstructable(series, instances) {
   // Can't reconstruct if we only have one image.
 
+  console.log(series);
+  console.log(instances);
+
   const modality = series._data.modality; // TODO -> Is there a better way to get this?
   const isMultiframe = instances[0].getRawValue('x00280008') > 1;
 
-  if (!constructableModalities.includes(modality)) {
-    return { value: false };
-  }
+  console.log(modality);
+  console.log(isMultiframe);
+
+  // if (!constructableModalities.includes(modality)) {
+  //   return { value: false };
+  // }
 
   if (!isMultiframe && instances.length === 1) {
     return { values: false };
@@ -142,15 +148,12 @@ function _getSpacingIssue(spacing, averageSpacing) {
 }
 
 function _getImagePositionPatient(instance) {
-  const tagValue = instance
-    .getTagValue('x00200032');
+  const tagValue = instance.getTagValue('x00200032');
   if (!tagValue) {
     return;
   }
 
-  return tagValue
-    .split('\\')
-    .map(element => Number(element));
+  return tagValue.split('\\').map(element => Number(element));
 }
 
 function _getPerpendicularDistance(a, b) {

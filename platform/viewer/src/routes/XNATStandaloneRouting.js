@@ -29,14 +29,59 @@ class XNATStandaloneRouting extends Component {
 
   parseQueryAndRetrieveDICOMWebData(query) {
     return new Promise((resolve, reject) => {
-      const url = query.url;
+      const { projectId, subjectId, experimentId, experimentLabel } = query;
+
+      const parentProjectId = query.parentProjectId
+        ? query.parentProjectId
+        : projectId;
+
+      if (parentProjectId) {
+        console.warn(
+          `This experiment is shared view of ${experimentId} from ${parentProjectId}`
+        );
+      }
+      let rootPlusPort = window.location.origin;
+
+      if (window.port) {
+        rootPlusPort += `:${window.port}`;
+      }
+
+      const pathLessViewer = window.location.pathname.split('VIEWER')[0];
+
+      rootPlusPort += pathLessViewer;
 
       console.warn('XNAT STANDALONE ROUTING');
 
-      if (!url) {
+      // TODO -> Session Map in the XNAT extension.
+      // TODO -> checkAndSetPermissions.
+
+      // Query params:
+      //
+      // Single Session:
+      //   projectId, subjectId, experimentId, experimentLabel
+      //
+      // Single Session in shared project:
+      //   projectId, subjectId, experimentId, experimentLabel, parentProjectId
+      //
+      // Subject:
+      //   projectId, subjectId
+      //
+      // Subject in shared project:
+      //  projectId, subjectId, parentProjectId
+
+      if (!projectId || !subjectId) {
         //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
-        return reject(new Error('No URL was specified. Use ?query=$someQuery'));
+        return reject(
+          new Error(
+            'Not enough data specified, Use VIEWERS/?url=projectId&subjectId'
+          )
+        );
       }
+
+      // TODO -> Build URL.
+      const jsonRequestUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
+
+      console.log(jsonRequestUrl);
 
       // Define a request to the server to retrieve the study data
       // as JSON, given a URL that was in the Route
@@ -62,37 +107,32 @@ class XNATStandaloneRouting extends Component {
           reject(new Error('Response was undefined'));
         }
 
-        log.info(JSON.stringify(oReq.responseText, null, 2));
+        let jsonString = oReq.responseText;
 
-        const data = JSON.parse(oReq.responseText);
-        if (data.servers) {
-          if (!query.studyInstanceUids) {
-            log.warn('No study instance uids specified');
-            reject(new Error('No study instance uids specified'));
-          }
-
-          const server = data.servers.dicomWeb[0];
-          server.type = 'dicomWeb';
-
-          log.warn('Activating server', server);
-          this.props.activateServer(server);
-
-          const studyInstanceUids = query.studyInstanceUids.split(';');
-          const seriesInstanceUids = query.seriesInstanceUids
-            ? query.seriesInstanceUids.split(';')
-            : [];
-
-          resolve({ server, studyInstanceUids, seriesInstanceUids });
-        } else {
-          resolve({ studies: data.studies, studyInstanceUids: [] });
+        if (parentProjectId) {
+          console.warn(
+            `replacing ${parentProjectId} with ${projectId} so resources can be fetched`
+          );
+          jsonString = jsonString.replace(
+            new RegExp(parentProjectId, 'g'),
+            projectId
+          );
         }
+
+        log.info(JSON.stringify(jsonString, null, 2));
+
+        const data = JSON.parse(jsonString);
+
+        console.warn(data);
+
+        resolve({ studies: data.studies, studyInstanceUids: [] });
       });
 
       // Open the Request to the server for the JSON data
       // In this case we have a server-side route called /api/
       // which responds to GET requests with the study data
-      log.info(`Sending Request to: ${url}`);
-      oReq.open('GET', url);
+      log.info(`Sending Request to: ${jsonRequestUrl}`);
+      oReq.open('GET', jsonRequestUrl);
       oReq.setRequestHeader('Accept', 'application/json');
 
       // Fire the request to the server
