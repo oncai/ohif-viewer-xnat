@@ -78,65 +78,142 @@ class XNATStandaloneRouting extends Component {
         );
       }
 
-      // TODO -> Build URL.
-      const jsonRequestUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
+      if (experimentId) {
+        const jsonRequestUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
-      console.log(jsonRequestUrl);
+        console.log(jsonRequestUrl);
 
-      // Define a request to the server to retrieve the study data
-      // as JSON, given a URL that was in the Route
-      const oReq = new XMLHttpRequest();
+        // Define a request to the server to retrieve the study data
+        // as JSON, given a URL that was in the Route
+        const oReq = new XMLHttpRequest();
 
-      // Add event listeners for request failure
-      oReq.addEventListener('error', error => {
-        log.warn('An error occurred while retrieving the JSON data');
-        reject(error);
-      });
+        // Add event listeners for request failure
+        oReq.addEventListener('error', error => {
+          log.warn('An error occurred while retrieving the JSON data');
+          reject(error);
+        });
 
-      // When the JSON has been returned, parse it into a JavaScript Object
-      // and render the OHIF Viewer with this data
-      oReq.addEventListener('load', event => {
-        if (event.target.status === 404) {
-          reject(new Error('No JSON data found'));
-        }
+        // When the JSON has been returned, parse it into a JavaScript Object
+        // and render the OHIF Viewer with this data
+        oReq.addEventListener('load', event => {
+          if (event.target.status === 404) {
+            reject(new Error('No JSON data found'));
+          }
 
-        // Parse the response content
-        // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
-        if (!oReq.responseText) {
-          log.warn('Response was undefined');
-          reject(new Error('Response was undefined'));
-        }
+          // Parse the response content
+          // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
+          if (!oReq.responseText) {
+            log.warn('Response was undefined');
+            reject(new Error('Response was undefined'));
+          }
 
-        let jsonString = oReq.responseText;
+          let jsonString = oReq.responseText;
 
-        if (parentProjectId) {
-          console.warn(
-            `replacing ${parentProjectId} with ${projectId} so resources can be fetched`
-          );
-          jsonString = jsonString.replace(
-            new RegExp(parentProjectId, 'g'),
-            projectId
-          );
-        }
+          if (parentProjectId) {
+            console.warn(
+              `replacing ${parentProjectId} with ${projectId} so resources can be fetched`
+            );
+            jsonString = jsonString.replace(
+              new RegExp(parentProjectId, 'g'),
+              projectId
+            );
+          }
 
-        log.info(JSON.stringify(jsonString, null, 2));
+          log.info(JSON.stringify(jsonString, null, 2));
 
-        const data = JSON.parse(jsonString);
+          const data = JSON.parse(jsonString);
 
-        console.warn(data);
+          console.warn(data);
 
-        resolve({ studies: data.studies, studyInstanceUids: [] });
-      });
+          resolve({ studies: data.studies, studyInstanceUids: [] });
+        });
 
-      // Open the Request to the server for the JSON data
-      // In this case we have a server-side route called /api/
-      // which responds to GET requests with the study data
-      log.info(`Sending Request to: ${jsonRequestUrl}`);
-      oReq.open('GET', jsonRequestUrl);
-      oReq.setRequestHeader('Accept', 'application/json');
+        // Open the Request to the server for the JSON data
+        // In this case we have a server-side route called /api/
+        // which responds to GET requests with the study data
+        log.info(`Sending Request to: ${jsonRequestUrl}`);
+        oReq.open('GET', jsonRequestUrl);
+        oReq.setRequestHeader('Accept', 'application/json');
 
-      // Fire the request to the server
-      oReq.send();
+        // Fire the request to the server
+        oReq.send();
+      } else {
+        // Subject view
+        const subjectExperimentListUrl = `${rootPlusPort}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
+
+        console.log(subjectExperimentListUrl);
+
+        _getJson(subjectExperimentListUrl).then(json => {
+          // TODO -> Fetch each json.
+          // Promise.all and combine JSON.
+          // Load up viewer.
+          console.log(json);
+
+          const experimentList = json.ResultSet.Result;
+          const results = [];
+
+          for (let i = 0; i < experimentList.length; i++) {
+            const experimentIdI = experimentList[i].ID;
+            const experimentJSONFetchUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
+
+            results[i] = _getJson(experimentJSONFetchUrl);
+          }
+
+          Promise.all(results).then(jsonFiles => {
+            console.log(jsonFiles);
+
+            let studyList = {
+              transactionId: subjectId,
+              studies: [],
+            };
+
+            for (let i = 0; i < jsonFiles.length; i++) {
+              const experimentJsonI = jsonFiles[i];
+              const studiesI = experimentJsonI.studies;
+
+              // sessionMap.setSession(experimentJsonI, {
+              //   experimentId: experimentList[i].ID,
+              //   experimentLabel: experimentList[i].label,
+              //   subjectId,
+              //   projectId,
+              //   parentProjectId
+              // });
+
+              // console.log('Session Map:')
+              // console.log(sessionMap);
+
+              // TODO -> clean this
+              studiesI[0].studyDescription =
+                experimentList[i].label || experimentList[i].ID;
+
+              console.log(`Studies[${i}]`);
+
+              console.log(studiesI);
+
+              studyList.studies = [...studyList.studies, ...studiesI];
+            }
+
+            console.log(studyList);
+
+            if (parentProjectId) {
+              console.log(`replacing ${parentProjectId} with ${projectId}`);
+
+              let jsonString = JSON.stringify(studyList);
+
+              jsonString = jsonString.replace(
+                new RegExp(parentProjectId, 'g'),
+                projectId
+              );
+
+              studyList = JSON.parse(jsonString);
+            }
+
+            console.log(studyList);
+
+            resolve({ studies: studyList.studies, studyInstanceUids: [] });
+          });
+        });
+      }
     });
   }
 
@@ -227,3 +304,24 @@ const _mapStudiesToNewFormat = studies => {
 };
 
 export default XNATStandaloneRouting;
+
+function _getJson(url) {
+  return new Promise((resolve, reject) => {
+    // Define a request to the server to retrieve the session data as JSON.
+    const xhr = new XMLHttpRequest();
+
+    xhr.onload = () => {
+      console.log(`GET ${url}... ${xhr.status}`);
+
+      resolve(xhr.response);
+    };
+
+    xhr.onerror = () => {
+      reject(xhr.responseText);
+    };
+
+    xhr.open('GET', url);
+    xhr.responseType = 'json';
+    xhr.send();
+  });
+}
