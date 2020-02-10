@@ -250,7 +250,8 @@ function _initExtensions(extensions, cornerstoneExtensionConfig, appConfig) {
     GenericViewerCommands,
     [OHIFCornerstoneExtension, cornerstoneExtensionConfig],
     /* WARNING: MUST BE REGISTERED _AFTER_ OHIFCornerstoneExtension */
-    MeasurementsPanel,
+    // In XNAT We don't use the measurements panel yet, so don't register it (line below commented out from master.)
+    //MeasurementsPanel,
   ];
   const mergedExtensions = requiredExtensions.concat(extensions);
   extensionManager.registerExtensions(mergedExtensions);
