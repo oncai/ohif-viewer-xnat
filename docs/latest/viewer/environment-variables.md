@@ -1,6 +1,7 @@
 # Environment Variables
 
-There are a number of environment variables we use at build time to influence the output application's behavior.
+There are a number of environment variables we use at build time to influence
+the output application's behavior.
 
 ```bash
 # Application

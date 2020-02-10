@@ -19,7 +19,14 @@ const StudyListRouting = asyncComponent(() =>
   )
 );
 const StandaloneRouting = asyncComponent(() =>
-  import(/* webpackChunkName: "ConnectedStandaloneRouting" */ '../connectedComponents/ConnectedStandaloneRouting.js')
+  import(
+    /* webpackChunkName: "ConnectedStandaloneRouting" */ '../connectedComponents/ConnectedStandaloneRouting.js'
+  )
+);
+const XNATStandaloneRouting = asyncComponent(() =>
+  import(
+    /* webpackChunkName: "ConnectedXNATStandaloneRouting" */ '../connectedComponents/ConnectedXNATStandaloneRouting.js'
+  )
 );
 const ViewerLocalFileData = asyncComponent(() =>
   import(
@@ -35,12 +42,16 @@ const ROUTES_DEF = {
       path: '/viewer/:studyInstanceUids',
       component: ViewerRouting,
     },
-    standaloneViewer: {
-      path: '/viewer',
-      component: StandaloneRouting,
+    // standaloneViewer: {
+    //   path: '/viewer',
+    //   component: StandaloneRouting,
+    // },
+    XNATstandaloneViewer: {
+      path: '/VIEWER',
+      component: XNATStandaloneRouting,
     },
     list: {
-      path: ['/studylist', '/'],
+      path: ['/studylist'], //path: ['/studylist', '/']
       component: StudyListRouting,
       condition: appConfig => {
         return appConfig.showStudyList !== undefined
