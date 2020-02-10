@@ -1,21 +1,20 @@
 // "actions" doesn't really mean anything
 // these are basically ambigous sets of implementation(s)
 const actions = {
-  doGoofyStuff: () => {
+  xnatCheckAndSetPermssions: () => {
     console.log('~~ GOOFY');
   },
 };
 
 const definitions = {
   xnatCheckAndSetPermssions: {
-    commandFn: actions.doGoofyStuff,
+    commandFn: actions.xnatCheckAndSetPermssions,
     storeContexts: [],
-    // options: { rotation: 90 },
   },
 };
 
 export default {
   actions,
   definitions,
-  defaultContext: 'ACTIVE_VIEWPORT::CORNERSTONE',
+  defaultContext: 'VIEWER',
 };

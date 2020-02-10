@@ -12,13 +12,13 @@ export default {
     },
     {
       icon: 'list',
-      label: 'Segmentations',
+      label: 'Seg',
       from: 'right',
       target: 'xnat-segmentation-panel',
     },
     {
       icon: 'list',
-      label: 'Segmentations',
+      label: 'ROI',
       from: 'right',
       target: 'xnat-contours-panel',
     },

@@ -3,7 +3,7 @@ import { log, metadata, utils } from '@ohif/core';
 import PropTypes from 'prop-types';
 import qs from 'querystring';
 
-import { extensionManager } from './../App.js';
+import { extensionManager, commandsManager } from './../App.js';
 import ConnectedViewer from '../connectedComponents/ConnectedViewer';
 import ConnectedViewerRetrieveStudyData from '../connectedComponents/ConnectedViewerRetrieveStudyData';
 import NotFound from '../routes/NotFound';
@@ -30,6 +30,12 @@ class XNATStandaloneRouting extends Component {
   parseQueryAndRetrieveDICOMWebData(query) {
     return new Promise((resolve, reject) => {
       const { projectId, subjectId, experimentId, experimentLabel } = query;
+
+      debugger;
+
+      commandsManager.runCommand('xnatCheckAndSetPermssions', {
+        command: 'hello',
+      });
 
       const parentProjectId = query.parentProjectId
         ? query.parentProjectId

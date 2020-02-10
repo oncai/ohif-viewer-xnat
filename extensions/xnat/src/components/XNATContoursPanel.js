@@ -4,7 +4,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import moment from 'moment';
 
-import { utils } from '@ohif/core';
+import { utils, CommandsManager } from '@ohif/core';
 import { ScrollableArea, TableList, Icon } from '@ohif/ui';
 
 import './XNATNavigationPanel.css';
