@@ -22,9 +22,9 @@ export default {
   // getToolbarModule({ servicesManager }) {
   //   return toolbarModule;
   // },
-  // getCommandsModule({ servicesManager }) {
-  //   return commandsModule;
-  // },
+  getCommandsModule({ servicesManager }) {
+    return commandsModule;
+  },
   getPanelModule({ servicesManager }) {
     return panelModule;
   },

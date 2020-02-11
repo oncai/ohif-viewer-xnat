@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
-import moment from 'moment';
-
-import { utils, CommandsManager } from '@ohif/core';
-import { ScrollableArea, TableList, Icon } from '@ohif/ui';
 
 import './XNATNavigationPanel.css';
-
-const { studyMetadataManager } = utils;
 
 const refreshViewport = () => {
   cornerstone.getEnabledElements().forEach(enabledElement => {

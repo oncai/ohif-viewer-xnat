@@ -29,13 +29,18 @@ class XNATStandaloneRouting extends Component {
 
   parseQueryAndRetrieveDICOMWebData(query) {
     return new Promise((resolve, reject) => {
+      console.warn('XNAT STANDALONE ROUTING');
+
       const { projectId, subjectId, experimentId, experimentLabel } = query;
 
-      debugger;
-
-      commandsManager.runCommand('xnatCheckAndSetPermssions', {
-        command: 'hello',
-      });
+      if (!projectId || !subjectId) {
+        //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
+        return reject(
+          new Error(
+            'Not enough data specified, Use VIEWERS/?url=projectId&subjectId'
+          )
+        );
+      }
 
       const parentProjectId = query.parentProjectId
         ? query.parentProjectId
@@ -46,6 +51,7 @@ class XNATStandaloneRouting extends Component {
           `This experiment is shared view of ${experimentId} from ${parentProjectId}`
         );
       }
+
       let rootPlusPort = window.location.origin;
 
       if (window.port) {
@@ -56,10 +62,17 @@ class XNATStandaloneRouting extends Component {
 
       rootPlusPort += pathLessViewer;
 
-      console.warn('XNAT STANDALONE ROUTING');
+      commandsManager.runCommand('xnatSetRootUrl', {
+        url: rootPlusPort,
+      });
+
+      commandsManager.runCommand('xnatCheckAndSetPermissions', {
+        projectId,
+        parentProjectId,
+        subjectId,
+      });
 
       // TODO -> Session Map in the XNAT extension.
-      // TODO -> checkAndSetPermissions.
 
       // Query params:
       //
@@ -75,16 +88,11 @@ class XNATStandaloneRouting extends Component {
       // Subject in shared project:
       //  projectId, subjectId, parentProjectId
 
-      if (!projectId || !subjectId) {
-        //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
-        return reject(
-          new Error(
-            'Not enough data specified, Use VIEWERS/?url=projectId&subjectId'
-          )
-        );
-      }
-
       if (experimentId) {
+        commandsManager.runCommand('xnatSetView', {
+          view: 'session',
+        });
+
         const jsonRequestUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
         console.log(jsonRequestUrl);
@@ -129,6 +137,17 @@ class XNATStandaloneRouting extends Component {
 
           const data = JSON.parse(jsonString);
 
+          commandsManager.runCommand('xnatSetSession', {
+            json: data,
+            sessionVariables: {
+              experimentId,
+              experimentLabel,
+              subjectId,
+              projectId,
+              parentProjectId,
+            },
+          });
+
           console.warn(data);
 
           resolve({ studies: data.studies, studyInstanceUids: [] });
@@ -145,6 +164,10 @@ class XNATStandaloneRouting extends Component {
         oReq.send();
       } else {
         // Subject view
+        commandsManager.runCommand('xnatSetView', {
+          view: 'subject',
+        });
+
         const subjectExperimentListUrl = `${rootPlusPort}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
 
         console.log(subjectExperimentListUrl);
@@ -177,16 +200,16 @@ class XNATStandaloneRouting extends Component {
               const experimentJsonI = jsonFiles[i];
               const studiesI = experimentJsonI.studies;
 
-              // sessionMap.setSession(experimentJsonI, {
-              //   experimentId: experimentList[i].ID,
-              //   experimentLabel: experimentList[i].label,
-              //   subjectId,
-              //   projectId,
-              //   parentProjectId
-              // });
-
-              // console.log('Session Map:')
-              // console.log(sessionMap);
+              commandsManager.runCommand('xnatSetSession', {
+                json: experimentJsonI,
+                sessionVariables: {
+                  experimentId: experimentList[i].ID,
+                  experimentLabel: experimentList[i].label,
+                  subjectId,
+                  projectId,
+                  parentProjectId,
+                },
+              });
 
               // TODO -> clean this
               studiesI[0].studyDescription =

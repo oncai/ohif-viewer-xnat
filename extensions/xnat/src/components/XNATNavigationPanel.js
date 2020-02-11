@@ -1,60 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import cornerstoneTools from 'cornerstone-tools';
-import cornerstone from 'cornerstone-core';
-import moment from 'moment';
+import React from 'react';
+import XNATProjectList from './XNATNavigation/XNATProjectList.js';
+import XNATProject from './XNATNavigation/XNATProject.js';
+import fetchJSON from '../utils/fetchJSON.js';
+import compareOnProperty from './XNATNavigation/helpers/compareOnProperty.js';
+import sessionMap from '../utils/sessionMap';
 
-import { utils } from '@ohif/core';
 import { ScrollableArea, TableList, Icon } from '@ohif/ui';
 
 import './XNATNavigationPanel.css';
 
-const { studyMetadataManager } = utils;
-
-const refreshViewport = () => {
-  cornerstone.getEnabledElements().forEach(enabledElement => {
-    cornerstone.updateImage(enabledElement.element);
-  });
-};
-
 /**
  * XNATNavigationPanel component
  *
- * @param {Object} props
- * @param {Array} props.studies
- * @param {Array} props.viewports - viewportSpecificData
- * @param {number} props.activeIndex - activeViewportIndex
  * @returns component
  */
-const XNATNavigationPanel = ({ studies, viewports, activeIndex }) => {
-  return <div className="labelmap-container">TODO NAV</div>;
-};
+export default class XNATNavigationPanel extends React.Component {
+  constructor(props = {}) {
+    super(props);
+    this.state = {
+      activeProjects: [],
+      otherProjects: [],
+    };
+  }
 
-XNATNavigationPanel.propTypes = {
-  /*
-   * An object, with int index keys?
-   * Maps to: state.viewports.viewportSpecificData, in `viewer`
-   * Passed in MODULE_TYPES.PANEL when specifying component in viewer
+  /**
+   * componentDidMount - On mounting, fetch a list of available projects from XNAT.
+   *
+   * @returns {type}  description
    */
-  viewports: PropTypes.shape({
-    displaySetInstanceUid: PropTypes.string,
-    framRate: PropTypes.any,
-    instanceNumber: PropTypes.number,
-    isMultiFrame: PropTypes.bool,
-    isReconstructable: PropTypes.bool,
-    modality: PropTypes.string,
-    plugin: PropTypes.string,
-    seriesDate: PropTypes.string,
-    seriesDescription: PropTypes.string,
-    seriesInstanceUid: PropTypes.string,
-    seriesNumber: PropTypes.any,
-    seriesTime: PropTypes.string,
-    sopClassUids: PropTypes.arrayOf(PropTypes.string),
-    studyInstanceUid: PropTypes.string,
-  }),
-  activeIndex: PropTypes.number.isRequired,
-  studies: PropTypes.array.isRequired,
-};
-XNATNavigationPanel.defaultProps = {};
+  componentDidMount() {
+    fetchJSON('data/archive/projects/?format=json')
+      .promise.then(result => {
+        if (!result) {
+          return;
+        }
 
-export default XNATNavigationPanel;
+        const otherProjects = result.ResultSet.Result;
+        const activeProjectId = sessionMap.getProject();
+
+        const thisProjectIndex = otherProjects.findIndex(
+          element => element.ID === activeProjectId
+        );
+
+        const activeProjects = otherProjects.splice(thisProjectIndex, 1);
+
+        otherProjects.sort((a, b) => compareOnProperty(a, b, 'name'));
+
+        this.setState({
+          activeProjects,
+          otherProjects,
+        });
+      })
+      .catch(err => console.log(err));
+  }
+
+  render() {
+    const { activeProjects, otherProjects } = this.state;
+
+    return (
+      <div className="xnat-navigation-tree">
+        <ul>
+          <h4>This Project</h4>
+          {activeProjects.map(project => (
+            <li key={project.ID}>
+              <XNATProject ID={project.ID} name={project.name} />
+            </li>
+          ))}
+          <XNATProjectList projects={otherProjects} />
+        </ul>
+      </div>
+    );
+  }
+}
