@@ -23,9 +23,6 @@ export default function(toolData, element) {
   const ROIContourData = _getROIContourData(imageIds, ROIContourUid);
   const extent = _getExtentOfRegion(ROIContourData);
   const sliceEdited = _getSlicePositionOfToolData(ROIContourData, toolData.uid);
-
-  debugger;
-
   const interpolationList = [];
 
   // Check if contours between the extent can be interpolated.

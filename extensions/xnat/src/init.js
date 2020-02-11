@@ -1,14 +1,17 @@
-import {
-  store,
-  register,
-  addTool,
-  BrushTool,
-  CorrectionScissorsTool,
-} from 'cornerstone-tools';
+import cornerstoneTools from 'cornerstone-tools';
+
+const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
 
 import freehand3DModule from './peppermint-tools/modules/freehand3DModule.js';
+import extendSegmentationModule from './peppermint-tools/modules/extendSegmentationModule';
 
-import { FreehandRoi3DTool } from './peppermint-tools/tools';
+import {
+  FreehandRoi3DTool,
+  FreehandRoi3DSculptorTool,
+  Brush3DTool,
+  Brush3DHUGatedTool,
+  Brush3DAutoGatedTool,
+} from './peppermint-tools/tools';
 
 const defaultConfig = {
   maxRadius: 64,
@@ -45,6 +48,9 @@ const { modules } = store;
  */
 export default function init({ servicesManager, configuration = {} }) {
   const config = Object.assign({}, defaultConfig, configuration);
+  const segmentationModule = cornerstoneTools.getModule('segmentation');
+
+  extendSegmentationModule(segmentationModule, config);
 
   register('module', 'freehand3D', freehand3DModule);
   const freehand3DStore = modules.freehand3D;
@@ -53,7 +59,14 @@ export default function init({ servicesManager, configuration = {} }) {
   freehand3DStore.state.displayStats = config.showFreehandStats;
 
   //const tools = [BrushTool, CorrectionScissorsTool, Brush3DTool, Brush3DHUGatedTool];
-  const tools = [BrushTool, CorrectionScissorsTool, FreehandRoi3DTool];
+  const tools = [
+    Brush3DTool,
+    Brush3DHUGatedTool,
+    Brush3DAutoGatedTool,
+    CorrectionScissorsTool,
+    FreehandRoi3DTool,
+    FreehandRoi3DSculptorTool,
+  ];
 
   tools.forEach(addTool);
 

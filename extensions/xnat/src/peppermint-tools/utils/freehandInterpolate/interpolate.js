@@ -26,8 +26,6 @@ export default function(toolData, element) {
     element
   );
 
-  debugger;
-
   for (let i = 0; i < interpolationList.length; i++) {
     if (interpolationList[i]) {
       _linearlyInterpolateBetween(
