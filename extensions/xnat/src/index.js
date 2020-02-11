@@ -19,9 +19,9 @@ export default {
   preRegistration({ servicesManager, configuration = {} }) {
     init({ servicesManager, configuration });
   },
-  // getToolbarModule({ servicesManager }) {
-  //   return toolbarModule;
-  // },
+  getToolbarModule({ servicesManager }) {
+    return toolbarModule;
+  },
   getCommandsModule({ servicesManager }) {
     return commandsModule;
   },
