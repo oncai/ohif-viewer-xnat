@@ -426,7 +426,7 @@ export default class XNATContourMenu extends React.Component {
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
           seriesInstanceUid={seriesInstanceUid}
-          seriesMetadata={viewports[activeIndex]}
+          viewportData={viewports[activeIndex]}
         />
       );
     } else if (unlockConfirmationOpen) {

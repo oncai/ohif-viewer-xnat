@@ -5,27 +5,16 @@ import AIMExporter from '../../utils/IO/classes/AIMExporter.js';
 import RoiExtractor from '../../utils/IO/classes/RoiExtractor.js';
 import generateDateTimeAndLabel from '../../utils/IO/helpers/generateDateAndTimeLabel';
 import cornerstoneTools from 'cornerstone-tools';
+import getSeriesInfoForImageId from '../../utils/IO/helpers/getSeriesInfoForImageId';
 import sessionMap from '../../utils/sessionMap';
 
 import { Icon } from '@ohif/ui';
-
-import { utils } from '@ohif/core';
 
 // TODO -> lock structure set
 //import { lockStructureSet } from 'meteor/icr:peppermint-tools';
 //import { displayExportFailedDialog } from '../../../lib/dialogUtils/displayExportDialogs.js';
 
 import './XNATContourExportMenu.css';
-
-const { studyMetadataManager } = utils;
-
-const _getDisplaySet = ({ studyInstanceUid, displaySetInstanceUid }) => {
-  const studyMetadata = studyMetadataManager.get(studyInstanceUid);
-  const displaySet = studyMetadata.findDisplaySet(
-    displaySet => displaySet.displaySetInstanceUid === displaySetInstanceUid
-  );
-  return displaySet;
-};
 
 const modules = cornerstoneTools.store.modules;
 
@@ -74,7 +63,7 @@ export default class XNATContourExportMenu extends React.Component {
    */
   async onExportButtonClick() {
     const { roiContourList, selectedCheckboxes, label, dateTime } = this.state;
-    const { seriesInstanceUid, seriesMetadata } = this.props;
+    const { seriesInstanceUid, viewportData } = this.props;
     const roiCollectionName = this._roiCollectionName;
 
     // Check the name isn't empty, and isn't just whitespace.
@@ -101,17 +90,19 @@ export default class XNATContourExportMenu extends React.Component {
 
     const roiExtractor = new RoiExtractor(seriesInstanceUid);
 
-    console.log(seriesMetadata);
+    console.log(viewportData);
 
     debugger;
 
-    const displaySet = _getDisplaySet(seriesMetadata);
+    debugger;
+
+    // TODO ->
 
     debugger;
 
     const roiContours = roiExtractor.extractROIContours(exportMask);
 
-    const seriesInfo = SeriesInfoProvider.getActiveSeriesInfo();
+    const seriesInfo = getSeriesInfoForImageId(viewportData);
 
     const aw = new AIMWriter(roiCollectionName, label, dateTime);
     aw.writeImageAnnotationCollection(roiContours, seriesInfo);

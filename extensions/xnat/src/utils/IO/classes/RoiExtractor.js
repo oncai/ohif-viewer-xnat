@@ -1,10 +1,13 @@
 import cornerstoneTools from 'cornerstone-tools';
 import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
+import TOOL_NAMES from '../../../peppermint-tools/toolNames';
 
 const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
 
 const modules = cornerstoneTools.store.modules;
+
+const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
 
 /**
  * @class RoiExtractor - Extracts polygons from cornerstoneTools for exporting
@@ -53,7 +56,10 @@ export default class RoiExtractor {
         this._seriesInstanceUid
       ) {
         // grab the freehand tool for this DICOM instance
-        const freehandToolState = toolStateManager[imageId].freehandMouse;
+        const freehandToolState =
+          toolStateManager[imageId][FREEHAND_ROI_3D_TOOL];
+
+        //debugger;
 
         if (freehandToolState) {
           // Append new ROIs to polygon list
@@ -134,12 +140,12 @@ export default class RoiExtractor {
    */
   _getSOPInstanceUidFromImageId(imageId) {
     const generalSeriesModule = cornerstone.metaData.get(
-      'generalSeriesModule',
+      'sopCommonModule',
       imageId
     );
 
     if (!generalSeriesModule.sopInstanceUID) {
-      throw new Error('no seriesInstanceUid on metadata provider for imageIds');
+      throw new Error('no sopCommonModule on metadata provider for imageIds');
     }
 
     return generalSeriesModule.sopInstanceUID;

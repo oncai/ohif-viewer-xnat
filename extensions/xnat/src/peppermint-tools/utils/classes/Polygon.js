@@ -2,7 +2,7 @@ import { store } from 'cornerstone-tools';
 
 const modules = store.modules;
 
-export class Polygon {
+export default class Polygon {
   constructor(
     points,
     sopInstanceUid,
