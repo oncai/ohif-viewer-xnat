@@ -7,6 +7,7 @@ import RoiContourSettings from './XNATContourMenu/RoiContourSettings.js';
 import unlockStructureSet from '../utils/unlockStructureSet.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
+import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 
 //import getActiveViewportEnabledElement from '../utils/getActiveViewportEnabledElement.js';
 //import getSeriesInstanceUidFromEnabledElement from '../utils/getSeriesInstanceUidFromEnabledElement.js';
@@ -16,9 +17,6 @@ import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromV
 
 const modules = cornerstoneTools.store.modules;
 const { EVENTS } = cornerstoneTools;
-
-//EVENTS.MEASUREMENT_REMOVED
-//EVENTS.MEASUREMENT_ADDED
 
 /**
  * @class XNATContourMenu - Renders a menu for importing, exporting, creating
@@ -109,7 +107,6 @@ export default class XNATContourMenu extends React.Component {
   }
 
   cornerstoneEventListenerHandler() {
-    debugger;
     this.refreshRoiContourList(this.seriesInstanceUid);
   }
 
@@ -411,7 +408,7 @@ export default class XNATContourMenu extends React.Component {
       seriesInstanceUid,
     } = this.state;
 
-    const { ImportCallbackOrComponent, ExportCallbackOrComponent } = this.props;
+    const { ImportCallbackOrComponent, viewports, activeIndex } = this.props;
     const freehand3DStore = modules.freehand3D;
 
     let component;
@@ -425,9 +422,11 @@ export default class XNATContourMenu extends React.Component {
       );
     } else if (exporting) {
       component = (
-        <ExportCallbackOrComponent
+        <XNATContourExportMenu
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
+          seriesInstanceUid={seriesInstanceUid}
+          seriesMetadata={viewports[activeIndex]}
         />
       );
     } else if (unlockConfirmationOpen) {
@@ -474,7 +473,7 @@ export default class XNATContourMenu extends React.Component {
             <h3>ROI Contour Collections</h3>
             <MenuIOButtons
               ImportCallbackOrComponent={ImportCallbackOrComponent}
-              ExportCallbackOrComponent={ExportCallbackOrComponent}
+              ExportCallbackOrComponent={XNATContourExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
             />

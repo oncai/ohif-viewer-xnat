@@ -19,10 +19,7 @@ export default class WorkingCollectionListItem extends React.Component {
 
   onTextInputChange(evt) {
     const name = evt.target.value;
-
     const { seriesInstanceUid } = this.props;
-
-    debugger;
 
     if (name.replace(' ', '').length > 0) {
       const metadata = this.props.metadata;

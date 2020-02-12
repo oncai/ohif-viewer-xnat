@@ -1,6 +1,6 @@
 import React from 'react';
 import XNATSessionLabel from './XNATSessionLabel.js';
-import fetchJSON from '../../utils/fetchJSON.js';
+import fetchJSON from '../../utils/IO/fetchJSON.js';
 import SessionRouter from './helpers/SessionRouter.js';
 import navigateConfirmationContent from './helpers/navigateConfirmationContent.js';
 //import { getUnsavedRegions } from 'meteor/icr:peppermint-tools';

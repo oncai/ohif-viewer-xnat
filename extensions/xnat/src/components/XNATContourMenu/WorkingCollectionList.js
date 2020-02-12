@@ -23,8 +23,6 @@ export default class WorkingRoiCollectionList extends React.Component {
       seriesInstanceUid,
     } = this.props;
 
-    debugger;
-
     return (
       <React.Fragment>
         <tr className="roi-list-header">

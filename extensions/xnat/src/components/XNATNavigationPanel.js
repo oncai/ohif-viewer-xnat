@@ -1,7 +1,7 @@
 import React from 'react';
 import XNATProjectList from './XNATNavigation/XNATProjectList.js';
 import XNATProject from './XNATNavigation/XNATProject.js';
-import fetchJSON from '../utils/fetchJSON.js';
+import fetchJSON from '../utils/IO/fetchJSON.js';
 import compareOnProperty from './XNATNavigation/helpers/compareOnProperty.js';
 import sessionMap from '../utils/sessionMap';
 

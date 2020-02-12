@@ -1,5 +1,5 @@
 import checkSessionJSONExists from './checkSessionJSONExists.js';
-import fetchJSON from '../../../utils/fetchJSON';
+import fetchJSON from '../../../utils/IO/fetchJSON';
 import sessionMap from '../../../utils/sessionMap';
 //import progressDialog from '../../../../lib/dialogUtils/progressDialog.js';
 
