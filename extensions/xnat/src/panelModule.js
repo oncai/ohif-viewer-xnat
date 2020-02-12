@@ -1,5 +1,5 @@
 import XNATNavigationPanel from './components/XNATNavigationPanel.js';
-import XNATContoursPanel from './components/XNATContoursPanel.js';
+import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 
 export default {
@@ -20,7 +20,7 @@ export default {
       icon: 'list',
       label: 'ROI',
       from: 'right',
-      target: 'xnat-contours-panel',
+      target: 'xnat-contour-panel',
     },
   ],
   components: [
@@ -29,8 +29,8 @@ export default {
       component: XNATNavigationPanel,
     },
     {
-      id: 'xnat-contours-panel',
-      component: XNATContoursPanel,
+      id: 'xnat-contour-panel',
+      component: XNATContourPanel,
     },
     {
       id: 'xnat-segmentation-panel',

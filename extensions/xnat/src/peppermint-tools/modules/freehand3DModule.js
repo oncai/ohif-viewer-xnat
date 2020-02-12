@@ -1,6 +1,6 @@
 import cornerstone from 'cornerstone-core';
 import generateUID from '../utils/generateUID.js';
-import getSeriesInstanceUidFromEnabledElement from '../utils/getSeriesInstanceUidFromEnabledElement.js';
+import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 
 /**
  * @typedef {series[]} seriesCollection

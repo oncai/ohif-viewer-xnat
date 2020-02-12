@@ -19,7 +19,7 @@ import {
 import TOOL_NAMES from '../toolNames';
 import generateUID from '../utils/generateUID.js';
 import interpolate from '../utils/freehandInterpolate/interpolate';
-import getSeriesInstanceUidFromEnabledElement from '../utils/getSeriesInstanceUidFromEnabledElement.js';
+import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 
 // Cornerstone 3rd party dev kit imports
 const {

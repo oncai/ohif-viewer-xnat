@@ -1,12 +1,13 @@
-import {
-  globalImageIdSpecificToolStateManager,
-  store,
-} from 'cornerstone-tools';
+import cornerstoneTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
 
 import { Polygon } from '../classes/Polygon.js';
 import generateUID from '../generateUID.js';
 import generateInterpolationData from './generateInterpolationData.js';
+
+const { globalImageIdSpecificToolStateManager, store } = cornerstoneTools;
+
+const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
 
 const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
 
@@ -35,6 +36,8 @@ export default function(toolData, element) {
       );
     }
   }
+
+  triggerEvent(element, 'peppermintinterpolateevent', {});
 }
 
 /**
