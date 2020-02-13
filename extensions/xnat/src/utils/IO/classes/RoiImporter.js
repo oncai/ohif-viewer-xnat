@@ -134,6 +134,8 @@ export default class RoiImporter {
       );
       freehandToolData.push(data);
     }
+
+    console.log(toolStateManager);
   }
 
   /**
@@ -197,6 +199,8 @@ export default class RoiImporter {
     const studies = studyMetadataManager.all();
 
     console.log(studies);
+
+    // TODO - > Need to sort out what goes on here and import will be complete for AIM.
 
     debugger;
 

@@ -7,7 +7,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
 import { Icon } from '@ohif/ui';
 
-//import './roiImportListDialogs.styl';
+import './XNATContourImportMenu.css';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -293,6 +293,12 @@ export default class XNATContourImportMenu extends React.Component {
       roiCollectionInfo.referencedSeriesInstanceUid
     );
 
+    // The URIs fetched have an additional /, so remove it.
+    uri = uri.slice(1);
+
+    console.log('_getAndImportFile URI:');
+    console.log(uri);
+
     switch (roiCollectionInfo.collectionType) {
       case 'AIM':
         this._updateImportingText(roiCollectionInfo.name);
@@ -344,7 +350,6 @@ export default class XNATContourImportMenu extends React.Component {
     this._numCollectionsParsed++;
 
     if (this._numCollectionsParsed === this._numCollectionsToParse) {
-      Session.set('refreshRoiContourMenu', Math.random().toString());
       this.props.onImportComplete();
     }
   }

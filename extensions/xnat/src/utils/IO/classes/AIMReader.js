@@ -120,7 +120,9 @@ export default class AIMReader {
    * @returns {null}
    */
   _appendSopInstances(sopInstancesInSeries, imageSeries) {
-    sopInstanceUidElements = imageSeries.getElementsByTagName('sopInstanceUid');
+    const sopInstanceUidElements = imageSeries.getElementsByTagName(
+      'sopInstanceUid'
+    );
     for (let i = 0; i < sopInstanceUidElements.length; i++) {
       const sopInstanceUid = sopInstanceUidElements[i].getAttribute('root');
       if (!sopInstancesInSeries.includes(sopInstanceUid)) {
