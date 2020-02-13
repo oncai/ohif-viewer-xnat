@@ -1,7 +1,7 @@
 import cornerstoneTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
 
-import { Polygon } from '../classes/Polygon.js';
+import Polygon from '../classes/Polygon.js';
 import generateUID from '../generateUID.js';
 import generateInterpolationData from './generateInterpolationData.js';
 

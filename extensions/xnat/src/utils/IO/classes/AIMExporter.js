@@ -11,6 +11,8 @@ export default class AIMExporter {
 
     this._projectID = sessionMap.getParentProject();
 
+    debugger;
+
     this._experimentID = sessionMap.getScan(
       this._seriesInstanceUID,
       'experimentId'

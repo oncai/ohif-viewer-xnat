@@ -14,17 +14,21 @@ const _getDisplaySet = ({ studyInstanceUid, displaySetInstanceUid }) => {
 export default function getSeriesInfoForImageId(viewportData) {
   const displaySet = _getDisplaySet(viewportData);
 
-  debugger;
-
   const {
     studyInstanceUid,
     seriesInstanceUid,
     modality,
     seriesDate,
     seriesTime,
+    images,
   } = displaySet;
 
-  const sopClassUid = displaySet.sopClassUids[0];
+  const firstImage = images[0];
+  const firstImageData = firstImage.getData();
+
+  debugger;
+
+  const sopClassUid = firstImageData.sopClassUid;
 
   const seriesInfo = {
     studyInstanceUid,
@@ -33,7 +37,7 @@ export default function getSeriesInfoForImageId(viewportData) {
     startDate: seriesDate,
     startTime: seriesTime,
     sopClassUid,
-    // Need to supply this metadata
+    // TODO: Need to supply this metadata
     person: {
       name: '',
       id: '',
@@ -47,8 +51,6 @@ export default function getSeriesInfoForImageId(viewportData) {
       softwareVersion: '',
     },
   };
-
-  const images = displaySet.images;
 
   let sopInstanceUids = [];
 

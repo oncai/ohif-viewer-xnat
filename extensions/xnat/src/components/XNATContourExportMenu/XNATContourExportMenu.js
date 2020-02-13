@@ -24,8 +24,6 @@ export default class XNATContourExportMenu extends React.Component {
 
     this._cancelablePromises = [];
 
-    debugger;
-
     const { dateTime, label } = generateDateTimeAndLabel('AIM');
 
     this.state = {
@@ -89,26 +87,23 @@ export default class XNATContourExportMenu extends React.Component {
     this.setState({ exporting: true });
 
     const roiExtractor = new RoiExtractor(seriesInstanceUid);
-
-    console.log(viewportData);
-
-    debugger;
-
-    debugger;
-
-    // TODO ->
-
-    debugger;
-
     const roiContours = roiExtractor.extractROIContours(exportMask);
-
     const seriesInfo = getSeriesInfoForImageId(viewportData);
+
+    debugger;
 
     const aw = new AIMWriter(roiCollectionName, label, dateTime);
     aw.writeImageAnnotationCollection(roiContours, seriesInfo);
 
+    debugger;
+
+    console.log(aw.toString());
+    debugger;
+
     // Attempt export to XNAT. Lock ROIs for editing if the export is successful.
     const aimExporter = new AIMExporter(aw);
+
+    debugger;
     await aimExporter
       .exportToXNAT()
       .then(success => {
@@ -195,11 +190,7 @@ export default class XNATContourExportMenu extends React.Component {
     }
 
     const { seriesInstanceUid } = this.props;
-
-    debugger;
-
     const freehand3DModule = modules.freehand3D;
-
     let series = freehand3DModule.getters.series(seriesInstanceUid);
 
     if (!series) {
