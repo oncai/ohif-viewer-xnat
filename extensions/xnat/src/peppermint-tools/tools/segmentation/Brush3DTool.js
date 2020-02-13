@@ -4,6 +4,7 @@ import TOOL_NAMES from '../../toolNames';
 
 const { BrushTool } = cornerstoneTools;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
+const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
 
 export default class Brush3DTool extends BrushTool {
   constructor(props = {}) {
@@ -63,6 +64,9 @@ export default class Brush3DTool extends BrushTool {
         segmentIndex,
         metadata
       );
+
+      console.log('TRIGGERING EVENT');
+      triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
     }
   }
 }

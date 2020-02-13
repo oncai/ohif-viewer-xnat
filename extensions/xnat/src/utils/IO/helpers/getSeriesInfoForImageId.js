@@ -14,21 +14,27 @@ const _getDisplaySet = ({ studyInstanceUid, displaySetInstanceUid }) => {
 export default function getSeriesInfoForImageId(viewportData) {
   const displaySet = _getDisplaySet(viewportData);
 
-  const {
-    studyInstanceUid,
-    seriesInstanceUid,
-    modality,
-    seriesDate,
-    seriesTime,
-    images,
-  } = displaySet;
+  const { studyInstanceUid, seriesInstanceUid, images } = displaySet;
 
   const firstImage = images[0];
-  const firstImageData = firstImage.getData();
+  const firstImageId = firstImage.getImageId();
+
+  const generalSeriesModule = cornerstone.metaData.get(
+    'generalSeriesModule',
+    firstImageId
+  );
+
+  const sopCommonModule = cornerstone.metaData.get(
+    'sopCommonModule',
+    firstImageId
+  );
 
   debugger;
 
-  const sopClassUid = firstImageData.sopClassUid;
+  const sopClassUid = sopCommonModule.sopClassUID;
+  const modality = generalSeriesModule.modality;
+  const seriesDate = `${generalSeriesModule.seriesDate.year}${generalSeriesModule.seriesDate.month}${generalSeriesModule.seriesDate.day}`;
+  const seriesTime = `${generalSeriesModule.seriesTime.hours}${generalSeriesModule.seriesTime.minutes}${generalSeriesModule.seriesTime.seconds}.${generalSeriesModule.seriesTime.fractionalSeconds}`;
 
   const seriesInfo = {
     studyInstanceUid,

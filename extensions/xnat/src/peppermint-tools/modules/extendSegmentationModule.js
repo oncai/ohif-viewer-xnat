@@ -49,25 +49,25 @@ export default function extendSegmentationModule(segmentationModule, config) {
     }
   };
 
-  getters.importMetadata = seriesInstanceUid => {
-    if (state.import && state.import[seriesInstanceUid]) {
-      return state.import[seriesInstanceUid];
+  getters.importMetadata = firstImageId => {
+    if (state.import && state.import[firstImageId]) {
+      return state.import[firstImageId];
     }
 
     return;
   };
 
-  setters.importMetadata = (seriesInstanceUid, metadata) => {
+  setters.importMetadata = (firstImageId, metadata) => {
     // Store that we've imported a collection for this series.
     if (!state.import) {
       state.import = {};
     }
 
-    state.import[seriesInstanceUid] = metadata;
+    state.import[firstImageId] = metadata;
   };
 
-  setters.importModified = seriesInstanceUid => {
-    const importMetadata = state.import[seriesInstanceUid];
+  setters.importModified = firstImageId => {
+    const importMetadata = state.import[firstImageId];
 
     if (importMetadata.modified) {
       return;

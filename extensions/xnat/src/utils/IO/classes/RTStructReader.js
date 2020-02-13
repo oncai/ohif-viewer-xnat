@@ -1,5 +1,5 @@
 import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
-import dicomParser from 'dicomParser';
+import dicomParser from 'dicom-parser';
 import cornerstoneTools from 'cornerstone-tools';
 
 const modules = cornerstoneTools.store.modules;

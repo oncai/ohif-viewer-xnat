@@ -3,13 +3,16 @@ import cornerstoneTools from 'cornerstone-tools';
 import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
 import AIMReader from './AIMReader.js';
 import RTStructReader from './RTStructReader.js';
+import { utils } from '@ohif/core';
+import TOOL_NAMES from '../../../peppermint-tools/toolNames';
+
+const { studyMetadataManager } = utils;
 
 const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
 const modules = cornerstoneTools.store.modules;
 
-// TODO -> Import freehand type here
-const freehandToolDataType = 'freehandMouse';
+const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
 
 /**
  * @class RoiImporter - Imports contour-based ROI formats to
@@ -120,7 +123,7 @@ export default class RoiImporter {
     this._addImageToolStateIfNotPresent(toolStateManager, correspondingImageId);
 
     const freehandToolData =
-      toolStateManager[correspondingImageId][freehandToolDataType].data;
+      toolStateManager[correspondingImageId][FREEHAND_ROI_3D_TOOL].data;
     if (this._polygonNotAlreadyPresent(freehandToolData, polygon.uid)) {
       const data = polygon.getFreehandToolData(importType);
 
@@ -162,11 +165,11 @@ export default class RoiImporter {
     // Add freehand tools to toolStateManager if no toolState for imageId
     if (!toolStateManager[imageId]) {
       toolStateManager[imageId] = {};
-      toolStateManager[imageId][freehandToolDataType] = {};
-      toolStateManager[imageId][freehandToolDataType].data = [];
-    } else if (!toolStateManager[imageId][freehandToolDataType]) {
-      toolStateManager[imageId][freehandToolDataType] = {};
-      toolStateManager[imageId][freehandToolDataType].data = [];
+      toolStateManager[imageId][FREEHAND_ROI_3D_TOOL] = {};
+      toolStateManager[imageId][FREEHAND_ROI_3D_TOOL].data = [];
+    } else if (!toolStateManager[imageId][FREEHAND_ROI_3D_TOOL]) {
+      toolStateManager[imageId][FREEHAND_ROI_3D_TOOL] = {};
+      toolStateManager[imageId][FREEHAND_ROI_3D_TOOL].data = [];
     }
   }
 
@@ -178,16 +181,9 @@ export default class RoiImporter {
   _refreshToolStateManager(toolStateManager) {
     globalToolStateManager.restoreToolState(toolStateManager);
 
-    // Refresh the visible element
-
-    //TODO
-    console.warn('TODO IMPLEMENT HERE');
-    debugger;
-
-    //const element = OHIF.viewerbase.viewportUtils.getActiveViewportElement();
-    //OHIF.viewer.metadataProvider.updateMetadata(cornerstone.getImage(element));
-
-    cornerstone.updateImage(element);
+    cornerstone.getEnabledElements().forEach(enabledElement => {
+      cornerstone.updateImage(enabledElement.element);
+    });
   }
 
   /**
@@ -198,13 +194,11 @@ export default class RoiImporter {
    */
   _getSopInstanceUidToImageIdMap() {
     const sopInstanceUidToImageIdMap = {};
-    // Get the imageId of each sopInstance in the series
+    const studies = studyMetadataManager.all();
 
-    //TODO
-    console.warn('TODO IMPLEMENT HERE');
+    console.log(studies);
+
     debugger;
-
-    //const studies = OHIF.viewer.StudyMetadataList.all();
 
     for (let i = 0; i < studies.length; i++) {
       const series = studies[i].getSeriesByUID(this._seriesInstanceUid);

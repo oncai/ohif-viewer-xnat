@@ -1,18 +1,13 @@
 import React from 'react';
-
 import AIMWriter from '../../utils/IO/classes/AIMWriter';
 import AIMExporter from '../../utils/IO/classes/AIMExporter.js';
 import RoiExtractor from '../../utils/IO/classes/RoiExtractor.js';
 import generateDateTimeAndLabel from '../../utils/IO/helpers/generateDateAndTimeLabel';
 import cornerstoneTools from 'cornerstone-tools';
 import getSeriesInfoForImageId from '../../utils/IO/helpers/getSeriesInfoForImageId';
-import sessionMap from '../../utils/sessionMap';
+import lockStructureSet from '../../utils/lockStructureSet';
 
 import { Icon } from '@ohif/ui';
-
-// TODO -> lock structure set
-//import { lockStructureSet } from 'meteor/icr:peppermint-tools';
-//import { displayExportFailedDialog } from '../../../lib/dialogUtils/displayExportDialogs.js';
 
 import './XNATContourExportMenu.css';
 
@@ -124,7 +119,7 @@ export default class XNATContourExportMenu extends React.Component {
         // TODO -> Work on backup mechanism, disabled for now.
         //localBackup.saveBackUpForActiveSeries();
         this.props.onExportCancel();
-        displayExportFailedDialog(seriesInfo.seriesInstanceUid);
+        //displayExportFailedDialog(seriesInfo.seriesInstanceUid);
       });
   }
 
@@ -260,7 +255,7 @@ export default class XNATContourExportMenu extends React.Component {
         <>
           <h5>
             exporting {this._roiCollectionName}
-            <i className="fa fa-spin fa-circle-o-notch fa-fw" />
+            ...
           </h5>
         </>
       );

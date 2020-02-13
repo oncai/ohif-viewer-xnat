@@ -1,5 +1,6 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 
 // TODO
 // import './roiContourMenu.styl';
@@ -53,10 +54,9 @@ export default class LockedCollectionsListItem extends React.Component {
     structureSet.visible = !visible;
     this.setState({ visible: !visible });
 
-    // Update viewport.
-    // const element = OHIF.viewerbase.viewportUtils.getActiveViewportElement();
-    // TODO
-    // cornerstone.updateImage(element);
+    cornerstone.getEnabledElements().forEach(enabledElement => {
+      cornerstone.updateImage(enabledElement.element);
+    });
   }
 
   render() {
@@ -66,8 +66,17 @@ export default class LockedCollectionsListItem extends React.Component {
     const metadata = collection.metadata;
     const ROIContourArray = collection.ROIContourArray;
 
-    const visibleButton = expanded ? 'fa fa-minus-square' : 'fa fa-plus-square';
-    const showHideIcon = visible ? 'fa fa-eye' : 'fa fa-eye-slash';
+    const showHideIcon = visible ? (
+      <Icon name="check" />
+    ) : (
+      <Icon name="times" />
+    );
+
+    const visibleButton = expanded ? (
+      <Icon name="chevron-down" />
+    ) : (
+      <Icon name="plus" />
+    );
 
     return (
       <React.Fragment>
@@ -77,7 +86,7 @@ export default class LockedCollectionsListItem extends React.Component {
               className="btn btn-sm btn-secondary"
               onClick={this.onToggleVisibilityClick}
             >
-              <i className={visibleButton} />
+              {visibleButton}
             </a>
           </td>
           <th colSpan="2">{metadata.name}</th>
@@ -86,7 +95,7 @@ export default class LockedCollectionsListItem extends React.Component {
               className="btn btn-sm btn-secondary"
               onClick={this.onShowHideClick}
             >
-              <i className={showHideIcon} />
+              {showHideIcon}
             </a>
           </td>
           <td className="centered-cell">
@@ -96,7 +105,7 @@ export default class LockedCollectionsListItem extends React.Component {
                 onUnlockClick(metadata.uid);
               }}
             >
-              <i className="fa fa-unlock" />
+              unlock
             </a>
           </td>
         </tr>

@@ -8,6 +8,9 @@ import unlockStructureSet from '../utils/unlockStructureSet.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
+import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
+
+import { Icon } from '@ohif/ui';
 
 //import getActiveViewportEnabledElement from '../utils/getActiveViewportEnabledElement.js';
 //import getSeriesInstanceUidFromEnabledElement from '../utils/getSeriesInstanceUidFromEnabledElement.js';
@@ -43,6 +46,7 @@ export default class XNATContourMenu extends React.Component {
       this
     );
     this.addEventListeners = this.addEventListeners.bind(this);
+    this.removeEventListeners = this.removeEventListeners.bind(this);
 
     this.addEventListeners();
 
@@ -90,16 +94,22 @@ export default class XNATContourMenu extends React.Component {
   }
 
   componentWillUnmount() {
+    this.removeEventListeners();
+  }
+
+  addEventListeners() {
+    this.removeEventListeners();
+
     cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.removeEventListener(
+      enabledElement.addEventListener(
         EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
-      enabledElement.removeEventListener(
+      enabledElement.addEventListener(
         EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
-      enabledElement.removeEventListener(
+      enabledElement.addEventListener(
         'peppermintinterpolateevent',
         this.cornerstoneEventListenerHandler
       );
@@ -110,17 +120,17 @@ export default class XNATContourMenu extends React.Component {
     this.refreshRoiContourList(this.seriesInstanceUid);
   }
 
-  addEventListeners() {
+  removeEventListeners() {
     cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.addEventListener(
+      enabledElement.removeEventListener(
         EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
-      enabledElement.addEventListener(
+      enabledElement.removeEventListener(
         EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
-      enabledElement.addEventListener(
+      enabledElement.removeEventListener(
         'peppermintinterpolateevent',
         this.cornerstoneEventListenerHandler
       );
@@ -408,16 +418,18 @@ export default class XNATContourMenu extends React.Component {
       seriesInstanceUid,
     } = this.state;
 
-    const { ImportCallbackOrComponent, viewports, activeIndex } = this.props;
+    const { viewports, activeIndex } = this.props;
     const freehand3DStore = modules.freehand3D;
 
     let component;
 
     if (importing) {
       component = (
-        <ImportCallbackOrComponent
+        <XNATContourImportMenu
           onImportComplete={this.onIOComplete}
           onImportCancel={this.onIOCancel}
+          seriesInstanceUid={seriesInstanceUid}
+          viewportData={viewports[activeIndex]}
         />
       );
     } else if (exporting) {
@@ -472,7 +484,7 @@ export default class XNATContourMenu extends React.Component {
           <div>
             <h3>ROI Contour Collections</h3>
             <MenuIOButtons
-              ImportCallbackOrComponent={ImportCallbackOrComponent}
+              ImportCallbackOrComponent={XNATContourImportMenu}
               ExportCallbackOrComponent={XNATContourExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
@@ -495,7 +507,7 @@ export default class XNATContourMenu extends React.Component {
                 {lockedCollections.length !== 0 && (
                   <LockedCollectionsList
                     lockedCollections={lockedCollections}
-                    onUnlockClick={this.confirmUnlockOnUnlockClick}
+                    onUnlockClick={this.onUnlockConfirmClick} //onUnlockClick={this.confirmUnlockOnUnlockClick} // TODO - Confirmation.
                     seriesInstanceUid={seriesInstanceUid}
                   />
                 )}
