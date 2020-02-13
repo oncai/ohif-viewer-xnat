@@ -58,8 +58,6 @@ export default class Brush3DHUGatedTool extends Brush3DTool {
     }
 
     const radius = segmentationModule.configuration.radius;
-
-    debugger;
     const pointerArray = this._gateCircle(
       image,
       getCircle(radius, rows, columns, x, y)

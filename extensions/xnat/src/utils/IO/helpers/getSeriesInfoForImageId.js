@@ -29,8 +29,6 @@ export default function getSeriesInfoForImageId(viewportData) {
     firstImageId
   );
 
-  debugger;
-
   const sopClassUid = sopCommonModule.sopClassUID;
   const modality = generalSeriesModule.modality;
   const seriesDate = `${generalSeriesModule.seriesDate.year}${generalSeriesModule.seriesDate.month}${generalSeriesModule.seriesDate.day}`;

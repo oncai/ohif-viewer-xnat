@@ -8,10 +8,7 @@ export default class AIMExporter {
   constructor(aimWriter) {
     this._aimString = aimWriter.toString();
     this._seriesInstanceUID = aimWriter.seriesInfo.seriesInstanceUid;
-
     this._projectID = sessionMap.getParentProject();
-
-    debugger;
 
     this._experimentID = sessionMap.getScan(
       this._seriesInstanceUID,

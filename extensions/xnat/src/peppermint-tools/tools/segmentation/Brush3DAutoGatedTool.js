@@ -25,8 +25,6 @@ export default class Brush3DAutoGatedTool extends Brush3DHUGatedTool {
     const { element, currentPoints } = eventData;
 
     this._setCustomGate(evt);
-
-    debugger;
     this._startPainting(evt);
 
     this._lastImageCoords = currentPoints.image;

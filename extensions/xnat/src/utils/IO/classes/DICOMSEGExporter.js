@@ -5,7 +5,7 @@ import fetchCSRFToken from '../fetchCSRFToken.js';
  * @class DICOMSEGExporter - Exports a DICOM seg file to an XNAT ROICollection.
  */
 export default class DICOMSEGExporter {
-  constructor(segBlob, seriesInstanceUid, label, name) {
+  constructor(segBlob, seriesInstanceUid, label) {
     this._payload = segBlob;
     this._seriesInstanceUID = seriesInstanceUid;
 

@@ -59,8 +59,6 @@ export default class RoiExtractor {
         const freehandToolState =
           toolStateManager[imageId][FREEHAND_ROI_3D_TOOL];
 
-        //debugger;
-
         if (freehandToolState) {
           // Append new ROIs to polygon list
           this._getNewPolygonsInInstance(

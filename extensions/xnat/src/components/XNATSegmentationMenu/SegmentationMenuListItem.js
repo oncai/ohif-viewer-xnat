@@ -39,13 +39,11 @@ export default class SegmentationMenuListItem extends React.Component {
   }
 
   onTextInputChange(evt) {
-    const name = evt.target.value;
+    const SegmentLabel = evt.target.value;
     const { labelmap3D, segmentIndex } = this.props;
 
-    if (name.replace(' ', '').length > 0) {
-      labelmap3D.metadata[segmentIndex] = name;
-
-      console.log('change name,' + name);
+    if (SegmentLabel.replace(' ', '').length > 0) {
+      labelmap3D.metadata[segmentIndex].SegmentLabel = SegmentLabel;
     }
   }
 

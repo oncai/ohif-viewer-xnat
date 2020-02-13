@@ -9,6 +9,8 @@ import cornerstoneTools from 'cornerstone-tools';
 import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import generateSegmentationMetadata from '../peppermint-tools/utils/generateSegmentationMetadata';
+import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
+import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
 import './XNATSegmentationPanel.css';
@@ -30,25 +32,6 @@ const _getFirstImageId = ({ studyInstanceUid, displaySetInstanceUid }) => {
     return null;
   }
 };
-
-const _getElementFromFirstImageId = firstImageId => {
-  const enabledElements = cornerstone.getEnabledElements();
-
-  for (let i = 0; i < enabledElements.length; i++) {
-    const enabledElement = enabledElements[0];
-    const { element } = enabledElement;
-    debugger;
-    const stackState = getToolState(element, 'stack');
-    const stackData = stackState.data[0];
-    const firstImageIdOfEnabledElement = stackData.imageIds[0];
-
-    if (firstImageIdOfEnabledElement === firstImageId) {
-      return element;
-    }
-  }
-};
-
-//import './segmentationMenu.styl';
 
 /**
  * @class XNATSegmentationPanel - Renders a menu for importing, exporting, creating
@@ -125,7 +108,6 @@ export default class XNATSegmentationPanel extends React.Component {
   }
 
   cornerstoneEventListenerHandler() {
-    debugger;
     this.refreshSegmentList(this.firstImageId);
   }
 
@@ -193,8 +175,6 @@ export default class XNATSegmentationPanel extends React.Component {
       return [];
     }
 
-    debugger;
-
     const labelmap3D =
       brushStackState.labelmaps3D[brushStackState.activeLabelmapIndex];
 
@@ -237,8 +217,6 @@ export default class XNATSegmentationPanel extends React.Component {
       const { metadata } = labelmap3D;
       let segmentAdded = false;
 
-      debugger;
-
       // Start from 1, as label 0 is an empty segment.
       for (let i = 1; i < metadata.length; i++) {
         if (!metadata[i]) {
@@ -254,7 +232,7 @@ export default class XNATSegmentationPanel extends React.Component {
         labelmap3D.activeSegmentIndex = metadata.length - 1;
       }
     } else {
-      const element = _getElementFromFirstImageId(firstImageId);
+      const element = getElementFromFirstImageId(firstImageId);
 
       const labelmapData = segmentationModule.getters.labelmap2D(element);
 
@@ -268,8 +246,6 @@ export default class XNATSegmentationPanel extends React.Component {
 
     const segments = this.constructor._segments(firstImageId);
     const activeSegmentIndex = this._getActiveSegmentIndex(firstImageId);
-
-    debugger;
 
     this.setState({
       segments,
@@ -310,7 +286,7 @@ export default class XNATSegmentationPanel extends React.Component {
    */
   onDeleteClick(segment) {
     const { firstImageId } = this.state;
-    const element = _getElementFromFirstImageId(firstImageId);
+    const element = getElementFromFirstImageId(firstImageId);
 
     segmentationModule.setters.deleteSegment(element, segment);
 
@@ -368,8 +344,6 @@ export default class XNATSegmentationPanel extends React.Component {
       return [];
     }
 
-    debugger;
-
     const labelmap3D =
       brushStackState.labelmaps3D[brushStackState.activeLabelmapIndex];
 
@@ -408,7 +382,7 @@ export default class XNATSegmentationPanel extends React.Component {
       labelmap3D,
     } = this.state;
 
-    const { ImportCallbackOrComponent, ExportCallbackOrComponent } = this.props;
+    const { ImportCallbackOrComponent, viewports, activeIndex } = this.props;
 
     let component;
 
@@ -421,9 +395,12 @@ export default class XNATSegmentationPanel extends React.Component {
       );
     } else if (exporting) {
       component = (
-        <ExportCallbackOrComponent
+        <XNATSegmentationExportMenu
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
+          firstImageId={firstImageId}
+          labelmap3D={labelmap3D}
+          viewportData={viewports[activeIndex]}
         />
       );
     } else {
@@ -434,7 +411,7 @@ export default class XNATSegmentationPanel extends React.Component {
               <h3>Segments</h3>
               <MenuIOButtons
                 ImportCallbackOrComponent={ImportCallbackOrComponent}
-                ExportCallbackOrComponent={ExportCallbackOrComponent}
+                ExportCallbackOrComponent={XNATSegmentationExportMenu}
                 onImportButtonClick={() => this.setState({ importing: true })}
                 onExportButtonClick={() => this.setState({ exporting: true })}
               />

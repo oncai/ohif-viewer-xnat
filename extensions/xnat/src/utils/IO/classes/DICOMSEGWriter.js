@@ -1,8 +1,9 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import * as dcmjs from 'dcmjs';
+import getElementFromFirstImageId from '../../getElementFromFirstImageId';
 
-const brushModule = cornerstoneTools.store.modules.brush;
+const segmentationModule = cornerstoneTools.getModule('segmentation');
 const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
 
@@ -21,33 +22,18 @@ export default class DICOMSEGWriter {
    * @param  {string} name The name/series description of the DICOM SEG.
    * @returns {Promise} A promise that resolves to a Blob containing the DICOM SEG.
    */
-  async write(name) {
+  async write(name, element) {
     return new Promise(resolve => {
-      // Grab the base image DICOM.
-      // TODO getEnabledElementForActiveElement => need to pass this infor down?
-      // => Potentially just pass stakc down, that'd be easier.
-      //TODO
-      console.warn('TODO IMPLEMENT HERE');
-      debugger;
-
-      //const activeEnabledElement = OHIF.viewerbase.viewportUtils.getEnabledElementForActiveElement();
-
-      const element = activeEnabledElement.element;
-
       const stackToolState = cornerstoneTools.getToolState(element, 'stack');
       const imageIds = stackToolState.data[0].imageIds;
 
       let imagePromises = [];
+
       for (let i = 0; i < imageIds.length; i++) {
         imagePromises.push(cornerstone.loadAndCacheImage(imageIds[i]));
       }
 
-      const brushData = {
-        toolState: globalToolStateManager.saveToolState(),
-        segments: brushModule.getters.metadata(
-          this._seriesInfo.seriesInstanceUid
-        ),
-      };
+      const { labelmaps3D } = segmentationModule.getters.labelmaps3D(element);
 
       Promise.all(imagePromises)
         .then(images => {
@@ -55,6 +41,7 @@ export default class DICOMSEGWriter {
 
           const options = {
             includeSliceSpacing: true,
+            rleEncode: false, // Not yet currently supported by the XNAT ROI plugin
             SeriesDescription: name,
             Manufacturer: this._seriesInfo.equipment.manufacturerName,
             ManufacturerModelName: this._seriesInfo.equipment
@@ -66,11 +53,9 @@ export default class DICOMSEGWriter {
             ContentTime: time,
           };
 
-          console.log(images);
-
           const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
             images,
-            brushData,
+            labelmaps3D,
             options
           );
 
