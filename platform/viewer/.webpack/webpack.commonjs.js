@@ -15,7 +15,7 @@ const PUBLIC_DIR = path.join(__dirname, '../public');
 // ~~ Env Vars
 const APP_CONFIG = process.env.APP_CONFIG || 'config/default.js';
 const HTML_TEMPLATE = process.env.HTML_TEMPLATE || 'script-tag.html';
-const PUBLIC_URL = process.env.PUBLIC_URL || '/';
+const PUBLIC_URL = process.env.PUBLIC_URL || '';
 
 module.exports = (env, argv) => {
   const commonConfig = webpackCommon(env, argv, { SRC_DIR, DIST_DIR });
