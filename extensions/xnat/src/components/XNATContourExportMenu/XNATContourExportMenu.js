@@ -85,20 +85,12 @@ export default class XNATContourExportMenu extends React.Component {
     const roiContours = roiExtractor.extractROIContours(exportMask);
     const seriesInfo = getSeriesInfoForImageId(viewportData);
 
-    debugger;
-
     const aw = new AIMWriter(roiCollectionName, label, dateTime);
     aw.writeImageAnnotationCollection(roiContours, seriesInfo);
-
-    debugger;
-
-    console.log(aw.toString());
-    debugger;
 
     // Attempt export to XNAT. Lock ROIs for editing if the export is successful.
     const aimExporter = new AIMExporter(aw);
 
-    debugger;
     await aimExporter
       .exportToXNAT()
       .then(success => {
