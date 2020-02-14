@@ -200,10 +200,13 @@ export default class XNATSegmentationPanel extends React.Component {
 
     const activeSegmentIndex = this._getActiveSegmentIndex(firstImageId);
 
+    const labelmap3D = this._getLabelmap3D(firstImageId);
+
     this.setState({
       importMetadata,
       segments,
       activeSegmentIndex,
+      labelmap3D,
       importing: false,
       exporting: false,
     });

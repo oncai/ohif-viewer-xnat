@@ -4,8 +4,12 @@ import fetchJSON from '../../utils/IO/fetchJSON.js';
 import fetchArrayBuffer from '../../utils/IO/fetchArrayBuffer.js';
 import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
+import { utils } from '@ohif/core';
+import { Icon } from '@ohif/ui';
 
 import './XNATSegmentationImportMenu.css';
+
+const { studyMetadataManager } = utils;
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -142,7 +146,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
       return true;
     }
 
-    const brushStackState = segmentationState.series[firstImageId];
+    const brushStackState = segmentationModule.state.series[firstImageId];
 
     if (!brushStackState) {
       return false;
@@ -319,7 +323,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @returns {null}
    */
   async _importRoiCollection(segmentation, scan) {
-    const roiList = await fetchJSON(segmentation.getFilesUri).promise;
+    // The URIs fetched have an additional /, so remove it.
+    const getFilesUri = segmentation.getFilesUri.slice(1);
+
+    const roiList = await fetchJSON(getFilesUri).promise;
     const result = roiList.ResultSet.Result;
 
     // Reduce count if no associated file is found (nothing to import, badly deleted roiCollection).
@@ -560,9 +567,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
               className="mask-import-list-confirm btn btn-sm btn-primary"
               onClick={this.onImportButtonClick}
             >
-              <svg stroke="#fff">
-                <use xlinkHref="packages/icr_xnat-roi/assets/icons.svg#icon-xnat-import" />
-              </svg>
+              <Icon name="save" />
             </a>
           )}
         </div>
