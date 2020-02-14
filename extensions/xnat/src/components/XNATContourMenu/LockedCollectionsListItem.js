@@ -3,8 +3,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 
-// TODO
-// import './roiContourMenu.styl';
+import '../XNATContourPanel.css';
 
 const modules = cornerstoneTools.store.modules;
 

@@ -1,8 +1,7 @@
 import React from 'react';
 import { store } from 'cornerstone-tools';
 
-// TODO
-//import './roiContourMenu.styl';
+import '../XNATContourPanel.css';
 
 const modules = store.modules;
 

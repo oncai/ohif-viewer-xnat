@@ -194,7 +194,7 @@ export default class RoiImporter {
 
       if (tool.mode !== 'active' && tool.mode !== 'passive') {
         // If not already active or passive, set passive so contours render.
-        setToolPassive(element, FREEHAND_ROI_3D_TOOL);
+        setToolPassive(FREEHAND_ROI_3D_TOOL);
       }
 
       cornerstone.updateImage(element);

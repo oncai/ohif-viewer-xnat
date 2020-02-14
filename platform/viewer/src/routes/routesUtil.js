@@ -36,6 +36,26 @@ const ViewerLocalFileData = asyncComponent(() =>
 
 const reload = () => window.location.reload();
 
+// Define XNAT Route as whatever is the current
+
+const href = window.location.href;
+const origin = window.location.origin;
+let xnatRoute = href.split('/VIEWER')[0];
+
+console.log(xnatRoute);
+
+xnatRoute = xnatRoute.replace(origin, '');
+
+console.log(xnatRoute);
+
+xnatRoute;
+
+console.log(xnatRoute);
+
+xnatRoute += '/VIEWER';
+
+console.log(xnatRoute);
+
 const ROUTES_DEF = {
   default: {
     viewer: {
@@ -47,7 +67,7 @@ const ROUTES_DEF = {
     //   component: StandaloneRouting,
     // },
     XNATstandaloneViewer: {
-      path: '/VIEWER',
+      path: xnatRoute, //'/VIEWER',
       component: XNATStandaloneRouting,
     },
     list: {

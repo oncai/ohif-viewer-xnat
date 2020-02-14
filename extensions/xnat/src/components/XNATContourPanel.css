@@ -1,0 +1,102 @@
+.peppermint-table {
+  width: 100%;
+}
+
+.peppermint-table tr,
+.peppermint-table th,
+.peppermint-table td {
+  padding: 0px 5px;
+  word-wrap: break-word;
+}
+
+.peppermint-table .centered-cell {
+  text-align: center;
+}
+
+.peppermint-table .left-aligned-cell {
+  text-align: left;
+}
+
+.peppermint-table .right-aligned-cell {
+  text-align: right;
+}
+
+.roi-contour-menu {
+  z-index: 1000;
+  text-align: center;
+  height: 100%;
+  color: #fff;
+}
+
+.roi-contour-menu {
+  height: 100%;
+}
+
+.roi-contour-menu h3 {
+  font-weight: 400;
+}
+
+.roi-contour-menu .roi-contour-menu-header {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 18px;
+  padding-left: 18px;
+  width: 100%;
+}
+
+.roi-contour-menu .roi-contour-menu-header a {
+  height: 30px;
+  width: 80px;
+}
+
+.roi-contour-menu .roi-contour-menu-collection-list-body {
+  height: calc(90% - 180px);
+  padding-right: 18px;
+  padding-left: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+.roi-contour-menu .roi-contour-menu-collection-list-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.roi-contour-menu
+  .roi-contour-menu-collection-list-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+}
+
+.roi-contour-menu .roi-contour-menu-new-button {
+  float: center;
+  width: 100%;
+}
+
+.roi-contour-menu .roi-list-header {
+  border-width: 1px;
+  border-top-style: solid;
+  border-bottom-style: solid;
+}
+
+.roi-contour-menu .roi-contour-menu-footer {
+  margin: 10px;
+  padding: 10px;
+}
+
+.roi-contour-menu .roi-contour-menu-footer .roi-contour-menu-option {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.roi-contour-menu .roi-contour-menu-footer .roi-contour-menu-option svg {
+  background-color: transparent;
+  width: 50px;
+  height: 50px;
+}

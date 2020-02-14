@@ -10,6 +10,7 @@ import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetad
 import onIOCancel from './common/helpers/onIOCancel.js';
 import generateSegmentationMetadata from '../peppermint-tools/utils/generateSegmentationMetadata';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
+import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegmentationImportMenu';
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
@@ -28,7 +29,7 @@ const _getFirstImageId = ({ studyInstanceUid, displaySetInstanceUid }) => {
     );
     return displaySet.images[0].getImageId();
   } catch (error) {
-    console.error('Failed to retrieve image metadata');
+    console.error('Failed to retrieve firstImageId');
     return null;
   }
 };
@@ -382,15 +383,18 @@ export default class XNATSegmentationPanel extends React.Component {
       labelmap3D,
     } = this.state;
 
-    const { ImportCallbackOrComponent, viewports, activeIndex } = this.props;
+    const { viewports, activeIndex } = this.props;
 
     let component;
 
     if (importing) {
       component = (
-        <ImportCallbackOrComponent
+        <XNATSegmentationImportMenu
           onImportComplete={this.onIOComplete}
           onImportCancel={this.onIOCancel}
+          firstImageId={this.firstImageId}
+          labelmap3D={this.labelmap3D}
+          viewportData={viewports[activeIndex]}
         />
       );
     } else if (exporting) {
@@ -410,7 +414,7 @@ export default class XNATSegmentationPanel extends React.Component {
             <div className="segmentation-menu-header">
               <h3>Segments</h3>
               <MenuIOButtons
-                ImportCallbackOrComponent={ImportCallbackOrComponent}
+                ImportCallbackOrComponent={XNATSegmentationImportMenu}
                 ExportCallbackOrComponent={XNATSegmentationExportMenu}
                 onImportButtonClick={() => this.setState({ importing: true })}
                 onExportButtonClick={() => this.setState({ exporting: true })}

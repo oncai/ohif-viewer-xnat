@@ -12,11 +12,7 @@ import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu
 
 import { Icon } from '@ohif/ui';
 
-//import getActiveViewportEnabledElement from '../utils/getActiveViewportEnabledElement.js';
-//import getSeriesInstanceUidFromEnabledElement from '../utils/getSeriesInstanceUidFromEnabledElement.js';
-
-// TODO
-// import style from './roiContourMenu.styl';
+import './XNATContourPanel.css';
 
 const modules = cornerstoneTools.store.modules;
 const { EVENTS } = cornerstoneTools;
@@ -476,11 +472,7 @@ export default class XNATContourMenu extends React.Component {
       );
     } else {
       component = (
-        <div
-          style={{ padding: '15px', color: 'white' }}
-          className="roi-contour-menu-component"
-        >
-          {/*  */}
+        <div className="roi-contour-menu">
           <div>
             <h3>ROI Contour Collections</h3>
             <MenuIOButtons

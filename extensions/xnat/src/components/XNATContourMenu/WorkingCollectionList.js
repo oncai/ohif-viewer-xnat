@@ -1,8 +1,7 @@
 import React from 'react';
 import WorkingCollectionListItem from './WorkingCollectionListItem.js';
 
-// TODO
-//import './roiContourMenu.styl';
+import '../XNATContourPanel.css';
 
 /**
  * @class WorkingRoiCollectionList - Renders a list of

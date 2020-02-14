@@ -62,6 +62,8 @@ class XNATStandaloneRouting extends Component {
 
       rootPlusPort += pathLessViewer;
 
+      console.log(rootPlusPort);
+
       commandsManager.runCommand('xnatSetRootUrl', {
         url: rootPlusPort,
       });
