@@ -14,7 +14,7 @@ const modules = cornerstoneTools.store.modules;
 
 const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
 
-const { getToolForElement, setToolPassiveForElement } = cornerstoneTools;
+const { getToolForElement, setToolPassive } = cornerstoneTools;
 
 /**
  * @class RoiImporter - Imports contour-based ROI formats to
