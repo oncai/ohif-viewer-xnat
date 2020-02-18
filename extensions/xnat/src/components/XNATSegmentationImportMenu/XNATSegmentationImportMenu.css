@@ -1,0 +1,94 @@
+.mask-import-list-dialog {
+  z-index: 1000;
+  max-height: 100%;
+  width: 100%;
+  margin: auto;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 10px;
+  border-radius: 8px;
+  text-align: center;
+  color: #fff;
+}
+
+.mask-import-list-dialog h5,
+.mask-import-list-dialog label {
+  font-weight: 400;
+  float: left;
+}
+
+.mask-import-list-dialog .mask-import-list-header {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mask-import-list-dialog h3 {
+  font-weight: 400;
+  text-align: left;
+}
+
+.mask-import-list-dialog .mask-import-list-cancel {
+  text-align: right;
+  margin-top: 16px;
+}
+
+.mask-import-list-dialog svg {
+  background-color: transparent;
+  width: 32px;
+  height: 32px;
+  fill: #fff;
+}
+
+.mask-import-list-dialog .roiImportListTableButton {
+  width: 100%;
+}
+
+.mask-import-list-dialog .mask-import-list-body {
+  max-height: 300px;
+  padding-right: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: inline-block;
+}
+
+.mask-import-list-dialog .mask-import-list-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.mask-import-list-dialog .mask-import-list-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+}
+
+.mask-import-list-dialog .mask-import-list-body table,
+.mask-import-list-dialog tr,
+.mask-import-list-dialog th {
+  padding: 0px 10px;
+}
+
+.mask-import-list-dialog .mask-import-list-body th {
+  white-space: nowrap;
+}
+
+.mask-import-list-dialog .mask-import-list-body td {
+  white-space: nowrap;
+  padding: 0px 10px;
+}
+
+.mask-import-list-dialog .mask-import-list-footer {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mask-import-list-dialog .mask-import-left-Cell {
+  text-align: left;
+}
+
+.mask-import-list-dialog .fa-spin {
+  float: center;
+}

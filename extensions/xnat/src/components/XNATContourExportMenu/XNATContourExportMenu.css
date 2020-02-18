@@ -1,0 +1,86 @@
+.roi-export-list-dialog {
+  z-index: 1000;
+  max-height: 100%;
+  width: 100%;
+  margin: auto;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 10px;
+  border-radius: 8px;
+  text-align: center;
+  color: #fff;
+}
+
+.roi-export-list-dialog h5,
+.roi-export-list-dialog label {
+  font-weight: 400;
+  float: left;
+}
+
+.roi-export-list-dialog .roi-export-list-header {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: space-between;
+}
+
+.roi-export-list-dialog h3 {
+  font-weight: 400;
+  text-align: left;
+}
+
+.roi-export-list-dialog .roi-export-list-cancel {
+  text-align: right;
+  margin-top: 16px;
+}
+
+.roi-export-list-dialog svg {
+  background-color: transparent;
+  width: 32px;
+  height: 32px;
+  fill: #fff;
+}
+
+.roi-export-list-dialog .roi-export-list-body {
+  max-height: 300px;
+  padding-right: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: inline-block;
+}
+
+.roi-export-list-dialog .roi-export-list-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.roi-export-list-dialog .roi-export-list-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+}
+
+.roi-export-list-dialog .roi-export-list-body .left-aligned-cell {
+  text-align: left;
+}
+
+.roi-export-list-dialog .roi-export-list-body table,
+.roi-export-list-dialog tr,
+.roi-export-list-dialog th,
+.roi-export-list-dialog td {
+  padding: 0px 10px;
+}
+
+.roi-export-list-dialog .roi-export-list-body th {
+  white-space: nowrap;
+}
+
+.roi-export-list-dialog .roi-export-list-footer {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roi-export-list-dialog .roi-export-list-footer input {
+  margin: 5px;
+}
