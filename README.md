@@ -118,7 +118,7 @@ Great, now your viewer build is wrapped in an XNAT plugin, you are ready to buil
 
 And if all is successful your resulting XNAT plugin jar will be located in `build/libs`.
 
-## Depolyment
+## Deployment
 
 Move your built jar to the plugin folder of your XNAT. `ohif-viewer-XNAT-plugin` depends on the [xnat-roi-plugin](https://bitbucket.org/icrimaginginformatics/xnat-roi-plugin). At the time of writing the pre-releases aren't following semantic versioning, hwoever this will change in the near future. Currently, a compatible version of the plugin is sitting in the `ohif-viewer-XNAT-plugin` repo under `dist/`. Copy over this plugin to your XNAT plugin directory also. Restart Tomcat (or your xnat-web) container if using [`xnat-docker-compose`](https://github.com/NrgXnat/xnat-docker-compose).
 
