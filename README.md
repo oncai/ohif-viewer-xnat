@@ -1,3 +1,12 @@
+# OHIF-Viewer-XNAT
+
+***The OHIF-XNAT viewer is based on a fork of [OHIF Viewer 2.0](https://github.com/OHIF/Viewers)) and uses the [React](https://reactjs.org/) JavaScript library.***
+This repository is included as a submodule on the dev branch of the [OHIF Viewer XNAT Plugin](https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin/src/dev/) repository.
+
+***--------------------***
+
+# Original OHIF README:
+
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <div align="center">
