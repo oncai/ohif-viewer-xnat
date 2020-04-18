@@ -84,6 +84,11 @@ import unlink from './icons/unlink.svg';
 import user from './icons/user.svg';
 import youtube from './icons/youtube.svg';
 
+// ICR/XNAT icons
+import xnatOhifLogo from './icons/xnat-ohif-logo.svg';
+import xnatIcrLogo from './icons/xnat-icr-logo.svg'
+
+
 const ICONS = {
   user,
   sort,
@@ -168,6 +173,9 @@ const ICONS = {
   lung,
   liver,
   save: saveRegular,
+  // ICR/XNAT icons
+  'xnat-ohif-logo': xnatOhifLogo,
+  'xnat-icr-logo': xnatIcrLogo,
 };
 
 /**
