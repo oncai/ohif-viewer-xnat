@@ -86,7 +86,8 @@ import youtube from './icons/youtube.svg';
 
 // ICR/XNAT icons
 import xnatOhifLogo from './icons/xnat-ohif-logo.svg';
-import xnatIcrLogo from './icons/xnat-icr-logo.svg'
+import xnatIcrLogo from './icons/xnat-icr-logo.svg';
+import xnatSettings from './icons/xnat-settings.svg';
 
 
 const ICONS = {
@@ -176,6 +177,7 @@ const ICONS = {
   // ICR/XNAT icons
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
+  'xnat-settings': xnatSettings,
 };
 
 /**
