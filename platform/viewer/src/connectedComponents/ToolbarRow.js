@@ -56,7 +56,7 @@ class ToolbarRow extends Component {
         {
           value: 'studies',
           icon: 'th-large',
-          bottomLabel: this.props.t('Series'),
+          bottomLabel: this.props.t('Scans'),
         },
       ],
       right: [],

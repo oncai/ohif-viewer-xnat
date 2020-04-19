@@ -14,9 +14,12 @@ import AppContext from './../../context/AppContext';
 function OptionsElement(props) {
   return (
     <React.Fragment>
-      <Icon name="xnat-settings" className="dd-item-icon" />
+      <Icon
+        name="xnat-settings"
+        className="dd-item-icon"
+        style={{ margin: '0 5 0 0' }}
+      />
       <span className="dd-title">Settings</span>
-
     </React.Fragment>
   );
 };
