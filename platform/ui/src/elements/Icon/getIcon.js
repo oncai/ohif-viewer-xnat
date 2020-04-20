@@ -88,6 +88,7 @@ import youtube from './icons/youtube.svg';
 import xnatOhifLogo from './icons/xnat-ohif-logo.svg';
 import xnatIcrLogo from './icons/xnat-icr-logo.svg';
 import xnatSettings from './icons/xnat-settings.svg';
+import xnatAnnotations from './icons/xnat-annotations.svg';
 
 
 const ICONS = {
@@ -178,6 +179,7 @@ const ICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
   'xnat-settings': xnatSettings,
+  'xnat-annotations': xnatAnnotations,
 };
 
 /**

@@ -10,7 +10,7 @@
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <title id="title">Measure Non-Target</title>
+<!--  <title id="title">Measure Non-Target</title>-->
   <circle
     id="icon-tools-measure-non-target-circle"
     cx="6.5"
