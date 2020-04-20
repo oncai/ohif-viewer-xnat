@@ -122,6 +122,15 @@ const definitions = [
         commandOptions: { toolName: 'Angle' },
       },
       {
+        id: 'Bidirectional',
+        label: 'Bidirectional',
+        icon: 'measure-target',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'Bidirectional' },
+      },
+      {
         id: 'EllipticalRoi',
         label: 'Ellipse',
         icon: 'circle-o',
@@ -212,15 +221,6 @@ const definitions = [
         //
         type: TOOLBAR_BUTTON_TYPES.COMMAND,
         commandName: 'clearAnnotations',
-      },
-      {
-        id: 'Bidirectional',
-        label: 'Bidirectional',
-        icon: 'measure-target',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Bidirectional' },
       },
       {
         id: 'Eraser',
