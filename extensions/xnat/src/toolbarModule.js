@@ -9,13 +9,13 @@ const TOOLBAR_BUTTON_TYPES = {
 const definitions = [
   {
     id: 'freehandRoiTools',
-    label: 'ROI',
-    icon: 'level',
+    label: 'Contour',
+    icon: 'xnat-contour',
     buttons: [
       {
         id: 'FreehandRoi',
         label: 'Draw',
-        icon: 'level',
+        icon: 'xnat-contour-freehand',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.FREEHAND_ROI_3D_TOOL },
@@ -23,7 +23,7 @@ const definitions = [
       {
         id: 'FreehandRoiSculptor',
         label: 'Sculpt',
-        icon: 'level',
+        icon: 'xnat-contour-freehand-sculpt',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL },
@@ -32,13 +32,13 @@ const definitions = [
   },
   {
     id: 'brushTools',
-    label: 'Segment',
-    icon: 'level',
+    label: 'Mask',
+    icon: 'xnat-mask',
     buttons: [
       {
         id: 'Brush',
         label: 'Manual',
-        icon: 'level',
+        icon: 'xnat-mask-manual',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_TOOL },
@@ -46,7 +46,7 @@ const definitions = [
       {
         id: 'Brush3DHUGatedTool',
         label: 'Smart CT',
-        icon: 'level',
+        icon: 'xnat-mask-smart-ct',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL },
@@ -54,7 +54,7 @@ const definitions = [
       {
         id: 'Brush3DAutoGatedTool',
         label: 'Auto',
-        icon: 'level',
+        icon: 'xnat-mask-auto',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },

@@ -89,6 +89,14 @@ import xnatOhifLogo from './icons/xnat-ohif-logo.svg';
 import xnatIcrLogo from './icons/xnat-icr-logo.svg';
 import xnatSettings from './icons/xnat-settings.svg';
 import xnatAnnotations from './icons/xnat-annotations.svg';
+import xnatContour from './icons/xnat-contour.svg';
+import xnatMask from './icons/xnat-mask.svg';
+import xnatContourFreehand from './icons/xnat-contour-freehand-draw.svg';
+import xnatContourFreehandSculpt from './icons/xnat-contour-freehand-sculpt.svg';
+import xnatMaskManual from './icons/xnat-mask-manual.svg';
+import xnatMaskSmartCt from './icons/xnat-mask-smart-ct.svg';
+import xnatMaskAuto from './icons/xnat-mask-auto.svg';
+
 
 
 const ICONS = {
@@ -180,6 +188,13 @@ const ICONS = {
   'xnat-icr-logo': xnatIcrLogo,
   'xnat-settings': xnatSettings,
   'xnat-annotations': xnatAnnotations,
+  'xnat-contour': xnatContour,
+  'xnat-mask': xnatMask,
+  'xnat-contour-freehand': xnatContourFreehand,
+  'xnat-contour-freehand-sculpt': xnatContourFreehandSculpt,
+  'xnat-mask-manual': xnatMaskManual,
+  'xnat-mask-smart-ct': xnatMaskSmartCt,
+  'xnat-mask-auto': xnatMaskAuto,
 };
 
 /**
