@@ -168,8 +168,8 @@ const definitions = [
     ],
   },
   {
-    id: 'More',
-    label: 'More',
+    id: 'Tools',
+    label: 'Tools',
     icon: 'ellipse-circle',
     buttons: [
       {
@@ -199,6 +199,13 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: { toolName: 'DragProbe' },
       },
+    ],
+  },
+  {
+    id: 'Commands',
+    label: 'Commands',
+    icon: 'ellipse-circle',
+    buttons: [
       {
         id: 'Invert',
         label: 'Invert',
