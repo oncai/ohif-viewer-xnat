@@ -148,6 +148,23 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: { toolName: 'RectangleRoi' },
       },
+      {
+        id: 'Eraser',
+        label: 'Eraser',
+        icon: 'eraser',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'Eraser' },
+      },
+      {
+        id: 'Clear',
+        label: 'Clear',
+        icon: 'trash',
+        //
+        type: TOOLBAR_BUTTON_TYPES.COMMAND,
+        commandName: 'clearAnnotations',
+      },
     ],
   },
   {
@@ -215,23 +232,6 @@ const definitions = [
         commandName: 'flipViewportVertical',
       },
       {
-        id: 'Clear',
-        label: 'Clear',
-        icon: 'trash',
-        //
-        type: TOOLBAR_BUTTON_TYPES.COMMAND,
-        commandName: 'clearAnnotations',
-      },
-      {
-        id: 'Eraser',
-        label: 'Eraser',
-        icon: 'eraser',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Eraser' },
-      },
-      {
         id: 'Download',
         label: 'Download',
         icon: 'create-screen-capture',
@@ -252,7 +252,7 @@ const definitions = [
     type: TOOLBAR_BUTTON_TYPES.COMMAND,
     commandName: 'setCornerstoneLayout',
     context: 'ACTIVE_VIEWPORT::VTK',
-  }
+  },
 ];
 
 export default {

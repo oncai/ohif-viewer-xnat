@@ -245,7 +245,7 @@ const commandsModule = ({ servicesManager }) => {
     },
     setCornerstoneLayout: () => {
       setCornerstoneLayout();
-    }
+    },
   };
 
   const definitions = {
