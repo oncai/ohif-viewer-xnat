@@ -11,16 +11,16 @@ export default {
       target: 'xnat-navigation-panel',
     },
     {
-      icon: 'list',
-      label: 'Seg',
-      from: 'right',
-      target: 'xnat-segmentation-panel',
-    },
-    {
-      icon: 'list',
-      label: 'ROI',
+      icon: 'xnat-contour',
+      label: 'Contours',
       from: 'right',
       target: 'xnat-contour-panel',
+    },
+    {
+      icon: 'xnat-mask',
+      label: 'Masks',
+      from: 'right',
+      target: 'xnat-segmentation-panel',
     },
   ],
   components: [
