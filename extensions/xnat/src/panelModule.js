@@ -5,6 +5,12 @@ import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 export default {
   menuOptions: [
     {
+      icon: 'th-large',
+      label: 'Scans',
+      from: 'left',
+      target: 'studies',
+    },
+    {
       icon: 'list',
       label: 'XNAT Nav',
       from: 'left',
