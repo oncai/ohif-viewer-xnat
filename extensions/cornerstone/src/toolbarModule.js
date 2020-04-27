@@ -239,8 +239,8 @@ const definitions = [
         commandName: 'flipViewportVertical',
       },
       {
-        id: 'Download',
-        label: 'Download',
+        id: 'Snapshot',
+        label: 'Snapshot',
         icon: 'create-screen-capture',
         //
         type: TOOLBAR_BUTTON_TYPES.BUILT_IN,
