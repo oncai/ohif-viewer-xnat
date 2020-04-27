@@ -96,7 +96,9 @@ import xnatContourFreehandSculpt from './icons/xnat-contour-freehand-sculpt.svg'
 import xnatMaskManual from './icons/xnat-mask-manual.svg';
 import xnatMaskSmartCt from './icons/xnat-mask-smart-ct.svg';
 import xnatMaskAuto from './icons/xnat-mask-auto.svg';
-
+import xnatTreeMinus from './icons/xnat-tree-minus.svg';
+import xnatTreePlus from './icons/xnat-tree-plus.svg';
+import xnatTreeShow from './icons/xnat-tree-show.svg';
 
 
 const ICONS = {
@@ -195,6 +197,9 @@ const ICONS = {
   'xnat-mask-manual': xnatMaskManual,
   'xnat-mask-smart-ct': xnatMaskSmartCt,
   'xnat-mask-auto': xnatMaskAuto,
+  'xnat-tree-plus': xnatTreePlus,
+  'xnat-tree-minus': xnatTreeMinus,
+  'xnat-tree-show': xnatTreeShow,
 };
 
 /**

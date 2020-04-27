@@ -205,7 +205,7 @@ export default class XNATSession extends React.Component {
             className={sessionButtonClassNames}
             onClick={this.onViewSessionClick}
           >
-            <Icon name="chevron-down" />
+            <Icon name="xnat-tree-show" />
           </a>
           <XNATSessionLabel
             ID={ID}
