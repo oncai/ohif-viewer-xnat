@@ -1,3 +1,5 @@
+/*ToDo: remove this file*/
+
 .peppermint-table {
   width: 100%;
 }
@@ -34,6 +36,7 @@
 
 .roi-contour-menu h3 {
   font-weight: 400;
+  font-size: 24px;
 }
 
 .roi-contour-menu .roi-contour-menu-header {

@@ -2,7 +2,7 @@ import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
 
-import '../XNATContourPanel.css';
+import '../XNATContourPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -39,22 +39,20 @@ export default class RoiContourSettings extends React.Component {
     const { interpolate } = this.state;
 
     return (
-      <div
-        style={{
-          backgroundColor: 'var(--ui-gray-dark)',
-          outline: '1px solid var(--ui-border-color)',
-          borderRadius: '4px',
-        }}
-        className="roi-contour-menu-footer"
-      >
+      <div className="roi-contour-menu-footer">
         <h3>Settings</h3>
         <div
+          className="roi-contour-menu-option"
           style={{ cursor: 'select' }}
           onClick={this.onInterpolateToggleClick}
         >
           <label>
-            {interpolate ? <Icon name="check" /> : <Icon name="times" />}
-            Interpolation
+            {interpolate ? (
+              <Icon name="check" style={{ marginRight: 4 }} />
+            ) : (
+              <div className="empty-check-box" />
+            )}
+            <em>Interpolation</em>
           </label>
         </div>
       </div>
