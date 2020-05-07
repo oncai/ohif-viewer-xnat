@@ -99,6 +99,9 @@ import xnatMaskAuto from './icons/xnat-mask-auto.svg';
 import xnatTreeMinus from './icons/xnat-tree-minus.svg';
 import xnatTreePlus from './icons/xnat-tree-plus.svg';
 import xnatTreeShow from './icons/xnat-tree-show.svg';
+import xnatCancel from './icons/xnat-cancel.svg';
+import xnatImport from './icons/xnat-import.svg';
+import xnatExport from './icons/xnat-export.svg';
 
 
 const ICONS = {
@@ -200,6 +203,9 @@ const ICONS = {
   'xnat-tree-plus': xnatTreePlus,
   'xnat-tree-minus': xnatTreeMinus,
   'xnat-tree-show': xnatTreeShow,
+  'xnat-cancel': xnatCancel,
+  'xnat-import': xnatImport,
+  'xnat-export': xnatExport,
 };
 
 /**

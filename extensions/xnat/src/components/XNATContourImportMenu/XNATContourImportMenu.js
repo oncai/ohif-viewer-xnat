@@ -7,7 +7,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
 import { Icon } from '@ohif/ui';
 
-import './XNATContourImportMenu.css';
+import './XNATContourImportMenu.styl';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -514,13 +514,13 @@ export default class XNATContourImportMenu extends React.Component {
     return (
       <div className="roi-import-list-dialog">
         <div className="roi-import-list-header">
-          <h3>Import ROI Contour Collections</h3>
+          <h3>Import Contour Collections</h3>
           {importing ? null : (
             <a
-              className="roi-import-list-cancel btn btn-sm btn-secondary"
+              className="roi-import-list-cancel"
               onClick={this.onCloseButtonClick}
             >
-              <Icon name="step-backward" />
+              <Icon name="xnat-cancel" />
             </a>
           )}
         </div>
@@ -530,10 +530,10 @@ export default class XNATContourImportMenu extends React.Component {
         <div className="roi-import-list-footer">
           {importing ? null : (
             <a
-              className="roi-import-list-confirm btn btn-sm btn-primary"
+              className="roi-import-list-confirm btn btn-primary"
               onClick={this.onImportButtonClick}
             >
-              <Icon name="save" />
+              <Icon name="xnat-import" />
             </a>
           )}
         </div>

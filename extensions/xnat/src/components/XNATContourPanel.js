@@ -245,7 +245,7 @@ export default class XNATContourMenu extends React.Component {
     const activeROIContourIndex = freehand3DStore.setters.ROIContourAndSetIndexActive(
       seriesInstanceUid,
       'DEFAULT',
-      'Unnamed Lesion'
+      'Unnamed ROI'
     );
 
     const workingCollection = this.constructor._workingCollection(
