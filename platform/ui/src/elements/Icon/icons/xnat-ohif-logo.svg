@@ -9,6 +9,7 @@
   stroke-width="2.5"
   strokeMiterlimit="10"
 >
+    <title id="title">OHIF-XNAT Viewer</title>
     <g id="icon-ohif-logo-group" stroke="#fff" stroke-width="8" stroke-miterlimit="10">
       <rect x="3.4" y="3.4" width="51.2" height="51.2" rx="2.7" ry="2.7"></rect>
       <rect x="70.8" y="3.4" width="51.2" height="51.2" rx="1" ry="2.7"></rect>

@@ -14,13 +14,27 @@ export default class RoiContourSettings extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    const { interpolate } = modules.freehand3D.state;
+    const { interpolate, displayStats } = modules.freehand3D.state;
 
     this.state = {
       interpolate,
+      displayStats,
     };
 
+    this.onDisplayStatsToggleClick = this.onDisplayStatsToggleClick.bind(this);
     this.onInterpolateToggleClick = this.onInterpolateToggleClick.bind(this);
+  }
+
+  /**
+   * onDisplayStatsToggleClick - A Callback that toggles the display of stats
+   * window on the Freehand3DTool.
+   *
+   * @returns {null}
+   */
+  onDisplayStatsToggleClick() {
+    modules.freehand3D.setters.toggleDisplayStats();
+
+    this.setState({ displayStats: modules.freehand3D.state.displayStats });
   }
 
   /**
@@ -36,7 +50,7 @@ export default class RoiContourSettings extends React.Component {
   }
 
   render() {
-    const { interpolate } = this.state;
+    const { interpolate, displayStats } = this.state;
 
     return (
       <div className="roi-contour-menu-footer">
@@ -53,6 +67,20 @@ export default class RoiContourSettings extends React.Component {
               <div className="empty-check-box" />
             )}
             <em>Interpolation</em>
+          </label>
+        </div>
+        <div
+          className="roi-contour-menu-option"
+          style={{ cursor: 'select' }}
+          onClick={this.onDisplayStatsToggleClick}
+        >
+          <label>
+            {displayStats ? (
+              <Icon name="check" style={{ marginRight: 4 }} />
+            ) : (
+              <div className="empty-check-box" />
+            )}
+            <em>Stats</em>
           </label>
         </div>
       </div>
