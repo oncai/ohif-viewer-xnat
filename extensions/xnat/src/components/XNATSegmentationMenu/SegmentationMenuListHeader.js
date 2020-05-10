@@ -1,6 +1,6 @@
 import React from 'react';
 
-import '../XNATSegmentationPanel.css';
+import '../XNATSegmentationPanel.styl';
 
 /**
  * @class SegmentationMenuListHeader - Renders the header for the
@@ -16,31 +16,31 @@ export default class SegmentationMenuListHeader extends React.Component {
 
     return (
       <React.Fragment>
-        <tr>
+        <tr className="segmentation-menu-list-bordered">
           <th
             colSpan="2"
-            className="left-aligned-cell segmentation-menu-list-bordered"
+            className="left-aligned-cell"
           >
             {importMetadata.name}
           </th>
           <th
             colSpan="2"
-            className="right-aligned-cell segmentation-menu-list-bordered"
+            className="right-aligned-cell"
           >
             {importMetadata.label}
           </th>
         </tr>
         {importMetadata.type && (
-          <tr>
+          <tr className="segmentation-menu-list-bordered">
             <th
               colSpan="2"
-              className="left-aligned-cell segmentation-menu-list-bordered"
+              className="left-aligned-cell"
             >
               Type: {importMetadata.type}
             </th>
             <th
               colSpan="2"
-              className="right-aligned-cell segmentation-menu-list-bordered"
+              className="right-aligned-cell"
             >
               Modified: {importMetadata.modified}
             </th>

@@ -3,7 +3,7 @@ import cornerstoneTools from 'cornerstone-tools';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
-import './XNATSegmentationExportMenu.css';
+import './XNATSegmentationExportMenu.styl';
 
 export default class MaskExportListItem extends React.Component {
   constructor(props = {}) {

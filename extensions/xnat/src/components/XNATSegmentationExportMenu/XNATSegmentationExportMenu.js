@@ -8,7 +8,7 @@ import SegmentationExportListItem from './SegmentationExportListItem.js';
 import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 
-import './XNATSegmentationExportMenu.css';
+import './XNATSegmentationExportMenu.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -202,7 +202,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
             ) : (
               <tr className="mask-export-list-collection-info">
                 <th colSpan="3" className="left-aligned-cell">
-                  New SEG ROI Collection
+                  New Mask Collection
                 </th>
               </tr>
             )}
@@ -227,13 +227,13 @@ export default class XNATSegmentationExportMenu extends React.Component {
     return (
       <div className="mask-export-list-dialog">
         <div className="mask-export-list-header">
-          <h3>Export Segmentations</h3>
+          <h3>Export Mask Collections</h3>
           {!exporting && (
             <a
               className="mask-export-list-cancel btn btn-sm btn-secondary"
               onClick={this.onCloseButtonClick}
             >
-              <Icon name="step-backward" />
+              <Icon name="xnat-cancel" />
             </a>
           )}
         </div>
@@ -261,7 +261,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
               className="btn btn-sm btn-primary"
               onClick={this.onExportButtonClick}
             >
-              <Icon name="save" />
+              <Icon name="xnat-export" />
             </a>
           </div>
         )}

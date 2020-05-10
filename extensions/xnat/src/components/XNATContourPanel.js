@@ -12,7 +12,6 @@ import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu
 
 import { Icon } from '@ohif/ui';
 
-// import './XNATContourPanel.css';
 import './XNATContourPanel.styl';
 
 const modules = cornerstoneTools.store.modules;

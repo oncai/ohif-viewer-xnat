@@ -530,7 +530,7 @@ export default class XNATContourImportMenu extends React.Component {
         <div className="roi-import-list-footer">
           {importing ? null : (
             <a
-              className="roi-import-list-confirm btn btn-primary"
+              className="btn btn-primary"
               onClick={this.onImportButtonClick}
             >
               <Icon name="xnat-import" />

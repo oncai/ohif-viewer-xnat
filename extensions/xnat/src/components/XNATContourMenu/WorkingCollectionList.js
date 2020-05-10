@@ -26,11 +26,11 @@ export default class WorkingRoiCollectionList extends React.Component {
     return (
       <React.Fragment>
         <tr className="roi-list-header">
-          <th />
-          <th colSpan="4"> New Contour Collection</th>
+          {/*<th />*/}
+          <th colSpan="4">New Contour Collection</th>
         </tr>
 
-        <tr>
+        <tr className="roi-list-header">
           <th>Draw</th>
           <th>Name</th>
           <th className="centered-cell">Contours</th>

@@ -1,7 +1,7 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 
-import '../XNATSegmentationPanel.css';
+import '../XNATSegmentationPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const { configuration } = segmentationModule;
