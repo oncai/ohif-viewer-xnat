@@ -102,6 +102,7 @@ import xnatTreeShow from './icons/xnat-tree-show.svg';
 import xnatCancel from './icons/xnat-cancel.svg';
 import xnatImport from './icons/xnat-import.svg';
 import xnatExport from './icons/xnat-export.svg';
+import xnatHelp from './icons/xnat-help.svg';
 
 
 const ICONS = {
@@ -206,6 +207,7 @@ const ICONS = {
   'xnat-cancel': xnatCancel,
   'xnat-import': xnatImport,
   'xnat-export': xnatExport,
+  'xnat-help': xnatHelp,
 };
 
 /**

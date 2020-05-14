@@ -4,7 +4,7 @@ import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 import ConnectedUserPreferencesForm from '../../connectedComponents/ConnectedUserPreferencesForm';
-import { Dropdown, AboutContent, withModal, Icon } from '@ohif/ui';
+import { Dropdown, AboutContent, withModal, Icon, ICRHelpContent } from '@ohif/ui';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
 
@@ -48,6 +48,15 @@ function Header(props) {
       //       title: t('OHIF Viewer - About'),
       //     }),
       // },
+      {
+        title: t('ICR Help'),
+        icon: { name: 'xnat-help' },
+        onClick: () =>
+          show({
+            content: ICRHelpContent,
+            title: t('Using Contour & Mask Tools'),
+          }),
+      },
       {
         title: t('Preferences'),
         icon: {
