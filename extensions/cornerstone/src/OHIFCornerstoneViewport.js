@@ -6,6 +6,9 @@ import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 import handleSegmentationStorage from './handleSegmentationStorage.js';
 
+//xnat overlay
+import XNATViewportOverlay from './xnat/XNATViewportOverlay';
+
 const { StackManager } = OHIF.utils;
 
 // Metadata configuration
@@ -264,6 +267,7 @@ class OHIFCornerstoneViewport extends Component {
           viewportIndex={viewportIndex}
           imageIds={imageIds}
           imageIdIndex={currentImageIdIndex}
+          viewportOverlayComponent={XNATViewportOverlay}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}
           // isPlaying={false}
