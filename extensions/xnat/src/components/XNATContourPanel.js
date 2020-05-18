@@ -22,7 +22,7 @@ const { EVENTS } = cornerstoneTools;
  * and renaming ROI Contours. As well as setting configuration settings for
  * the Freehand3Dtool.
  */
-export default class XNATContourMenu extends React.Component {
+export default class XNATContourPanel extends React.Component {
   constructor(props = {}) {
     super(props);
 
