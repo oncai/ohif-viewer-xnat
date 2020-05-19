@@ -12,7 +12,7 @@ import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu
 
 import { Icon } from '@ohif/ui';
 
-import './XNATContourPanel.css';
+import './XNATContourPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 const { EVENTS } = cornerstoneTools;
@@ -22,7 +22,7 @@ const { EVENTS } = cornerstoneTools;
  * and renaming ROI Contours. As well as setting configuration settings for
  * the Freehand3Dtool.
  */
-export default class XNATContourMenu extends React.Component {
+export default class XNATContourPanel extends React.Component {
   constructor(props = {}) {
     super(props);
 
@@ -244,7 +244,7 @@ export default class XNATContourMenu extends React.Component {
     const activeROIContourIndex = freehand3DStore.setters.ROIContourAndSetIndexActive(
       seriesInstanceUid,
       'DEFAULT',
-      'Unnamed Lesion'
+      'Unnamed ROI'
     );
 
     const workingCollection = this.constructor._workingCollection(
@@ -473,41 +473,43 @@ export default class XNATContourMenu extends React.Component {
     } else {
       component = (
         <div className="roi-contour-menu">
-          <div>
-            <h3>ROI Contour Collections</h3>
-            <MenuIOButtons
-              ImportCallbackOrComponent={XNATContourImportMenu}
-              ExportCallbackOrComponent={XNATContourExportMenu}
-              onImportButtonClick={() => this.setState({ importing: true })}
-              onExportButtonClick={() => this.setState({ exporting: true })}
-            />
-          </div>
+          <div className="roi-contour-menu-component">
+            <div className="roi-contour-menu-header">
+              <h3>Contour Collections</h3>
+              <MenuIOButtons
+                ImportCallbackOrComponent={XNATContourImportMenu}
+                ExportCallbackOrComponent={XNATContourExportMenu}
+                onImportButtonClick={() => this.setState({ importing: true })}
+                onExportButtonClick={() => this.setState({ exporting: true })}
+              />
+            </div>
 
-          {/* CONTOUR LIST */}
-          <div className="roi-contour-menu-collection-list-body">
-            <table className="peppermint-table">
-              <tbody>
-                {seriesInstanceUid && (
-                  <WorkingCollectionList
-                    workingCollection={workingCollection}
-                    activeROIContourIndex={activeROIContourIndex}
-                    onRoiChange={this.onRoiChange}
-                    onNewRoiButtonClick={this.onNewRoiButtonClick}
-                    seriesInstanceUid={seriesInstanceUid}
-                  />
-                )}
-                {lockedCollections.length !== 0 && (
-                  <LockedCollectionsList
-                    lockedCollections={lockedCollections}
-                    onUnlockClick={this.onUnlockConfirmClick} //onUnlockClick={this.confirmUnlockOnUnlockClick} // TODO - Confirmation.
-                    seriesInstanceUid={seriesInstanceUid}
-                  />
-                )}
-              </tbody>
-            </table>
-          </div>
+            {/* CONTOUR LIST */}
+            <div className="roi-contour-menu-collection-list-body">
+              <table className="peppermint-table">
+                <tbody>
+                  {seriesInstanceUid && (
+                    <WorkingCollectionList
+                      workingCollection={workingCollection}
+                      activeROIContourIndex={activeROIContourIndex}
+                      onRoiChange={this.onRoiChange}
+                      onNewRoiButtonClick={this.onNewRoiButtonClick}
+                      seriesInstanceUid={seriesInstanceUid}
+                    />
+                  )}
+                  {lockedCollections.length !== 0 && (
+                    <LockedCollectionsList
+                      lockedCollections={lockedCollections}
+                      onUnlockClick={this.onUnlockConfirmClick} //onUnlockClick={this.confirmUnlockOnUnlockClick} // TODO - Confirmation.
+                      seriesInstanceUid={seriesInstanceUid}
+                    />
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <RoiContourSettings />
+            <RoiContourSettings />
+          </div>
         </div>
       );
     }

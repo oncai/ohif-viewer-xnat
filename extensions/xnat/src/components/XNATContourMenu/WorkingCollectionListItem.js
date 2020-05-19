@@ -1,7 +1,7 @@
 import React from 'react';
 import { store } from 'cornerstone-tools';
 
-import '../XNATContourPanel.css';
+import '../XNATContourPanel.styl';
 
 const modules = store.modules;
 

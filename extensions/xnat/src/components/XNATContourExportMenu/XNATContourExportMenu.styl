@@ -1,0 +1,87 @@
+.roi-export-list-dialog
+  color: var(--text-primary-color)
+  z-index: 1000
+
+  max-height: 100%
+  width: 100%
+  margin: auto
+
+  padding-right: 10px
+  padding-left: 10px
+  padding-top: 5px
+  padding-bottom: 10px
+  border-radius: 8px
+  text-align: center
+
+  hr
+    border: none;
+    height: 1px;
+    background-color: var(--ui-border-color)
+
+  h5, label
+    font-weight: 400
+    float: left
+
+
+  .roi-export-list-header
+    display: -webkit-flex
+    display: -ms-flexbox
+    display: flex
+    justify-content: space-between
+
+  h3
+    font-weight: 400
+    text-align: left
+
+  .roi-export-list-cancel
+    text-align: right
+    margin: 5px
+
+    svg
+      color: var(--text-primary-color)
+      background-color: transparent
+      width: 16px
+      height: 16px
+      fill: var(--text-secondary-color)
+
+  svg
+    background-color: transparent
+    width: 18px
+    height: 18px
+    fill: var(--text-primary-color)
+
+  .roi-export-list-body
+    max-height: 300px
+    padding-right: 18px
+    overflow-y: auto
+    overflow-x: hidden
+    display: inline-block
+    scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
+
+    &::-webkit-scrollbar
+      background: var(--ui-gray-darkest)
+      width: 10px
+
+    &::-webkit-scrollbar-thumb
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      border-right: var(--ui-gray-darkest)
+
+    .left-aligned-cell
+      text-align: left
+
+  .roi-export-list-body table, tr, th, td
+    padding: 0px 10px
+
+  .roi-export-list-body th
+    white-space: nowrap
+
+  .roi-export-list-footer
+    display: -webkit-flex
+    display: -ms-flexbox
+    display: flex
+    justify-content: space-between
+    align-items: center
+
+    input
+      margin: 5px

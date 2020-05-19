@@ -52,12 +52,12 @@ class ToolbarRow extends Component {
     const panelModules = extensionManager.modules[MODULE_TYPES.PANEL];
     this.buttonGroups = {
       left: [
-        // TODO: This should come from extensions, instead of being baked in
-        {
-          value: 'studies',
-          icon: 'th-large',
-          bottomLabel: this.props.t('Series'),
-        },
+        // // TODO: This should come from extensions, instead of being baked in
+        // {
+        //   value: 'studies',
+        //   icon: 'th-large',
+        //   bottomLabel: this.props.t('Scans'),
+        // },
       ],
       right: [],
     };
@@ -79,6 +79,7 @@ class ToolbarRow extends Component {
             icon: menuOption.icon,
             bottomLabel: menuOption.label,
           };
+
           const from = menuOption.from || 'right';
 
           this.buttonGroups[from].push(menuOptionEntry);

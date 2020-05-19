@@ -3,7 +3,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 
-import '../XNATContourPanel.css';
+import '../XNATContourPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 

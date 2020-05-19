@@ -7,7 +7,7 @@ import sessionMap from '../../utils/sessionMap';
 import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
 
-import './XNATSegmentationImportMenu.css';
+import './XNATSegmentationImportMenu.styl';
 
 const { studyMetadataManager } = utils;
 
@@ -538,23 +538,19 @@ export default class XNATSegmentationImportMenu extends React.Component {
         );
       }
     } else {
-      importBody = (
-        <h1>
-          <i className="fa fa-spin fa-circle-o-notch fa-fw" />
-        </h1>
-      );
+      importBody = <h1>...</h1>;
     }
 
     return (
       <div className="mask-import-list-dialog">
         <div className="mask-import-list-header">
-          <h3>Import Segmentation Collections</h3>
+          <h3>Import Mask Collections</h3>
           {importing ? null : (
             <a
-              className="mask-import-list-cancel btn btn-sm btn-secondary"
+              className="mask-import-list-cancel"
               onClick={this.onCloseButtonClick}
             >
-              <i className="fa fa-times-circle fa-2x" />
+              <Icon name="xnat-cancel" />
             </a>
           )}
         </div>
@@ -564,10 +560,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
         <div className="mask-import-list-footer">
           {importing ? null : (
             <a
-              className="mask-import-list-confirm btn btn-sm btn-primary"
+              className="mask-import-list-confirm btn btn-primary"
               onClick={this.onImportButtonClick}
             >
-              <Icon name="save" />
+              <Icon name="xnat-import" />
             </a>
           )}
         </div>

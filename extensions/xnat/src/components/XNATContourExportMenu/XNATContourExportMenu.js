@@ -9,7 +9,7 @@ import lockStructureSet from '../../utils/lockStructureSet';
 
 import { Icon } from '@ohif/ui';
 
-import './XNATContourExportMenu.css';
+import './XNATContourExportMenu.styl';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -298,13 +298,13 @@ export default class XNATContourExportMenu extends React.Component {
     return (
       <div className="roi-export-list-dialog">
         <div className="roi-export-list-header">
-          <h3>Export Contours</h3>
+          <h3>Export Contour Collections</h3>
           {!exporting && (
             <a
               className="roi-export-list-cancel btn btn-sm btn-secondary"
               onClick={this.onCloseButtonClick}
             >
-              <Icon name="step-backward" />
+              <Icon name="xnat-cancel" />
             </a>
           )}
         </div>
@@ -328,7 +328,7 @@ export default class XNATContourExportMenu extends React.Component {
               className="btn btn-sm btn-primary"
               onClick={this.onExportButtonClick}
             >
-              <Icon name="save" />
+              <Icon name="xnat-export" />
             </a>
           </div>
         )}

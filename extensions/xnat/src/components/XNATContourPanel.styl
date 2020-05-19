@@ -1,0 +1,101 @@
+@import "./peppermint-table.styl"
+
+.roi-contour-menu
+  color: var(--text-primary-color)
+  z-index: 1000
+
+  text-align: center
+  height: 100%
+
+  .roi-contour-menu-component
+    height: 100%
+
+  h3
+    font-weight: 400
+    font-size: 20px
+
+  .btn
+     padding: 3px 3px
+     font-size: 13px
+
+  .roi-contour-menu-header
+    display: -webkit-flex
+    display: -ms-flexbox
+    display: flex
+    flex-direction: row
+    justify-content: space-between
+    align-items: center
+    padding-right: 18px
+    padding-left: 18px
+    width: 100%
+
+    a
+      height: 28px
+      width: 70px
+
+  .roi-contour-menu-collection-list-body
+    height: calc(90% - 180px)
+    padding-right: 18px
+    padding-left: 18px
+    overflow-y: auto
+    overflow-x: hidden
+    scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
+    word-wrap: break-word
+
+    &::-webkit-scrollbar
+      background: var(--ui-gray-darkest)
+      width: 10px
+
+    &::-webkit-scrollbar-thumb
+      //theme('background', '$textSecondaryColor')
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      //theme('border-right', '2px solid $uiGrayDarkest')
+      border-right: 2px solid
+      border-right-color: var(--ui-gray-darkest)
+
+    .roi-contour-menu-name-link
+      //theme('color', '$textPrimaryColor')
+      color: var(--text-primary-color)
+
+      &:hover
+        color: var(--text-secondary-color)
+
+  .roi-contour-menu-new-button
+    float: center
+    width: 100%
+
+  .roi-list-header
+    border-width: 1px
+    border-top-style: solid
+    border-bottom-style: solid
+
+  .roi-contour-menu-footer
+    margin: 10px
+    padding: 10px
+    background: var(--ui-gray-dark)
+    //theme('border', '1px solid $uiBorderColor')
+    border: 1px solid
+    border-color: var(--ui-border-color)
+
+    .roi-contour-menu-option
+      display: -webkit-flex
+      display: -ms-flexbox
+      display: flex
+      flex-direction: column
+      align-items: center
+
+      svg
+        background-color: transparent
+        width: 15px
+        height: 15px
+        padding: 2px
+        border: 1px solid
+
+    .empty-check-box
+      display: -webkit-inline-box
+      width: 15px
+      height: 15px
+      padding: 2px
+      border: 1px solid
+      margin-right: 4px

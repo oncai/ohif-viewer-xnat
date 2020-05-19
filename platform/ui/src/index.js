@@ -30,6 +30,9 @@ import {
 } from './components';
 import { useDebounce, useMedia } from './hooks';
 
+// XNAT ICR
+import ICRHelpContent from './components/content/icrHelpContent/ICRHelpContent';
+
 // Elements
 import {
   ICONS,
@@ -122,4 +125,5 @@ export {
   // Hooks
   useDebounce,
   useMedia,
+  ICRHelpContent,
 };

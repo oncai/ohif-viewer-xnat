@@ -2,7 +2,8 @@ import React from 'react';
 import SegmentationMenuListItem from './SegmentationMenuListItem.js';
 import { newSegment } from './utils/segmentationMetadataIO';
 
-import '../XNATSegmentationPanel.css';
+import '../XNATSegmentationPanel.styl';
+import { Icon } from '@ohif/ui';
 
 /**
  * @class SegmentationMenuListBody - Renders a list of SegmentationMenuListItems,
@@ -45,7 +46,7 @@ export default class SegmentationMenuListBody extends React.Component {
               className="segmentation-menu-new-button btn btn-sm btn-primary"
               onClick={onNewSegment}
             >
-              New Segment
+              <Icon name="xnat-tree-plus" /> New Mask
             </a>
           </th>
         </tr>

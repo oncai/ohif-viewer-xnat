@@ -35,6 +35,10 @@ const defaultConfig = {
       range: [-29, 150],
     },
     {
+      name: "bone",
+      range: [150, 2000]
+    },
+    {
       name: 'custom',
       range: [0, 100],
     },

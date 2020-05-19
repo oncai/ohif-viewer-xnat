@@ -1,7 +1,7 @@
 import React from 'react';
 import LockedCollectionsListItem from './LockedCollectionsListItem.js';
 
-import '../XNATContourPanel.css';
+import '../XNATContourPanel.styl';
 
 /**
  * @class LockedCollectionsList - Renders a list of LockedCollectionsListItems,

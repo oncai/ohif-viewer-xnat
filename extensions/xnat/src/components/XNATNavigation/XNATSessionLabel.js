@@ -1,6 +1,7 @@
 import React from 'react';
 
 import '../XNATNavigationPanel.css';
+import { Icon } from '@ohif/ui';
 
 export default class XNATSessionLabel extends React.Component {
   constructor(props) {
@@ -49,44 +50,16 @@ export default class XNATSessionLabel extends React.Component {
 
     return (
       <>
-        <h6>
+        <h6 className="xnat-navigation-tree-roi-label">
           {contourCount ? (
             <>
-              <svg
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
-                stroke="#ffffff"
-                width="16"
-                height="16"
-                viewBox="0 0 18 18"
-                xmlSpace="preserve"
-                preserveAspectRatio="xMidYMid meet"
-                x="0px"
-                y="0px"
-              >
-                <use xlinkHref="packages/icr_peppermint-tools/assets/icons.svg#icon-freehand-menu" />
-              </svg>
+              <Icon name="xnat-contour" />
               {` ${contourCount}  `}
             </>
           ) : null}
           {maskCount ? (
             <>
-              <svg
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
-                stroke="#ffffff"
-                width="16"
-                height="16"
-                viewBox="0 0 18 18"
-                xmlSpace="preserve"
-                preserveAspectRatio="xMidYMid meet"
-                x="0px"
-                y="0px"
-              >
-                <use xlinkHref="packages/icr_peppermint-tools/assets/icons.svg#icon-segmentation-menu" />
-              </svg>
+              <Icon name="xnat-mask" />
               {` ${maskCount} `}
             </>
           ) : null}

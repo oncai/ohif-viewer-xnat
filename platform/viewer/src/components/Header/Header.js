@@ -4,12 +4,25 @@ import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 import ConnectedUserPreferencesForm from '../../connectedComponents/ConnectedUserPreferencesForm';
-import { Dropdown, AboutContent, withModal } from '@ohif/ui';
+import { Dropdown, AboutContent, withModal, Icon, ICRHelpContent } from '@ohif/ui';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
 
 // Context
 import AppContext from './../../context/AppContext';
+
+function OptionsElement(props) {
+  return (
+    <React.Fragment>
+      <Icon
+        name="xnat-settings"
+        className="dd-item-icon"
+        style={{ margin: '0 5 0 0' }}
+      />
+      <span className="dd-title">Settings</span>
+    </React.Fragment>
+  );
+};
 
 function Header(props) {
   const {
@@ -26,13 +39,22 @@ function Header(props) {
 
   useEffect(() => {
     const optionsValue = [
+      // {
+      //   title: t('About'),
+      //   icon: { name: 'info' },
+      //   onClick: () =>
+      //     show({
+      //       content: AboutContent,
+      //       title: t('OHIF Viewer - About'),
+      //     }),
+      // },
       {
-        title: t('About'),
-        icon: { name: 'info' },
+        title: t('ICR Help'),
+        icon: { name: 'xnat-help' },
         onClick: () =>
           show({
-            content: AboutContent,
-            title: t('OHIF Viewer - About'),
+            content: ICRHelpContent,
+            title: t('Using Contour & Mask Tools'),
           }),
       },
       {
@@ -66,7 +88,7 @@ function Header(props) {
   // ANTD -- Hamburger, Drawer, Menu
   return (
     <>
-      <div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>
+      {/*<div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>*/}
       <div className={`entry-header ${home ? 'header-big' : ''}`}>
         <div className="header-left-box">
           {location && location.studyLink && (
@@ -80,22 +102,23 @@ function Header(props) {
 
           {children}
 
-          {showStudyList && !home && (
-            <Link
-              className="header-btn header-studyListLinkSection"
-              to={{
-                pathname: '/',
-                state: { studyLink: location.pathname },
-              }}
-            >
-              {t('Study list')}
-            </Link>
-          )}
+          {/*{showStudyList && !home && (*/}
+          {/*  <Link*/}
+          {/*    className="header-btn header-studyListLinkSection"*/}
+          {/*    to={{*/}
+          {/*      pathname: '/',*/}
+          {/*      state: { studyLink: location.pathname },*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    {t('Study list')}*/}
+          {/*  </Link>*/}
+          {/*)}*/}
         </div>
 
         <div className="header-menu">
-          <span className="research-use">{t('INVESTIGATIONAL USE ONLY')}</span>
-          <Dropdown title={t('Options')} list={options} align="right" />
+          <span className="research-use">{t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}</span>
+          {/*<Dropdown title={t('Options')} list={options} align="right" />*/}
+          <Dropdown titleElement={<OptionsElement/>} list={options} align="right" />
         </div>
       </div>
     </>

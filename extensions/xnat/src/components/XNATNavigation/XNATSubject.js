@@ -177,7 +177,7 @@ export default class XNATSubject extends React.Component {
             className={subjectButtonClassNames}
             onClick={this.onViewSubjectClick}
           >
-            <Icon name="chevron-down" />
+            <Icon name="xnat-tree-show" />
           </a>
           <XNATSubjectLabel
             ID={ID}

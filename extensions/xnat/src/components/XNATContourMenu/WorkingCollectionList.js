@@ -1,7 +1,8 @@
 import React from 'react';
 import WorkingCollectionListItem from './WorkingCollectionListItem.js';
+import { Icon } from '@ohif/ui';
 
-import '../XNATContourPanel.css';
+import '../XNATContourPanel.styl';
 
 /**
  * @class WorkingRoiCollectionList - Renders a list of
@@ -25,11 +26,11 @@ export default class WorkingRoiCollectionList extends React.Component {
     return (
       <React.Fragment>
         <tr className="roi-list-header">
-          <th />
-          <th colSpan="4"> New ROI Contour Collection</th>
+          {/*<th />*/}
+          <th colSpan="4">New Contour Collection</th>
         </tr>
 
-        <tr>
+        <tr className="roi-list-header">
           <th>Draw</th>
           <th>Name</th>
           <th className="centered-cell">Contours</th>
@@ -50,10 +51,10 @@ export default class WorkingRoiCollectionList extends React.Component {
           <th />
           <th>
             <a
-              className="roi-contour-menu-new-button btn btn-sm btn-primary"
+              className="roi-contour-menu-new-button btn btn-primary"
               onClick={onNewRoiButtonClick}
             >
-              <i className="fa fa-plus-circle" /> ROI
+              <Icon name="xnat-tree-plus" /> Add Contour
             </a>
           </th>
         </tr>

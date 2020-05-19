@@ -14,7 +14,7 @@ import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegment
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
-import './XNATSegmentationPanel.css';
+import './XNATSegmentationPanel.styl';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -321,7 +321,7 @@ export default class XNATSegmentationPanel extends React.Component {
     }
 
     return {
-      name: 'New Segmentation Collection',
+      name: 'New Mask Collection',
       label: '',
     };
   }
@@ -412,34 +412,36 @@ export default class XNATSegmentationPanel extends React.Component {
       );
     } else {
       component = (
-        <div className="segmentation-menu-component">
-          <div className="segmentation-menu-list">
-            <div className="segmentation-menu-header">
-              <h3>Segments</h3>
-              <MenuIOButtons
-                ImportCallbackOrComponent={XNATSegmentationImportMenu}
-                ExportCallbackOrComponent={XNATSegmentationExportMenu}
-                onImportButtonClick={() => this.setState({ importing: true })}
-                onExportButtonClick={() => this.setState({ exporting: true })}
-              />
-            </div>
-            <table className="peppermint-table">
-              <tbody>
-                <SegmentationMenuListHeader importMetadata={importMetadata} />
-                <SegmentationMenuListBody
-                  segments={segments}
-                  activeSegmentIndex={activeSegmentIndex}
-                  onSegmentChange={this.onSegmentChange}
-                  onEditClick={this.onEditClick}
-                  onDeleteClick={this.onDeleteClick} //onDeleteClick={this.confirmDeleteOnDeleteClick}
-                  onNewSegment={this.onNewSegment}
-                  firstImageId={firstImageId}
-                  labelmap3D={labelmap3D}
+        <div className="segmentation-menu">
+          <div className="segmentation-menu-component">
+            <div className="segmentation-menu-list">
+              <div className="segmentation-menu-header">
+                <h3>Mask Collection</h3>
+                <MenuIOButtons
+                  ImportCallbackOrComponent={XNATSegmentationImportMenu}
+                  ExportCallbackOrComponent={XNATSegmentationExportMenu}
+                  onImportButtonClick={() => this.setState({ importing: true })}
+                  onExportButtonClick={() => this.setState({ exporting: true })}
                 />
-              </tbody>
-            </table>
+              </div>
+              <table className="peppermint-table">
+                <tbody>
+                  <SegmentationMenuListHeader importMetadata={importMetadata} />
+                  <SegmentationMenuListBody
+                    segments={segments}
+                    activeSegmentIndex={activeSegmentIndex}
+                    onSegmentChange={this.onSegmentChange}
+                    onEditClick={this.onEditClick}
+                    onDeleteClick={this.onDeleteClick} //onDeleteClick={this.confirmDeleteOnDeleteClick}
+                    onNewSegment={this.onNewSegment}
+                    firstImageId={firstImageId}
+                    labelmap3D={labelmap3D}
+                  />
+                </tbody>
+              </table>
+            </div>
+            <BrushSettings />
           </div>
-          <BrushSettings />
         </div>
       );
     }

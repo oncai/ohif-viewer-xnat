@@ -10,8 +10,11 @@
 }
 
 .xnat-navigation-tree h4 {
-  font-weight: 400;
+  font-weight: 500;
+  font-size: 18px;
   text-align: left;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .xnat-navigation-tree {
@@ -21,7 +24,7 @@
 }
 
 .xnat-navigation-tree .xnat-nav-button {
-  margin-left: 10px;
+  /*margin-left: 10px;*/
   margin-right: 10px;
 }
 
@@ -54,4 +57,13 @@
 
 .xnat-nav-active {
   color: #ff0;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.xnat-navigation-tree-roi-label {
+  font-weight: 400;
+  font-size: 12px;
+  text-align: left;
+  color: #91b9cd;
 }
