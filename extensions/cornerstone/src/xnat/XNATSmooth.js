@@ -1,5 +1,6 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
+import cornerstone from 'cornerstone-core';
+import { commandsManager } from '@ohif/viewer/src/App';
 
 import './XNATViewportOverlay.styl';
 
@@ -8,17 +9,24 @@ class XNATSmooth extends React.PureComponent {
     super(props);
 
     this.state = {
-      isChecked: false,
+      smooth: true,
     };
+
+    this.onToggleClick = this.onToggleClick.bind(this);
   }
 
-  // static propTypes = {
-  //   isChecked: PropTypes.bool.isRequired,
-  // };
+  onToggleClick({ target }) {
+    const smooth = this.state.smooth;
+    this.setState({ smooth: !smooth });
+
+    // let viewportIndex = window.store.getState().viewports.activeViewportIndex;
+    const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
+    const enabledElement = cornerstone.getEnabledElement(dom);
+    enabledElement.viewport.pixelReplication = smooth;
+    cornerstone.updateImage(enabledElement.element);
+  }
 
   render() {
-    const { isChecked } = this.state;
-
     return (
       <div>
         Smooth
@@ -26,7 +34,9 @@ class XNATSmooth extends React.PureComponent {
           className="smoothCheckbox"
           type="checkbox"
           name="smooth"
-          value={isChecked}
+          value=""
+          checked={this.state.smooth}
+          onClick={this.onToggleClick}
         />
       </div>
     );

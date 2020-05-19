@@ -1,3 +1,4 @@
+//ToDo: move to XNAT extension
 import React from 'react';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
