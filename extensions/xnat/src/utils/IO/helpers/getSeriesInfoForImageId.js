@@ -3,10 +3,10 @@ import { utils } from '@ohif/core';
 
 const { studyMetadataManager } = utils;
 
-const _getDisplaySet = ({ studyInstanceUid, displaySetInstanceUid }) => {
-  const studyMetadata = studyMetadataManager.get(studyInstanceUid);
+const _getDisplaySet = ({ StudyInstanceUID, displaySetInstanceUID }) => {
+  const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
   const displaySet = studyMetadata.findDisplaySet(
-    displaySet => displaySet.displaySetInstanceUid === displaySetInstanceUid
+    displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
   );
   return displaySet;
 };
@@ -14,7 +14,11 @@ const _getDisplaySet = ({ studyInstanceUid, displaySetInstanceUid }) => {
 export default function getSeriesInfoForImageId(viewportData) {
   const displaySet = _getDisplaySet(viewportData);
 
-  const { studyInstanceUid, seriesInstanceUid, images } = displaySet;
+  const {
+    StudyInstanceUID: studyInstanceUid,
+    SeriesInstanceUID: seriesInstanceUid,
+    images,
+  } = displaySet;
 
   const firstImage = images[0];
   const firstImageId = firstImage.getImageId();
@@ -32,7 +36,8 @@ export default function getSeriesInfoForImageId(viewportData) {
   const sopClassUid = sopCommonModule.sopClassUID;
   const modality = generalSeriesModule.modality;
   const seriesDate = `${generalSeriesModule.seriesDate.year}${generalSeriesModule.seriesDate.month}${generalSeriesModule.seriesDate.day}`;
-  const seriesTime = `${generalSeriesModule.seriesTime.hours}${generalSeriesModule.seriesTime.minutes}${generalSeriesModule.seriesTime.seconds}.${generalSeriesModule.seriesTime.fractionalSeconds}`;
+  const seriesTime = `${generalSeriesModule.seriesTime.hours}${generalSeriesModule.seriesTime.minutes}${generalSeriesModule.seriesTime.seconds}`;
+  //.${generalSeriesModule.seriesTime.fractionalSeconds}`;
 
   const seriesInfo = {
     studyInstanceUid,

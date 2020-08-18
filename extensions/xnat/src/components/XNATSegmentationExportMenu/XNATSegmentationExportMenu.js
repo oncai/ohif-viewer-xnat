@@ -9,6 +9,7 @@ import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 
 import './XNATSegmentationExportMenu.styl';
+import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -185,13 +186,13 @@ export default class XNATSegmentationExportMenu extends React.Component {
         <>
           <h5>
             exporting {this._roiCollectionName}
-            <i className="fa fa-spin fa-circle-o-notch fa-fw" />
+            ...
           </h5>
         </>
       );
     } else {
       segExportListBody = (
-        <table className="peppermint-table">
+        <table className="collectionTable">
           <tbody>
             {importMetadata ? (
               <tr className="mask-export-list-collection-info">
@@ -225,44 +226,36 @@ export default class XNATSegmentationExportMenu extends React.Component {
     }
 
     return (
-      <div className="mask-export-list-dialog">
-        <div className="mask-export-list-header">
+      <div className="xnatPanel">
+        <div className="panelHeader">
           <h3>Export Mask Collections</h3>
           {!exporting && (
-            <a
-              className="mask-export-list-cancel btn btn-sm btn-secondary"
-              onClick={this.onCloseButtonClick}
-            >
+            <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
-            </a>
+            </button>
           )}
         </div>
 
-        <hr />
-
-        <div className="mask-export-list-body">{segExportListBody}</div>
-
-        <hr />
+        <div className="roiCollectionBody limitHeight">{segExportListBody}</div>
 
         {!exporting && (
-          <div className="mask-export-list-footer">
-            <label>Name</label>
-            <input
-              name="segBuilderTextInput"
-              className="form-themed form-control"
-              onChange={this.onTextInputChange}
-              type="text"
-              defaultValue={defaultName}
-              tabIndex="-1"
-              autoComplete="off"
-            />
-
-            <a
-              className="btn btn-sm btn-primary"
-              onClick={this.onExportButtonClick}
-            >
+          <div className="roiCollectionFooter">
+            <div>
+              <label style={{ marginRight: 5 }}>Name</label>
+              <input
+                name="segBuilderTextInput"
+                // className="form-themed form-control"
+                onChange={this.onTextInputChange}
+                type="text"
+                defaultValue={defaultName}
+                tabIndex="-1"
+                autoComplete="off"
+              />
+            </div>
+            <button onClick={this.onExportButtonClick}>
               <Icon name="xnat-export" />
-            </a>
+              Export selected
+            </button>
           </div>
         )}
       </div>

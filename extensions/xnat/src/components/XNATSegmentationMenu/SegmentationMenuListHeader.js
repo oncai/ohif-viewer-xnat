@@ -15,44 +15,28 @@ export default class SegmentationMenuListHeader extends React.Component {
     const { importMetadata } = this.props;
 
     return (
-      <React.Fragment>
-        <tr className="segmentation-menu-list-bordered">
-          <th
-            colSpan="2"
-            className="left-aligned-cell"
-          >
-            {importMetadata.name}
-          </th>
-          <th
-            colSpan="2"
-            className="right-aligned-cell"
-          >
-            {importMetadata.label}
-          </th>
-        </tr>
-        {importMetadata.type && (
-          <tr className="segmentation-menu-list-bordered">
-            <th
-              colSpan="2"
-              className="left-aligned-cell"
-            >
-              Type: {importMetadata.type}
-            </th>
-            <th
-              colSpan="2"
-              className="right-aligned-cell"
-            >
-              Modified: {importMetadata.modified}
-            </th>
-          </tr>
-        )}
-        <tr className="segmentation-menu-list-bordered">
-          <th>Paint</th>
-          <th>Label</th>
-          <th className="centered-cell">Type</th>
-          <th className="centered-cell">Delete</th>
-        </tr>
-      </React.Fragment>
+      <div className="collectionListInfo">
+        <table style={{ display: 'block' }}>
+          <tbody>
+            <tr>
+              <td>Label:</td>
+              <td>{importMetadata.label}</td>
+            </tr>
+            {importMetadata.type && (
+              <>
+                <tr>
+                  <td>Type:</td>
+                  <td>{importMetadata.type}</td>
+                </tr>
+                <tr>
+                  <td>Modified:</td>
+                  <td>{importMetadata.modified}</td>
+                </tr>
+              </>
+            )}
+          </tbody>
+        </table>
+      </div>
     );
   }
 }

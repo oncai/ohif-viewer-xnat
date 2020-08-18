@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { log, metadata, utils } from '@ohif/core';
+import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import qs from 'querystring';
 
@@ -8,15 +8,22 @@ import ConnectedViewer from '../connectedComponents/ConnectedViewer';
 import ConnectedViewerRetrieveStudyData from '../connectedComponents/ConnectedViewerRetrieveStudyData';
 import NotFound from '../routes/NotFound';
 
-const { studyMetadataManager, updateMetaDataManager } = utils;
+import {
+  isLoggedIn,
+  xnatAuthenticate,
+  reassignInstanceUrls,
+} from '@xnat-ohif/extension-xnat';
+
+const { log, metadata, utils } = OHIF;
+const { studyMetadataManager } = utils;
 const { OHIFStudyMetadata } = metadata;
 
 class XNATStandaloneRouting extends Component {
   state = {
     studies: null,
     server: null,
-    studyInstanceUids: null,
-    seriesInstanceUids: null,
+    studyInstanceUIDs: null,
+    seriesInstanceUIDs: null,
     error: null,
     loading: true,
   };
@@ -27,10 +34,8 @@ class XNATStandaloneRouting extends Component {
     setServers: PropTypes.func,
   };
 
-  parseQueryAndRetrieveDICOMWebData(query) {
+  parseQueryAndRetrieveDICOMWebData(rootUrl, query) {
     return new Promise((resolve, reject) => {
-      console.warn('XNAT STANDALONE ROUTING');
-
       const { projectId, subjectId, experimentId, experimentLabel } = query;
 
       if (!projectId || !subjectId) {
@@ -52,20 +57,8 @@ class XNATStandaloneRouting extends Component {
         );
       }
 
-      let rootPlusPort = window.location.origin;
-
-      if (window.port) {
-        rootPlusPort += `:${window.port}`;
-      }
-
-      const pathLessViewer = window.location.pathname.split('VIEWER')[0];
-
-      rootPlusPort += pathLessViewer;
-
-      console.log(rootPlusPort);
-
       commandsManager.runCommand('xnatSetRootUrl', {
-        url: rootPlusPort,
+        url: rootUrl,
       });
 
       commandsManager.runCommand('xnatCheckAndSetPermissions', {
@@ -95,7 +88,7 @@ class XNATStandaloneRouting extends Component {
           view: 'session',
         });
 
-        const jsonRequestUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
+        const jsonRequestUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
         console.log(jsonRequestUrl);
 
@@ -152,7 +145,7 @@ class XNATStandaloneRouting extends Component {
 
           console.warn(data);
 
-          resolve({ studies: data.studies, studyInstanceUids: [] });
+          resolve({ studies: data.studies, studyInstanceUIDs: [] });
         });
 
         // Open the Request to the server for the JSON data
@@ -170,7 +163,7 @@ class XNATStandaloneRouting extends Component {
           view: 'subject',
         });
 
-        const subjectExperimentListUrl = `${rootPlusPort}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
+        const subjectExperimentListUrl = `${rootUrl}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
 
         console.log(subjectExperimentListUrl);
 
@@ -185,7 +178,7 @@ class XNATStandaloneRouting extends Component {
 
           for (let i = 0; i < experimentList.length; i++) {
             const experimentIdI = experimentList[i].ID;
-            const experimentJSONFetchUrl = `${rootPlusPort}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
+            const experimentJSONFetchUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
 
             results[i] = _getJson(experimentJSONFetchUrl);
           }
@@ -241,7 +234,7 @@ class XNATStandaloneRouting extends Component {
 
             console.log(studyList);
 
-            resolve({ studies: studyList.studies, studyInstanceUids: [] });
+            resolve({ studies: studyList.studies, studyInstanceUIDs: [] });
           });
         });
       }
@@ -256,27 +249,54 @@ class XNATStandaloneRouting extends Component {
       search = search.slice(1, search.length);
       const query = qs.parse(search);
 
+      const rootUrl = getRootUrl();
+
+      if (process.env.NODE_ENV === 'development') {
+        // Authenticate to XNAT
+        const loggedIn = await isLoggedIn();
+        console.info('Logged in XNAT? ' + loggedIn);
+        if (!loggedIn) {
+          await xnatAuthenticate();
+        }
+      }
+
       let {
         server,
         studies,
-        studyInstanceUids,
-        seriesInstanceUids,
-      } = await this.parseQueryAndRetrieveDICOMWebData(query);
+        studyInstanceUIDs,
+        seriesInstanceUIDs,
+      } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
       if (studies) {
+        if (process.env.NODE_ENV === 'development') {
+          // assign instance file urls to proxy value
+          reassignInstanceUrls(studies);
+        }
+
+        // Remove series with no instances
+        studies = studies.filter(study => {
+          study.series = study.series.filter(series => {
+            return series.instances.length > 0;
+          });
+          return study.series !== undefined;
+        });
+
+        // Parse data here and add to metadata provider
+        await updateMetaDataProvider(studies);
+
         const {
           studies: updatedStudies,
-          studyInstanceUids: updatedStudiesInstanceUids,
+          studyInstanceUIDs: updatedStudiesInstanceUIDs,
         } = _mapStudiesToNewFormat(studies);
         studies = updatedStudies;
-        studyInstanceUids = updatedStudiesInstanceUids;
+        studyInstanceUIDs = updatedStudiesInstanceUIDs;
       }
 
       this.setState({
         studies,
         server,
-        studyInstanceUids,
-        seriesInstanceUids,
+        studyInstanceUIDs,
+        seriesInstanceUIDs,
         loading: false,
       });
     } catch (error) {
@@ -293,11 +313,15 @@ class XNATStandaloneRouting extends Component {
     }
 
     return this.state.studies ? (
-      <ConnectedViewer studies={this.state.studies} />
+      <ConnectedViewer
+        studies={this.state.studies}
+        studyInstanceUIDs={this.state.studyInstanceUIDs}
+        seriesInstanceUIDs={this.state.seriesInstanceUIDs}
+      />
     ) : (
       <ConnectedViewerRetrieveStudyData
-        studyInstanceUids={this.state.studyInstanceUids}
-        seriesInstanceUids={this.state.seriesInstanceUids}
+        studyInstanceUIDs={this.state.studyInstanceUIDs}
+        seriesInstanceUIDs={this.state.seriesInstanceUIDs}
         server={this.state.server}
       />
     );
@@ -308,9 +332,9 @@ const _mapStudiesToNewFormat = studies => {
   studyMetadataManager.purge();
 
   /* Map studies to new format, update metadata manager? */
-  const uniqueStudyUids = new Set();
+  const uniqueStudyUIDs = new Set();
   const updatedStudies = studies.map(study => {
-    const studyMetadata = new OHIFStudyMetadata(study, study.studyInstanceUid);
+    const studyMetadata = new OHIFStudyMetadata(study, study.StudyInstanceUID);
 
     const sopClassHandlerModules =
       extensionManager.modules['sopClassHandlerModule'];
@@ -319,18 +343,15 @@ const _mapStudiesToNewFormat = studies => {
       studyMetadata.createDisplaySets(sopClassHandlerModules);
     studyMetadata.setDisplaySets(study.displaySets);
 
-    /* Updates WADO-RS metaDataManager */
-    updateMetaDataManager(study);
-
     studyMetadataManager.add(studyMetadata);
-    uniqueStudyUids.add(study.studyInstanceUid);
+    uniqueStudyUIDs.add(study.StudyInstanceUID);
 
     return study;
   });
 
   return {
     studies: updatedStudies,
-    studyInstanceUids: Array.from(uniqueStudyUids),
+    studyInstanceUIDs: Array.from(uniqueStudyUIDs),
   };
 };
 
@@ -355,4 +376,57 @@ function _getJson(url) {
     xhr.responseType = 'json';
     xhr.send();
   });
+}
+
+function getRootUrl() {
+  let rootPlusPort = window.location.origin;
+
+  if (window.port) {
+    rootPlusPort += `:${window.port}`;
+  }
+
+  const pathLessViewer = window.location.pathname.split('VIEWER')[0];
+
+  rootPlusPort += pathLessViewer;
+
+  if (process.env.NODE_ENV === 'development') {
+    console.info('### XNATStandaloneRouting Development mode! ...............');
+    rootPlusPort = window.config.xnat_dev.url;
+  }
+
+  console.log(rootPlusPort);
+
+  return rootPlusPort;
+}
+
+async function updateMetaDataProvider(studies) {
+  const metadataProvider = OHIF.cornerstone.metadataProvider;
+  let StudyInstanceUID;
+  let SeriesInstanceUID;
+
+  for (let study of studies) {
+    StudyInstanceUID = study.StudyInstanceUID;
+    // study.seriesMap = Object.create(null);
+    for (let series of study.series) {
+      SeriesInstanceUID = series.SeriesInstanceUID;
+      // study.seriesMap[SeriesInstanceUID] = series;
+      await Promise.all(
+        series.instances.map(async instance => {
+          const { url: imageId, metadata: naturalizedDicom } = instance;
+          naturalizedDicom.PatientID = study.PatientID;
+          //ToDo: do we need PaletteColorLookupTableData & OverlayData?
+
+          // Add instance to metadata provider.
+          await metadataProvider.addInstance(naturalizedDicom);
+
+          // Add imageId specific mapping to this data as the URL isn't necessarliy WADO-URI.
+          metadataProvider.addImageIdToUIDs(imageId, {
+            StudyInstanceUID,
+            SeriesInstanceUID,
+            SOPInstanceUID: naturalizedDicom.SOPInstanceUID,
+          });
+        })
+      );
+    }
+  }
 }

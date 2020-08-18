@@ -1,9 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
+import ColoredCircle from '../common/ColoredCircle';
 
-import '../XNATContourPanel.styl';
+import '../XNATRoiPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -12,6 +14,18 @@ const modules = cornerstoneTools.store.modules;
  * ROIContour Collection.
  */
 export default class LockedCollectionsListItem extends React.Component {
+  static propTypes = {
+    collection: PropTypes.any,
+    onUnlockClick: PropTypes.any,
+    SeriesInstanceUID: PropTypes.any,
+  };
+
+  static defaultProps = {
+    collection: undefined,
+    onUnlockClick: undefined,
+    SeriesInstanceUID: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
@@ -44,10 +58,10 @@ export default class LockedCollectionsListItem extends React.Component {
    * @returns {null}
    */
   onShowHideClick() {
-    const { collection, seriesInstanceUid } = this.props;
+    const { collection, SeriesInstanceUID } = this.props;
     const { visible } = this.state;
     const structureSet = modules.freehand3D.getters.structureSet(
-      seriesInstanceUid,
+      SeriesInstanceUID,
       collection.metadata.uid
     );
 
@@ -67,9 +81,9 @@ export default class LockedCollectionsListItem extends React.Component {
     const ROIContourArray = collection.ROIContourArray;
 
     const showHideIcon = visible ? (
-      <Icon name="check" />
+      <Icon name="eye" />
     ) : (
-      <Icon name="times" />
+      <Icon name="eye-closed" />
     );
 
     const visibleButton = expanded ? (
@@ -80,50 +94,36 @@ export default class LockedCollectionsListItem extends React.Component {
 
     return (
       <React.Fragment>
-        <tr className="roi-list-header">
-          <td className="centered-cell">
-            <a
-              className="btn btn-sm btn-secondary"
-              onClick={this.onToggleVisibilityClick}
-            >
+        <tr>
+          <td width="10%" className="centered-cell">
+            <button className="small" onClick={this.onToggleVisibilityClick}>
               {visibleButton}
-            </a>
+            </button>
           </td>
-          <th colSpan="2">{metadata.name}</th>
-          <td className="centered-cell">
-            <a
-              className="btn btn-sm btn-secondary"
-              onClick={this.onShowHideClick}
-            >
+          <td width="70%">{metadata.name}</td>
+          <td width="10%" className="centered-cell">
+            <button className="small" onClick={this.onShowHideClick}>
               {showHideIcon}
-            </a>
+            </button>
           </td>
-          <td className="centered-cell">
-            <a
-              className="btn btn-sm btn-secondary"
+          <td width="10%" className="centered-cell">
+            <button
+              className="small"
               onClick={() => {
                 onUnlockClick(metadata.uid);
               }}
             >
-              unlock
-            </a>
+              <Icon name="lock" />
+            </button>
           </td>
         </tr>
 
         {expanded && (
           <React.Fragment>
-            <tr>
-              <th />
-              <th>Name</th>
-              <th className="centered-cell">Contours</th>
-            </tr>
             {ROIContourArray.map(roiContour => (
-              <tr key={roiContour.metadata.uid}>
-                <td className="left-aligned-cell">
-                  <i
-                    className="fa fa-square"
-                    style={{ color: roiContour.metadata.color }}
-                  />
+              <tr key={roiContour.metadata.uid} className="subRow">
+                <td className="centered-cell">
+                  <ColoredCircle color={roiContour.metadata.color} />
                 </td>
                 <td className="left-aligned-cell">
                   {roiContour.metadata.name}

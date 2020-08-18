@@ -16,6 +16,7 @@ import { commandsManager, extensionManager } from './../App.js';
 
 import ConnectedCineDialog from './ConnectedCineDialog';
 import ConnectedLayoutButton from './ConnectedLayoutButton';
+import { withAppContext } from '../context/AppContext';
 
 class ToolbarRow extends Component {
   // TODO: Simplify these? isOpen can be computed if we say "any" value for selected,
@@ -25,9 +26,17 @@ class ToolbarRow extends Component {
     isRightSidePanelOpen: PropTypes.bool.isRequired,
     selectedLeftSidePanel: PropTypes.string.isRequired,
     selectedRightSidePanel: PropTypes.string.isRequired,
-    handleSidePanelChange: PropTypes.func,
+    handleSidePanelChange: PropTypes.func.isRequired,
     activeContexts: PropTypes.arrayOf(PropTypes.string).isRequired,
     studies: PropTypes.array,
+    t: PropTypes.func.isRequired,
+    // NOTE: withDialog, withModal HOCs
+    dialog: PropTypes.any,
+    modal: PropTypes.any,
+  };
+
+  static defaultProps = {
+    studies: [],
   };
 
   constructor(props) {
@@ -47,57 +56,112 @@ class ToolbarRow extends Component {
       activeButtons: [],
     };
 
+    this.seriesPerStudyCount = [];
+
     this._handleBuiltIn = _handleBuiltIn.bind(this);
 
+    this.updateButtonGroups();
+  }
+
+  updateButtonGroups() {
     const panelModules = extensionManager.modules[MODULE_TYPES.PANEL];
+
     this.buttonGroups = {
-      left: [
-        // // TODO: This should come from extensions, instead of being baked in
-        // {
-        //   value: 'studies',
-        //   icon: 'th-large',
-        //   bottomLabel: this.props.t('Scans'),
-        // },
-      ],
+      left: [],
       right: [],
     };
 
+    // ~ FIND MENU OPTIONS
     panelModules.forEach(panelExtension => {
       const panelModule = panelExtension.module;
       const defaultContexts = Array.from(panelModule.defaultContext);
 
-      // MENU OPTIONS
       panelModule.menuOptions.forEach(menuOption => {
         const contexts = Array.from(menuOption.context || defaultContexts);
-
-        const activeContextIncludesAnyPanelContexts = this.props.activeContexts.some(
-          actx => contexts.includes(actx)
+        const hasActiveContext = this.props.activeContexts.some(actx =>
+          contexts.includes(actx)
         );
-        if (activeContextIncludesAnyPanelContexts) {
+
+        // It's a bit beefy to pass studies; probably only need to be reactive on `studyInstanceUIDs` and activeViewport?
+        // Note: This does not cleanly handle `studies` prop updating with panel open
+        const isDisabled =
+          typeof menuOption.isDisabled === 'function' &&
+          menuOption.isDisabled(this.props.studies);
+
+        if (hasActiveContext && !isDisabled) {
           const menuOptionEntry = {
             value: menuOption.target,
             icon: menuOption.icon,
             bottomLabel: menuOption.label,
           };
-
           const from = menuOption.from || 'right';
 
           this.buttonGroups[from].push(menuOptionEntry);
         }
       });
     });
+
+    // TODO: This should come from extensions, instead of being baked in
+    // this.buttonGroups.left.unshift({
+    //   value: 'studies',
+    //   icon: 'th-large',
+    //   bottomLabel: this.props.t('Series'),
+    // });
   }
 
   componentDidUpdate(prevProps) {
     const activeContextsChanged =
       prevProps.activeContexts !== this.props.activeContexts;
 
+    const prevStudies = prevProps.studies;
+    const studies = this.props.studies;
+    const seriesPerStudyCount = this.seriesPerStudyCount;
+
+    let studiesUpdated = false;
+
+    if (prevStudies.length !== studies.length) {
+      studiesUpdated = true;
+    } else {
+      for (let i = 0; i < studies.length; i++) {
+        if (studies[i].series.length !== seriesPerStudyCount[i]) {
+          seriesPerStudyCount[i] = studies[i].series.length;
+
+          studiesUpdated = true;
+          break;
+        }
+      }
+    }
+
+    if (studiesUpdated) {
+      this.updateButtonGroups();
+    }
+
     if (activeContextsChanged) {
-      this.setState({
-        toolbarButtons: _getVisibleToolbarButtons.call(this),
-      });
+      this.setState(
+        {
+          toolbarButtons: _getVisibleToolbarButtons.call(this),
+        },
+        this.closeCineDialogIfNotApplicable
+      );
     }
   }
+
+  closeCineDialogIfNotApplicable = () => {
+    const { dialog } = this.props;
+    let { dialogId, activeButtons, toolbarButtons } = this.state;
+    if (dialogId) {
+      const cineButtonPresent = toolbarButtons.find(
+        button => button.options && button.options.behavior === 'CINE'
+      );
+      if (!cineButtonPresent) {
+        dialog.dismiss({ id: dialogId });
+        activeButtons = activeButtons.filter(
+          button => button.options && button.options.behavior !== 'CINE'
+        );
+        this.setState({ dialogId: null, activeButtons });
+      }
+    }
+  };
 
   render() {
     const buttonComponents = _getButtonComponents.call(
@@ -223,6 +287,10 @@ function _getButtonComponents(toolbarButtons, activeButtons) {
 }
 
 /**
+ * TODO: DEPRECATE
+ * This is used exclusively in `extensions/cornerstone/src`
+ * We have better ways with new UI Services to trigger "builtin" behaviors
+ *
  * A handy way for us to handle different button types. IE. firing commands for
  * buttons, or initiation built in behavior.
  *
@@ -274,7 +342,7 @@ function _getVisibleToolbarButtons() {
 
 function _handleBuiltIn(button) {
   /* TODO: Keep cine button active until its unselected. */
-  const { dialog, modal, t } = this.props;
+  const { dialog, t } = this.props;
   const { dialogId } = this.state;
   const { id, options } = button;
 
@@ -314,5 +382,5 @@ function _handleBuiltIn(button) {
 }
 
 export default withTranslation(['Common', 'ViewportDownloadForm'])(
-  withModal(withDialog(ToolbarRow))
+  withModal(withDialog(withAppContext(ToolbarRow)))
 );

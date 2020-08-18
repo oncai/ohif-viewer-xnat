@@ -20,9 +20,7 @@ export default class SegmentationMenuListBody extends React.Component {
       activeSegmentIndex,
       onSegmentChange,
       onEditClick,
-      onDeleteClick,
       labelmap3D,
-      onNewSegment,
     } = this.props;
 
     return (
@@ -34,22 +32,10 @@ export default class SegmentationMenuListBody extends React.Component {
             metadata={segment.metadata}
             onSegmentChange={onSegmentChange}
             onEditClick={onEditClick}
-            onDeleteClick={onDeleteClick}
             checked={segment.index === activeSegmentIndex}
             labelmap3D={labelmap3D}
           />
         ))}
-        <tr>
-          <th />
-          <th>
-            <a
-              className="segmentation-menu-new-button btn btn-sm btn-primary"
-              onClick={onNewSegment}
-            >
-              <Icon name="xnat-tree-plus" /> New Mask
-            </a>
-          </th>
-        </tr>
       </React.Fragment>
     );
   }

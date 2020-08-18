@@ -1,7 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
 
-const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
-
 import freehand3DModule from './peppermint-tools/modules/freehand3DModule.js';
 import extendSegmentationModule from './peppermint-tools/modules/extendSegmentationModule';
 
@@ -14,6 +12,8 @@ import {
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
 } from './peppermint-tools/tools';
+
+const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
 
 const defaultConfig = {
   maxRadius: 64,

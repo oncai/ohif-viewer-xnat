@@ -9,7 +9,7 @@ export default function NotFound({ message = 'Sorry, this page does not exist.',
         <h4>{message}</h4>
         {showGoBackButton && (
           <h5>
-            <Link to={'/'}>Go back to the Study List</Link>
+            <Link to={'/'}>Go back to XNAT</Link>
           </h5>
         )}
       </div>

@@ -36,47 +36,25 @@ const ViewerLocalFileData = asyncComponent(() =>
 
 const reload = () => window.location.reload();
 
-// Define XNAT Route as whatever is the current
-
-const href = window.location.href;
-const origin = window.location.origin;
-let xnatRoute = href.split('/VIEWER')[0];
-
-console.log(xnatRoute);
-
-xnatRoute = xnatRoute.replace(origin, '');
-
-console.log(xnatRoute);
-
-xnatRoute;
-
-console.log(xnatRoute);
-
-xnatRoute += '/VIEWER';
-
-console.log(xnatRoute);
-
 const ROUTES_DEF = {
   default: {
     viewer: {
-      path: '/viewer/:studyInstanceUids',
+      path: '/viewer/:studyInstanceUIDs',
       component: ViewerRouting,
     },
     // standaloneViewer: {
-    //   path: '/viewer',
+    //   path: '/sa_viewer',
     //   component: StandaloneRouting,
     // },
     XNATstandaloneViewer: {
-      path: xnatRoute, //'/VIEWER',
+      path: '/VIEWER',
       component: XNATStandaloneRouting,
     },
     list: {
-      path: ['/studylist'], //path: ['/studylist', '/']
+      path: ['/studylist', '/'],
       component: StudyListRouting,
       condition: appConfig => {
-        return appConfig.showStudyList !== undefined
-          ? appConfig.showStudyList
-          : true;
+        return appConfig.showStudyList;
       },
     },
     local: {
@@ -85,12 +63,13 @@ const ROUTES_DEF = {
     },
     IHEInvokeImageDisplay: {
       path: '/IHEInvokeImageDisplay',
+      component: IHEInvokeImageDisplay
     },
   },
   gcloud: {
     viewer: {
       path:
-        '/projects/:project/locations/:location/datasets/:dataset/dicomStores/:dicomStore/study/:studyInstanceUids',
+        '/projects/:project/locations/:location/datasets/:dataset/dicomStores/:dicomStore/study/:studyInstanceUIDs',
       component: ViewerRouting,
       condition: appConfig => {
         return !!appConfig.enableGoogleCloudAdapter;
@@ -101,10 +80,7 @@ const ROUTES_DEF = {
         '/projects/:project/locations/:location/datasets/:dataset/dicomStores/:dicomStore',
       component: StudyListRouting,
       condition: appConfig => {
-        const showList =
-          appConfig.showStudyList !== undefined
-            ? appConfig.showStudyList
-            : true;
+        const showList = appConfig.showStudyList;
 
         return showList && !!appConfig.enableGoogleCloudAdapter;
       },

@@ -17,7 +17,6 @@ export default function fetchCSRFToken() {
       const childNodes = xhr.response.childNodes;
 
       let htmlNode;
-
       for (let i = 0; i < childNodes.length; i++) {
         if (childNodes[i] instanceof HTMLElement) {
           htmlNode = childNodes[i];

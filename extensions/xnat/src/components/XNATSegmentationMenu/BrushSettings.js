@@ -1,7 +1,8 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
+import { Range } from '@ohif/ui';
 
-import '../XNATSegmentationPanel.styl';
+import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const { configuration } = segmentationModule;
@@ -171,23 +172,26 @@ export default class BrushSettings extends React.Component {
     }
 
     return (
-      <div className="segmentation-menu-footer">
+      <div className="roiPanelFooter">
         <h3> Smart CT Gate Selection</h3>
-        <select
-          className="form-themed form-control"
-          onChange={this.onGateChange}
-          value={activeGate}
-        >
-          {gates.map(gate => (
-            <option key={gate.name} value={gate.name}>{`${gate.name} [${
-              gate.range[0]
-            }, ${gate.range[1]}]`}</option>
-          ))}
-        </select>
+        <div className="roiPanelMenuOption">
+          <select
+            // className="form-themed form-control"
+            style={{ width: '100%', height: 30 }}
+            onChange={this.onGateChange}
+            value={activeGate}
+          >
+            {gates.map(gate => (
+              <option key={gate.name} value={gate.name}>{`${gate.name} [${
+                gate.range[0]
+              }, ${gate.range[1]}]`}</option>
+            ))}
+          </select>
+        </div>
 
         {customGates}
 
-        <h3> Smart/Auto Gate Settings </h3>
+        <h3 style={{ marginTop: 15 }}> Smart/Auto Gate Settings </h3>
         <label htmlFor="holeFill">{holeFillLabel}</label>
         <input
           className="form-themed form-control"

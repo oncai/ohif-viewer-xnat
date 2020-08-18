@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import RoiImporter from '../../utils/IO/classes/RoiImporter';
 import fetchJSON from '../../utils/IO/fetchJSON.js';
 import fetchXML from '../../utils/IO/fetchXML.js';
@@ -7,11 +8,25 @@ import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
 import { Icon } from '@ohif/ui';
 
-import './XNATContourImportMenu.styl';
+import '../XNATRoiPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 
 export default class XNATContourImportMenu extends React.Component {
+  static propTypes = {
+    onImportComplete: PropTypes.any,
+    onImportCancel: PropTypes.any,
+    SeriesInstanceUID: PropTypes.any,
+    viewportData: PropTypes.any,
+  };
+
+  static defaultProps = {
+    onImportComplete: undefined,
+    onImportCancel: undefined,
+    SeriesInstanceUID: undefined,
+    viewportData: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
@@ -138,11 +153,11 @@ export default class XNATContourImportMenu extends React.Component {
    * @returns {type}  description
    */
   componentDidMount() {
-    if (this.props.id === 'NOT_ACTIVE') {
-      this.setState({ importListReady: true });
-
-      return;
-    }
+    //ToDo: do we need this?
+    // if (this.props.id === 'NOT_ACTIVE') {
+    //   this.setState({ importListReady: true });
+    //   return;
+    // }
 
     const sessions = sessionMap.getSession();
 
@@ -460,20 +475,20 @@ export default class XNATContourImportMenu extends React.Component {
       if (importing) {
         importBody = (
           <>
-            <h5>
+            <h4>
               {progressText}
-              <i className="fa fa-spin fa-circle-o-notch fa-fw" />
-            </h5>
+              {/*<i className="fa fa-spin fa-circle-o-notch fa-fw" />*/}
+            </h4>
           </>
         );
       } else if (importList.length === 0) {
         importBody = <p>No data to import.</p>;
       } else {
         importBody = (
-          <table>
-            <tbody>
+          <table className="collectionTable">
+            <thead>
               <tr>
-                <th>
+                <th width="10%" className="centered-cell">
                   <input
                     type="checkbox"
                     checked={selectAllChecked}
@@ -481,15 +496,16 @@ export default class XNATContourImportMenu extends React.Component {
                     onChange={this.onChangeSelectAllCheckbox}
                   />
                 </th>
-                <th>Name</th>
-                <th>Referenced Scan</th>
+                <th width="50%">Name</th>
+                <th width="40%">Referenced Scan</th>
               </tr>
-
+            </thead>
+            <tbody>
               {importList.map((roiCollection, index) => (
-                <tr key={`${roiCollection.name}_${roiCollection.index}`}>
-                  <td>
+                <tr key={`${roiCollection.name}_${index}`}>
+                  <td className="centered-cell">
                     <input
-                      className="roi-import-list-item-check"
+                      // className="roi-import-list-item-check"
                       type="checkbox"
                       name="sync"
                       onChange={evt => this.onChangeCheckbox(evt, index)}
@@ -497,8 +513,8 @@ export default class XNATContourImportMenu extends React.Component {
                       value={selectedCheckboxes[index]}
                     />
                   </td>
-                  <td className="roi-import-left-cell">{roiCollection.name}</td>
-                  <td className="roi-import-left-cell">
+                  <td>{roiCollection.name}</td>
+                  <td>
                     {`${roiCollection.experimentLabel} - ${roiCollection.referencedSeriesNumber}`}
                   </td>
                 </tr>
@@ -508,33 +524,26 @@ export default class XNATContourImportMenu extends React.Component {
         );
       }
     } else {
-      importBody = <h1>...</h1>;
+      importBody = <h1 style={{ textAlign: 'center' }}>...</h1>;
     }
 
     return (
-      <div className="roi-import-list-dialog">
-        <div className="roi-import-list-header">
+      <div className="xnatPanel">
+        <div className="panelHeader">
           <h3>Import Contour Collections</h3>
           {importing ? null : (
-            <a
-              className="roi-import-list-cancel"
-              onClick={this.onCloseButtonClick}
-            >
+            <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
-            </a>
+            </button>
           )}
         </div>
-        <hr />
-        <div className="roi-import-list-body">{importBody}</div>
-        <hr />
-        <div className="roi-import-list-footer">
+        <div className="roiCollectionBody limitHeight">{importBody}</div>
+        <div className="roiCollectionFooter">
           {importing ? null : (
-            <a
-              className="btn btn-primary"
-              onClick={this.onImportButtonClick}
-            >
+            <button onClick={this.onImportButtonClick}>
               <Icon name="xnat-import" />
-            </a>
+              Import selected
+            </button>
           )}
         </div>
       </div>

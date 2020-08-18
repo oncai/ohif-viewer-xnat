@@ -19,19 +19,19 @@ import {
   TableList,
   TableListItem,
   Thumbnail,
+  TabComponents,
+  TabFooter,
+  HotkeyField,
+  LanguageSwitcher,
   TableSearchFilter,
   TablePagination,
   ToolbarSection,
   Tooltip,
   AboutContent,
-  UserPreferences,
-  UserPreferencesForm,
   OHIFModal,
+  ErrorBoundary
 } from './components';
 import { useDebounce, useMedia } from './hooks';
-
-// XNAT ICR
-import ICRHelpContent from './components/content/icrHelpContent/ICRHelpContent';
 
 // Elements
 import {
@@ -101,6 +101,10 @@ export {
   TableList,
   TableListItem,
   Thumbnail,
+  TabComponents,
+  TabFooter,
+  HotkeyField,
+  LanguageSwitcher,
   TableSearchFilter,
   TablePagination,
   Toolbar,
@@ -108,8 +112,6 @@ export {
   ToolbarSection,
   Tooltip,
   AboutContent,
-  UserPreferences,
-  UserPreferencesForm,
   ViewerbaseDragDropContext,
   SnackbarProvider,
   useSnackbarContext,
@@ -122,8 +124,8 @@ export {
   DialogProvider,
   withDialog,
   useDialog,
+  ErrorBoundary,
   // Hooks
   useDebounce,
   useMedia,
-  ICRHelpContent,
 };

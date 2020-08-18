@@ -66,13 +66,13 @@ const sessionMap = {
     const studies = json.studies;
 
     for (let i = 0; i < studies.length; i++) {
-      const seriesList = studies[i].seriesList;
+      const seriesList = studies[i].series;
 
       for (let j = 0; j < seriesList.length; j++) {
         _map.scans.push({
-          seriesInstanceUid: seriesList[j].seriesInstanceUid,
-          seriesDescription: seriesList[j].seriesDescription,
-          seriesNumber: seriesList[j].seriesNumber,
+          seriesInstanceUid: seriesList[j].SeriesInstanceUID,
+          seriesDescription: seriesList[j].SeriesDescription,
+          seriesNumber: seriesList[j].SeriesNumber,
           ...metadata,
         });
       }

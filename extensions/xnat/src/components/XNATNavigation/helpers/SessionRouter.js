@@ -65,6 +65,10 @@ export default class SessionRouter {
 
     console.log(`${xnatRootUrl}VIEWER/${params}`);
 
-    window.location.href = `${xnatRootUrl}VIEWER/${params}`;
+    if (process.env.APP_CONFIG === 'config/xnat-dev.js') {
+      window.location.href = `${params}`;
+    } else {
+      window.location.href = `${xnatRootUrl}VIEWER/${params}`;
+    }
   }
 }

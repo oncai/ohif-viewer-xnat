@@ -114,8 +114,25 @@ module.exports = (env, argv) => {
   });
 
   if (hasProxy) {
-    mergedConfig.devServer.proxy = {};
-    mergedConfig.devServer.proxy[PROXY_TARGET] = PROXY_DOMAIN;
+    if (APP_CONFIG === 'config/xnat-dev.js') {
+      mergedConfig.devServer.proxy = {};
+      const pr = `^${PROXY_TARGET}`;
+      mergedConfig.devServer.proxy[PROXY_TARGET] = {
+        target: PROXY_DOMAIN,
+        pathRewrite: {[pr] : ''},
+        changeOrigin: true
+      };
+      mergedConfig.devServer.headers = {};
+      mergedConfig.devServer.headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'X-Requested-With,content-type,Authorization,JSESSIONID',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE',
+        'Access-Control-Allow-Credentials': 'true',
+      };
+    } else {
+      mergedConfig.devServer.proxy = {};
+      mergedConfig.devServer.proxy[PROXY_TARGET] = PROXY_DOMAIN;
+    }
   }
 
   if (!isProdBuild) {

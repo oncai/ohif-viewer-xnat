@@ -13,6 +13,7 @@ import {
   ModalProvider,
   DialogProvider,
   OHIFModal,
+  ErrorBoundary
 } from '@ohif/ui';
 
 import {
@@ -23,6 +24,7 @@ import {
   UINotificationService,
   UIModalService,
   UIDialogService,
+  MeasurementService,
   utils,
   redux as reduxOHIF,
 } from '@ohif/core';
@@ -30,7 +32,8 @@ import {
 import i18n from '@ohif/i18n';
 
 // TODO: This should not be here
-import './config';
+//import './config';
+import { setConfiguration } from './config';
 
 /** Utils */
 import {
@@ -49,10 +52,9 @@ import { getActiveContexts } from './store/layout/selectors.js';
 import store from './store';
 
 /** Contexts */
-import WhiteLabellingContext from './context/WhiteLabellingContext';
+import WhiteLabelingContext from './context/WhiteLabelingContext';
 import UserManagerContext from './context/UserManagerContext';
-import AppContext from './context/AppContext';
-const { setUserPreferences } = reduxOHIF.actions;
+import { AppProvider, useAppContext, CONTEXTS } from './context/AppContext';
 
 /** ~~~~~~~~~~~~~ Application Setup */
 const commandsManagerConfig = {
@@ -62,13 +64,21 @@ const commandsManagerConfig = {
 
 /** Managers */
 const commandsManager = new CommandsManager(commandsManagerConfig);
-const hotkeysManager = new HotkeysManager(commandsManager);
 const servicesManager = new ServicesManager();
+const hotkeysManager = new HotkeysManager(commandsManager, servicesManager);
 let extensionManager;
 /** ~~~~~~~~~~~~~ End Application Setup */
 
 // TODO[react] Use a provider when the whole tree is React
 window.store = store;
+
+window.ohif = window.ohif || {};
+window.ohif.app = {
+  commandsManager,
+  hotkeysManager,
+  servicesManager,
+  extensionManager,
+};
 
 class App extends Component {
   static propTypes = {
@@ -77,7 +87,9 @@ class App extends Component {
       PropTypes.shape({
         routerBasename: PropTypes.string.isRequired,
         oidc: PropTypes.array,
-        whiteLabelling: PropTypes.object,
+        whiteLabeling: PropTypes.shape({
+          createLogoComponentFn: PropTypes.func,
+        }),
         extensions: PropTypes.array,
       }),
     ]).isRequired,
@@ -86,7 +98,7 @@ class App extends Component {
 
   static defaultProps = {
     config: {
-      whiteLabelling: {},
+      showStudyList: true,
       oidc: [],
       extensions: [],
     },
@@ -102,10 +114,10 @@ class App extends Component {
     const { config, defaultExtensions } = props;
 
     const appDefaultConfig = {
+      showStudyList: true,
       cornerstoneExtensionConfig: {},
       extensions: [],
       routerBasename: '/',
-      whiteLabelling: {},
     };
 
     this._appConfig = {
@@ -115,14 +127,21 @@ class App extends Component {
 
     const {
       servers,
-      hotkeys,
+      hotkeys: appConfigHotkeys,
       cornerstoneExtensionConfig,
       extensions,
       oidc,
     } = this._appConfig;
 
+    setConfiguration(this._appConfig);
+
     this.initUserManager(oidc);
-    _initServices([UINotificationService, UIModalService, UIDialogService]);
+    _initServices([
+      UINotificationService,
+      UIModalService,
+      UIDialogService,
+      MeasurementService,
+    ]);
     _initExtensions(
       [...defaultExtensions, ...extensions],
       cornerstoneExtensionConfig,
@@ -133,68 +152,73 @@ class App extends Component {
      * Must run after extension commands are registered
      * if there is no hotkeys from localStorage set up from config.
      */
-    _initHotkeys(hotkeys);
+    _initHotkeys(appConfigHotkeys);
     _initServers(servers);
     initWebWorkers();
   }
 
   render() {
-    const { whiteLabelling, routerBasename } = this._appConfig;
+    const { whiteLabeling, routerBasename } = this._appConfig;
     const {
       UINotificationService,
       UIDialogService,
       UIModalService,
+      MeasurementService,
     } = servicesManager.services;
 
     if (this._userManager) {
       return (
-        <AppContext.Provider value={{ appConfig: this._appConfig }}>
+        <ErrorBoundary context='App'>
           <Provider store={store}>
-            <I18nextProvider i18n={i18n}>
-              <OidcProvider store={store} userManager={this._userManager}>
-                <UserManagerContext.Provider value={this._userManager}>
-                  <Router basename={routerBasename}>
-                    <WhiteLabellingContext.Provider value={whiteLabelling}>
-                      <SnackbarProvider service={UINotificationService}>
-                        <DialogProvider service={UIDialogService}>
-                          <ModalProvider
-                            modal={OHIFModal}
-                            service={UIModalService}
-                          >
-                            <OHIFStandaloneViewer
-                              userManager={this._userManager}
-                            />
-                          </ModalProvider>
-                        </DialogProvider>
-                      </SnackbarProvider>
-                    </WhiteLabellingContext.Provider>
-                  </Router>
-                </UserManagerContext.Provider>
-              </OidcProvider>
-            </I18nextProvider>
+            <AppProvider config={this._appConfig}>
+              <I18nextProvider i18n={i18n}>
+                <OidcProvider store={store} userManager={this._userManager}>
+                  <UserManagerContext.Provider value={this._userManager}>
+                    <Router basename={routerBasename}>
+                      <WhiteLabelingContext.Provider value={whiteLabeling}>
+                        <SnackbarProvider service={UINotificationService}>
+                          <DialogProvider service={UIDialogService}>
+                            <ModalProvider
+                              modal={OHIFModal}
+                              service={UIModalService}
+                            >
+                              <OHIFStandaloneViewer
+                                userManager={this._userManager}
+                              />
+                            </ModalProvider>
+                          </DialogProvider>
+                        </SnackbarProvider>
+                      </WhiteLabelingContext.Provider>
+                    </Router>
+                  </UserManagerContext.Provider>
+                </OidcProvider>
+              </I18nextProvider>
+            </AppProvider>
           </Provider>
-        </AppContext.Provider>
+        </ErrorBoundary>
       );
     }
 
     return (
-      <AppContext.Provider value={{ appConfig: this._appConfig }}>
+      <ErrorBoundary context='App'>
         <Provider store={store}>
-          <I18nextProvider i18n={i18n}>
-            <Router basename={routerBasename}>
-              <WhiteLabellingContext.Provider value={whiteLabelling}>
-                <SnackbarProvider service={UINotificationService}>
-                  <DialogProvider service={UIDialogService}>
-                    <ModalProvider modal={OHIFModal} service={UIModalService}>
-                      <OHIFStandaloneViewer />
-                    </ModalProvider>
-                  </DialogProvider>
-                </SnackbarProvider>
-              </WhiteLabellingContext.Provider>
-            </Router>
-          </I18nextProvider>
+          <AppProvider config={this._appConfig}>
+            <I18nextProvider i18n={i18n}>
+              <Router basename={routerBasename}>
+                <WhiteLabelingContext.Provider value={whiteLabeling}>
+                  <SnackbarProvider service={UINotificationService}>
+                    <DialogProvider service={UIDialogService}>
+                      <ModalProvider modal={OHIFModal} service={UIModalService}>
+                        <OHIFStandaloneViewer />
+                      </ModalProvider>
+                    </DialogProvider>
+                  </SnackbarProvider>
+                </WhiteLabelingContext.Provider>
+              </Router>
+            </I18nextProvider>
+          </AppProvider>
         </Provider>
-      </AppContext.Provider>
+      </ErrorBoundary>
     );
   }
 
@@ -244,43 +268,45 @@ function _initExtensions(extensions, cornerstoneExtensionConfig, appConfig) {
     commandsManager,
     servicesManager,
     appConfig,
+    api: {
+      contexts: CONTEXTS,
+      hooks: {
+        useAppContext
+      }
+    }
   });
 
   const requiredExtensions = [
     GenericViewerCommands,
     [OHIFCornerstoneExtension, cornerstoneExtensionConfig],
     /* WARNING: MUST BE REGISTERED _AFTER_ OHIFCornerstoneExtension */
-    // In XNAT We don't use the measurements panel yet, so don't register it (line below commented out from master.)
-    //MeasurementsPanel,
+    MeasurementsPanel,
   ];
   const mergedExtensions = requiredExtensions.concat(extensions);
   extensionManager.registerExtensions(mergedExtensions);
 }
 
-function _initHotkeys(hotkeys) {
-  const { hotkeyDefinitions = {} } = store.getState().preferences || {};
-  let updateStore = false;
-  let hotkeysToUse = hotkeyDefinitions;
+/**
+ *
+ * @param {Object} appConfigHotkeys - Default hotkeys, as defined by app config
+ */
+function _initHotkeys(appConfigHotkeys) {
+  // TODO: Use something more resilient
+  // TODO: Mozilla has a special library for this
+  const userPreferredHotkeys = JSON.parse(
+    localStorage.getItem('hotkey-definitions') || '{}'
+  );
 
-  if (!Object.keys(hotkeyDefinitions).length) {
-    hotkeysToUse = hotkeys;
-    updateStore = true;
+  // TODO: hotkeysManager.isValidDefinitionObject(/* */)
+  const hasUserPreferences =
+    userPreferredHotkeys && Object.keys(userPreferredHotkeys).length > 0;
+  if (hasUserPreferences) {
+    hotkeysManager.setHotkeys(userPreferredHotkeys);
+  } else {
+    hotkeysManager.setHotkeys(appConfigHotkeys);
   }
 
-  if (hotkeysToUse) {
-    hotkeysManager.setHotkeys(hotkeysToUse);
-
-    /* Set hotkeys default based on app config. */
-    hotkeysManager.setDefaultHotKeys(hotkeys);
-
-    if (updateStore) {
-      const { hotkeyDefinitions } = hotkeysManager;
-      const windowLevelData = {};
-      store.dispatch(
-        setUserPreferences({ windowLevelData, hotkeyDefinitions })
-      );
-    }
-  }
+  hotkeysManager.setDefaultHotKeys(appConfigHotkeys);
 }
 
 function _initServers(servers) {

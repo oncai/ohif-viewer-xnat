@@ -2,13 +2,13 @@ import init from './init.js';
 import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
-import id from './id.js';
+import { servicesManager } from '@ohif/viewer/src/App';
 
 export default {
   /**
    * Only required property. Should be a unique value across all extensions.
    */
-  id,
+  id: 'xnat',
 
   /**
    *
@@ -26,6 +26,16 @@ export default {
     return commandsModule;
   },
   getPanelModule({ servicesManager }) {
-    return panelModule;
+    return panelModule(servicesManager);
   },
 };
+
+export {
+  isLoggedIn,
+  xnatAuthenticate,
+  reassignInstanceUrls,
+} from './utils/xnatDev';
+
+export { XNATICONS } from './elements';
+
+export { ICRHelpContent } from './components/HelpContent/ICRHelpContent';

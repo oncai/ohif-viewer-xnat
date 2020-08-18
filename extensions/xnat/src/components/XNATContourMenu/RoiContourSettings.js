@@ -1,8 +1,9 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
+import refreshViewport from '../../utils/refreshViewport';
 
-import '../XNATContourPanel.styl';
+import '../XNATRoiPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -35,6 +36,8 @@ export default class RoiContourSettings extends React.Component {
     modules.freehand3D.setters.toggleDisplayStats();
 
     this.setState({ displayStats: modules.freehand3D.state.displayStats });
+
+    refreshViewport();
   }
 
   /**
@@ -53,35 +56,29 @@ export default class RoiContourSettings extends React.Component {
     const { interpolate, displayStats } = this.state;
 
     return (
-      <div className="roi-contour-menu-footer">
-        <h3>Settings</h3>
-        <div
-          className="roi-contour-menu-option"
-          style={{ cursor: 'select' }}
-          onClick={this.onInterpolateToggleClick}
-        >
-          <label>
-            {interpolate ? (
-              <Icon name="check" style={{ marginRight: 4 }} />
-            ) : (
-              <div className="empty-check-box" />
-            )}
-            <em>Interpolation</em>
-          </label>
+      <div className="roiPanelFooter">
+        <h3 style={{ marginBottom: 15 }}>Settings</h3>
+        <div className="roiPanelMenuOption">
+          <input
+            type="checkbox"
+            name="interpolate"
+            onChange={this.onInterpolateToggleClick}
+            checked={interpolate}
+            value={interpolate}
+          />
+          <label htmlFor="interpolate"><em>Interpolation</em></label>
         </div>
-        <div
-          className="roi-contour-menu-option"
-          style={{ cursor: 'select' }}
-          onClick={this.onDisplayStatsToggleClick}
-        >
-          <label>
-            {displayStats ? (
-              <Icon name="check" style={{ marginRight: 4 }} />
-            ) : (
-              <div className="empty-check-box" />
-            )}
-            <em>Stats</em>
-          </label>
+        <div className="roiPanelMenuOption">
+          <input
+            type="checkbox"
+            name="stats"
+            onChange={this.onDisplayStatsToggleClick}
+            checked={displayStats}
+            value={displayStats}
+          />
+          <label htmlFor="stats"><em>Stats</em></label>
+        </div>
+        <div className="roiPanelMenuOption">
         </div>
       </div>
     );

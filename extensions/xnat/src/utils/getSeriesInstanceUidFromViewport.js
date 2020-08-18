@@ -4,5 +4,5 @@ export default function getSeriesInstanceUidFromViewport(
 ) {
   const activeViewport = viewports[activeIndex] || {};
 
-  return activeViewport.seriesInstanceUid;
+  return activeViewport.SeriesInstanceUID;
 }

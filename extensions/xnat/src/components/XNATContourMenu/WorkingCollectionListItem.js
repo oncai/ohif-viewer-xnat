@@ -1,7 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { store } from 'cornerstone-tools';
 
-import '../XNATContourPanel.styl';
+import '../XNATRoiPanel.styl';
+import cornerstone from 'cornerstone-core';
+import { Icon } from '@ohif/ui';
 
 const modules = store.modules;
 
@@ -10,15 +13,40 @@ const modules = store.modules;
  * ROIContour Collection.
  */
 export default class WorkingCollectionListItem extends React.Component {
+  static propTypes = {
+    roiContourIndex: PropTypes.any,
+    metadata: PropTypes.any,
+    activeROIContourIndex: PropTypes.any,
+    onRoiChange: PropTypes.any,
+    SeriesInstanceUID: PropTypes.any,
+    onClick: PropTypes.func,
+  };
+
+  static defaultProps = {
+    roiContourIndex: undefined,
+    metadata: undefined,
+    activeROIContourIndex: undefined,
+    onRoiChange: undefined,
+    SeriesInstanceUID: undefined,
+    onClick: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
     this.onTextInputChange = this.onTextInputChange.bind(this);
+    this.onShowHideClick = this.onShowHideClick.bind(this);
+
+    const visible = this.props.metadata.visible;
+
+    this.state = {
+      visible,
+    };
   }
 
   onTextInputChange(evt) {
     const name = evt.target.value;
-    const { seriesInstanceUid } = this.props;
+    const { SeriesInstanceUID } = this.props;
 
     if (name.replace(' ', '').length > 0) {
       const metadata = this.props.metadata;
@@ -26,11 +54,28 @@ export default class WorkingCollectionListItem extends React.Component {
 
       freehand3DModule.setters.ROIContourName(
         name,
-        seriesInstanceUid,
+        SeriesInstanceUID,
         'DEFAULT',
         metadata.uid
       );
     }
+  }
+
+  /**
+   * onShowHideClick - Toggles the visibility of the collections ROI Contours.
+   *
+   * @returns {null}
+   */
+  onShowHideClick() {
+    const { metadata } = this.props;
+    const { visible } = this.state;
+
+    metadata.visible = !visible;
+    this.setState({ visible: !visible });
+
+    cornerstone.getEnabledElements().forEach(enabledElement => {
+      cornerstone.updateImage(enabledElement.element);
+    });
   }
 
   render() {
@@ -46,31 +91,48 @@ export default class WorkingCollectionListItem extends React.Component {
     const polygonCount = metadata.polygonCount;
     const roiContourColor = metadata.color;
 
+    const { visible } = this.state;
+    const showHideIcon = visible ? (
+      <Icon name="eye" />
+    ) : (
+      <Icon name="eye-closed" />
+    );
+
     return (
       <tr>
-        <td className="left-aligned-cell">
-          <i className="fa fa-square" style={{ color: roiContourColor }} />{' '}
+        <td style={{ backgroundColor: roiContourColor }}>
           <input
             type="radio"
             checked={checked}
             onChange={() => onRoiChange(roiContourIndex)}
+            style={{ backgroundColor: roiContourColor }}
           />
         </td>
         <td className="left-aligned-cell">
-          <a className="roi-contour-menu-name-link">
-            <input
-              name="roiContourName"
-              className="form-themed form-control"
-              onChange={this.onTextInputChange}
-              type="text"
-              autoComplete="off"
-              defaultValue={name}
-              placeholder="Enter ROI Name..."
-              tabIndex="1"
-            />
+          <input
+            name="roiContourName"
+            className="roiEdit"
+            onChange={this.onTextInputChange}
+            type="text"
+            autoComplete="off"
+            defaultValue={name}
+            placeholder="Enter ROI Name..."
+            tabIndex="1"
+          />
+        </td>
+        <td className="centered-cell">
+          <a
+            style={{ cursor: 'pointer', color: 'white' }}
+            onClick={this.props.onClick}
+          >
+            {polygonCount}
           </a>
         </td>
-        <td>{polygonCount}</td>
+        <td className="centered-cell">
+          <button className="small" onClick={this.onShowHideClick}>
+            {showHideIcon}
+          </button>
+        </td>
       </tr>
     );
   }

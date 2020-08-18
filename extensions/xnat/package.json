@@ -1,6 +1,6 @@
 {
-  "name": "@xnat-ohif/xnat-extension",
-  "version": "0.0.1",
+  "name": "@xnat-ohif/extension-xnat",
+  "version": "4.2.7",
   "description": "OHIF extension for XNAT functionality.",
   "author": "The Institute For Cancer Research",
   "license": "BSD",
@@ -29,8 +29,9 @@
   },
   "peerDependencies": {
     "@ohif/core": "^0.50.0",
+    "@ohif/ui": "^0.50.0",
     "cornerstone-core": "^2.2.8",
-    "cornerstone-tools": "^4.0.9",
+    "cornerstone-tools": "^4.15.1",
     "dcmjs": "^0.8.2",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",

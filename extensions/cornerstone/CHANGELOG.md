@@ -3,6 +3,192 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.8.1...@ohif/extension-cornerstone@2.8.2) (2020-06-15)
+
+
+### Bug Fixes
+
+* 🐛 Disable seg panel when data for seg unavailable ([#1732](https://github.com/OHIF/Viewers/issues/1732)) ([698e900](https://github.com/OHIF/Viewers/commit/698e900b85121d3c2a46747c443ef69fb7a8c95b)), closes [#1728](https://github.com/OHIF/Viewers/issues/1728)
+
+
+
+
+
+## [2.8.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.8.0...@ohif/extension-cornerstone@2.8.1) (2020-06-04)
+
+
+### Bug Fixes
+
+* 🐛 Infinite frame index change when quickly jumping between ([#1734](https://github.com/OHIF/Viewers/issues/1734)) ([a830577](https://github.com/OHIF/Viewers/commit/a8305772d0fbec506549ad7ea08504a8bc3a4f39)), closes [#1733](https://github.com/OHIF/Viewers/issues/1733)
+
+
+
+
+
+# [2.8.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.7.3...@ohif/extension-cornerstone@2.8.0) (2020-06-04)
+
+
+### Features
+
+* 🎸 1729 - error boundary wrapper ([#1764](https://github.com/OHIF/Viewers/issues/1764)) ([c02b232](https://github.com/OHIF/Viewers/commit/c02b232b0cc24f38af5d5e3831d987d048e60ada))
+
+
+
+
+
+## [2.7.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.7.2...@ohif/extension-cornerstone@2.7.3) (2020-05-12)
+
+
+### Bug Fixes
+
+* 🐛 Fix seg color load ([#1724](https://github.com/OHIF/Viewers/issues/1724)) ([c4f84b1](https://github.com/OHIF/Viewers/commit/c4f84b1174d04ba84d37ed89b6d7ab541be28181))
+
+
+
+
+
+## [2.7.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.7.1...@ohif/extension-cornerstone@2.7.2) (2020-05-04)
+
+
+### Bug Fixes
+
+* 🐛 Proper error handling for derived display sets ([#1708](https://github.com/OHIF/Viewers/issues/1708)) ([5b20d8f](https://github.com/OHIF/Viewers/commit/5b20d8f323e4b3ef9988f2f2ab672d697b6da409))
+
+
+
+
+
+## [2.7.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.7.0...@ohif/extension-cornerstone@2.7.1) (2020-05-04)
+
+**Note:** Version bump only for package @ohif/extension-cornerstone
+
+
+
+
+
+# [2.7.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.6.1...@ohif/extension-cornerstone@2.7.0) (2020-04-24)
+
+
+### Features
+
+* 🎸 Seg jump to slice + show/hide ([835f64d](https://github.com/OHIF/Viewers/commit/835f64d47a9994f6a25aaf3941a4974e215e7e7f))
+
+
+
+
+
+## [2.6.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.6.0...@ohif/extension-cornerstone@2.6.1) (2020-04-23)
+
+
+### Bug Fixes
+
+* 🐛 Multiframe fix ([#1661](https://github.com/OHIF/Viewers/issues/1661)) ([7120561](https://github.com/OHIF/Viewers/commit/71205618ecb8b592247c5acb32284bfe7e18fce5))
+
+
+
+
+
+# [2.6.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.5.2...@ohif/extension-cornerstone@2.6.0) (2020-04-23)
+
+
+### Features
+
+* configuration to hook into XHR Error handling ([e96205d](https://github.com/OHIF/Viewers/commit/e96205de35e5bec14dc8a9a8509db3dd4e6ecdb6))
+
+
+
+
+
+## [2.5.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.5.1...@ohif/extension-cornerstone@2.5.2) (2020-04-09)
+
+**Note:** Version bump only for package @ohif/extension-cornerstone
+
+
+
+
+
+## [2.5.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.5.0...@ohif/extension-cornerstone@2.5.1) (2020-04-02)
+
+**Note:** Version bump only for package @ohif/extension-cornerstone
+
+
+
+
+
+# [2.5.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.4.3...@ohif/extension-cornerstone@2.5.0) (2020-03-13)
+
+
+### Features
+
+* Segmentations Settings UI - Phase 1 [#1391](https://github.com/OHIF/Viewers/issues/1391) ([#1392](https://github.com/OHIF/Viewers/issues/1392)) ([e8842cf](https://github.com/OHIF/Viewers/commit/e8842cf8aebde98db7fc123e4867c8288552331f)), closes [#1423](https://github.com/OHIF/Viewers/issues/1423)
+
+
+
+
+
+## [2.4.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.4.2...@ohif/extension-cornerstone@2.4.3) (2020-03-09)
+
+**Note:** Version bump only for package @ohif/extension-cornerstone
+
+
+
+
+
+## [2.4.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.4.1...@ohif/extension-cornerstone@2.4.2) (2020-03-09)
+
+
+### Bug Fixes
+
+* Remove Eraser and ROI Window ([6c950a9](https://github.com/OHIF/Viewers/commit/6c950a9669f7fbf3c46e48679fa26ee514824156))
+
+
+
+
+
+## [2.4.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.4.0...@ohif/extension-cornerstone@2.4.1) (2020-03-03)
+
+
+### Bug Fixes
+
+* bump react-cornerstone-viewport version to address critical issue ([#1473](https://github.com/OHIF/Viewers/issues/1473)) ([ee80e02](https://github.com/OHIF/Viewers/commit/ee80e026610442e94caf5e4e3e4d193220cd0ece))
+
+
+
+
+
+# [2.4.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.3.1...@ohif/extension-cornerstone@2.4.0) (2020-02-20)
+
+
+### Features
+
+* [#1342](https://github.com/OHIF/Viewers/issues/1342) - Window level tab ([#1429](https://github.com/OHIF/Viewers/issues/1429)) ([ebc01a8](https://github.com/OHIF/Viewers/commit/ebc01a8ca238d5a3437b44d81f75aa8a5e8d0574))
+
+
+
+
+
+## [2.3.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.3.0...@ohif/extension-cornerstone@2.3.1) (2020-02-14)
+
+
+### Bug Fixes
+
+* Creating 2 commands to activate zoom tool and also to move between displaySets ([#1446](https://github.com/OHIF/Viewers/issues/1446)) ([06a4af0](https://github.com/OHIF/Viewers/commit/06a4af06faaecf6fa06ccd90cdfa879ee8d53053))
+
+
+
+
+
+# [2.3.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.2.2...@ohif/extension-cornerstone@2.3.0) (2020-02-10)
+
+
+### Features
+
+* 🎸 MeasurementService ([#1314](https://github.com/OHIF/Viewers/issues/1314)) ([0c37a40](https://github.com/OHIF/Viewers/commit/0c37a406d963569af8c3be24c697dafd42712dfc))
+
+
+
+
+
 ## [2.2.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-cornerstone@2.2.1...@ohif/extension-cornerstone@2.2.2) (2020-01-28)
 
 **Note:** Version bump only for package @ohif/extension-cornerstone

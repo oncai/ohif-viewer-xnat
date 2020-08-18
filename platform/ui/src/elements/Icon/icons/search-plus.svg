@@ -6,7 +6,7 @@
   height="1em"
   stroke="currentColor"
 >
-  <title id="title">Zoom</title>
+  <title id="title">Search Plus</title>
   <g fill="none" stroke-width="2" stroke-linecap="round">
     <path d="m11.5,11.5 4.5,4.5"></path>
     <circle cx="7" cy="7" r="6"></circle>

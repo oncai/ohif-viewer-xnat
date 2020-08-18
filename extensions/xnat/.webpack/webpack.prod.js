@@ -30,7 +30,7 @@ module.exports = (env, argv) => {
     },
     output: {
       path: ROOT_DIR,
-      library: 'OHIFExtDicomSeg',
+      library: 'OHIFExtXNAT',
       libraryTarget: 'umd',
       libraryExport: 'default',
       filename: pkg.main,

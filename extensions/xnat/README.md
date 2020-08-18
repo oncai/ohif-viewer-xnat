@@ -1,1 +1,1 @@
-# @xnat-ohif/xnat-extension
+# @xnat-ohif/extension-xnat

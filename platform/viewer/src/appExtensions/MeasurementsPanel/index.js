@@ -14,6 +14,8 @@ export default {
     init({ servicesManager, commandsManager, configuration });
   },
 
+  // In XNAT We don't use the measurements panel yet
+  /*
   getPanelModule({ servicesManager, commandsManager }) {
     const { UINotificationService, UIDialogService } = servicesManager.services;
 
@@ -84,4 +86,5 @@ export default {
       defaultContext: ['VIEWER'],
     };
   },
+  */
 };
