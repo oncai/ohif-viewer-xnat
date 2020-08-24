@@ -19,12 +19,6 @@ window.config = {
       },
     ],
   },
-  xnat_dev: {
-    url: '/xnat-dev',
-    domain: '//10.1.1.176/',
-    username: 'admin',
-    password: 'admin',
-  },
   // Extensions should be able to suggest default values for these?
   // Or we can require that these be explicitly set
   hotkeys: [

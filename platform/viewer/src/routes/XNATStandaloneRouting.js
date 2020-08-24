@@ -391,7 +391,8 @@ function getRootUrl() {
 
   if (process.env.NODE_ENV === 'development') {
     console.info('### XNATStandaloneRouting Development mode! ...............');
-    rootPlusPort = window.config.xnat_dev.url;
+    const XNAT_PROXY = process.env.XNAT_PROXY;
+    rootPlusPort = XNAT_PROXY;
   }
 
   console.log(rootPlusPort);
