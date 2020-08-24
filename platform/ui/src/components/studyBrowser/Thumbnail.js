@@ -35,7 +35,7 @@ function ThumbnailFooter({
       <div className="series-information">
         {getInfo(SeriesNumber, 'S:')}
         {getInfo(InstanceNumber, 'I:')}
-        {getInfo(numImageFrames, '', 'image-frames')}
+        {getInfo(numImageFrames, '', 'image-frames numFrames')}
       </div>
     );
   };
