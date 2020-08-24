@@ -36,6 +36,17 @@ const ViewerLocalFileData = asyncComponent(() =>
 
 const reload = () => window.location.reload();
 
+// Define XNAT Route based on URL/Context configuration
+const xnatRoute = () => {
+  const href = window.location.href;
+  const origin = window.location.origin;
+  let xnatRoute = href.split('/VIEWER')[0];
+
+  xnatRoute = xnatRoute.replace(origin, '');
+  xnatRoute += '/VIEWER';
+  return xnatRoute;
+};
+
 const ROUTES_DEF = {
   default: {
     viewer: {
@@ -47,7 +58,7 @@ const ROUTES_DEF = {
     //   component: StandaloneRouting,
     // },
     XNATstandaloneViewer: {
-      path: '/VIEWER',
+      path: xnatRoute(),
       component: XNATStandaloneRouting,
     },
     list: {
@@ -61,10 +72,10 @@ const ROUTES_DEF = {
       path: '/local',
       component: ViewerLocalFileData,
     },
-    IHEInvokeImageDisplay: {
-      path: '/IHEInvokeImageDisplay',
-      component: IHEInvokeImageDisplay
-    },
+    // IHEInvokeImageDisplay: {
+    //   path: '/IHEInvokeImageDisplay',
+    //   component: IHEInvokeImageDisplay
+    // },
   },
   gcloud: {
     viewer: {
