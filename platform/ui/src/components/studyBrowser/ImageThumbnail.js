@@ -141,4 +141,4 @@ ImageThumbnail.defaultProps = {
   height: 123,
 };
 
-export default ImageThumbnail;
+export { ImageThumbnail };

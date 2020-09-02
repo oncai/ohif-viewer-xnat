@@ -19,6 +19,7 @@ import {
   TableList,
   TableListItem,
   Thumbnail,
+  ImageThumbnail,
   TabComponents,
   TabFooter,
   HotkeyField,
@@ -29,7 +30,7 @@ import {
   Tooltip,
   AboutContent,
   OHIFModal,
-  ErrorBoundary
+  ErrorBoundary,
 } from './components';
 import { useDebounce, useMedia } from './hooks';
 
@@ -101,6 +102,7 @@ export {
   TableList,
   TableListItem,
   Thumbnail,
+  ImageThumbnail,
   TabComponents,
   TabFooter,
   HotkeyField,

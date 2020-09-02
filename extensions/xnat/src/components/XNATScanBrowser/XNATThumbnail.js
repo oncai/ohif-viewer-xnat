@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useDrag } from 'react-dnd';
-import { ImageThumbnail } from './ImageThumbnail';
+import { ImageThumbnail } from '@ohif/ui';
 import classNames from 'classnames';
 
-import './Thumbnail.styl';
+import './XNATThumbnail.styl';
 
 function ThumbnailFooter({
   SeriesDescription,
@@ -48,7 +48,7 @@ function ThumbnailFooter({
   );
 }
 
-function Thumbnail(props) {
+function XNATThumbnail(props) {
   const {
     active,
     altImageText,
@@ -114,7 +114,7 @@ function Thumbnail(props) {
 
 const noop = () => {};
 
-Thumbnail.propTypes = {
+XNATThumbnail.propTypes = {
   supportsDrag: PropTypes.bool,
   id: PropTypes.string.isRequired,
   displaySetInstanceUID: PropTypes.string.isRequired,
@@ -139,7 +139,7 @@ It will be displayed inside the <div>. This is useful when it is difficult
   onMouseDown: PropTypes.func,
 };
 
-Thumbnail.defaultProps = {
+XNATThumbnail.defaultProps = {
   supportsDrag: false,
   active: false,
   error: false,
@@ -149,4 +149,4 @@ Thumbnail.defaultProps = {
   onMouseDown: noop,
 };
 
-export { Thumbnail };
+export { XNATThumbnail };

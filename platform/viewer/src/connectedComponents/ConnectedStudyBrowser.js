@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { StudyBrowser } from '@ohif/ui';
 import cloneDeep from 'lodash.clonedeep';
 import findDisplaySetByUID from './findDisplaySetByUID';
+import { XNATScanBrowser} from '@xnat-ohif/extension-xnat';
 
 const { setActiveViewportSpecificData } = OHIF.redux.actions;
 
@@ -52,6 +53,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 const ConnectedStudyBrowser = connect(
   mapStateToProps,
   mapDispatchToProps
-)(StudyBrowser);
+)(XNATScanBrowser);
 
 export default ConnectedStudyBrowser;

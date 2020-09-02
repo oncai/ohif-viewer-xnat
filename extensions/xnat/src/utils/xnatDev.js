@@ -125,8 +125,6 @@ export function reassignInstanceUrls(studies) {
   const XNAT_PROXY = process.env.XNAT_PROXY;
   const XNAT_DOMAIN = process.env.XNAT_DOMAIN.replace(/^http(s?):/i, '') + '/';
 
-  // console.info(`${XNAT_DOMAIN} => ${XNAT_PROXY}`);
-
   studies.forEach(study => {
     study.series.forEach(series => {
       series.instances.forEach(instance => {

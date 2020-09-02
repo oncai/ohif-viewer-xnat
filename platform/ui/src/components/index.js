@@ -1,4 +1,4 @@
-import { StudyBrowser, Thumbnail } from './studyBrowser';
+import { StudyBrowser, Thumbnail, ImageThumbnail } from './studyBrowser';
 import { LayoutButton, LayoutChooser } from './layoutButton';
 import { MeasurementTable, MeasurementTableItem } from './measurementTable';
 import { Overlay, OverlayTrigger } from './overlayTrigger';
@@ -48,6 +48,7 @@ export {
   TableList,
   TableListItem,
   Thumbnail,
+  ImageThumbnail,
   TabComponents,
   TabFooter,
   HotkeyField,

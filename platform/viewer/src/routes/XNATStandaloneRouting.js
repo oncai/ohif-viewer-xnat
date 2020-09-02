@@ -207,7 +207,7 @@ class XNATStandaloneRouting extends Component {
               });
 
               // TODO -> clean this
-              studiesI[0].studyDescription =
+              studiesI[0].StudyDescription =
                 experimentList[i].label || experimentList[i].ID;
 
               console.log(`Studies[${i}]`);

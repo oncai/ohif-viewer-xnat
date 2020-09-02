@@ -363,7 +363,7 @@ export default withDialog(Viewer);
  */
 const _mapStudiesToThumbnails = function(studies) {
   return studies.map(study => {
-    const { StudyInstanceUID } = study;
+    const { StudyInstanceUID, StudyDescription } = study;
 
     const thumbnails = study.displaySets.map(displaySet => {
       const {
@@ -403,6 +403,7 @@ const _mapStudiesToThumbnails = function(studies) {
 
     return {
       StudyInstanceUID,
+      StudyDescription,
       thumbnails,
     };
   });
