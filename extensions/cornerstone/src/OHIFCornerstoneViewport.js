@@ -5,6 +5,8 @@ import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 
+import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
+
 const { StackManager } = OHIF.utils;
 
 class OHIFCornerstoneViewport extends Component {
@@ -234,6 +236,7 @@ class OHIFCornerstoneViewport extends Component {
         <ConnectedCornerstoneViewport
           viewportIndex={viewportIndex}
           imageIds={imageIds}
+          viewportOverlayComponent={XNATViewportOverlay}
           imageIdIndex={currentImageIdIndex}
           onNewImage={newImageHandler}
           onNewImageDebounceTime={700}

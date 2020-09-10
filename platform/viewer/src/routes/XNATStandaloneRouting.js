@@ -415,6 +415,8 @@ async function updateMetaDataProvider(studies) {
         series.instances.map(async instance => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
+          naturalizedDicom.StudyDescription = study.StudyDescription;
+          naturalizedDicom.SeriesNumber = series.SeriesNumber;
           //ToDo: do we need PaletteColorLookupTableData & OverlayData?
 
           // Add instance to metadata provider.
