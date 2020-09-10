@@ -40,9 +40,10 @@ export default function init({ servicesManager, configuration }) {
   const { csToolsConfig } = configuration;
   const metadataProvider = OHIF.cornerstone.metadataProvider;
 
+  // Add OHIF provider with a low priority so it is handled last
   cornerstone.metaData.addProvider(
     metadataProvider.get.bind(metadataProvider),
-    9999
+    -1
   );
 
   // ~~
