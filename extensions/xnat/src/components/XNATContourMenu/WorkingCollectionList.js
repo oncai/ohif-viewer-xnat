@@ -15,6 +15,7 @@ export default class WorkingRoiCollectionList extends React.Component {
     workingCollection: PropTypes.any,
     activeROIContourIndex: PropTypes.any,
     onRoiChange: PropTypes.any,
+    onRoiRemove: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
     onContourClick: PropTypes.func,
   };
@@ -23,6 +24,7 @@ export default class WorkingRoiCollectionList extends React.Component {
     workingCollection: undefined,
     activeROIContourIndex: undefined,
     onRoiChange: undefined,
+    onRoiRemove: undefined,
     SeriesInstanceUID: undefined,
     onClick: undefined,
   };
@@ -36,6 +38,7 @@ export default class WorkingRoiCollectionList extends React.Component {
       workingCollection,
       activeROIContourIndex,
       onRoiChange,
+      onRoiRemove,
       SeriesInstanceUID,
       onContourClick,
     } = this.props;
@@ -49,6 +52,7 @@ export default class WorkingRoiCollectionList extends React.Component {
             metadata={roiContour.metadata}
             activeROIContourIndex={activeROIContourIndex}
             onRoiChange={onRoiChange}
+            onRoiRemove={onRoiRemove}
             SeriesInstanceUID={SeriesInstanceUID}
             onClick={onContourClick}
           />

@@ -252,11 +252,11 @@ export default class XNATContourExportMenu extends React.Component {
 
     let roiExportListBody;
 
-    let defaultName = '';
+    let defaultName = 'Unnamed contour ROI collection';
 
-    if (roiContourList && roiContourList.length === 1) {
-      defaultName = roiContourList[0].ROIContourReference.name;
-    }
+    // if (roiContourList && roiContourList.length === 1) {
+    //   defaultName = roiContourList[0].ROIContourReference.name;
+    // }
 
     if (exporting) {
       roiExportListBody = (
@@ -291,8 +291,7 @@ export default class XNATContourExportMenu extends React.Component {
             {roiContourList.map((roiContour, index) => (
               <tr key={`${roiContour.ROIContourReference.name}_${index}`}>
                 <td className="left-aligned-cell">
-                  <ColoredCircle color={roiContour.ROIContourReference.color} />
-                  {' '}
+                  <ColoredCircle color={roiContour.ROIContourReference.color} />{' '}
                   {roiContour.ROIContourReference.name}
                 </td>
                 <td className="centered-cell">
@@ -303,7 +302,9 @@ export default class XNATContourExportMenu extends React.Component {
                     value={selectedCheckboxes[index]}
                   />
                 </td>
-                <td className="centered-cell">{roiContour.ROIContourReference.polygonCount}</td>
+                <td className="centered-cell">
+                  {roiContour.ROIContourReference.polygonCount}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -326,18 +327,16 @@ export default class XNATContourExportMenu extends React.Component {
 
         {!exporting && (
           <div className="roiCollectionFooter">
-            <div>
-              <label style={{ marginRight: 5 }}>Name</label>
-              <input
-                // className="form-themed form-control"
-                type="text"
-                defaultValue={defaultName}
-                onChange={this.onTextInputChange}
-                tabIndex="-1"
-                autoComplete="off"
-              />
-            </div>
-            <button onClick={this.onExportButtonClick}>
+            <label style={{ marginRight: 5 }}>Name</label>
+            <input
+              type="text"
+              defaultValue={defaultName}
+              onChange={this.onTextInputChange}
+              tabIndex="-1"
+              autoComplete="off"
+              style={{ flex: 1 }}
+            />
+            <button onClick={this.onExportButtonClick} style={{ marginLeft: 10 }}>
               <Icon name="xnat-export" />
               Export selected
             </button>

@@ -164,7 +164,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       freehand3DStore.setters.ROIContourAndSetIndexActive(
         seriesInstanceUid,
         'DEFAULT',
-        'Unnamed ROI'
+        'Unnamed contour ROI'
       );
     }
   }

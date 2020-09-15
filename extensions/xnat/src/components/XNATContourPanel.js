@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
+import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import WorkingCollectionList from './XNATContourMenu/WorkingCollectionList.js';
 import LockedCollectionsList from './XNATContourMenu/LockedCollectionsList.js';
@@ -16,10 +17,8 @@ import { Icon } from '@ohif/ui';
 import ConfirmationDialog from './common/ConfirmationDialog';
 
 import './XNATRoiPanel.styl';
-import cornerstone from 'cornerstone-core';
 
-const modules = cornerstoneTools.store.modules;
-const { EVENTS } = cornerstoneTools;
+const modules = csTools.store.modules;
 
 /**
  * @class XNATContourMenu - Renders a menu for importing, exporting, creating
@@ -119,13 +118,13 @@ export default class XNATContourPanel extends React.Component {
   addEventListeners() {
     this.removeEventListeners();
 
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
+    csTools.store.state.enabledElements.forEach(enabledElement => {
       enabledElement.addEventListener(
-        EVENTS.MEASUREMENT_REMOVED,
+        csTools.EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.addEventListener(
-        EVENTS.MEASUREMENT_ADDED,
+        csTools.EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.addEventListener(
@@ -140,13 +139,13 @@ export default class XNATContourPanel extends React.Component {
   }
 
   removeEventListeners() {
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
+    csTools.store.state.enabledElements.forEach(enabledElement => {
       enabledElement.removeEventListener(
-        EVENTS.MEASUREMENT_REMOVED,
+        csTools.EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.removeEventListener(
-        EVENTS.MEASUREMENT_ADDED,
+        csTools.EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.removeEventListener(
@@ -267,7 +266,7 @@ export default class XNATContourPanel extends React.Component {
     const activeROIContourIndex = freehand3DStore.setters.ROIContourAndSetIndexActive(
       SeriesInstanceUID,
       'DEFAULT',
-      'Unnamed ROI'
+      'Unnamed contour ROI'
     );
 
     const workingCollection = this.constructor._workingCollection(
@@ -294,7 +293,7 @@ export default class XNATContourPanel extends React.Component {
     this.setState({ activeROIContourIndex: roiContourIndex });
   }
 
-  onRemoveRoiButtonClick() {
+  onRemoveRoiButtonClick(roiContourUid) {
     const {
       SeriesInstanceUID,
       activeROIContourIndex,
@@ -303,7 +302,7 @@ export default class XNATContourPanel extends React.Component {
     modules.freehand3D.setters.deleteROIFromStructureSet(
       SeriesInstanceUID,
       'DEFAULT',
-      workingCollection[activeROIContourIndex].metadata.uid
+      roiContourUid //workingCollection[activeROIContourIndex].metadata.uid
     );
     this.refreshRoiContourList(SeriesInstanceUID);
     refreshViewport();
@@ -506,7 +505,7 @@ export default class XNATContourPanel extends React.Component {
       component = (
         <div className="xnatPanel">
           <div className="panelHeader">
-            <h3>Contour Collections</h3>
+            <h3>Contour-based ROIs</h3>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATContourImportMenu}
               ExportCallbackOrComponent={XNATContourExportMenu}
@@ -518,14 +517,14 @@ export default class XNATContourPanel extends React.Component {
           {/* CONTOUR LIST */}
           <div className="roiCollectionBody">
             <div className="workingCollectionHeader">
-              <h4> New Contour Collection </h4>
+              <h4> Unnamed contour ROI collection </h4>
               <div>
                 <button onClick={this.onNewRoiButtonClick}>
-                  <Icon name="xnat-tree-plus" /> Add
+                  <Icon name="xnat-tree-plus" /> Contour-based ROI
                 </button>
-                <button onClick={this.onRemoveRoiButtonClick}>
-                  <Icon name="trash" /> Remove
-                </button>
+                {/*<button onClick={this.onRemoveRoiButtonClick}>*/}
+                {/*  <Icon name="trash" /> Remove*/}
+                {/*</button>*/}
               </div>
             </div>
             <table className="collectionTable">
@@ -534,12 +533,13 @@ export default class XNATContourPanel extends React.Component {
                   <th width="5%" className="centered-cell">
                     #
                   </th>
-                  <th width="65%" className="left-aligned-cell">
+                  <th width="55%" className="left-aligned-cell">
                     Name
                   </th>
                   <th width="10%" className="centered-cell">
                     N
                   </th>
+                  <th width="10%" className="centered-cell" />
                   <th width="10%" className="centered-cell" />
                 </tr>
               </thead>
@@ -549,6 +549,7 @@ export default class XNATContourPanel extends React.Component {
                     workingCollection={workingCollection}
                     activeROIContourIndex={activeROIContourIndex}
                     onRoiChange={this.onRoiChange}
+                    onRoiRemove={this.onRemoveRoiButtonClick}
                     SeriesInstanceUID={SeriesInstanceUID}
                     onContourClick={this.onContourClick}
                   />

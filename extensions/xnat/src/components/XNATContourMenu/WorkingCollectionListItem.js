@@ -18,6 +18,7 @@ export default class WorkingCollectionListItem extends React.Component {
     metadata: PropTypes.any,
     activeROIContourIndex: PropTypes.any,
     onRoiChange: PropTypes.any,
+    onRoiRemove: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
     onClick: PropTypes.func,
   };
@@ -27,6 +28,7 @@ export default class WorkingCollectionListItem extends React.Component {
     metadata: undefined,
     activeROIContourIndex: undefined,
     onRoiChange: undefined,
+    onRoiRemove: undefined,
     SeriesInstanceUID: undefined,
     onClick: undefined,
   };
@@ -83,6 +85,7 @@ export default class WorkingCollectionListItem extends React.Component {
       roiContourIndex,
       metadata,
       onRoiChange,
+      onRoiRemove,
       activeROIContourIndex,
     } = this.props;
 
@@ -127,6 +130,11 @@ export default class WorkingCollectionListItem extends React.Component {
           >
             {polygonCount}
           </a>
+        </td>
+        <td className="centered-cell">
+          <button className="small" onClick={() => onRoiRemove(metadata.uid)}>
+            <Icon name="trash" style={{ width: 13 }} />
+          </button>
         </td>
         <td className="centered-cell">
           <button className="small" onClick={this.onShowHideClick}>
