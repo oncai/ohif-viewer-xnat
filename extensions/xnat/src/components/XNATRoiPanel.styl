@@ -1,0 +1,440 @@
+//@import url('https://cdn.jsdelivr.net/npm/pretty-checkbox@3.0/dist/pretty-checkbox.min.css');
+
+.xnatPanel
+  background-color: var(--primary-background-color)
+  color: var(--text-primary-color)
+  z-index: 1000
+  height: 100%
+  //width: 96%
+  display: flex
+  display: -webkit-flex
+  display: -ms-flexbox
+  flex-direction: column
+  padding: 0 10px 0 10px
+
+  h3
+    font-weight: bold
+    font-size: large
+    margin: 0
+
+  h4
+    font-weight: normal
+    font-size: medium
+    margin: 0
+
+  button
+    border: 1px solid var(--ui-gray-light)
+    //border-radius: 5px
+    background-color: #337ab7
+    color: var(--text-primary-color)
+    //line-height: 25px
+    padding: 2px 10px
+    outline: none
+    cursor: pointer
+
+    + button
+      margin-left: 5px
+
+    &:hover, &:active
+      background-color: var(--active-color)
+
+    &:disabled
+      background-color: var(--ui-gray)
+      border-color: var(--ui-gray-light)
+      cursor: not-allowed
+
+    svg
+      margin-right: 4px
+      position: relative
+      top: 2px
+
+  button.small
+    border: 0
+    background-color: transparent
+
+    svg
+      color: var(--text-primary-color)
+      background-color: transparent
+      width: 16px
+      height: 16px
+      fill: var(--text-secondary-color)
+
+  .panelHeader
+    display: flex
+    display: -webkit-flex
+    display: -ms-flexbox
+    flex-direction: row
+    justify-content: space-between
+    align-items: center
+    width: 100%
+    margin: 15px 0
+    padding-bottom: 5px
+    border-width: 1px
+    //border-top-style: solid
+    border-bottom-style: solid
+    border-color: var(--ui-gray-light)
+
+  .roiCollectionBody
+    height: calc(90% - 180px)
+    overflow-y: auto
+    overflow-x: hidden
+    scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
+    word-wrap: break-word
+
+    &::-webkit-scrollbar
+      background: var(--ui-gray-darkest)
+      width: 10px
+
+    &::-webkit-scrollbar-thumb
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      border-right: 2px solid
+      border-right-color: var(--ui-gray-darkest)
+
+  .roiCollectionBody.limitHeight
+    height: auto
+    max-height: 300px
+    padding-right: 18px
+    overflow-y: auto
+    overflow-x: hidden
+    display: inline-block
+
+  .roiCollectionFooter
+    display: -webkit-flex
+    display: -ms-flexbox
+    display: flex
+    //justify-content: space-around
+    align-items: center
+    margin-top: 20px
+    margin-right: 20px
+
+  .workingCollectionHeader
+    display: flex
+    display: -webkit-flex
+    display: -ms-flexbox
+    flex-direction: row
+    justify-content: space-between
+    align-items: center
+    width: 100%
+    margin-bottom: 5px
+
+  .lockedCollectionHeader
+    display: flex
+    display: -webkit-flex
+    display: -ms-flexbox
+    flex-direction: row
+    justify-content: space-between
+    align-items: center
+    width: 100%
+    margin-bottom: 5px
+    margin-top: 20px
+
+  .collectionListInfo
+    color: var(--text-secondary-color)
+    display: flex
+    display: -webkit-flex
+    display: -ms-flexbox
+    flex-direction: column
+    justify-content: space-between
+    align-items: left
+    width: 100%
+    margin-bottom: 5px
+
+  .collectionTable
+    border-collapse: collapse;
+    border: 2px solid var(--ui-gray-light);
+    width: 100%;
+    //display: block;
+    white-space: nowrap;
+    overflow-x: auto;
+
+  .collectionTable tr:nth-child(even)
+    background-color: #333333
+
+  .subRow
+    background-color: #333333
+    border: 2px solid var(--ui-gray-light);
+
+  .collectionTable tr th
+    background-color: var(--ui-gray-dark)
+    border: 1px dotted
+    padding: 2px
+    word-wrap: break-word
+
+  .collectionTable tr td
+    border: 1px dotted
+    padding: 2px;
+    word-wrap: break-word
+
+  .centered-cell
+    text-align: center
+  .left-aligned-cell
+    text-align: left
+  .right-aligned-cell
+    text-align: right
+
+  .roiEdit
+    display: flex
+    width: 100%
+    border: none
+    color: var(--text-primary-color)
+    background-color: transparent
+
+    &:focus
+      outline: none
+
+  .roiColor
+    height: 15px;
+    width: 15px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block
+
+  .roiPanelFooter
+    margin: 10px
+    padding: 10px
+    background: var(--ui-gray-dark)
+    border: 1px solid
+    border-color: var(--ui-border-color)
+
+    .roiPanelMenuOption
+      display: -webkit-flex
+      display: -ms-flexbox
+      display: flex
+      flex-direction: row
+      align-items: center
+      margin-bottom: 5px
+
+      label
+        float: right
+        cursor: pointer
+
+      input[type=checkbox]
+        transform: scale(1.5)
+        margin-right: 8px
+
+      svg
+        background-color: transparent
+        width: 15px
+        height: 15px
+        padding: 2px
+        border: 1px solid
+
+    .empty-check-box
+      display: -webkit-inline-box
+      width: 15px
+      height: 15px
+      padding: 2px
+      border: 1px solid
+      margin-right: 4px
+
+  .simple-notes
+    padding: 2px 2px 2px 20px
+
+  .simple-notes li
+    padding-left: 2px
+
+  .xnatTitle
+    font-size: medium
+    font-weight: bold
+
+  .xnatSubtitle
+    font-size: 14px
+    text-decoration: underline
+    font-weight 500
+
+  .xnatActionButton
+    border: 1px solid var(--ui-border-color-active)
+    border-radius: 15px
+    line-height: 25px
+    padding: 0 15px
+    outline: none
+    cursor: pointer
+
+    svg
+      margin-right: 4px
+      position: relative
+      top: 2px
+
+  .xnatDropDown
+    width: 100%
+
+  .xnatInput
+    width: 100%
+
+  .segButton
+    border: 1px solid var(--ui-border-color-active)
+    line-height: 25px
+    padding: 0 15px
+    outline: none
+    cursor: pointer
+
+    &:hover, &:active
+      background-color: var(--ui-sky-blue)
+
+    &::-moz-focus-inner
+      padding 0
+      border 0
+
+  .segSection
+    height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid;
+
+  .segTable
+    border-collapse: collapse;
+    border: 1px dotted;
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+    overflow-x: auto;
+
+  .segTable tr:nth-child(even) {
+    background-color: #333333
+  }
+
+  .segTable tr th
+    background-color: #333333;
+    border: 1px dotted;
+    padding: 2px;
+
+  .segTable tr td
+    padding: 2px;
+
+  .segColor
+    height: 15px;
+    width: 15px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block
+
+  .segEdit
+    display: flex
+
+  .xnatTable
+    border-collapse: collapse;
+    border: 0 solid;
+    width: 100%;
+
+  .xnatTable tr td
+    border: 0 solid;
+
+  .settings_active,
+  .settings_header {
+    background-color: black;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+  }
+
+  .settings_active {
+    background-color: #403f3d;
+  }
+
+  .settings_header:hover {
+    background-color: #2b2a28;
+  }
+
+  .settings_header:after {
+    content: '\002B';
+    color: white;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+  }
+
+  .settings_active:after {
+    content: '\2212';
+    color: white;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+  }
+
+  .settings_content {
+    cursor: pointer;
+    color: #fff;
+    background-color: #2b2a28;
+    padding: 10px
+    font-size: smaller
+  }
+
+  .tabs {
+    position: relative;
+    margin: 1rem 0;
+    background: #2B2A28;
+  }
+
+  .tabs::before,
+  .tabs::after {
+    content: "";
+    display: table;
+  }
+
+  .tabs::after {
+    clear: both;
+  }
+
+  .tab {
+    float: left;
+  }
+
+  .tab-switch {
+    display: none;
+  }
+
+  .tab-label {
+    position: relative;
+    display: block;
+    line-height: 2.6em;
+    height: 2.8em;
+    padding: 0 1.618em;
+    background: #2B2A28;
+    border-right: 1px dotted #575654;
+    color: #fff;
+    cursor: pointer;
+    top: 0;
+    transition: all 0.25s;
+    font-size: 11px;
+  }
+
+  .tab-label:hover {
+    top: -0.25rem;
+    transition: top 0.25s;
+  }
+
+  .tab-content {
+    height: 11rem;
+    position: absolute;
+    z-index: 1;
+    top: 2.75em;
+    left: 0;
+    padding: 1rem;
+    background: #2B2A28;
+    border-bottom: 0.25rem solid #B2A28;
+    opacity: 0;
+    transition: all 0.35s;
+    width: 100%;
+    font-size: small
+  }
+
+  .tab-switch:checked + .tab-label {
+    background: #EB4E01;
+    color: #fff;
+    border-bottom: 0;
+    border-right: 1px dotted #575654;
+    transition: all 0.35s;
+    z-index: 1;
+    top: -0.0625rem;
+  }
+
+  .tab-switch:checked + label + .tab-content {
+    z-index: 2;
+    opacity: 1;
+    transition: all 0.35s;
+  }

@@ -7,7 +7,7 @@ import sessionMap from '../../utils/sessionMap';
 import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
 
-import './XNATSegmentationImportMenu.styl';
+import '../XNATRoiPanel.styl';
 
 const { studyMetadataManager } = utils;
 
@@ -24,7 +24,7 @@ const _getFirstImageIdFromSeriesInstanceUid = seriesInstanceUid => {
 
       debugger;
 
-      if (displaySet.seriesInstanceUid === seriesInstanceUid) {
+      if (displaySet.SeriesInstanceUID === seriesInstanceUid) {
         return displaySet.images[0].getImageId();
       }
     }
@@ -33,7 +33,7 @@ const _getFirstImageIdFromSeriesInstanceUid = seriesInstanceUid => {
   debugger;
   const studyMetadata = studyMetadataManager.get(studyInstanceUid);
   const displaySet = studyMetadata.findDisplaySet(
-    displaySet => displaySet.seriesInstanceUid === seriesInstanceUid
+    displaySet => displaySet.SeriesInstanceUID === seriesInstanceUid
   );
   return displaySet.images[0].getImageId();
 };
@@ -478,10 +478,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
       if (importing) {
         importBody = (
           <>
-            <h5>
+            <h4>
               {progressText}
-              <i className="fa fa-spin fa-circle-o-notch fa-fw" />
-            </h5>
+              {/*<i className="fa fa-spin fa-circle-o-notch fa-fw" />*/}
+            </h4>
           </>
         );
       } else if (importList.length === 0) {
@@ -490,7 +490,8 @@ export default class XNATSegmentationImportMenu extends React.Component {
         importBody = (
           <>
             <select
-              className="form-themed form-control"
+              // className="form-themed form-control"
+              style={{ width: '100%', height: 30, marginBottom: 10 }}
               onChange={this.onSelectedScanChange}
               value={scanSelected}
             >
@@ -502,21 +503,20 @@ export default class XNATSegmentationImportMenu extends React.Component {
               ))}
             </select>
 
-            <hr />
-
-            <table>
-              <tbody>
+            <table className="collectionTable">
+              <thead>
                 <tr>
-                  <th />
-                  <th>Name</th>
+                  <th width="10%" className="centered-cell" />
+                  <th width="90%">Name</th>
                 </tr>
-
+              </thead>
+              <tbody>
                 {importList[scanSelected].segmentations.map(
                   (roiCollection, index) => (
                     <tr key={roiCollection.label}>
-                      <td>
+                      <td className="centered-cell">
                         <input
-                          className="mask-import-list-item-check"
+                          // className="mask-import-list-item-check"
                           type="radio"
                           name="sync"
                           onChange={evt => this.onChangeRadio(evt, index)}
@@ -526,9 +526,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
                           value={segmentationSelected === index ? true : false}
                         />
                       </td>
-                      <td className="mask-import-left-cell">
-                        {roiCollection.name}
-                      </td>
+                      <td>{roiCollection.name}</td>
                     </tr>
                   )
                 )}
@@ -538,33 +536,26 @@ export default class XNATSegmentationImportMenu extends React.Component {
         );
       }
     } else {
-      importBody = <h1>...</h1>;
+      importBody = <h1 style={{ textAlign: 'center' }}>...</h1>;
     }
 
     return (
-      <div className="mask-import-list-dialog">
-        <div className="mask-import-list-header">
+      <div className="xnatPanel">
+        <div className="panelHeader">
           <h3>Import Mask Collections</h3>
           {importing ? null : (
-            <a
-              className="mask-import-list-cancel"
-              onClick={this.onCloseButtonClick}
-            >
+            <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
-            </a>
+            </button>
           )}
         </div>
-        <hr />
-        <div className="mask-import-list-body">{importBody}</div>
-        <hr />
-        <div className="mask-import-list-footer">
+        <div className="roiCollectionBody limitHeight">{importBody}</div>
+        <div className="roiCollectionFooter">
           {importing ? null : (
-            <a
-              className="mask-import-list-confirm btn btn-primary"
-              onClick={this.onImportButtonClick}
-            >
+            <button onClick={this.onImportButtonClick}>
               <Icon name="xnat-import" />
-            </a>
+              Import selected
+            </button>
           )}
         </div>
       </div>

@@ -16,51 +16,55 @@ function StudyBrowser(props) {
       <div className="scrollable-study-thumbnails">
         {studies
           .map((study, studyIndex) => {
-            const { studyInstanceUid } = study;
-            return study.thumbnails.map((thumb, thumbIndex) => {
-              // TODO: Thumb has more props than we care about?
-              const {
-                altImageText,
-                displaySetInstanceUid,
-                imageId,
-                instanceNumber,
-                numImageFrames,
-                seriesDescription,
-                seriesNumber,
-                stackPercentComplete,
-              } = thumb;
+            const { StudyInstanceUID } = study;
+            return study.thumbnails
+              .filter(thumb => {
+                return thumb.imageId !== undefined;
+              })
+              .map((thumb, thumbIndex) => {
+                // TODO: Thumb has more props than we care about?
+                const {
+                  altImageText,
+                  displaySetInstanceUID,
+                  imageId,
+                  InstanceNumber,
+                  numImageFrames,
+                  SeriesDescription,
+                  SeriesNumber,
+                  stackPercentComplete,
+                } = thumb;
 
-              return (
-                <div
-                  key={thumb.displaySetInstanceUid}
-                  className="thumbnail-container"
-                  data-cy="thumbnail-list"
-                >
-                  <Thumbnail
-                    supportsDrag={supportsDrag}
-                    key={`${studyIndex}_${thumbIndex}`}
-                    id={`${studyIndex}_${thumbIndex}`} // Unused?
-                    // Study
-                    studyInstanceUid={studyInstanceUid} // used by drop
-                    // Thumb
-                    altImageText={altImageText}
-                    imageId={imageId}
-                    instanceNumber={instanceNumber}
-                    displaySetInstanceUid={displaySetInstanceUid} // used by drop
-                    numImageFrames={numImageFrames}
-                    seriesDescription={seriesDescription}
-                    seriesNumber={seriesNumber}
-                    stackPercentComplete={stackPercentComplete}
-                    // Events
-                    onClick={onThumbnailClick.bind(
-                      undefined,
-                      displaySetInstanceUid
-                    )}
-                    onDoubleClick={onThumbnailDoubleClick}
-                  />
-                </div>
-              );
-            });
+                return (
+                  <div
+                    key={thumb.displaySetInstanceUID}
+                    className="thumbnail-container"
+                    data-cy="thumbnail-list"
+                  >
+                    <Thumbnail
+                      supportsDrag={supportsDrag}
+                      key={`${studyIndex}_${thumbIndex}`}
+                      id={`${studyIndex}_${thumbIndex}`} // Unused?
+                      // Study
+                      StudyInstanceUID={StudyInstanceUID} // used by drop
+                      // Thumb
+                      altImageText={altImageText}
+                      imageId={imageId}
+                      InstanceNumber={InstanceNumber}
+                      displaySetInstanceUID={displaySetInstanceUID} // used by drop
+                      numImageFrames={numImageFrames}
+                      SeriesDescription={SeriesDescription}
+                      SeriesNumber={SeriesNumber}
+                      stackPercentComplete={stackPercentComplete}
+                      // Events
+                      onClick={onThumbnailClick.bind(
+                        undefined,
+                        displaySetInstanceUID
+                      )}
+                      onDoubleClick={onThumbnailDoubleClick}
+                    />
+                  </div>
+                );
+              });
           })
           .flat()}
       </div>
@@ -73,16 +77,16 @@ const noop = () => {};
 StudyBrowser.propTypes = {
   studies: PropTypes.arrayOf(
     PropTypes.shape({
-      studyInstanceUid: PropTypes.string.isRequired,
+      StudyInstanceUID: PropTypes.string.isRequired,
       thumbnails: PropTypes.arrayOf(
         PropTypes.shape({
           altImageText: PropTypes.string,
-          displaySetInstanceUid: PropTypes.string.isRequired,
+          displaySetInstanceUID: PropTypes.string.isRequired,
           imageId: PropTypes.string,
-          instanceNumber: PropTypes.number,
+          InstanceNumber: PropTypes.number,
           numImageFrames: PropTypes.number,
-          seriesDescription: PropTypes.string,
-          seriesNumber: PropTypes.number,
+          SeriesDescription: PropTypes.string,
+          SeriesNumber: PropTypes.number,
           stackPercentComplete: PropTypes.number,
         })
       ),

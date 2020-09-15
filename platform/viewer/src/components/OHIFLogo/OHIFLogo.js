@@ -7,10 +7,14 @@ function OHIFLogo() {
   return (
     <a
       target="_blank"
+      // rel="noopener noreferrer"
       className="header-brand"
+      // href="http://ohif.org"
     >
       <Icon name="xnat-ohif-logo" className="header-logo-image" />
       <Icon name="xnat-icr-logo" className="header-logo-image-icr" />
+      <div className="header-logo-text">OHIF-XNAT Viewer</div>
+      {/*<Icon name="ohif-logo" className="header-logo-image" />*/}
       {/* Logo text would fit smaller displays at two lines:
        *
        * Open Health
@@ -19,7 +23,6 @@ function OHIFLogo() {
        * Or as `OHIF` on really small displays
        */}
       {/*<Icon name="ohif-text-logo" className="header-logo-text" />*/}
-      <div className="header-logo-text">OHIF-XNAT Viewer</div>
     </a>
   );
 }

@@ -213,6 +213,7 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     name,
     color: options.color ? options.color : getNextColor(),
     polygonCount: options.polygonCount ? options.polygonCount : 0,
+    visible: true,
   };
 
   structureSet.ROIContourCollection.push(ROIContour);

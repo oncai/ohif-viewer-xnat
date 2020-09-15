@@ -149,15 +149,6 @@ const definitions = [
         commandOptions: { toolName: 'RectangleRoi' },
       },
       {
-        id: 'Eraser',
-        label: 'Eraser',
-        icon: 'eraser',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Eraser' },
-      },
-      {
         id: 'Clear',
         label: 'Clear',
         icon: 'trash',

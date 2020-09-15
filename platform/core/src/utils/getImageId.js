@@ -30,7 +30,9 @@ export default function getImageId(instance, frame, thumbnail = false) {
 
   if (instance.url) {
     if (frame !== undefined) {
-      instance.url = updateQueryStringParameter(instance.url, 'frame', frame);
+      if (!instance.url.startsWith('dicomweb')) {
+        instance.url = updateQueryStringParameter(instance.url, 'frame', frame);
+      }
     }
 
     return instance.url;

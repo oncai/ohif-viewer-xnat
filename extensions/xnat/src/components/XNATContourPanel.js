@@ -1,5 +1,7 @@
 import React from 'react';
-import cornerstoneTools from 'cornerstone-tools';
+import PropTypes from 'prop-types';
+import cornerstone from 'cornerstone-core';
+import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import WorkingCollectionList from './XNATContourMenu/WorkingCollectionList.js';
 import LockedCollectionsList from './XNATContourMenu/LockedCollectionsList.js';
@@ -9,13 +11,14 @@ import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
+import refreshViewport from '../utils/refreshViewport';
 
 import { Icon } from '@ohif/ui';
+import ConfirmationDialog from './common/ConfirmationDialog';
 
-import './XNATContourPanel.styl';
+import './XNATRoiPanel.styl';
 
-const modules = cornerstoneTools.store.modules;
-const { EVENTS } = cornerstoneTools;
+const modules = csTools.store.modules;
 
 /**
  * @class XNATContourMenu - Renders a menu for importing, exporting, creating
@@ -23,6 +26,22 @@ const { EVENTS } = cornerstoneTools;
  * the Freehand3Dtool.
  */
 export default class XNATContourPanel extends React.Component {
+  static propTypes = {
+    isOpen: PropTypes.any,
+    studies: PropTypes.any,
+    viewports: PropTypes.any,
+    activeIndex: PropTypes.any,
+    UIModalService: PropTypes.any,
+  };
+
+  static defaultProps = {
+    isOpen: undefined,
+    studies: undefined,
+    viewports: undefined,
+    activeIndex: undefined,
+    UIModalService: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
@@ -44,9 +63,12 @@ export default class XNATContourPanel extends React.Component {
     this.addEventListeners = this.addEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
 
+    this.onRemoveRoiButtonClick = this.onRemoveRoiButtonClick.bind(this);
+    this.onContourClick = this.onContourClick.bind(this);
+
     this.addEventListeners();
 
-    const seriesInstanceUid = getSeriesInstanceUidFromViewport(
+    const SeriesInstanceUID = getSeriesInstanceUidFromViewport(
       viewports,
       activeIndex
     );
@@ -55,8 +77,8 @@ export default class XNATContourPanel extends React.Component {
     let lockedCollections = [];
     let activeROIContourIndex = 1;
 
-    if (seriesInstanceUid) {
-      const roiContourList = this.getRoiContourList(seriesInstanceUid);
+    if (SeriesInstanceUID) {
+      const roiContourList = this.getRoiContourList(SeriesInstanceUID);
 
       workingCollection = roiContourList.workingCollection;
       lockedCollections = roiContourList.lockedCollections;
@@ -71,20 +93,20 @@ export default class XNATContourPanel extends React.Component {
       activeROIContourIndex,
       importing: false,
       exporting: false,
-      seriesInstanceUid,
+      SeriesInstanceUID,
     };
   }
 
   componentDidUpdate(prevProps) {
     const { viewports, activeIndex } = this.props;
-    const { seriesInstanceUid } = this.state;
+    const { SeriesInstanceUID } = this.state;
 
     if (
       viewports[activeIndex] &&
-      viewports[activeIndex].seriesInstanceUid !== seriesInstanceUid
+      viewports[activeIndex].SeriesInstanceUID !== SeriesInstanceUID
     ) {
       this.refreshRoiContourList(
-        viewports[activeIndex] && viewports[activeIndex].seriesInstanceUid
+        viewports[activeIndex] && viewports[activeIndex].SeriesInstanceUID
       );
     }
   }
@@ -96,13 +118,13 @@ export default class XNATContourPanel extends React.Component {
   addEventListeners() {
     this.removeEventListeners();
 
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
+    csTools.store.state.enabledElements.forEach(enabledElement => {
       enabledElement.addEventListener(
-        EVENTS.MEASUREMENT_REMOVED,
+        csTools.EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.addEventListener(
-        EVENTS.MEASUREMENT_ADDED,
+        csTools.EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.addEventListener(
@@ -113,17 +135,17 @@ export default class XNATContourPanel extends React.Component {
   }
 
   cornerstoneEventListenerHandler() {
-    this.refreshRoiContourList(this.seriesInstanceUid);
+    this.refreshRoiContourList(this.state.SeriesInstanceUID);
   }
 
   removeEventListeners() {
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
+    csTools.store.state.enabledElements.forEach(enabledElement => {
       enabledElement.removeEventListener(
-        EVENTS.MEASUREMENT_REMOVED,
+        csTools.EVENTS.MEASUREMENT_REMOVED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.removeEventListener(
-        EVENTS.MEASUREMENT_ADDED,
+        csTools.EVENTS.MEASUREMENT_ADDED,
         this.cornerstoneEventListenerHandler
       );
       enabledElement.removeEventListener(
@@ -139,27 +161,27 @@ export default class XNATContourPanel extends React.Component {
    *
    * @returns {null}
    */
-  getRoiContourList(seriesInstanceUid) {
-    seriesInstanceUid = seriesInstanceUid || this.state.seriesInstanceUid;
+  getRoiContourList(SeriesInstanceUID) {
+    SeriesInstanceUID = SeriesInstanceUID || this.state.SeriesInstanceUID;
 
     let workingCollection = [];
     let lockedCollections = [];
     let activeROIContourIndex = 0;
 
-    if (seriesInstanceUid) {
+    if (SeriesInstanceUID) {
       const freehand3DModule = modules.freehand3D;
 
-      if (freehand3DModule.getters.series(seriesInstanceUid)) {
+      if (freehand3DModule.getters.series(SeriesInstanceUID)) {
         activeROIContourIndex = freehand3DModule.getters.activeROIContourIndex(
-          seriesInstanceUid
+          SeriesInstanceUID
         );
       }
 
       workingCollection = this.constructor._workingCollection(
-        seriesInstanceUid
+        SeriesInstanceUID
       );
       lockedCollections = this.constructor._lockedCollections(
-        seriesInstanceUid
+        SeriesInstanceUID
       );
     }
 
@@ -176,18 +198,18 @@ export default class XNATContourPanel extends React.Component {
    *
    * @returns {null}
    */
-  refreshRoiContourList(seriesInstanceUid) {
+  refreshRoiContourList(SeriesInstanceUID) {
     const {
       workingCollection,
       lockedCollections,
       activeROIContourIndex,
-    } = this.getRoiContourList(seriesInstanceUid);
+    } = this.getRoiContourList(SeriesInstanceUID);
 
     this.setState({
       workingCollection,
       lockedCollections,
       activeROIContourIndex,
-      seriesInstanceUid,
+      SeriesInstanceUID,
     });
   }
 
@@ -198,21 +220,21 @@ export default class XNATContourPanel extends React.Component {
    * @returns {type}  description
    */
   onIOComplete() {
-    const seriesInstanceUid = this.state.seriesInstanceUid;
+    const SeriesInstanceUID = this.state.SeriesInstanceUID;
     const freehand3DStore = modules.freehand3D;
     let activeROIContourIndex = 0;
 
-    if (modules.freehand3D.getters.series(seriesInstanceUid)) {
+    if (modules.freehand3D.getters.series(SeriesInstanceUID)) {
       activeROIContourIndex = freehand3DStore.getters.activeROIContourIndex(
-        seriesInstanceUid
+        SeriesInstanceUID
       );
     }
 
     const workingCollection = this.constructor._workingCollection(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
     const lockedCollections = this.constructor._lockedCollections(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     this.setState({
@@ -231,24 +253,24 @@ export default class XNATContourPanel extends React.Component {
    * @returns {null}
    */
   onNewRoiButtonClick() {
-    const seriesInstanceUid = this.state.seriesInstanceUid;
+    const SeriesInstanceUID = this.state.SeriesInstanceUID;
 
     const freehand3DStore = modules.freehand3D;
-    let series = freehand3DStore.getters.series(seriesInstanceUid);
+    let series = freehand3DStore.getters.series(SeriesInstanceUID);
 
     if (!series) {
-      freehand3DStore.setters.series(seriesInstanceUid);
-      series = freehand3DStore.getters.series(seriesInstanceUid);
+      freehand3DStore.setters.series(SeriesInstanceUID);
+      series = freehand3DStore.getters.series(SeriesInstanceUID);
     }
 
     const activeROIContourIndex = freehand3DStore.setters.ROIContourAndSetIndexActive(
-      seriesInstanceUid,
+      SeriesInstanceUID,
       'DEFAULT',
-      'Unnamed ROI'
+      'Unnamed contour ROI'
     );
 
     const workingCollection = this.constructor._workingCollection(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     this.setState({ workingCollection, activeROIContourIndex });
@@ -261,14 +283,33 @@ export default class XNATContourPanel extends React.Component {
    * @returns {null}
    */
   onRoiChange(roiContourIndex) {
-    const seriesInstanceUid = this.state.seriesInstanceUid;
+    const SeriesInstanceUID = this.state.SeriesInstanceUID;
 
     modules.freehand3D.setters.activeROIContourIndex(
       roiContourIndex,
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     this.setState({ activeROIContourIndex: roiContourIndex });
+  }
+
+  onRemoveRoiButtonClick(roiContourUid) {
+    const {
+      SeriesInstanceUID,
+      activeROIContourIndex,
+      workingCollection,
+    } = this.state;
+    modules.freehand3D.setters.deleteROIFromStructureSet(
+      SeriesInstanceUID,
+      'DEFAULT',
+      roiContourUid //workingCollection[activeROIContourIndex].metadata.uid
+    );
+    this.refreshRoiContourList(SeriesInstanceUID);
+    refreshViewport();
+  }
+
+  onContourClick() {
+    console.log('contour clicked...');
   }
 
   /**
@@ -292,15 +333,15 @@ export default class XNATContourPanel extends React.Component {
    * @returns {type}  description
    */
   onUnlockConfirmClick() {
-    const { seriesInstanceUid, roiCollectionToUnlock } = this.state;
+    const { SeriesInstanceUID, roiCollectionToUnlock } = this.state;
 
-    unlockStructureSet(seriesInstanceUid, roiCollectionToUnlock);
+    unlockStructureSet(SeriesInstanceUID, roiCollectionToUnlock);
 
     const workingCollection = this.constructor._workingCollection(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
     const lockedCollections = this.constructor._lockedCollections(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     this.setState({
@@ -326,18 +367,18 @@ export default class XNATContourPanel extends React.Component {
    *
    * @returns {object[]} An array of ROI Contours.
    */
-  static _workingCollection(seriesInstanceUid) {
+  static _workingCollection(SeriesInstanceUID) {
     const freehand3DStore = modules.freehand3D;
 
-    let series = freehand3DStore.getters.series(seriesInstanceUid);
+    let series = freehand3DStore.getters.series(SeriesInstanceUID);
 
     if (!series) {
-      freehand3DStore.setters.series(seriesInstanceUid);
-      series = freehand3DStore.getters.series(seriesInstanceUid);
+      freehand3DStore.setters.series(SeriesInstanceUID);
+      series = freehand3DStore.getters.series(SeriesInstanceUID);
     }
 
     const structureSet = freehand3DStore.getters.structureSet(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     const ROIContourCollection = structureSet.ROIContourCollection;
@@ -361,14 +402,14 @@ export default class XNATContourPanel extends React.Component {
    *
    * @returns {object} An array of locked ROI Contour Collections.
    */
-  static _lockedCollections(seriesInstanceUid) {
+  static _lockedCollections(SeriesInstanceUID) {
     const freehand3DStore = modules.freehand3D;
 
-    let series = freehand3DStore.getters.series(seriesInstanceUid);
+    let series = freehand3DStore.getters.series(SeriesInstanceUID);
 
     if (!series) {
-      freehand3DStore.setters.series(seriesInstanceUid);
-      series = freehand3DStore.getters.series(seriesInstanceUid);
+      freehand3DStore.setters.series(SeriesInstanceUID);
+      series = freehand3DStore.getters.series(SeriesInstanceUID);
     }
 
     const structureSetCollection = series.structureSetCollection;
@@ -411,7 +452,7 @@ export default class XNATContourPanel extends React.Component {
       activeROIContourIndex,
       importing,
       exporting,
-      seriesInstanceUid,
+      SeriesInstanceUID,
     } = this.state;
 
     const { viewports, activeIndex } = this.props;
@@ -424,7 +465,7 @@ export default class XNATContourPanel extends React.Component {
         <XNATContourImportMenu
           onImportComplete={this.onIOComplete}
           onImportCancel={this.onIOCancel}
-          seriesInstanceUid={seriesInstanceUid}
+          SeriesInstanceUID={SeriesInstanceUID}
           viewportData={viewports[activeIndex]}
         />
       );
@@ -433,83 +474,110 @@ export default class XNATContourPanel extends React.Component {
         <XNATContourExportMenu
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
-          seriesInstanceUid={seriesInstanceUid}
+          SeriesInstanceUID={SeriesInstanceUID}
           viewportData={viewports[activeIndex]}
         />
       );
     } else if (unlockConfirmationOpen) {
       const collection = freehand3DStore.getters.structureSet(
-        seriesInstanceUid,
+        SeriesInstanceUID,
         roiCollectionToUnlock
       );
 
       const collectionName = collection.name;
 
       component = (
-        <div>
+        <div className="xnatPanel">
           <div>
-            <h5>Unlock</h5>
+            <h4 style={{ marginTop: 10 }}>Confirm unlock</h4>
             <p>
-              Unlock {collectionName} for editing? The ROIs will be moved to the
-              Working ROI Collection.
+              Unlock <strong>{collectionName}</strong> for editing? The ROIs
+              will be moved to the Working ROI Collection.
             </p>
           </div>
           <div>
-            <a
-              className="btn btn-sm btn-primary"
-              onClick={this.onUnlockConfirmClick}
-            >
-              <i className="fa fa fa-check-circle fa-2x" />
-            </a>
-            <a
-              className="btn btn-sm btn-primary"
-              onClick={this.onUnlockCancelClick}
-            >
-              <i className="fa fa fa-times-circle fa-2x" />
-            </a>
+            <button onClick={this.onUnlockConfirmClick}>Yes</button>
+            <button onClick={this.onUnlockCancelClick}>No</button>
           </div>
         </div>
       );
     } else {
       component = (
-        <div className="roi-contour-menu">
-          <div className="roi-contour-menu-component">
-            <div className="roi-contour-menu-header">
-              <h3>Contour Collections</h3>
-              <MenuIOButtons
-                ImportCallbackOrComponent={XNATContourImportMenu}
-                ExportCallbackOrComponent={XNATContourExportMenu}
-                onImportButtonClick={() => this.setState({ importing: true })}
-                onExportButtonClick={() => this.setState({ exporting: true })}
-              />
-            </div>
+        <div className="xnatPanel">
+          <div className="panelHeader">
+            <h3>Contour-based ROIs</h3>
+            <MenuIOButtons
+              ImportCallbackOrComponent={XNATContourImportMenu}
+              ExportCallbackOrComponent={XNATContourExportMenu}
+              onImportButtonClick={() => this.setState({ importing: true })}
+              onExportButtonClick={() => this.setState({ exporting: true })}
+            />
+          </div>
 
-            {/* CONTOUR LIST */}
-            <div className="roi-contour-menu-collection-list-body">
-              <table className="peppermint-table">
-                <tbody>
-                  {seriesInstanceUid && (
-                    <WorkingCollectionList
-                      workingCollection={workingCollection}
-                      activeROIContourIndex={activeROIContourIndex}
-                      onRoiChange={this.onRoiChange}
-                      onNewRoiButtonClick={this.onNewRoiButtonClick}
-                      seriesInstanceUid={seriesInstanceUid}
-                    />
-                  )}
-                  {lockedCollections.length !== 0 && (
+          {/* CONTOUR LIST */}
+          <div className="roiCollectionBody">
+            <div className="workingCollectionHeader">
+              <h4> Unnamed contour ROI collection </h4>
+              <div>
+                <button onClick={this.onNewRoiButtonClick}>
+                  <Icon name="xnat-tree-plus" /> Contour-based ROI
+                </button>
+                {/*<button onClick={this.onRemoveRoiButtonClick}>*/}
+                {/*  <Icon name="trash" /> Remove*/}
+                {/*</button>*/}
+              </div>
+            </div>
+            <table className="collectionTable">
+              <thead>
+                <tr>
+                  <th width="5%" className="centered-cell">
+                    #
+                  </th>
+                  <th width="55%" className="left-aligned-cell">
+                    Name
+                  </th>
+                  <th width="10%" className="centered-cell">
+                    N
+                  </th>
+                  <th width="10%" className="centered-cell" />
+                  <th width="10%" className="centered-cell" />
+                </tr>
+              </thead>
+              <tbody>
+                {SeriesInstanceUID && (
+                  <WorkingCollectionList
+                    workingCollection={workingCollection}
+                    activeROIContourIndex={activeROIContourIndex}
+                    onRoiChange={this.onRoiChange}
+                    onRoiRemove={this.onRemoveRoiButtonClick}
+                    SeriesInstanceUID={SeriesInstanceUID}
+                    onContourClick={this.onContourClick}
+                  />
+                )}
+              </tbody>
+            </table>
+            {/*</div>*/}
+            {lockedCollections.length !== 0 && (
+              // <div className="roiCollectionBody">
+              <>
+                <div className="lockedCollectionHeader">
+                  <h4> Imported Contour Collections </h4>
+                </div>
+                <table className="collectionTable">
+                  <tbody>
                     <LockedCollectionsList
                       lockedCollections={lockedCollections}
-                      onUnlockClick={this.onUnlockConfirmClick} //onUnlockClick={this.confirmUnlockOnUnlockClick} // TODO - Confirmation.
-                      seriesInstanceUid={seriesInstanceUid}
+                      onUnlockClick={this.confirmUnlockOnUnlockClick}
+                      SeriesInstanceUID={SeriesInstanceUID}
                     />
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <RoiContourSettings />
+                  </tbody>
+                </table>
+              </>
+              // </div>
+            )}
           </div>
+
+          <RoiContourSettings />
         </div>
       );
     }

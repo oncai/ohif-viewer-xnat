@@ -53,7 +53,7 @@ export default class XNATSessionLabel extends React.Component {
         <h6 className="xnat-navigation-tree-roi-label">
           {contourCount ? (
             <>
-              <Icon name="xnat-contour" />
+              <Icon name="xnat-contour" className="xnat-navigation-tree-roi-icon" />
               {` ${contourCount}  `}
             </>
           ) : null}

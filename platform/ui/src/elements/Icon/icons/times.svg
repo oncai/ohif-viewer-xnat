@@ -7,6 +7,6 @@
   stroke="currentColor"
   stroke-width="1.75"
 >
-<!--  <title id="title">Times</title>-->
+  <title id="title">Times</title>
   <path d="M1,1 13,13 M1,13 13,1" />
 </svg>

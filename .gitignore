@@ -9,7 +9,6 @@ src/version.js
 junit.xml
 coverage/
 .docz/
-platform/viewer/dist
 
 # YALC (for Erik)
 .yalc

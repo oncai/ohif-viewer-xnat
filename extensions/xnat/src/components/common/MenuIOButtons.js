@@ -25,14 +25,10 @@ export default class MenuIOButtons extends React.Component {
     return (
       <div>
         {ImportCallbackOrComponent && (
-          <a className="btn btn-primary" onClick={onImportButtonClick} style={{marginRight:5}}>
-            Import
-          </a>
+          <button onClick={onImportButtonClick}>Import</button>
         )}
         {ExportCallbackOrComponent && (
-          <a className="btn btn-primary" onClick={onExportButtonClick}>
-            Export
-          </a>
+          <button onClick={onExportButtonClick}>Export</button>
         )}
       </div>
     );

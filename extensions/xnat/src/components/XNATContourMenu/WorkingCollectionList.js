@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import WorkingCollectionListItem from './WorkingCollectionListItem.js';
 import { Icon } from '@ohif/ui';
 
-import '../XNATContourPanel.styl';
+import '../XNATRoiPanel.styl';
 
 /**
  * @class WorkingRoiCollectionList - Renders a list of
@@ -10,6 +11,24 @@ import '../XNATContourPanel.styl';
  * Collection.
  */
 export default class WorkingRoiCollectionList extends React.Component {
+  static propTypes = {
+    workingCollection: PropTypes.any,
+    activeROIContourIndex: PropTypes.any,
+    onRoiChange: PropTypes.any,
+    onRoiRemove: PropTypes.any,
+    SeriesInstanceUID: PropTypes.any,
+    onContourClick: PropTypes.func,
+  };
+
+  static defaultProps = {
+    workingCollection: undefined,
+    activeROIContourIndex: undefined,
+    onRoiChange: undefined,
+    onRoiRemove: undefined,
+    SeriesInstanceUID: undefined,
+    onClick: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
   }
@@ -19,23 +38,13 @@ export default class WorkingRoiCollectionList extends React.Component {
       workingCollection,
       activeROIContourIndex,
       onRoiChange,
-      onNewRoiButtonClick,
-      seriesInstanceUid,
+      onRoiRemove,
+      SeriesInstanceUID,
+      onContourClick,
     } = this.props;
 
     return (
       <React.Fragment>
-        <tr className="roi-list-header">
-          {/*<th />*/}
-          <th colSpan="4">New Contour Collection</th>
-        </tr>
-
-        <tr className="roi-list-header">
-          <th>Draw</th>
-          <th>Name</th>
-          <th className="centered-cell">Contours</th>
-        </tr>
-
         {workingCollection.map(roiContour => (
           <WorkingCollectionListItem
             key={roiContour.metadata.uid}
@@ -43,21 +52,11 @@ export default class WorkingRoiCollectionList extends React.Component {
             metadata={roiContour.metadata}
             activeROIContourIndex={activeROIContourIndex}
             onRoiChange={onRoiChange}
-            seriesInstanceUid={seriesInstanceUid}
+            onRoiRemove={onRoiRemove}
+            SeriesInstanceUID={SeriesInstanceUID}
+            onClick={onContourClick}
           />
         ))}
-
-        <tr>
-          <th />
-          <th>
-            <a
-              className="roi-contour-menu-new-button btn btn-primary"
-              onClick={onNewRoiButtonClick}
-            >
-              <Icon name="xnat-tree-plus" /> Add Contour
-            </a>
-          </th>
-        </tr>
       </React.Fragment>
     );
   }

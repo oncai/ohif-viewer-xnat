@@ -4,7 +4,10 @@ import sessionMap from '../sessionMap';
 
 let fetchJSON;
 
-if (process.env.NODE_ENV === 'production') {
+if (
+  process.env.NODE_ENV === 'production' ||
+  process.env.APP_CONFIG === 'config/xnat-dev.js'
+) {
   fetchJSON = function(route) {
     const { xnatRootUrl } = sessionMap;
 

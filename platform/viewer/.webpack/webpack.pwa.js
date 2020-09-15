@@ -113,6 +113,38 @@ module.exports = (env, argv) => {
     },
   });
 
+  if (APP_CONFIG === 'config/xnat-dev.js') {
+    const XNAT_DOMAIN = process.env.XNAT_DOMAIN;
+    const XNAT_PROXY = process.env.XNAT_PROXY;
+    if (XNAT_DOMAIN && XNAT_PROXY) {
+      mergedConfig.devServer.proxy = {};
+      const pr = `^${XNAT_PROXY}`;
+      mergedConfig.devServer.proxy[XNAT_PROXY] = {
+        target: XNAT_DOMAIN,
+        changeOrigin: true,
+        // pathRewrite: { [pr]: '' },
+        pathRewrite: function(path, req) {
+          let newPath = path.replace(XNAT_PROXY, '');
+          console.log(`## devServer.proxy: ${pr} ${path} __ ${newPath}`)
+          return newPath;
+        },
+        onProxyRes: function (proxyRes, req, res) {
+          proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+          proxyRes.headers['Access-Control-Allow-Headers'] = 'X-Requested-With,content-type,Authorization,JSESSIONID';
+          proxyRes.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE';
+          proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+        },
+      };
+      // mergedConfig.devServer.headers = {};
+      // mergedConfig.devServer.headers = {
+      //   'Access-Control-Allow-Origin': '*',
+      //   'Access-Control-Allow-Headers': 'X-Requested-With,content-type,Authorization,JSESSIONID',
+      //   'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE',
+      //   'Access-Control-Allow-Credentials': 'true',
+      // };
+    }
+  }
+
   if (hasProxy) {
     mergedConfig.devServer.proxy = {};
     mergedConfig.devServer.proxy[PROXY_TARGET] = PROXY_DOMAIN;

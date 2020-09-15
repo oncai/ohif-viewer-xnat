@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import MenuIOButtons from './common/MenuIOButtons.js';
 
 //import SegmentationMenuDeleteConfirmation from './SegmentationMenuDeleteConfirmation.js';
@@ -15,17 +16,18 @@ import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
 import './XNATSegmentationPanel.styl';
+import { Icon } from '@ohif/ui';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const segmentationState = segmentationModule.state;
 const { getToolState } = cornerstoneTools;
 
-const _getFirstImageId = ({ studyInstanceUid, displaySetInstanceUid }) => {
+const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
   try {
-    const studyMetadata = studyMetadataManager.get(studyInstanceUid);
+    const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
     const displaySet = studyMetadata.findDisplaySet(
-      displaySet => displaySet.displaySetInstanceUid === displaySetInstanceUid
+      displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
     );
     return displaySet.images[0].getImageId();
   } catch (error) {
@@ -40,6 +42,20 @@ const _getFirstImageId = ({ studyInstanceUid, displaySetInstanceUid }) => {
  * the Brush tools.
  */
 export default class XNATSegmentationPanel extends React.Component {
+  static propTypes = {
+    isOpen: PropTypes.any,
+    studies: PropTypes.any,
+    viewports: PropTypes.any,
+    activeIndex: PropTypes.any,
+  };
+
+  static defaultProps = {
+    isOpen: undefined,
+    studies: undefined,
+    viewports: undefined,
+    activeIndex: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
@@ -289,10 +305,10 @@ export default class XNATSegmentationPanel extends React.Component {
    * @returns {null}
    */
   onDeleteClick(segment) {
-    const { firstImageId } = this.state;
+    const { firstImageId, activeSegmentIndex } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
 
-    segmentationModule.setters.deleteSegment(element, segment);
+    segmentationModule.setters.deleteSegment(element, activeSegmentIndex);
 
     const segments = this.constructor._segments(firstImageId);
 
@@ -412,36 +428,58 @@ export default class XNATSegmentationPanel extends React.Component {
       );
     } else {
       component = (
-        <div className="segmentation-menu">
-          <div className="segmentation-menu-component">
-            <div className="segmentation-menu-list">
-              <div className="segmentation-menu-header">
-                <h3>Mask Collection</h3>
-                <MenuIOButtons
-                  ImportCallbackOrComponent={XNATSegmentationImportMenu}
-                  ExportCallbackOrComponent={XNATSegmentationExportMenu}
-                  onImportButtonClick={() => this.setState({ importing: true })}
-                  onExportButtonClick={() => this.setState({ exporting: true })}
-                />
-              </div>
-              <table className="peppermint-table">
-                <tbody>
-                  <SegmentationMenuListHeader importMetadata={importMetadata} />
-                  <SegmentationMenuListBody
-                    segments={segments}
-                    activeSegmentIndex={activeSegmentIndex}
-                    onSegmentChange={this.onSegmentChange}
-                    onEditClick={this.onEditClick}
-                    onDeleteClick={this.onDeleteClick} //onDeleteClick={this.confirmDeleteOnDeleteClick}
-                    onNewSegment={this.onNewSegment}
-                    firstImageId={firstImageId}
-                    labelmap3D={labelmap3D}
-                  />
-                </tbody>
-              </table>
-            </div>
-            <BrushSettings />
+        <div className="xnatPanel">
+          <div className="panelHeader">
+            <h3>Mask Collection</h3>
+            <MenuIOButtons
+              ImportCallbackOrComponent={XNATSegmentationImportMenu}
+              ExportCallbackOrComponent={XNATSegmentationExportMenu}
+              onImportButtonClick={() => this.setState({ importing: true })}
+              onExportButtonClick={() => this.setState({ exporting: true })}
+            />
           </div>
+          <div className="roiCollectionBody">
+            <div className="workingCollectionHeader">
+              <h4> {importMetadata.name} </h4>
+              <div>
+                <button onClick={this.onNewSegment}>
+                  <Icon name="xnat-tree-plus" /> Add
+                </button>
+                <button onClick={this.onDeleteClick}>
+                  {/*//ToDo: onDeleteClick={this.confirmDeleteOnDeleteClick}*/}
+                  <Icon name="trash" /> Remove
+                </button>
+              </div>
+            </div>
+            {/*<SegmentationMenuListHeader importMetadata={importMetadata} />*/}
+            <table className="collectionTable">
+              <thead>
+                <tr>
+                  <th width="5%" className="centered-cell">
+                    #
+                  </th>
+                  <th width="55%" className="left-aligned-cell">
+                    Label
+                  </th>
+                  <th width="30%" className="left-aligned-cell">
+                    Type
+                  </th>
+                  <th width="10%" className="centered-cell" />
+                </tr>
+              </thead>
+              <tbody>
+                <SegmentationMenuListBody
+                  segments={segments}
+                  activeSegmentIndex={activeSegmentIndex}
+                  onSegmentChange={this.onSegmentChange}
+                  onEditClick={this.onEditClick}
+                  firstImageId={firstImageId}
+                  labelmap3D={labelmap3D}
+                />
+              </tbody>
+            </table>
+          </div>
+          <BrushSettings />
         </div>
       );
     }

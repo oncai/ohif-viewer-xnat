@@ -164,7 +164,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       freehand3DStore.setters.ROIContourAndSetIndexActive(
         seriesInstanceUid,
         'DEFAULT',
-        'Unnamed ROI'
+        'Unnamed contour ROI'
       );
     }
   }
@@ -365,7 +365,21 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       const structureSet = data.referencedStructureSet;
       const ROIContour = data.referencedROIContour;
 
-      if (data.visible === false || !structureSet.visible) {
+      if (!structureSet.visible) {
+        continue;
+      }
+
+      const ROIContourData = freehand3DStore.getters.ROIContour(
+        data.seriesInstanceUid,
+        data.structureSetUid,
+        data.ROIContourUid
+      );
+
+      if (ROIContourData === undefined) {
+        continue;
+      }
+
+      if (!ROIContourData.visible) {
         continue;
       }
 

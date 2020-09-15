@@ -53,7 +53,6 @@ export default class SegmentationMenuListItem extends React.Component {
       segmentIndex,
       onSegmentChange,
       onEditClick,
-      onDeleteClick,
       checked,
     } = this.props;
 
@@ -66,10 +65,16 @@ export default class SegmentationMenuListItem extends React.Component {
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
     const typeWithModifier = this._getTypeWithModifier();
 
+    const visible = true;
+    const showHideIcon = visible ? (
+      <Icon name="eye" />
+    ) : (
+      <Icon name="eye-closed" />
+    );
+
     return (
       <tr>
-        <td className="centered-cell">
-          <i className="fa fa-square" style={{ color: segmentColor }} />
+        <td className="centered-cell" style={{ backgroundColor: segmentColor }}>
           <input
             type="radio"
             checked={checked}
@@ -79,22 +84,20 @@ export default class SegmentationMenuListItem extends React.Component {
           />
         </td>
         <td className="left-aligned-cell">
-          <a className="segmentation-menu-name-link">
-            <input
-              name="roiContourName"
-              className="form-themed form-control"
-              onChange={this.onTextInputChange}
-              type="text"
-              autoComplete="off"
-              defaultValue={segmentLabel}
-              placeholder="Enter ROI Name..."
-              tabIndex="1"
-            />
-          </a>
+          <input
+            name="segLabel"
+            className="roiEdit"
+            onChange={this.onTextInputChange}
+            type="text"
+            autoComplete="off"
+            defaultValue={segmentLabel}
+            placeholder="Enter ROI Name..."
+            tabIndex="1"
+          />
         </td>
         <td>
           <a
-            className="segmentation-menu-name-link"
+            style={{ cursor: 'pointer', color: 'white' }}
             onClick={() => {
               onEditClick(segmentIndex, metadata);
             }}
@@ -105,14 +108,11 @@ export default class SegmentationMenuListItem extends React.Component {
           </a>
         </td>
         <td className="centered-cell">
-          <a
-            className="btn btn-sm btn-secondary"
-            onClick={() => {
-              onDeleteClick(segmentIndex);
-            }}
+          <button className="small"
+                  // onClick={this.onShowHideClick}
           >
-            <Icon name="times" />
-          </a>
+            {showHideIcon}
+          </button>
         </td>
       </tr>
     );

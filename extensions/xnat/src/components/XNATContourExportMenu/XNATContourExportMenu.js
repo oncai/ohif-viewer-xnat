@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import AIMWriter from '../../utils/IO/classes/AIMWriter';
 import AIMExporter from '../../utils/IO/classes/AIMExporter.js';
 import RoiExtractor from '../../utils/IO/classes/RoiExtractor.js';
@@ -8,12 +9,27 @@ import getSeriesInfoForImageId from '../../utils/IO/helpers/getSeriesInfoForImag
 import lockStructureSet from '../../utils/lockStructureSet';
 
 import { Icon } from '@ohif/ui';
+import ColoredCircle from '../common/ColoredCircle';
 
-import './XNATContourExportMenu.styl';
+import '../XNATRoiPanel.styl';
 
 const modules = cornerstoneTools.store.modules;
 
 export default class XNATContourExportMenu extends React.Component {
+  static propTypes = {
+    onExportComplete: PropTypes.any,
+    onExportCancel: PropTypes.any,
+    SeriesInstanceUID: PropTypes.any,
+    viewportData: PropTypes.any,
+  };
+
+  static defaultProps = {
+    onExportComplete: undefined,
+    onExportCancel: undefined,
+    SeriesInstanceUID: undefined,
+    viewportData: undefined,
+  };
+
   constructor(props = {}) {
     super(props);
 
@@ -56,7 +72,7 @@ export default class XNATContourExportMenu extends React.Component {
    */
   async onExportButtonClick() {
     const { roiContourList, selectedCheckboxes, label, dateTime } = this.state;
-    const { seriesInstanceUid, viewportData } = this.props;
+    const { SeriesInstanceUID, viewportData } = this.props;
     const roiCollectionName = this._roiCollectionName;
 
     // Check the name isn't empty, and isn't just whitespace.
@@ -81,7 +97,7 @@ export default class XNATContourExportMenu extends React.Component {
 
     this.setState({ exporting: true });
 
-    const roiExtractor = new RoiExtractor(seriesInstanceUid);
+    const roiExtractor = new RoiExtractor(SeriesInstanceUID);
     const roiContours = roiExtractor.extractROIContours(exportMask);
     const seriesInfo = getSeriesInfoForImageId(viewportData);
 
@@ -176,17 +192,17 @@ export default class XNATContourExportMenu extends React.Component {
       return;
     }
 
-    const { seriesInstanceUid } = this.props;
+    const { SeriesInstanceUID } = this.props;
     const freehand3DModule = modules.freehand3D;
-    let series = freehand3DModule.getters.series(seriesInstanceUid);
+    let series = freehand3DModule.getters.series(SeriesInstanceUID);
 
     if (!series) {
-      freehand3DModule.setters.series(seriesInstanceUid);
-      series = freehand3DModule.getters.series(seriesInstanceUid);
+      freehand3DModule.setters.series(SeriesInstanceUID);
+      series = freehand3DModule.getters.series(SeriesInstanceUID);
     }
 
     const defaultStructureSet = freehand3DModule.getters.structureSet(
-      seriesInstanceUid
+      SeriesInstanceUID
     );
 
     const ROIContourCollection = defaultStructureSet.ROIContourCollection;
@@ -236,11 +252,11 @@ export default class XNATContourExportMenu extends React.Component {
 
     let roiExportListBody;
 
-    let defaultName = '';
+    let defaultName = 'Unnamed contour ROI collection';
 
-    if (roiContourList && roiContourList.length === 1) {
-      defaultName = roiContourList[0].ROIContourReference.name;
-    }
+    // if (roiContourList && roiContourList.length === 1) {
+    //   defaultName = roiContourList[0].ROIContourReference.name;
+    // }
 
     if (exporting) {
       roiExportListBody = (
@@ -253,13 +269,13 @@ export default class XNATContourExportMenu extends React.Component {
       );
     } else {
       roiExportListBody = (
-        <table>
-          <tbody>
+        <table className="collectionTable">
+          <thead>
             <tr>
               <th nowrap="true" className="left-aligned-cell">
                 Name
               </th>
-              <th>
+              <th className="centered-cell">
                 Export{' '}
                 <input
                   type="checkbox"
@@ -268,18 +284,17 @@ export default class XNATContourExportMenu extends React.Component {
                   onChange={this.onChangeSelectAllCheckbox}
                 />
               </th>
-              <th>Contours</th>
+              <th className="centered-cell">Contours</th>
             </tr>
+          </thead>
+          <tbody>
             {roiContourList.map((roiContour, index) => (
               <tr key={`${roiContour.ROIContourReference.name}_${index}`}>
                 <td className="left-aligned-cell">
-                  <i
-                    className="fa fa-square"
-                    style={{ color: roiContour.ROIContourReference.color }}
-                  />{' '}
+                  <ColoredCircle color={roiContour.ROIContourReference.color} />{' '}
                   {roiContour.ROIContourReference.name}
                 </td>
-                <td>
+                <td className="centered-cell">
                   <input
                     type="checkbox"
                     onChange={evt => this.onChangeCheckbox(evt, index)}
@@ -287,7 +302,9 @@ export default class XNATContourExportMenu extends React.Component {
                     value={selectedCheckboxes[index]}
                   />
                 </td>
-                <td>{roiContour.ROIContourReference.polygonCount}</td>
+                <td className="centered-cell">
+                  {roiContour.ROIContourReference.polygonCount}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -296,40 +313,33 @@ export default class XNATContourExportMenu extends React.Component {
     }
 
     return (
-      <div className="roi-export-list-dialog">
-        <div className="roi-export-list-header">
+      <div className="xnatPanel">
+        <div className="panelHeader">
           <h3>Export Contour Collections</h3>
           {!exporting && (
-            <a
-              className="roi-export-list-cancel btn btn-sm btn-secondary"
-              onClick={this.onCloseButtonClick}
-            >
+            <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
-            </a>
+            </button>
           )}
         </div>
 
-        <hr />
-
-        <div className="roi-export-list-body">{roiExportListBody}</div>
+        <div className="roiCollectionBody limitHeight">{roiExportListBody}</div>
 
         {!exporting && (
-          <div className="roi-export-list-footer">
-            <label>Name</label>
+          <div className="roiCollectionFooter">
+            <label style={{ marginRight: 5 }}>Name</label>
             <input
-              className="form-themed form-control"
               type="text"
               defaultValue={defaultName}
               onChange={this.onTextInputChange}
               tabIndex="-1"
               autoComplete="off"
+              style={{ flex: 1 }}
             />
-            <a
-              className="btn btn-sm btn-primary"
-              onClick={this.onExportButtonClick}
-            >
+            <button onClick={this.onExportButtonClick} style={{ marginLeft: 10 }}>
               <Icon name="xnat-export" />
-            </a>
+              Export selected
+            </button>
           </div>
         )}
       </div>

@@ -2,27 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-
-import ConnectedUserPreferencesForm from '../../connectedComponents/ConnectedUserPreferencesForm';
-import { Dropdown, AboutContent, withModal, Icon, ICRHelpContent } from '@ohif/ui';
+import classNames from 'classnames';
+import { Dropdown, AboutContent, withModal, Icon } from '@ohif/ui';
+//
+import { UserPreferences } from './../UserPreferences';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
-
-// Context
-import AppContext from './../../context/AppContext';
+//
+import { ICRHelpContent} from '@xnat-ohif/extension-xnat';
 
 function OptionsElement(props) {
   return (
-    <React.Fragment>
+    <div style={{ display: 'flex' }}>
       <Icon
         name="xnat-settings"
-        className="dd-item-icon"
-        style={{ margin: '0 5 0 0' }}
+        width="18px"
+        height="18px"
+        // style={{ margin: '0 5 0 0' }}
       />
-      <span className="dd-title">Settings</span>
-    </React.Fragment>
+      <span style={{ marginLeft: 2 }}>Settings</span>
+    </div>
   );
-};
+}
 
 function Header(props) {
   const {
@@ -30,15 +31,27 @@ function Header(props) {
     user,
     userManager,
     modal: { show },
-    home,
+    useLargeLogo,
+    linkPath,
+    linkText,
     location,
     children,
   } = props;
 
   const [options, setOptions] = useState([]);
+  const hasLink = linkText && linkPath;
 
   useEffect(() => {
     const optionsValue = [
+      {
+        title: t('ICR Help'),
+        icon: { name: 'xnat-help' },
+        onClick: () =>
+          show({
+            content: ICRHelpContent,
+            title: t('Using Contour & Mask Tools'),
+          }),
+      },
       // {
       //   title: t('About'),
       //   icon: { name: 'info' },
@@ -49,22 +62,13 @@ function Header(props) {
       //     }),
       // },
       {
-        title: t('ICR Help'),
-        icon: { name: 'xnat-help' },
-        onClick: () =>
-          show({
-            content: ICRHelpContent,
-            title: t('Using Contour & Mask Tools'),
-          }),
-      },
-      {
         title: t('Preferences'),
         icon: {
           name: 'user',
         },
         onClick: () =>
           show({
-            content: ConnectedUserPreferencesForm,
+            content: UserPreferences,
             title: t('User Preferences'),
           }),
       },
@@ -81,15 +85,12 @@ function Header(props) {
     setOptions(optionsValue);
   }, [setOptions, show, t, user, userManager]);
 
-  const { appConfig = {} } = AppContext;
-  const showStudyList =
-    appConfig.showStudyList !== undefined ? appConfig.showStudyList : true;
-
-  // ANTD -- Hamburger, Drawer, Menu
   return (
     <>
       {/*<div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>*/}
-      <div className={`entry-header ${home ? 'header-big' : ''}`}>
+      <div
+        className={classNames('entry-header', { 'header-big': useLargeLogo })}
+      >
         <div className="header-left-box">
           {location && location.studyLink && (
             <Link
@@ -102,23 +103,29 @@ function Header(props) {
 
           {children}
 
-          {/*{showStudyList && !home && (*/}
-          {/*  <Link*/}
-          {/*    className="header-btn header-studyListLinkSection"*/}
-          {/*    to={{*/}
-          {/*      pathname: '/',*/}
-          {/*      state: { studyLink: location.pathname },*/}
-          {/*    }}*/}
-          {/*  >*/}
-          {/*    {t('Study list')}*/}
-          {/*  </Link>*/}
-          {/*)}*/}
+          {hasLink && (
+            <Link
+              className="header-btn header-studyListLinkSection"
+              to={{
+                pathname: linkPath,
+                state: { studyLink: location.pathname },
+              }}
+            >
+              {t(linkText)}
+            </Link>
+          )}
         </div>
 
         <div className="header-menu">
-          <span className="research-use">{t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}</span>
+          <span className="research-use">
+            {t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
+          </span>
+          <Dropdown
+            titleElement={<OptionsElement />}
+            list={options}
+            align="right"
+          />
           {/*<Dropdown title={t('Options')} list={options} align="right" />*/}
-          <Dropdown titleElement={<OptionsElement/>} list={options} align="right" />
         </div>
       </div>
     </>
@@ -126,7 +133,11 @@ function Header(props) {
 }
 
 Header.propTypes = {
-  home: PropTypes.bool.isRequired,
+  // Study list, /
+  linkText: PropTypes.string,
+  linkPath: PropTypes.string,
+  useLargeLogo: PropTypes.bool,
+  //
   location: PropTypes.object.isRequired,
   children: PropTypes.node,
   t: PropTypes.func.isRequired,
@@ -136,7 +147,7 @@ Header.propTypes = {
 };
 
 Header.defaultProps = {
-  home: true,
+  useLargeLogo: false,
   children: OHIFLogo(),
 };
 
