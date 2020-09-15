@@ -25,8 +25,8 @@ export default {
   getCommandsModule({ servicesManager }) {
     return commandsModule;
   },
-  getPanelModule({ servicesManager }) {
-    return panelModule(servicesManager);
+  getPanelModule({ servicesManager, commandsManager }) {
+    return panelModule(servicesManager, commandsManager);
   },
 };
 

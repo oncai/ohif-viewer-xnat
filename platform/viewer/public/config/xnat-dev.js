@@ -115,6 +115,12 @@ window.config = {
       label: 'W/L Preset 9',
       keys: ['9'],
     },
+    // ~ XNAT extension
+    // {
+    //   commandName: 'xnatEscapeKey',
+    //   // label: 'W/L Preset 9',
+    //   keys: ['esc'],
+    // },
   ],
   cornerstoneExtensionConfig: {},
   // Following property limits number of simultaneous series metadata requests.
