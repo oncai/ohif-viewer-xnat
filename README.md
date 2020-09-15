@@ -8,6 +8,7 @@ This repository is included as a submodule on the dev branch of the [OHIF Viewer
 ### Development environment
 For testing purposes, and to avoid building and deployment of the XNAT plugin,
 the viewer can run directly from within the development environment.
+
 * Create /platform/viewer/.env file and fill it with the XNAT platform parameters,
 similar to the example below
 ```
