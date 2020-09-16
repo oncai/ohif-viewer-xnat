@@ -22,15 +22,12 @@ const _getFirstImageIdFromSeriesInstanceUid = seriesInstanceUid => {
     for (let j = 0; j < displaySets.length; j++) {
       const displaySet = displaySets[j];
 
-      debugger;
-
       if (displaySet.SeriesInstanceUID === seriesInstanceUid) {
         return displaySet.images[0].getImageId();
       }
     }
   }
 
-  debugger;
   const studyMetadata = studyMetadataManager.get(studyInstanceUid);
   const displaySet = studyMetadata.findDisplaySet(
     displaySet => displaySet.SeriesInstanceUID === seriesInstanceUid
@@ -361,6 +358,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
     uri = uri.slice(1);
 
     const seriesInstanceUid = scan.referencedSeriesInstanceUid;
+    debugger;
     const maskImporter = new MaskImporter(seriesInstanceUid);
 
     const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
@@ -421,7 +419,6 @@ export default class XNATSegmentationImportMenu extends React.Component {
    */
   _collectionEligibleForImport(collectionInfoJSON) {
     const item = collectionInfoJSON.items[0];
-    const children = item.children;
 
     const collectionType = item.data_fields.collectionType;
 
