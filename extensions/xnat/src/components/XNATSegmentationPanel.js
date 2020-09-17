@@ -460,11 +460,6 @@ export default class XNATSegmentationPanel extends React.Component {
               <h4> {importMetadata.name} </h4>
               <div>
                 {addSegmentButton}
-                {/*
-                <button onClick={this.onNewSegment}>
-                  <Icon name="xnat-tree-plus" /> Add
-                </button>
-                */}
                 <button onClick={this.onDeleteClick}>
                   {/*//ToDo: onDeleteClick={this.confirmDeleteOnDeleteClick}*/}
                   <Icon name="trash" /> Remove
