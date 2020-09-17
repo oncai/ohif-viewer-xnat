@@ -16,12 +16,27 @@ export default class SegmentationMenuListItem extends React.Component {
     this.onTextInputChange = this.onTextInputChange.bind(this);
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
+    this.onColorChangeCallback = this.onColorChangeCallback.bind(this);
 
-    const { segmentIndex, labelmap3D } = props;
+    const { segmentIndex, labelmap3D, metadata } = props;
+
+    const colorLUT = segmentationModule.getters.colorLUT(
+      labelmap3D.colorLUTIndex
+    );
+    const color = colorLUT[segmentIndex];
+    const segmentColor = _colorArrayToRGBColor(color);
 
     this.state = {
       visible: !labelmap3D.segmentsHidden[segmentIndex],
+      segmentLabel: metadata.SegmentLabel,
+      segmentColor,
     };
+  }
+
+  onColorChangeCallback(colorArray) {
+    const segmentColor = _colorArrayToRGBColor(colorArray);
+
+    this.setState({ segmentColor });
   }
 
   /**
@@ -53,6 +68,8 @@ export default class SegmentationMenuListItem extends React.Component {
     if (SegmentLabel.replace(' ', '').length > 0) {
       labelmap3D.metadata[segmentIndex].SegmentLabel = SegmentLabel;
     }
+
+    this.setState({ segmentLabel: SegmentLabel });
   }
 
   onShowHideClick() {
@@ -61,8 +78,6 @@ export default class SegmentationMenuListItem extends React.Component {
 
     visible = !visible;
     labelmap3D.segmentsHidden[segmentIndex] = !visible;
-
-    debugger;
 
     cornerstoneTools.store.state.enabledElements.forEach(element => {
       cornerstone.updateImage(element);
@@ -79,16 +94,10 @@ export default class SegmentationMenuListItem extends React.Component {
       onEditClick,
       checked,
       labelmap3D,
+      showColorSelectModal,
     } = this.props;
 
-    const { visible } = this.state;
-
-    const segmentLabel = metadata.SegmentLabel;
-    const colorLUT = segmentationModule.getters.colorLUT(0);
-    const color = colorLUT[segmentIndex];
-    const segmentColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1.0 )`;
-
-    debugger;
+    const { visible, segmentLabel, segmentColor } = this.state;
 
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
@@ -140,7 +149,26 @@ export default class SegmentationMenuListItem extends React.Component {
             {showHideIcon}
           </button>
         </td>
+        <td className="centered-cell">
+          <button
+            className="small"
+            onClick={() =>
+              showColorSelectModal(
+                labelmap3D,
+                segmentIndex,
+                segmentLabel,
+                this.onColorChangeCallback
+              )
+            }
+          >
+            <Icon name="palette" />
+          </button>
+        </td>
       </tr>
     );
   }
+}
+
+function _colorArrayToRGBColor(colorArray) {
+  return `rgba(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]}, 1.0 )`;
 }

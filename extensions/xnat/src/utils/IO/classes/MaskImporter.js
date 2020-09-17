@@ -72,6 +72,8 @@ export default class MaskImporter {
       const imageIds = this._imageIds;
       const imagePromises = [];
 
+      debugger;
+
       for (let i = 0; i < imageIds.length; i++) {
         imagePromises.push(cornerstone.loadAndCacheImage(imageIds[i]));
       }

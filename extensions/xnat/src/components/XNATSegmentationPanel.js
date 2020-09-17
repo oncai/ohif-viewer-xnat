@@ -68,6 +68,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: PropTypes.any,
     viewports: PropTypes.any,
     activeIndex: PropTypes.any,
+    showColorSelectModal: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
@@ -75,6 +76,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: undefined,
     viewports: undefined,
     activeIndex: undefined,
+    showColorSelectModal: undefined,
   };
 
   constructor(props = {}) {
@@ -425,7 +427,7 @@ export default class XNATSegmentationPanel extends React.Component {
       labelmap3D,
     } = this.state;
 
-    const { viewports, activeIndex } = this.props;
+    const { viewports, activeIndex, showColorSelectModal } = this.props;
 
     let component;
     let isFractional = false;
@@ -528,6 +530,7 @@ export default class XNATSegmentationPanel extends React.Component {
                   onEditClick={this.onEditClick}
                   firstImageId={firstImageId}
                   labelmap3D={labelmap3D}
+                  showColorSelectModal={showColorSelectModal}
                 />
               </tbody>
             </table>

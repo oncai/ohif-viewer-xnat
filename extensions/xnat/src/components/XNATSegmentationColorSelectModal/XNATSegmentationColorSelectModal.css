@@ -1,0 +1,10 @@
+.xnat-color-select {
+    margin-right: auto;
+    margin-left: auto;
+    background-color: '#fff'
+}
+
+.xnat-color-select .color-picker {
+    margin-right: auto;
+    margin-left: auto;
+}

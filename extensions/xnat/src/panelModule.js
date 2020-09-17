@@ -4,6 +4,7 @@ import csTools from 'cornerstone-tools';
 import XNATNavigationPanel from './components/XNATNavigationPanel.js';
 import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
+import XNATSegmentationColorSelectModal from './components/XNATSegmentationColorSelectModal/XNATSegmentationColorSelectModal';
 import { handleRightClick } from './components/XNATContextMenu';
 
 function elementEnabledHandler(evt) {
@@ -19,8 +20,45 @@ function elementDisabledHandler(evt) {
 const PanelModule = (servicesManager, commandsManager) => {
   const { UIModalService } = servicesManager.services;
 
+  const showColorSelectModal = (
+    labelmap3D,
+    segmentIndex,
+    segmentLabel,
+    onColorChangeCallback
+  ) => {
+    let title = 'Select color for ';
+
+    if (segmentLabel) {
+      title += segmentLabel;
+    } else {
+      title += `segment ${segmentIndex}`;
+    }
+
+    if (UIModalService) {
+      UIModalService.show({
+        content: XNATSegmentationColorSelectModal,
+        title,
+        contentProps: {
+          labelmap3D,
+          segmentIndex,
+          onColorChangeCallback,
+          onClose: UIModalService.hide,
+        },
+      });
+    }
+  };
+
   const ExtendedXNATContourPanel = props => {
     return <XNATContourPanel {...props} UIModalService={UIModalService} />;
+  };
+
+  const ExtendedXNATSegmentationPanel = props => {
+    return (
+      <XNATSegmentationPanel
+        {...props}
+        showColorSelectModal={showColorSelectModal}
+      />
+    );
   };
 
   cornerstone.events.addEventListener(
@@ -70,7 +108,7 @@ const PanelModule = (servicesManager, commandsManager) => {
       },
       {
         id: 'xnat-segmentation-panel',
-        component: XNATSegmentationPanel,
+        component: ExtendedXNATSegmentationPanel,
       },
     ],
     defaultContext: ['VIEWER'],

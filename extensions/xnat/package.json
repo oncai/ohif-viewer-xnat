@@ -45,6 +45,7 @@
     "react-select": "^3.0.8",
     "xml-writer": "^1.7.0",
     "loglevelnext": "^3.0.1",
-    "ndarray": "^1.0.19"
+    "ndarray": "^1.0.19",
+    "react-color": "2.18.1"
   }
 }
