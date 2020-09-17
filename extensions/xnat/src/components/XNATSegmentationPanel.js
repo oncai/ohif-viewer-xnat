@@ -7,16 +7,24 @@ import SegmentationMenuListBody from './XNATSegmentationMenu/SegmentationMenuLis
 import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuListHeader.js';
 import BrushSettings from './XNATSegmentationMenu/BrushSettings.js';
 import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import generateSegmentationMetadata from '../peppermint-tools/utils/generateSegmentationMetadata';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
 import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegmentationImportMenu';
+import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentationSettings';
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
 import './XNATSegmentationPanel.styl';
 import { Icon } from '@ohif/ui';
+
+const refreshViewports = () => {
+  cornerstoneTools.store.state.enabledElements.forEach(element => {
+    cornerstone.updateImage(element);
+  });
+};
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -34,6 +42,19 @@ const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
     console.error('Failed to retrieve firstImageId');
     return null;
   }
+};
+
+const updateSegmentationConfiguration = (configuration, newConfiguration) => {
+  configuration.renderFill = newConfiguration.renderFill;
+  configuration.renderOutline = newConfiguration.renderOutline;
+  configuration.shouldRenderInactiveLabelmaps =
+    newConfiguration.shouldRenderInactiveLabelmaps;
+  configuration.fillAlpha = newConfiguration.fillAlpha;
+  configuration.outlineAlpha = newConfiguration.outlineAlpha;
+  configuration.outlineWidth = newConfiguration.outlineWidth;
+  configuration.fillAlphaInactive = newConfiguration.fillAlphaInactive;
+  configuration.outlineAlphaInactive = newConfiguration.outlineAlphaInactive;
+  refreshViewports();
 };
 
 /**
@@ -94,6 +115,7 @@ export default class XNATSegmentationPanel extends React.Component {
       activeSegmentIndex,
       importing: false,
       exporting: false,
+      showSegmentationSettings: false,
       labelmap3D,
     };
 
@@ -398,6 +420,7 @@ export default class XNATSegmentationPanel extends React.Component {
       activeSegmentIndex,
       importing,
       exporting,
+      showSegmentationSettings,
       firstImageId,
       labelmap3D,
     } = this.state;
@@ -405,7 +428,6 @@ export default class XNATSegmentationPanel extends React.Component {
     const { viewports, activeIndex } = this.props;
 
     let component;
-
     let isFractional = false;
 
     if (labelmap3D) {
@@ -423,7 +445,18 @@ export default class XNATSegmentationPanel extends React.Component {
       </button>
     );
 
-    if (importing) {
+    if (showSegmentationSettings) {
+      const { configuration } = cornerstoneTools.getModule('segmentation');
+      component = (
+        <XNATSegmentationSettings
+          configuration={configuration}
+          onBack={() => this.setState({ showSegmentationSettings: false })}
+          onChange={newConfiguration =>
+            updateSegmentationConfiguration(configuration, newConfiguration)
+          }
+        />
+      );
+    } else if (importing) {
       component = (
         <XNATSegmentationImportMenu
           onImportComplete={this.onIOComplete}
@@ -448,6 +481,11 @@ export default class XNATSegmentationPanel extends React.Component {
         <div className="xnatPanel">
           <div className="panelHeader">
             <h3>Mask Collection</h3>
+            <button
+              onClick={() => this.setState({ showSegmentationSettings: true })}
+            >
+              settings
+            </button>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATSegmentationImportMenu}
               ExportCallbackOrComponent={ExportCallbackOrComponent}
