@@ -74,14 +74,11 @@ export default class XNATSegmentationPanel extends React.Component {
     const { viewports, activeIndex } = props;
     const firstImageId = _getFirstImageId(viewports[activeIndex]);
 
-    debugger;
-
     let segments = [];
     let activeSegmentIndex = 1;
     let labelmap3D;
     const importMetadata = this.constructor._importMetadata(firstImageId);
 
-    
     if (firstImageId) {
       const segmentList = this.getSegmentList(firstImageId);
 
@@ -409,6 +406,23 @@ export default class XNATSegmentationPanel extends React.Component {
 
     let component;
 
+    let isFractional = false;
+
+    if (labelmap3D) {
+      isFractional = labelmap3D.isFractional;
+    }
+
+    // Note: For now disable export and adding of segments if the labelmap is fractional.
+    const ExportCallbackOrComponent = isFractional
+      ? null
+      : XNATSegmentationExportMenu;
+
+    const addSegmentButton = isFractional ? null : (
+      <button onClick={this.onNewSegment}>
+        <Icon name="xnat-tree-plus" /> Add
+      </button>
+    );
+
     if (importing) {
       component = (
         <XNATSegmentationImportMenu
@@ -436,7 +450,7 @@ export default class XNATSegmentationPanel extends React.Component {
             <h3>Mask Collection</h3>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATSegmentationImportMenu}
-              ExportCallbackOrComponent={XNATSegmentationExportMenu}
+              ExportCallbackOrComponent={ExportCallbackOrComponent}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
             />
@@ -445,9 +459,12 @@ export default class XNATSegmentationPanel extends React.Component {
             <div className="workingCollectionHeader">
               <h4> {importMetadata.name} </h4>
               <div>
+                {addSegmentButton}
+                {/*
                 <button onClick={this.onNewSegment}>
                   <Icon name="xnat-tree-plus" /> Add
                 </button>
+                */}
                 <button onClick={this.onDeleteClick}>
                   {/*//ToDo: onDeleteClick={this.confirmDeleteOnDeleteClick}*/}
                   <Icon name="trash" /> Remove

@@ -1,5 +1,6 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import '../XNATSegmentationPanel.styl';
 
@@ -14,6 +15,13 @@ export default class SegmentationMenuListItem extends React.Component {
 
     this.onTextInputChange = this.onTextInputChange.bind(this);
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
+    this.onShowHideClick = this.onShowHideClick.bind(this);
+
+    const { segmentIndex, labelmap3D } = props;
+
+    this.state = {
+      visible: !labelmap3D.segmentsHidden[segmentIndex],
+    };
   }
 
   /**
@@ -47,6 +55,22 @@ export default class SegmentationMenuListItem extends React.Component {
     }
   }
 
+  onShowHideClick() {
+    let { visible } = this.state;
+    const { segmentIndex, labelmap3D } = this.props;
+
+    visible = !visible;
+    labelmap3D.segmentsHidden[segmentIndex] = !visible;
+
+    debugger;
+
+    cornerstoneTools.store.state.enabledElements.forEach(element => {
+      cornerstone.updateImage(element);
+    });
+
+    this.setState({ visible });
+  }
+
   render() {
     const {
       metadata,
@@ -54,18 +78,22 @@ export default class SegmentationMenuListItem extends React.Component {
       onSegmentChange,
       onEditClick,
       checked,
+      labelmap3D,
     } = this.props;
+
+    const { visible } = this.state;
 
     const segmentLabel = metadata.SegmentLabel;
     const colorLUT = segmentationModule.getters.colorLUT(0);
     const color = colorLUT[segmentIndex];
     const segmentColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1.0 )`;
 
+    debugger;
+
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
     const typeWithModifier = this._getTypeWithModifier();
 
-    const visible = true;
     const showHideIcon = visible ? (
       <Icon name="eye" />
     ) : (
@@ -108,9 +136,7 @@ export default class SegmentationMenuListItem extends React.Component {
           </a>
         </td>
         <td className="centered-cell">
-          <button className="small"
-                  // onClick={this.onShowHideClick}
-          >
+          <button className="small" onClick={this.onShowHideClick}>
             {showHideIcon}
           </button>
         </td>

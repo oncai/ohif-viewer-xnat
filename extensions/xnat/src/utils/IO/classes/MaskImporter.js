@@ -96,8 +96,6 @@ export default class MaskImporter {
           delete segmentationModule.state.series[firstImageId];
         }
 
-        console.log(segMetadata);
-
         const metadata = segMetadata.data;
 
         if (isFractional) {
@@ -110,12 +108,6 @@ export default class MaskImporter {
             imageIds.length,
             segmentsOnFrame
           );
-
-          const brushStackState = segmentationModule.state.series[firstImageId];
-
-          const labelmap3D = brushStackState.labelmaps3D[0];
-
-          debugger;
 
           // Set fractional labelmap rendering options
           Object.assign(
