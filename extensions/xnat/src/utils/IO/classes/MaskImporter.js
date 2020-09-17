@@ -76,8 +76,6 @@ export default class MaskImporter {
         imagePromises.push(cornerstone.loadAndCacheImage(imageIds[i]));
       }
 
-      debugger;
-
       Promise.all(imagePromises).then(() => {
         const {
           labelmapBuffer,
@@ -91,8 +89,6 @@ export default class MaskImporter {
           cornerstone.metaData
         );
 
-        debugger;
-
         const firstImageId = imageIds[0];
 
         // Delete old labelmap
@@ -104,8 +100,6 @@ export default class MaskImporter {
 
         const metadata = segMetadata.data;
 
-        debugger;
-
         if (isFractional) {
           segmentationModule.setters.fractionalLabelmap3DByFirstImageId(
             firstImageId,
@@ -116,6 +110,12 @@ export default class MaskImporter {
             imageIds.length,
             segmentsOnFrame
           );
+
+          const brushStackState = segmentationModule.state.series[firstImageId];
+
+          const labelmap3D = brushStackState.labelmaps3D[0];
+
+          debugger;
 
           // Set fractional labelmap rendering options
           Object.assign(

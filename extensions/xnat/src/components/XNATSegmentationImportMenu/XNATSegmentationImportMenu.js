@@ -358,7 +358,6 @@ export default class XNATSegmentationImportMenu extends React.Component {
     uri = uri.slice(1);
 
     const seriesInstanceUid = scan.referencedSeriesInstanceUid;
-    debugger;
     const maskImporter = new MaskImporter(seriesInstanceUid);
 
     const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
