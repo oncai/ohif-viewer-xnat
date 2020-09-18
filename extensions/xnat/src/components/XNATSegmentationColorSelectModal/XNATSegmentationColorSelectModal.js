@@ -83,7 +83,6 @@ export default function XNATSegmentationSelectColorModal({
         setSelectedColorMapID(ID);
         setIsColorMap(true);
         refreshViewports();
-        // TODO logic
       },
     };
   });
@@ -118,8 +117,6 @@ export default function XNATSegmentationSelectColorModal({
   const defaultColorMapValue = selectedColorMapID
     ? colorMapList.find(cm => cm.value === selectedColorMapID)
     : null;
-
-  debugger;
 
   const selectedText = isColorMap
     ? `ColorMap: ${defaultColorMapValue.title}`
@@ -156,7 +153,3 @@ export default function XNATSegmentationSelectColorModal({
     </div>
   );
 }
-
-// onChange={setSelectedColorMapID}
-
-// {selectedColorMapID}

@@ -479,8 +479,6 @@ export default class XNATSegmentationImportMenu extends React.Component {
       importProgress,
     } = this.state;
 
-    debugger;
-
     let importBody;
 
     if (importListReady) {

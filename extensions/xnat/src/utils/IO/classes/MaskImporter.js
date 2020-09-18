@@ -3,6 +3,8 @@ import cornerstoneTools from 'cornerstone-tools';
 import * as dcmjs from 'dcmjs';
 import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 import { utils } from '@ohif/core';
+import Segmentation from './_tempDCMJSFork/Segmentation_4X_fork';
+import colorMaps from '../../../constants/colorMaps';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -128,6 +130,14 @@ export default class MaskImporter {
             segmentationModule.configuration,
             fractionalLabelmapConfiguration
           );
+
+          const colorLUT = segmentationModule.state.colorLutTables[0];
+
+          // If the first is a color, set it to a colormap.
+          if (!Array.isArray(colorLUT[1][0][0])) {
+            colorLUT[1] = colorMaps[0].colormap;
+            colorLUT[1].ID = colorMaps[0].ID;
+          }
         } else {
           segmentationModule.setters.labelmap3DByFirstImageId(
             firstImageId,
@@ -157,8 +167,10 @@ export default class MaskImporter {
 
 const labelmapConfiguration = {
   fillAlpha: 0.2,
+  renderOutline: true,
 };
 
 const fractionalLabelmapConfiguration = {
-  fillAlpha: 1,
+  fillAlpha: 0.5,
+  renderOutline: false,
 };
