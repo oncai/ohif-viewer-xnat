@@ -263,9 +263,17 @@ const MRIWColorMap = [
   [255, 255, 255, 255],
 ];
 
-debugger;
-
-export default {
-  yellowToRedColorMap,
-  MRIWColorMap,
-};
+export default [
+  {
+    ID: 'MRIW_RADIOLOGICAL',
+    title: 'MRIW Radiological',
+    description: 'Default colour table for MRIW',
+    colormap: MRIWColorMap,
+  },
+  {
+    ID: 'YELLOW_TO_RED',
+    title: 'Yellow To Red',
+    description: 'A colormap from yellow (lowest) to red (highest)',
+    colormap: yellowToRedColorMap,
+  },
+];
