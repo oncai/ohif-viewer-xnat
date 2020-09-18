@@ -54,6 +54,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
       importList: [],
       importing: false,
       progressText: '',
+      importProgress: 0,
     };
 
     this._cancelablePromises = [];
@@ -69,6 +70,12 @@ export default class XNATSegmentationImportMenu extends React.Component {
 
     this._hasExistingMaskData = this._hasExistingMaskData.bind(this);
     this._updateImportingText = this._updateImportingText.bind(this);
+
+    this.updateProgress = this.updateProgress.bind(this);
+  }
+
+  updateProgress(percent) {
+    this.setState({ importProgress: percent });
   }
 
   /**
@@ -358,7 +365,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
     uri = uri.slice(1);
 
     const seriesInstanceUid = scan.referencedSeriesInstanceUid;
-    const maskImporter = new MaskImporter(seriesInstanceUid);
+    const maskImporter = new MaskImporter(
+      seriesInstanceUid,
+      this.updateProgress
+    );
 
     const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
       seriesInstanceUid
@@ -466,7 +476,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
       importListReady,
       importing,
       progressText,
+      importProgress,
     } = this.state;
+
+    debugger;
 
     let importBody;
 
@@ -474,10 +487,8 @@ export default class XNATSegmentationImportMenu extends React.Component {
       if (importing) {
         importBody = (
           <>
-            <h4>
-              {progressText}
-              {/*<i className="fa fa-spin fa-circle-o-notch fa-fw" />*/}
-            </h4>
+            <h4>{progressText}</h4>
+            <h4>{`Loading Data: ${importProgress} %`}</h4>
           </>
         );
       } else if (importList.length === 0) {

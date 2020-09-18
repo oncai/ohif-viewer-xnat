@@ -8,7 +8,7 @@ const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
 export default class MaskImporter {
-  constructor(seriesInstanceUid) {
+  constructor(seriesInstanceUid, updateProgressCallback) {
     const imageIds = this._getImageIds(seriesInstanceUid);
 
     const { rows, columns } = cornerstone.metaData.get(
@@ -28,6 +28,7 @@ export default class MaskImporter {
     this._seriesInstanceUid = seriesInstanceUid;
     this._imageIds = imageIds;
     this._dimensions = dimensions;
+    this.updateProgressCallback = updateProgressCallback;
   }
 
   /**
@@ -72,8 +73,21 @@ export default class MaskImporter {
       const imageIds = this._imageIds;
       const imagePromises = [];
 
+      const numImages = imageIds.length;
+      let processed = 0;
+
       for (let i = 0; i < imageIds.length; i++) {
-        imagePromises.push(cornerstone.loadAndCacheImage(imageIds[i]));
+        const promise = cornerstone.loadAndCacheImage(imageIds[i]);
+
+        promise.then(() => {
+          processed++;
+
+          this.updateProgressCallback(
+            Math.floor((processed * 100) / numImages)
+          );
+        });
+
+        imagePromises.push(promise);
       }
 
       Promise.all(imagePromises).then(() => {
