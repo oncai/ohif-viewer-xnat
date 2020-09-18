@@ -48,13 +48,15 @@ export default function XNATSegmentationSelectColorModal({
     const colorArray = [rgb.r, rgb.g, rgb.b, 255];
     colorLUT[segmentIndex] = colorArray;
 
-    if (isColorMap) {
+    if (labelmap3D.isFractional) {
       segmentationModule.configuration.fillAlpha = 1.0;
       segmentationModule.configuration.renderOutline = true;
     }
 
     onColorChangeCallback(colorArray);
+    setIsColorMap(false);
     setSelectedColorMapID(null);
+    setSingleColor(rgb);
     refreshViewports();
   };
 
@@ -75,13 +77,11 @@ export default function XNATSegmentationSelectColorModal({
 
         segmentationModule.configuration.renderOutline = false;
 
-        // This is just local, but it make it obvious we aren't using the colormap now.
-        setSingleColor({ r: 0, g: 0, b: 0 });
-
         const highestColorArray = colormap[colormap.length - 1];
 
         onColorChangeCallback(highestColorArray);
         setSelectedColorMapID(ID);
+        setIsColorMap(true);
         refreshViewports();
         // TODO logic
       },
@@ -109,8 +109,6 @@ export default function XNATSegmentationSelectColorModal({
       };
     }
 
-    debugger;
-
     setColorLUT(activeColorLUT);
     setIsColorMap(isColorMap);
     setSingleColor(defaultColor);
@@ -121,19 +119,39 @@ export default function XNATSegmentationSelectColorModal({
     ? colorMapList.find(cm => cm.value === selectedColorMapID)
     : null;
 
+  debugger;
+
+  const selectedText = isColorMap
+    ? `ColorMap: ${defaultColorMapValue.title}`
+    : singleColor
+    ? `[${singleColor.r.toFixed(0)}, ${singleColor.g.toFixed(
+        0
+      )}, ${singleColor.b.toFixed(0)}]`
+    : null;
+
   return (
-    <div className="xnat-color-select">
-      <ColorPicker
-        className="color-picker"
-        defaultColor={singleColor}
-        onChangeComplete={onSingleColorChangeComplete}
-      />
-      {labelmap3D.isFractional ? (
-        <XNATColorMapSelect
-          value={defaultColorMapValue}
-          formatOptionLabel={XNATColorMapSelectItem}
-          options={colorMapList}
+    <div className="xnat-color-select-container">
+      <div className="xnat-colormap-item">
+        <h2 className="xnat-color-select-header">Selected</h2>
+        <h4>{selectedText}</h4>
+      </div>
+      <div className="xnat-colormap-item">
+        <ColorPicker
+          className="xnat-color-select"
+          className="color-picker"
+          defaultColor={singleColor}
+          onChangeComplete={onSingleColorChangeComplete}
         />
+      </div>
+
+      {labelmap3D.isFractional ? (
+        <div className="xnat-colormap-item">
+          <XNATColorMapSelect
+            value={defaultColorMapValue}
+            formatOptionLabel={XNATColorMapSelectItem}
+            options={colorMapList}
+          />
+        </div>
       ) : null}
     </div>
   );
