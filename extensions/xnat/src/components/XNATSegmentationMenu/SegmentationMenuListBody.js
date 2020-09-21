@@ -21,6 +21,7 @@ export default class SegmentationMenuListBody extends React.Component {
       onSegmentChange,
       onEditClick,
       labelmap3D,
+      showColorSelectModal,
     } = this.props;
 
     return (
@@ -34,6 +35,7 @@ export default class SegmentationMenuListBody extends React.Component {
             onEditClick={onEditClick}
             checked={segment.index === activeSegmentIndex}
             labelmap3D={labelmap3D}
+            showColorSelectModal={showColorSelectModal}
           />
         ))}
       </React.Fragment>

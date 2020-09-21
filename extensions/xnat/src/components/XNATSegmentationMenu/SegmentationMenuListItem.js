@@ -1,5 +1,6 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import '../XNATSegmentationPanel.styl';
 
@@ -14,6 +15,28 @@ export default class SegmentationMenuListItem extends React.Component {
 
     this.onTextInputChange = this.onTextInputChange.bind(this);
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
+    this.onShowHideClick = this.onShowHideClick.bind(this);
+    this.onColorChangeCallback = this.onColorChangeCallback.bind(this);
+
+    const { segmentIndex, labelmap3D, metadata } = props;
+
+    const colorLUT = segmentationModule.getters.colorLUT(
+      labelmap3D.colorLUTIndex
+    );
+    const color = colorLUT[segmentIndex];
+    const segmentColor = _colorArrayToRGBColor(color);
+
+    this.state = {
+      visible: !labelmap3D.segmentsHidden[segmentIndex],
+      segmentLabel: metadata.SegmentLabel,
+      segmentColor,
+    };
+  }
+
+  onColorChangeCallback(colorArray) {
+    const segmentColor = _colorArrayToRGBColor(colorArray);
+
+    this.setState({ segmentColor });
   }
 
   /**
@@ -45,6 +68,22 @@ export default class SegmentationMenuListItem extends React.Component {
     if (SegmentLabel.replace(' ', '').length > 0) {
       labelmap3D.metadata[segmentIndex].SegmentLabel = SegmentLabel;
     }
+
+    this.setState({ segmentLabel: SegmentLabel });
+  }
+
+  onShowHideClick() {
+    let { visible } = this.state;
+    const { segmentIndex, labelmap3D } = this.props;
+
+    visible = !visible;
+    labelmap3D.segmentsHidden[segmentIndex] = !visible;
+
+    cornerstoneTools.store.state.enabledElements.forEach(element => {
+      cornerstone.updateImage(element);
+    });
+
+    this.setState({ visible });
   }
 
   render() {
@@ -54,18 +93,16 @@ export default class SegmentationMenuListItem extends React.Component {
       onSegmentChange,
       onEditClick,
       checked,
+      labelmap3D,
+      showColorSelectModal,
     } = this.props;
 
-    const segmentLabel = metadata.SegmentLabel;
-    const colorLUT = segmentationModule.getters.colorLUT(0);
-    const color = colorLUT[segmentIndex];
-    const segmentColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1.0 )`;
+    const { visible, segmentLabel, segmentColor } = this.state;
 
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
     const typeWithModifier = this._getTypeWithModifier();
 
-    const visible = true;
     const showHideIcon = visible ? (
       <Icon name="eye" />
     ) : (
@@ -108,13 +145,30 @@ export default class SegmentationMenuListItem extends React.Component {
           </a>
         </td>
         <td className="centered-cell">
-          <button className="small"
-                  // onClick={this.onShowHideClick}
-          >
+          <button className="small" onClick={this.onShowHideClick}>
             {showHideIcon}
+          </button>
+        </td>
+        <td className="centered-cell">
+          <button
+            className="small"
+            onClick={() =>
+              showColorSelectModal(
+                labelmap3D,
+                segmentIndex,
+                segmentLabel,
+                this.onColorChangeCallback
+              )
+            }
+          >
+            <Icon name="palette" />
           </button>
         </td>
       </tr>
     );
   }
+}
+
+function _colorArrayToRGBColor(colorArray) {
+  return `rgba(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]}, 1.0 )`;
 }

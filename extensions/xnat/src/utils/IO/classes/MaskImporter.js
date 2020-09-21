@@ -1,13 +1,16 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import * as dcmjs from 'dcmjs';
+import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 import { utils } from '@ohif/core';
+import Segmentation from './_tempDCMJSFork/Segmentation_4X_fork';
+import colorMaps from '../../../constants/colorMaps';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
 export default class MaskImporter {
-  constructor(seriesInstanceUid) {
+  constructor(seriesInstanceUid, updateProgressCallback) {
     const imageIds = this._getImageIds(seriesInstanceUid);
 
     const { rows, columns } = cornerstone.metaData.get(
@@ -27,15 +30,16 @@ export default class MaskImporter {
     this._seriesInstanceUid = seriesInstanceUid;
     this._imageIds = imageIds;
     this._dimensions = dimensions;
+    this.updateProgressCallback = updateProgressCallback;
   }
 
   /**
    * _getImageIds - Returns the imageIds for the stack.
    *
-   * @param  {type} seriesInstanceUid description
+   * @param  {type} SeriesInstanceUID description
    * @returns {type}                   description
    */
-  _getImageIds(seriesInstanceUid) {
+  _getImageIds(SeriesInstanceUID) {
     // Get the imageId of each sopInstance in the series
     const imageIds = [];
 
@@ -47,9 +51,7 @@ export default class MaskImporter {
       for (let j = 0; j < displaySets.length; j++) {
         const displaySet = displaySets[j];
 
-        debugger;
-
-        if (displaySet.seriesInstanceUid === seriesInstanceUid) {
+        if (displaySet.SeriesInstanceUID === SeriesInstanceUID) {
           const images = displaySet.images;
 
           for (let k = 0; k < images.length; k++) {
@@ -73,16 +75,31 @@ export default class MaskImporter {
       const imageIds = this._imageIds;
       const imagePromises = [];
 
+      const numImages = imageIds.length;
+      let processed = 0;
+
       for (let i = 0; i < imageIds.length; i++) {
-        imagePromises.push(cornerstone.loadAndCacheImage(imageIds[i]));
+        const promise = cornerstone.loadAndCacheImage(imageIds[i]);
+
+        promise.then(() => {
+          processed++;
+
+          this.updateProgressCallback(
+            Math.floor((processed * 100) / numImages)
+          );
+        });
+
+        imagePromises.push(promise);
       }
 
       Promise.all(imagePromises).then(() => {
         const {
           labelmapBuffer,
           segMetadata,
+          probabilityMapBuffer,
+          isFractional,
           segmentsOnFrame,
-        } = dcmjs.adapters.Cornerstone.Segmentation.generateToolState(
+        } = Segmentation_4X_fork.generateToolState(
           imageIds,
           dicomSegArrayBuffer,
           cornerstone.metaData
@@ -95,19 +112,51 @@ export default class MaskImporter {
           delete segmentationModule.state.series[firstImageId];
         }
 
-        console.log(segMetadata);
-
         const metadata = segMetadata.data;
 
-        debugger;
+        if (isFractional) {
+          segmentationModule.setters.fractionalLabelmap3DByFirstImageId(
+            firstImageId,
+            labelmapBuffer,
+            probabilityMapBuffer,
+            0,
+            metadata,
+            imageIds.length,
+            segmentsOnFrame
+          );
 
-        segmentationModule.setters.labelmap3DByFirstImageId(
-          firstImageId,
-          labelmapBuffer,
-          0, // TODO -> Can define a color LUT based on colors in the SEG later.
-          metadata,
-          imageIds.length,
-          segmentsOnFrame
+          // Set fractional labelmap rendering options
+          Object.assign(
+            segmentationModule.configuration,
+            fractionalLabelmapConfiguration
+          );
+
+          const colorLUT = segmentationModule.state.colorLutTables[0];
+
+          // If the first is a color, set it to a colormap.
+          if (!Array.isArray(colorLUT[1][0][0])) {
+            colorLUT[1] = colorMaps[0].colormap;
+            colorLUT[1].ID = colorMaps[0].ID;
+          }
+        } else {
+          segmentationModule.setters.labelmap3DByFirstImageId(
+            firstImageId,
+            labelmapBuffer,
+            0, // TODO -> Can define a color LUT based on colors in the SEG later.
+            metadata,
+            imageIds.length,
+            segmentsOnFrame
+          );
+
+          // Set labelmap rendering options
+          Object.assign(
+            segmentationModule.configuration,
+            labelmapConfiguration
+          );
+        }
+
+        cornerstoneTools.store.state.enabledElements.forEach(element =>
+          cornerstone.updateImage(element)
         );
 
         resolve();
@@ -115,3 +164,13 @@ export default class MaskImporter {
     });
   }
 }
+
+const labelmapConfiguration = {
+  fillAlpha: 0.2,
+  renderOutline: true,
+};
+
+const fractionalLabelmapConfiguration = {
+  fillAlpha: 0.5,
+  renderOutline: false,
+};

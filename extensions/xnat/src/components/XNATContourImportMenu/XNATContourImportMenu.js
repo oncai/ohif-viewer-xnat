@@ -39,6 +39,7 @@ export default class XNATContourImportMenu extends React.Component {
       importList: [],
       importing: false,
       progressText: '',
+      importProgress: 0,
     };
 
     this._cancelablePromises = [];
@@ -58,6 +59,12 @@ export default class XNATContourImportMenu extends React.Component {
     this._incrementNumCollectionsParsed = this._incrementNumCollectionsParsed.bind(
       this
     );
+
+    this.updateProgress = this.updateProgress.bind(this);
+  }
+
+  updateProgress(percent) {
+    this.setState({ importProgress: percent });
   }
 
   /**
@@ -305,7 +312,8 @@ export default class XNATContourImportMenu extends React.Component {
    */
   async _getAndImportFile(uri, roiCollectionInfo) {
     const roiImporter = new RoiImporter(
-      roiCollectionInfo.referencedSeriesInstanceUid
+      roiCollectionInfo.referencedSeriesInstanceUid,
+      updateProgress
     );
 
     // The URIs fetched have an additional /, so remove it.
@@ -467,6 +475,7 @@ export default class XNATContourImportMenu extends React.Component {
       importListReady,
       importing,
       progressText,
+      importProgress,
     } = this.state;
 
     let importBody;
@@ -475,10 +484,8 @@ export default class XNATContourImportMenu extends React.Component {
       if (importing) {
         importBody = (
           <>
-            <h4>
-              {progressText}
-              {/*<i className="fa fa-spin fa-circle-o-notch fa-fw" />*/}
-            </h4>
+            <h4>{progressText}</h4>
+            <h4>{`Loading Data: ${importProgress} %`}</h4>
           </>
         );
       } else if (importList.length === 0) {

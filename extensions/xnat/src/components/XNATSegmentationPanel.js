@@ -7,16 +7,24 @@ import SegmentationMenuListBody from './XNATSegmentationMenu/SegmentationMenuLis
 import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuListHeader.js';
 import BrushSettings from './XNATSegmentationMenu/BrushSettings.js';
 import cornerstoneTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import generateSegmentationMetadata from '../peppermint-tools/utils/generateSegmentationMetadata';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
 import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegmentationImportMenu';
+import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentationSettings';
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
 import './XNATSegmentationPanel.styl';
 import { Icon } from '@ohif/ui';
+
+const refreshViewports = () => {
+  cornerstoneTools.store.state.enabledElements.forEach(element => {
+    cornerstone.updateImage(element);
+  });
+};
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -36,6 +44,19 @@ const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
   }
 };
 
+const updateSegmentationConfiguration = (configuration, newConfiguration) => {
+  configuration.renderFill = newConfiguration.renderFill;
+  configuration.renderOutline = newConfiguration.renderOutline;
+  configuration.shouldRenderInactiveLabelmaps =
+    newConfiguration.shouldRenderInactiveLabelmaps;
+  configuration.fillAlpha = newConfiguration.fillAlpha;
+  configuration.outlineAlpha = newConfiguration.outlineAlpha;
+  configuration.outlineWidth = newConfiguration.outlineWidth;
+  configuration.fillAlphaInactive = newConfiguration.fillAlphaInactive;
+  configuration.outlineAlphaInactive = newConfiguration.outlineAlphaInactive;
+  refreshViewports();
+};
+
 /**
  * @class XNATSegmentationPanel - Renders a menu for importing, exporting, creating
  * and renaming Segments. As well as setting configuration settings for
@@ -47,6 +68,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: PropTypes.any,
     viewports: PropTypes.any,
     activeIndex: PropTypes.any,
+    showColorSelectModal: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
@@ -54,6 +76,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: undefined,
     viewports: undefined,
     activeIndex: undefined,
+    showColorSelectModal: undefined,
   };
 
   constructor(props = {}) {
@@ -94,6 +117,7 @@ export default class XNATSegmentationPanel extends React.Component {
       activeSegmentIndex,
       importing: false,
       exporting: false,
+      showSegmentationSettings: false,
       labelmap3D,
     };
 
@@ -398,15 +422,43 @@ export default class XNATSegmentationPanel extends React.Component {
       activeSegmentIndex,
       importing,
       exporting,
+      showSegmentationSettings,
       firstImageId,
       labelmap3D,
     } = this.state;
 
-    const { viewports, activeIndex } = this.props;
+    const { viewports, activeIndex, showColorSelectModal } = this.props;
 
     let component;
+    let isFractional = false;
 
-    if (importing) {
+    if (labelmap3D) {
+      isFractional = labelmap3D.isFractional;
+    }
+
+    // Note: For now disable export and adding of segments if the labelmap is fractional.
+    const ExportCallbackOrComponent = isFractional
+      ? null
+      : XNATSegmentationExportMenu;
+
+    const addSegmentButton = isFractional ? null : (
+      <button onClick={this.onNewSegment}>
+        <Icon name="xnat-tree-plus" /> Add
+      </button>
+    );
+
+    if (showSegmentationSettings) {
+      const { configuration } = cornerstoneTools.getModule('segmentation');
+      component = (
+        <XNATSegmentationSettings
+          configuration={configuration}
+          onBack={() => this.setState({ showSegmentationSettings: false })}
+          onChange={newConfiguration =>
+            updateSegmentationConfiguration(configuration, newConfiguration)
+          }
+        />
+      );
+    } else if (importing) {
       component = (
         <XNATSegmentationImportMenu
           onImportComplete={this.onIOComplete}
@@ -431,9 +483,14 @@ export default class XNATSegmentationPanel extends React.Component {
         <div className="xnatPanel">
           <div className="panelHeader">
             <h3>Mask Collection</h3>
+            <button
+              onClick={() => this.setState({ showSegmentationSettings: true })}
+            >
+              settings
+            </button>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATSegmentationImportMenu}
-              ExportCallbackOrComponent={XNATSegmentationExportMenu}
+              ExportCallbackOrComponent={ExportCallbackOrComponent}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
             />
@@ -442,9 +499,7 @@ export default class XNATSegmentationPanel extends React.Component {
             <div className="workingCollectionHeader">
               <h4> {importMetadata.name} </h4>
               <div>
-                <button onClick={this.onNewSegment}>
-                  <Icon name="xnat-tree-plus" /> Add
-                </button>
+                {addSegmentButton}
                 <button onClick={this.onDeleteClick}>
                   {/*//ToDo: onDeleteClick={this.confirmDeleteOnDeleteClick}*/}
                   <Icon name="trash" /> Remove
@@ -475,6 +530,7 @@ export default class XNATSegmentationPanel extends React.Component {
                   onEditClick={this.onEditClick}
                   firstImageId={firstImageId}
                   labelmap3D={labelmap3D}
+                  showColorSelectModal={showColorSelectModal}
                 />
               </tbody>
             </table>

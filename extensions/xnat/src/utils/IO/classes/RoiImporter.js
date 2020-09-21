@@ -21,11 +21,12 @@ const { getToolForElement, setToolPassive } = cornerstoneTools;
  * peppermintTools ROIContours.
  */
 export default class RoiImporter {
-  constructor(seriesInstanceUid) {
+  constructor(seriesInstanceUid, updateProgressCallback) {
     this._seriesInstanceUid = seriesInstanceUid;
     this._sopInstanceUidToImageIdMap = this._getSopInstanceUidToImageIdMap();
 
     this._freehand3DStore = modules.freehand3D;
+    this.updateProgressCallback = updateProgressCallback;
   }
 
   /**
