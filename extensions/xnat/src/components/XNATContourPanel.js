@@ -6,6 +6,7 @@ import MenuIOButtons from './common/MenuIOButtons.js';
 import WorkingCollectionList from './XNATContourMenu/WorkingCollectionList.js';
 import LockedCollectionsList from './XNATContourMenu/LockedCollectionsList.js';
 import RoiContourSettings from './XNATContourMenu/RoiContourSettings.js';
+import ContourPanelSettings from './XNATContourMenu/ContourPanelSettings.js';
 import unlockStructureSet from '../utils/unlockStructureSet.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
@@ -31,6 +32,7 @@ export default class XNATContourPanel extends React.Component {
     studies: PropTypes.any,
     viewports: PropTypes.any,
     activeIndex: PropTypes.any,
+    onContourItemClick: PropTypes.func,
     UIModalService: PropTypes.any,
   };
 
@@ -39,6 +41,7 @@ export default class XNATContourPanel extends React.Component {
     studies: undefined,
     viewports: undefined,
     activeIndex: undefined,
+    onContourItemClick: undefined,
     UIModalService: undefined,
   };
 
@@ -65,6 +68,9 @@ export default class XNATContourPanel extends React.Component {
 
     this.onRemoveRoiButtonClick = this.onRemoveRoiButtonClick.bind(this);
     this.onContourClick = this.onContourClick.bind(this);
+
+    this.onRoiCollectionNameChange = this.onRoiCollectionNameChange.bind(this);
+    this.configurationChangeHandler = this.configurationChangeHandler.bind(this);
 
     this.addEventListeners();
 
@@ -93,6 +99,7 @@ export default class XNATContourPanel extends React.Component {
       activeROIContourIndex,
       importing: false,
       exporting: false,
+      showSettings: false,
       SeriesInstanceUID,
     };
   }
@@ -153,6 +160,13 @@ export default class XNATContourPanel extends React.Component {
         this.cornerstoneEventListenerHandler
       );
     });
+  }
+
+  configurationChangeHandler = newConfiguration => {
+    const module = modules.freehand3D;
+    module.configuration.lineWidth = newConfiguration.lineWidth;
+    module.configuration.opacity = newConfiguration.opacity;
+    refreshViewport();
   }
 
   /**
@@ -308,8 +322,35 @@ export default class XNATContourPanel extends React.Component {
     refreshViewport();
   }
 
-  onContourClick() {
-    console.log('contour clicked...');
+  onContourClick(roiContourUid) {
+    const { activeIndex, onContourItemClick } = this.props;
+    const { SeriesInstanceUID } = this.state;
+
+    const enabledElements = cornerstone.getEnabledElements();
+    const element = enabledElements[activeIndex].element;
+    const toolState = csTools.getToolState(element, 'stack');
+
+    if (!toolState) {
+      return;
+    }
+
+    const imageIds = toolState.data[0].imageIds;
+    const imageId = modules.freehand3D.getters.imageIdOfCenterFrameOfROIContour(
+      SeriesInstanceUID,
+      roiContourUid,
+      imageIds
+    );
+
+    const frameIndex = imageIds.indexOf(imageId);
+    const SOPInstanceUID = cornerstone.metaData.get('SOPInstanceUID', imageId);
+    const StudyInstanceUID = cornerstone.metaData.get('StudyInstanceUID', imageId);
+
+    onContourItemClick({
+      StudyInstanceUID,
+      SOPInstanceUID,
+      frameIndex,
+      activeViewportIndex: activeIndex
+    });
   }
 
   /**
@@ -443,6 +484,31 @@ export default class XNATContourPanel extends React.Component {
     return lockedCollections;
   }
 
+  onRoiCollectionNameChange(evt) {
+    const name = evt.target.value;
+    const { SeriesInstanceUID } = this.state;
+
+    let newName = '_';
+
+    if (name.replace(' ', '').length > 0) {
+      newName = name;
+    }
+
+    const freehand3DModule = modules.freehand3D;
+
+    // const structureSet = freehand3DModule.getters.structureSet(
+    //   SeriesInstanceUID
+    // );
+
+    freehand3DModule.setters.structureSetName(
+      newName,
+      SeriesInstanceUID,
+      'DEFAULT'
+    );
+
+    return newName;
+  }
+
   render() {
     const {
       workingCollection,
@@ -452,15 +518,31 @@ export default class XNATContourPanel extends React.Component {
       activeROIContourIndex,
       importing,
       exporting,
+      showSettings,
       SeriesInstanceUID,
     } = this.state;
 
     const { viewports, activeIndex } = this.props;
     const freehand3DStore = modules.freehand3D;
 
+    // default structurset
+    const defaultStructureSet = freehand3DStore.getters.structureSet(
+      SeriesInstanceUID
+    );
+    const defaultStructureSetName =
+      defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
+
     let component;
 
-    if (importing) {
+    if (showSettings) {
+      component = (
+        <ContourPanelSettings
+          configuration={modules.freehand3D.configuration}
+          onChange={this.configurationChangeHandler}
+          onBack={() => this.setState({ showSettings: false })}
+        />
+      );
+    } else if (importing) {
       component = (
         <XNATContourImportMenu
           onImportComplete={this.onIOComplete}
@@ -474,6 +556,7 @@ export default class XNATContourPanel extends React.Component {
         <XNATContourExportMenu
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
+          onRoiCollectionNameChange={this.onRoiCollectionNameChange}
           SeriesInstanceUID={SeriesInstanceUID}
           viewportData={viewports[activeIndex]}
         />
@@ -505,7 +588,16 @@ export default class XNATContourPanel extends React.Component {
       component = (
         <div className="xnatPanel">
           <div className="panelHeader">
-            <h3>Contour-based ROIs</h3>
+            <div className="title-with-icon">
+              <h3>Contour-based ROIs</h3>
+              <Icon
+                className="settings-icon"
+                name="cog"
+                width="20px"
+                height="20px"
+                onClick={() => this.setState({ showSettings: true })}
+              />
+            </div>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATContourImportMenu}
               ExportCallbackOrComponent={XNATContourExportMenu}
@@ -517,7 +609,19 @@ export default class XNATContourPanel extends React.Component {
           {/* CONTOUR LIST */}
           <div className="roiCollectionBody">
             <div className="workingCollectionHeader">
-              <h4> Unnamed contour ROI collection </h4>
+              {/*<h4> {structureSet.name} </h4>*/}
+              <h4 style={{ flex: 1, marginRight: 5 }}>
+                <input
+                  name="roiContourName"
+                  className="roiEdit"
+                  onChange={this.onRoiCollectionNameChange}
+                  type="text"
+                  autoComplete="off"
+                  defaultValue={defaultStructureSetName}
+                  placeholder="Unnamed ROI collection"
+                  tabIndex="1"
+                />
+              </h4>
               <div>
                 <button onClick={this.onNewRoiButtonClick}>
                   <Icon name="xnat-tree-plus" /> Contour-based ROI
@@ -577,7 +681,7 @@ export default class XNATContourPanel extends React.Component {
             )}
           </div>
 
-          <RoiContourSettings />
+          {/*<RoiContourSettings />*/}
         </div>
       );
     }

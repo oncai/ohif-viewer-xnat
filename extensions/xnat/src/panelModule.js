@@ -48,8 +48,16 @@ const PanelModule = (servicesManager, commandsManager) => {
     }
   };
 
+  const contourItemClickHandler = contourData => {
+    commandsManager.runCommand('jumpToImage', contourData);
+  };
+
   const ExtendedXNATContourPanel = props => {
-    return <XNATContourPanel {...props} UIModalService={UIModalService} />;
+    return <XNATContourPanel
+      {...props}
+      onContourItemClick={contourItemClickHandler}
+      UIModalService={UIModalService}
+    />;
   };
 
   const ExtendedXNATSegmentationPanel = props => {

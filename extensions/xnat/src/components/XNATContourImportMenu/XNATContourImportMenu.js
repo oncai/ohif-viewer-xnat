@@ -537,7 +537,7 @@ export default class XNATContourImportMenu extends React.Component {
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
-          <h3>Import contour-based ROI collection</h3>
+          <h3>Import contour-based ROI collections</h3>
           {importing ? null : (
             <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
