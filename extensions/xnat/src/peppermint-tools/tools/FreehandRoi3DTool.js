@@ -327,6 +327,14 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     updateImage(evt.detail.element);
   }
 
+  _addOpacityToColor(color, alpha) {
+    let opacity = alpha * 255;
+    opacity = Math.floor(opacity);
+    const opacityStr = opacity.toString(16);
+
+    return color + (opacity < 16 ? '0' + opacityStr : opacityStr);
+  }
+
   /**
    *
    *
@@ -344,6 +352,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       return;
     }
 
+    const { lineWidth, opacity } = freehand3DStore.configuration;
+
     const image = eventData.image;
     const element = eventData.element;
     const config = this.configuration;
@@ -358,7 +368,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     // We have tool data for this element - iterate over each one and draw it
     const context = getNewContext(eventData.canvasContext.canvas);
 
-    const lineWidth = toolStyle.getToolWidth();
+    // const lineWidth = toolStyle.getToolWidth();
 
     for (let i = 0; i < toolState.data.length; i++) {
       const data = toolState.data[i];
@@ -406,8 +416,9 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
             fillColor = toolColors.getFillColor();
           }
         } else {
-          color = ROIContour.color;
-          fillColor = ROIContour.color;
+          const colorOpacity = this._addOpacityToColor(ROIContour.color, opacity);
+          color = colorOpacity;
+          fillColor = colorOpacity;
         }
 
         if (isROIActive && data.interpolated) {
@@ -428,7 +439,10 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
               eventData.element,
               data.handles.points[j],
               lines,
-              { color }
+              {
+                color,
+                lineWidth
+              }
             );
           }
         }
@@ -605,7 +619,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
             points,
             textBoxAnchorPoints,
             color,
-            lineWidth,
+            1, //lineWidth,
             0,
             true
           );

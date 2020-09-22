@@ -19,6 +19,7 @@ export default class XNATContourExportMenu extends React.Component {
   static propTypes = {
     onExportComplete: PropTypes.any,
     onExportCancel: PropTypes.any,
+    onRoiCollectionNameChange: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
     viewportData: PropTypes.any,
   };
@@ -26,6 +27,7 @@ export default class XNATContourExportMenu extends React.Component {
   static defaultProps = {
     onExportComplete: undefined,
     onExportCancel: undefined,
+    onRoiCollectionNameChange: undefined,
     SeriesInstanceUID: undefined,
     viewportData: undefined,
   };
@@ -52,7 +54,7 @@ export default class XNATContourExportMenu extends React.Component {
     this.onExportButtonClick = this.onExportButtonClick.bind(this);
     this.onTextInputChange = this.onTextInputChange.bind(this);
 
-    this._roiCollectionName = label;
+    // this._roiCollectionName = label;
   }
 
   /**
@@ -62,7 +64,8 @@ export default class XNATContourExportMenu extends React.Component {
    * @returns {null}
    */
   onTextInputChange(evt) {
-    this._roiCollectionName = evt.target.value;
+    // this._roiCollectionName = evt.target.value;
+    this._roiCollectionName = this.props.onRoiCollectionNameChange(evt);
   }
 
   /**
@@ -76,7 +79,8 @@ export default class XNATContourExportMenu extends React.Component {
     const roiCollectionName = this._roiCollectionName;
 
     // Check the name isn't empty, and isn't just whitespace.
-    if (roiCollectionName.replace(/ /g, '').length === 0) {
+    if (roiCollectionName.replace(/ /g, '').length === 0
+      || roiCollectionName === '_') {
       return;
     }
 
@@ -230,11 +234,11 @@ export default class XNATContourExportMenu extends React.Component {
       selectedCheckboxes.push(true);
     }
 
-    let defaultName = '';
+    let defaultName = defaultStructureSet.name;
 
-    if (roiContourList && roiContourList.length === 1) {
-      defaultName = roiContourList[0].ROIContourReference.name;
-    }
+    // if (roiContourList && roiContourList.length === 1) {
+    //   defaultName = roiContourList[0].ROIContourReference.name;
+    // }
 
     this._roiCollectionName = defaultName;
 
@@ -252,7 +256,8 @@ export default class XNATContourExportMenu extends React.Component {
 
     let roiExportListBody;
 
-    let defaultName = 'Unnamed contour ROI collection';
+    let defaultName =
+      this._roiCollectionName === '_' ? '' : this._roiCollectionName;
 
     // if (roiContourList && roiContourList.length === 1) {
     //   defaultName = roiContourList[0].ROIContourReference.name;
@@ -315,7 +320,7 @@ export default class XNATContourExportMenu extends React.Component {
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
-          <h3>Export Contour Collections</h3>
+          <h3>Export contour-based ROI collection</h3>
           {!exporting && (
             <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
@@ -332,6 +337,7 @@ export default class XNATContourExportMenu extends React.Component {
               type="text"
               defaultValue={defaultName}
               onChange={this.onTextInputChange}
+              placeholder="Unnamed ROI collection"
               tabIndex="-1"
               autoComplete="off"
               style={{ flex: 1 }}

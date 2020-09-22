@@ -26,7 +26,7 @@ export default class WorkingRoiCollectionList extends React.Component {
     onRoiChange: undefined,
     onRoiRemove: undefined,
     SeriesInstanceUID: undefined,
-    onClick: undefined,
+    onContourClick: undefined,
   };
 
   constructor(props = {}) {

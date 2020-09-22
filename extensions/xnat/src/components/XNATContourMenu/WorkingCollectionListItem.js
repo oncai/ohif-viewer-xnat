@@ -86,6 +86,7 @@ export default class WorkingCollectionListItem extends React.Component {
       metadata,
       onRoiChange,
       onRoiRemove,
+      onClick,
       activeROIContourIndex,
     } = this.props;
 
@@ -126,7 +127,7 @@ export default class WorkingCollectionListItem extends React.Component {
         <td className="centered-cell">
           <a
             style={{ cursor: 'pointer', color: 'white' }}
-            onClick={this.props.onClick}
+            onClick={() => polygonCount ? onClick(metadata.uid) : null}
           >
             {polygonCount}
           </a>

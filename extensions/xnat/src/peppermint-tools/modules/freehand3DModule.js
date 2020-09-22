@@ -1,6 +1,8 @@
 import cornerstone from 'cornerstone-core';
+import csTools from 'cornerstone-tools';
 import generateUID from '../utils/generateUID.js';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
+import TOOL_NAMES from '../toolNames';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -68,6 +70,11 @@ const state = {
   seriesCollection: [],
   interpolate: false,
   displayStats: false,
+};
+
+const configuration = {
+  lineWidth: 2,
+  opacity: 1.0,
 };
 
 function check(object, name) {
@@ -165,7 +172,7 @@ function setSeries(seriesInstanceUid) {
   state.seriesCollection.push(series);
 
   // Add a default structureSet for the series.
-  setStructureSet(seriesInstanceUid, 'default', {
+  setStructureSet(seriesInstanceUid, '_', {
     uid: 'DEFAULT',
   });
 }
@@ -374,6 +381,7 @@ const getters = {
   activeStructureSetIndex: getActiveStructureSetIndex,
   activeROIContourIndex: getActiveROIContourIndex,
   activeROIContour: getActiveROIContour,
+  imageIdOfCenterFrameOfROIContour: getImageIdOfCenterFrameOfROIContour,
 };
 
 const setters = {
@@ -398,6 +406,68 @@ const setters = {
     state.displayStats = !state.displayStats;
   },
 };
+
+/**
+ * getImageIdOfCenterFrameOfROIContour - Returns the imageId nearest to the center of the
+ * volumes extent in the stack's Z direction which contains one of the ROIContour's Contours.
+ * @param {string} seriesInstanceUid The SeriesInstanceUID of the structure set.
+ * @param {number} roiContourUid The ROINumber of the region.
+ * @param {string} imageIdsInStack The stack of imageIds.
+ *
+ * @returns The imageId
+ */
+function getImageIdOfCenterFrameOfROIContour(
+  seriesInstanceUid,
+  roiContourUid,
+  imageIdsInStack
+) {
+  const toolName = TOOL_NAMES.FREEHAND_ROI_3D_TOOL;
+  const toolState = csTools.globalImageIdSpecificToolStateManager.saveToolState();
+  const imageIdIndicies = [];
+
+  for (let i = 0; i < imageIdsInStack.length; i++) {
+    const imageId = imageIdsInStack[i];
+
+    const imageIdSpecificToolState = toolState[imageId];
+
+    if (
+      !imageIdSpecificToolState ||
+      !imageIdSpecificToolState[toolName] ||
+      !imageIdSpecificToolState[toolName].data
+    ) {
+      continue;
+    }
+
+    const toolData = imageIdSpecificToolState[toolName].data;
+
+    if (
+      _toolDataContainsROIContour(
+        toolData,
+        seriesInstanceUid,
+        roiContourUid
+      )
+    ) {
+      imageIdIndicies.push(i);
+    }
+  }
+
+  const centerImageIdIndex =
+    imageIdIndicies[Math.floor(imageIdIndicies.length / 2)];
+
+  return imageIdsInStack[centerImageIdIndex];
+}
+
+function _toolDataContainsROIContour(
+  toolData,
+  seriesInstanceUid,
+  roiContourUid
+) {
+  return !!toolData.some(
+    toolDataI =>
+      toolDataI.seriesInstanceUid ===
+      seriesInstanceUid && toolDataI.ROIContourUid === roiContourUid
+  );
+}
 
 /**
  * enabledElementCallback - Element specific initilisation.
@@ -427,28 +497,29 @@ export default {
   enabledElementCallback,
   getters,
   setters,
+  configuration,
 };
 
 // TODO - Perhaps it'd be better if this now read from the CST4 default segment color LUT?
 const importColors = [
-  'cornflowerblue',
-  'firebrick',
-  'goldenrod',
-  'blueviolet',
-  'indianred',
-  'orange',
-  'mediumturquoise',
-  'lightcoral',
-  'khaki',
-  'darkmagenta',
-  'lightseagreen',
-  'tomato',
-  'aquamarine',
-  'darksalmon',
-  'moccasin',
-  'orchid',
-  'skyblue',
-  'peru',
+  '#6495ED',//'cornflowerblue',
+  '#B22222',//'firebrick',
+  '#DAA520',//'goldenrod',
+  '#8A2BE2',//'blueviolet',
+  '#CD5C5C',//'indianred',
+  '#FF4500',//'orange',
+  '#48D1CC',//'mediumturquoise',
+  '#F08080',//'lightcoral',
+  '#F0E68C',//'khaki',
+  '#8B008B',//'darkmagenta',
+  '#20B2AA',//'lightseagreen',
+  '#FF6347',//'tomato',
+  '#7FFFD4',//'aquamarine',
+  '#E9967A',//'darksalmon',
+  '#FFE4B5',//'moccasin',
+  '#DA70D6',//'orchid',
+  '#87CEEB',//'skyblue',
+  '#CD853F',//'peru',
 ];
 
 // Such that first color will be the first in roiColors

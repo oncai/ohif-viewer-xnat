@@ -110,17 +110,32 @@ window.config = {
       label: 'W/L Preset 8',
       keys: ['8'],
     },
+    // ~ XNAT extension
     {
       commandName: 'windowLevelPreset9',
       label: 'W/L Preset 9',
       keys: ['9'],
     },
-    // ~ XNAT extension
-    // {
-    //   commandName: 'xnatEscapeKey',
-    //   // label: 'W/L Preset 9',
-    //   keys: ['esc'],
-    // },
+    {
+      commandName: 'xnatCancelROIDrawing',
+      label: 'Cancel drawing',
+      keys: ['esc'],
+    },
+    {
+      commandName: 'xnatCompleteROIDrawing',
+      label: 'Complete drawing',
+      keys: ['enter'],
+    },
+    {
+      commandName: 'xnatIncreaseBrushSize',
+      label: 'Increase brush size',
+      keys: ['>'],
+    },
+    {
+      commandName: 'xnatDecreaseBrushSize',
+      label: 'Increase brush size',
+      keys: ['<'],
+    },
   ],
   cornerstoneExtensionConfig: {},
   // Following property limits number of simultaneous series metadata requests.
