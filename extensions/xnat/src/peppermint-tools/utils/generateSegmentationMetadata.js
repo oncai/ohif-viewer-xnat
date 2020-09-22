@@ -1,4 +1,4 @@
-import GeneralAnatomyList from './GeneralAnatomylist.js';
+import GeneralAnatomyList from './GeneralAnatomyList.js';
 
 const categories = GeneralAnatomyList.SegmentationCodes.Category;
 
