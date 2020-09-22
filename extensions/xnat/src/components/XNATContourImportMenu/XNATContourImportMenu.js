@@ -313,7 +313,7 @@ export default class XNATContourImportMenu extends React.Component {
   async _getAndImportFile(uri, roiCollectionInfo) {
     const roiImporter = new RoiImporter(
       roiCollectionInfo.referencedSeriesInstanceUid,
-      updateProgress
+      this.updateProgress
     );
 
     // The URIs fetched have an additional /, so remove it.
