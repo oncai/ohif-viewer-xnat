@@ -77,6 +77,10 @@ const configuration = {
   opacity: 1.0,
 };
 
+const clipboard = {
+  data: undefined,
+};
+
 function check(object, name) {
   if (!object) {
     throw new Error(`Insufficient information provided, must provide ${name}.`);
@@ -498,6 +502,7 @@ export default {
   getters,
   setters,
   configuration,
+  clipboard,
 };
 
 // TODO - Perhaps it'd be better if this now read from the CST4 default segment color LUT?

@@ -1,5 +1,15 @@
+import csTools from 'cornerstone-tools';
 import { commandsManager, servicesManager } from '@ohif/viewer/src/App';
 import XNATContextMenu from './XNATContextMenu';
+import Polygon from '../../peppermint-tools/utils/classes/Polygon';
+import generateUID from '../../peppermint-tools/utils/generateUID';
+import TOOL_NAMES from '../../peppermint-tools/toolNames';
+import refreshViewport from '../../utils/refreshViewport';
+
+const modules = csTools.store.modules;
+const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
+
+const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
 
 const _getDefaultPosition = event => ({
   x: (event && event.currentPoints.client.x) || 0,
@@ -18,6 +28,7 @@ function handleRightClick(event) {
   UIDialogService.dismiss({ id: 'context-menu' });
 
   if (isRightClick) {
+    const module = modules.freehand3D;
     UIDialogService.create({
       id: 'context-menu',
       isDraggable: false,
@@ -26,6 +37,7 @@ function handleRightClick(event) {
       content: XNATContextMenu,
       contentProps: {
         eventData: event.detail,
+        onClose: () => UIDialogService.dismiss({ id: 'context-menu' }),
         onDelete: (nearbyToolData, eventData) => {
           const element = eventData.element;
           commandsManager.runCommand('xnatRemoveToolState', {
@@ -34,7 +46,92 @@ function handleRightClick(event) {
             tool: nearbyToolData.tool,
           });
         },
-        onClose: () => UIDialogService.dismiss({ id: 'context-menu' }),
+        onCopy: (nearbyToolData, eventData) => {
+          console.log('Copy contour...');
+          const points = [];
+          const {
+            seriesInstanceUid,
+            referencedStructureSet,
+            referencedROIContour,
+            handles,
+          } = nearbyToolData.tool;
+
+          for (let i = 0; i < handles.points.length; i++) {
+            points.push({
+              x: handles.points[i].x,
+              y: handles.points[i].y,
+            });
+          }
+
+          module.clipboard.data = {
+            seriesInstanceUid: seriesInstanceUid,
+            structureSetUid: referencedStructureSet.uid,
+            ROIContourUid: referencedROIContour.uid,
+            points: points
+          };
+        },
+        OnPaste: (eventData) => {
+          console.log('Paste contour...');
+          if (!module.clipboard.data) {
+            return;
+          }
+
+          const copiedData = module.clipboard.data;
+
+          // check if it is the same series
+          const series = modules.freehand3D.getters.series(copiedData.seriesInstanceUid);
+          if (series.uid !== copiedData.seriesInstanceUid) {
+            // ToDo: show a UI error message
+            console.warn('Cannot paste contour over a different scan');
+            return;
+          }
+
+          const roiContour = modules.freehand3D.getters.activeROIContour(series.uid);
+
+          const polygon = new Polygon(
+            copiedData.points,
+            null,
+            copiedData.seriesInstanceUid,
+            copiedData.structureSetUid,
+            roiContour.uid, //copiedData.ROIContourUid,
+            generateUID(),
+            null,
+            false
+          );
+
+          const toolStateManager = globalToolStateManager.saveToolState();
+
+          const imageId = eventData.image.imageId;
+
+          if (!toolStateManager[imageId]) {
+            toolStateManager[imageId] = {};
+          }
+
+          const imageToolState = toolStateManager[imageId];
+
+          if (!imageToolState[FREEHAND_ROI_3D_TOOL]) {
+            imageToolState[FREEHAND_ROI_3D_TOOL] = {};
+            imageToolState[FREEHAND_ROI_3D_TOOL].data = [];
+          } else if (!imageToolState[FREEHAND_ROI_3D_TOOL].data) {
+            imageToolState[FREEHAND_ROI_3D_TOOL].data = [];
+          }
+
+          imageToolState[FREEHAND_ROI_3D_TOOL].data.push(
+            polygon.getFreehandToolData(false)
+          );
+
+          modules.freehand3D.setters.incrementPolygonCount(
+            copiedData.seriesInstanceUid,
+            copiedData.structureSetUid,
+            roiContour.uid, //copiedData.ROIContourUid
+          );
+
+          refreshViewport();
+        },
+        onEmpty: () => {
+          console.log('Empty clipboard...');
+          module.clipboard.data = undefined;
+        },
       },
     });
   }
