@@ -32,6 +32,12 @@ export default class XNATContourImportMenu extends React.Component {
 
     const selectedCheckboxes = [];
 
+    const interpolate = modules.freehand3D.state.interpolate;
+    if (interpolate) {
+      // disable interpolation during import
+      modules.freehand3D.state.interpolate = false;
+    }
+
     this.state = {
       selectAllChecked: true,
       selectedCheckboxes,
@@ -40,6 +46,7 @@ export default class XNATContourImportMenu extends React.Component {
       importing: false,
       progressText: '',
       importProgress: 0,
+      interpolate: interpolate,
     };
 
     this._cancelablePromises = [];
@@ -151,6 +158,11 @@ export default class XNATContourImportMenu extends React.Component {
       if (typeof cancelablePromises[i].cancel === 'function') {
         cancelablePromises[i].cancel();
       }
+    }
+
+    if (this.state.interpolate) {
+      // reinstate interpolation flag if it was enabled
+      modules.freehand3D.state.interpolate = this.state.interpolate;
     }
   }
 
