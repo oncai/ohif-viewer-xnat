@@ -1,3 +1,5 @@
+// ToDo: remove - replaced with ContourPanelSettings
+
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
