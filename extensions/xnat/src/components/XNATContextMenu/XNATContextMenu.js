@@ -11,6 +11,7 @@ const modules = csTools.store.modules;
 
 const XNATContextMenu =
   ({ eventData,
+     callbackData,
      onClose,
      onDelete,
      onCopy,
@@ -19,16 +20,22 @@ const XNATContextMenu =
   }) => {
   const contourDropdownItems = [
     {
-      label: 'Delete',
+      label: 'Delete contour',
       actionType: 'Delete',
-      action: ({ nearbyToolData, eventData }) =>
-        onDelete(nearbyToolData, eventData),
+      action: () =>
+        onDelete(),
     },
     {
       label: 'Copy contour',
       actionType: 'Copy',
-      action: ({ nearbyToolData, eventData }) =>
-        onCopy(nearbyToolData, eventData),
+      action: () =>
+        onCopy(),
+    },
+    {
+      label: 'Cancel',
+      actionType: 'Cancel',
+      action: () =>
+        onClose(),
     },
   ];
 
@@ -36,49 +43,38 @@ const XNATContextMenu =
     {
       label: 'Paste contour',
       actionType: 'Paste',
-      action: ({ eventData }) =>
-        OnPaste(eventData),
+      action: () =>
+        OnPaste(),
     },
     {
       label: 'Empty clipboard',
       actionType: 'Empty',
-      action: ({ }) =>
+      action: () =>
         onEmpty(),
+    },
+    {
+      label: 'Cancel',
+      actionType: 'Cancel',
+      action: () =>
+        onClose(),
     },
   ];
 
   const getDropdownItems = eventData => {
     let dropdownItems = [];
 
-    const elementTool = csTools.getToolForElement(
-      eventData.element,
-      toolType
-    );
-
-    // debugger;
-
-    if (elementTool) {
-      if (elementTool.mode === 'active') {
-        const nearbyToolData = commandsManager.runCommand('getNearbyToolData', {
-          element: eventData.element,
-          canvasCoordinates: eventData.currentPoints.canvas,
-          availableToolTypes: [toolType],
+    if (callbackData.nearbyToolData) {
+      contourDropdownItems.forEach(item => {
+        item.params = {};
+        dropdownItems.push(item);
+      });
+    } else {
+      const module = modules.freehand3D;
+      if (module.clipboard.data) {
+        nonContourDropdownItems.forEach(item => {
+          item.params = {};
+          dropdownItems.push(item);
         });
-
-        if (nearbyToolData) {
-          contourDropdownItems.forEach(item => {
-            item.params = { eventData, nearbyToolData };
-            dropdownItems.push(item);
-          });
-        } else {
-          const module = modules.freehand3D;
-          if (module.clipboard.data) {
-            nonContourDropdownItems.forEach(item => {
-              item.params = { eventData, nearbyToolData };
-              dropdownItems.push(item);
-            });
-          }
-        }
       }
     }
 
@@ -103,6 +99,7 @@ const XNATContextMenu =
 
 XNATContextMenu.propTypes = {
   eventData: PropTypes.object,
+  callbackData: PropTypes.object,
   onClose: PropTypes.func,
   onDelete: PropTypes.func,
   onCopy: PropTypes.func,

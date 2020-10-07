@@ -2,6 +2,7 @@ import { commandsManager } from '@ohif/viewer/src/App';
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../peppermint-tools/toolNames';
 import KEY_COMMANDS from './keyCommands';
+import refreshViewport from './refreshViewport';
 
 
 export default function onKeyDownEvent(keyCommand) {
@@ -22,11 +23,12 @@ export default function onKeyDownEvent(keyCommand) {
     const { configuration } = csTools.getModule('segmentation');
     let radius = configuration.radius;
     if (keyCommand === KEY_COMMANDS.BRUSHTOOL_INCREASE_SIZE) {
-      radius += 2;
+      radius += 1;
     } else if (keyCommand === KEY_COMMANDS.BRUSHTOOL_DECREASE_SIZE) {
-      radius -= 2;
+      radius -= 1;
     }
     module.setters.radius(radius);
-    console.log(radius);
+
+    refreshViewport();
   }
 };

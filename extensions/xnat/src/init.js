@@ -2,6 +2,7 @@ import cornerstoneTools from 'cornerstone-tools';
 
 import freehand3DModule from './peppermint-tools/modules/freehand3DModule.js';
 import extendSegmentationModule from './peppermint-tools/modules/extendSegmentationModule';
+import { handleContourContextMenu } from './components/XNATContextMenu';
 
 import TOOL_NAMES from './peppermint-tools/toolNames';
 
@@ -52,7 +53,7 @@ const { modules } = store;
  * @param {object} configuration
  * @param {Object|Array} configuration.csToolsConfig
  */
-export default function init({ servicesManager, configuration = {} }) {
+export default function init({ servicesManager, commandsManager, configuration = {} }) {
   const config = Object.assign({}, defaultConfig, configuration);
   const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -73,4 +74,11 @@ export default function init({ servicesManager, configuration = {} }) {
   ];
 
   tools.forEach(addTool);
+
+  // subscribe to context menu handler
+  commandsManager.runCommand('subscribeToContextMenuHandler', {
+    tools: [TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
+    contextMenuCallback: handleContourContextMenu,
+    dialogIds: ['context-menu',],
+  }, 'ACTIVE_VIEWPORT::CORNERSTONE');
 }

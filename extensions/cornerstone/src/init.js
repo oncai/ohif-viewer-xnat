@@ -6,6 +6,8 @@ import merge from 'lodash.merge';
 import initCornerstoneTools from './initCornerstoneTools.js';
 import measurementServiceMappingsFactory from './utils/measurementServiceMappings/measurementServiceMappingsFactory';
 
+import contextMenuHandler from './utils/contextMenuHandler';
+
 /**
  *
  * @param {Object} servicesManager
@@ -274,4 +276,7 @@ const _connectToolsToMeasurementService = measurementService => {
       });
     }
   );
+
+  // initiate context menu handler
+  contextMenuHandler.init();
 };
