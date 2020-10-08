@@ -1,4 +1,11 @@
 window.config = {
+  version: {
+    major: 3,
+    minor: 0,
+    patch: 0,
+    dev: 'a',
+    build: 1008
+  },
   // default: '/'
   routerBasename: '/',
   extensions: [],
@@ -117,24 +124,29 @@ window.config = {
       keys: ['9'],
     },
     {
-      commandName: 'xnatCancelROIDrawing',
-      label: 'Cancel drawing',
+      commandName: 'cancelTask',
+      label: 'Cancel',
       keys: ['esc'],
     },
     {
+      commandName: 'xnatCancelROIDrawing',
+      label: 'Cancel contour',
+      keys: ['c'],
+    },
+    {
       commandName: 'xnatCompleteROIDrawing',
-      label: 'Complete drawing',
+      label: 'Complete contour',
       keys: ['enter'],
     },
     {
       commandName: 'xnatIncreaseBrushSize',
       label: 'Increase brush size',
-      keys: ['>'],
+      keys: [']'],
     },
     {
       commandName: 'xnatDecreaseBrushSize',
-      label: 'Increase brush size',
-      keys: ['<'],
+      label: 'Decrease brush size',
+      keys: ['['],
     },
   ],
   cornerstoneExtensionConfig: {},

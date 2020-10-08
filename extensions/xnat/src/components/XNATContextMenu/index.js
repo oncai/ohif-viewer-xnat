@@ -1,3 +1,5 @@
-import { handleRightClick } from './handleMouseClick';
+import { handleContourContextMenu } from './handleContourContextMenu';
 
-export { handleRightClick };
+export {
+  handleContourContextMenu
+};

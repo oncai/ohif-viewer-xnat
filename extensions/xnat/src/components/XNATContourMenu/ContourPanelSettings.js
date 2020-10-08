@@ -140,33 +140,5 @@ export default class ContourPanelSettings extends React.Component {
         </SettingsSection>
       </div>
     );
-
-    return (
-      <div className="roiPanelFooter">
-        <h3 style={{ marginBottom: 15 }}>Settings</h3>
-        <div className="roiPanelMenuOption">
-          <input
-            type="checkbox"
-            name="interpolate"
-            onChange={this.onInterpolateToggleClick}
-            checked={interpolate}
-            value={interpolate}
-          />
-          <label htmlFor="interpolate"><em>Interpolation</em></label>
-        </div>
-        <div className="roiPanelMenuOption">
-          <input
-            type="checkbox"
-            name="stats"
-            onChange={this.onDisplayStatsToggleClick}
-            checked={displayStats}
-            value={displayStats}
-          />
-          <label htmlFor="stats"><em>Stats</em></label>
-        </div>
-        <div className="roiPanelMenuOption">
-        </div>
-      </div>
-    );
   }
 }

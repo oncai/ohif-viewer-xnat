@@ -111,4 +111,4 @@ ToolContextMenu.defaultProps = {
   isTouchEvent: false,
 };
 
-export default ToolContextMenu;
+export { ToolContextMenu, toolTypes };

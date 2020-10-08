@@ -13,6 +13,7 @@
   height: 100%;
   transition: var(--sidepanel-transition);
   overflow-y: auto;
+  z-index: 500;
 }
 
 .from-left {

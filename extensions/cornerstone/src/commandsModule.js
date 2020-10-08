@@ -2,6 +2,8 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import OHIF from '@ohif/core';
 
+import contextMenuHandler from './utils/contextMenuHandler';
+
 import setCornerstoneLayout from './utils/setCornerstoneLayout.js';
 import { getEnabledElement } from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
@@ -278,7 +280,13 @@ const commandsModule = ({ servicesManager }) => {
       cornerstone.getEnabledElements().forEach(enabledElement => {
         cornerstone.updateImage(enabledElement.element);
       });
-    }
+    },
+    subscribeToContextMenuHandler: ({ tools, contextMenuCallback, dialogIds }) => {
+      contextMenuHandler.subscribe(tools, contextMenuCallback, dialogIds);
+    },
+    cancelTask: () => {
+      contextMenuHandler.dismiss();
+    },
   };
 
   const definitions = {
@@ -392,6 +400,16 @@ const commandsModule = ({ servicesManager }) => {
     setWindowLevel: {
       commandFn: actions.setWindowLevel,
       storeContexts: ['viewports'],
+      options: {},
+    },
+    subscribeToContextMenuHandler: {
+      commandFn: actions.subscribeToContextMenuHandler,
+      storeContexts: [],
+      options: {},
+    },
+    cancelTask: {
+      commandFn: actions.cancelTask,
+      storeContexts: [],
       options: {},
     },
   };

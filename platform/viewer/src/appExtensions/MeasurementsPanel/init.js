@@ -4,7 +4,7 @@ import csTools from 'cornerstone-tools';
 import throttle from 'lodash.throttle';
 
 import LabellingFlow from '../../components/Labelling/LabellingFlow';
-import ToolContextMenu from '../../connectedComponents/ToolContextMenu';
+import { ToolContextMenu, toolTypes } from '../../connectedComponents/ToolContextMenu';
 
 const {
   onAdded,
@@ -91,6 +91,45 @@ export default function init({
         ...contentProps,
       },
       ...props,
+    });
+  };
+
+  // context menu callback
+  const handleMeasurementContextMenu = (event, callbackData) => {
+    UIDialogService.dismiss({ id: 'context-menu' });
+    UIDialogService.create({
+      id: 'context-menu',
+      isDraggable: false,
+      preservePosition: false,
+      defaultPosition: _getDefaultPosition(event.detail),
+      content: ToolContextMenu,
+      contentProps: {
+        eventData: event.detail,
+        isTouchEvent: callbackData.isTouchEvent,
+        onDelete: (nearbyToolData, eventData) => {
+          const element = eventData.element;
+          commandsManager.runCommand('removeToolState', {
+            element,
+            toolType: nearbyToolData.toolType,
+            tool: nearbyToolData.tool,
+          });
+        },
+        onClose: () => UIDialogService.dismiss({ id: 'context-menu' }),
+        onSetLabel: (eventData, measurementData) => {
+          showLabellingDialog(
+            { centralize: true, isDraggable: false },
+            { skipAddLabelButton: true, editLocation: true },
+            measurementData
+          );
+        },
+        onSetDescription: (eventData, measurementData) => {
+          showLabellingDialog(
+            { defaultPosition: _getDefaultPosition(eventData) },
+            { editDescriptionOnDialog: true },
+            measurementData
+          );
+        },
+      },
     });
   };
 
@@ -204,9 +243,9 @@ export default function init({
       onLabelmapModified
     );
 
-    element.addEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
-    element.addEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
-    element.addEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
+    // element.addEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
+    // element.addEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
+    // element.addEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
 
     // TODO: This makes scrolling painfully slow
     // element.addEventListener(cornerstone.EVENTS.NEW_IMAGE, onNewImage);
@@ -232,9 +271,9 @@ export default function init({
       onLabelmapModified
     );
 
-    element.removeEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
-    element.removeEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
-    element.removeEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
+    // element.removeEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
+    // element.removeEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
+    // element.removeEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
 
     // TODO: This makes scrolling painfully slow
     // element.removeEventListener(cornerstone.EVENTS.NEW_IMAGE, onNewImage);
@@ -248,4 +287,11 @@ export default function init({
     cornerstone.EVENTS.ELEMENT_DISABLED,
     elementDisabledHandler
   );
+
+  // subscribe to context menu handler
+  commandsManager.runCommand('subscribeToContextMenuHandler', {
+    tools: [...toolTypes, 'ArrowAnnotate'],
+    contextMenuCallback: handleMeasurementContextMenu,
+    dialogIds: ['context-menu', 'labelling'],
+  }, 'ACTIVE_VIEWPORT::CORNERSTONE');
 }

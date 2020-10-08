@@ -5,7 +5,6 @@ import XNATNavigationPanel from './components/XNATNavigationPanel.js';
 import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 import XNATSegmentationColorSelectModal from './components/XNATSegmentationColorSelectModal/XNATSegmentationColorSelectModal';
-import { handleRightClick } from './components/XNATContextMenu';
 
 function elementEnabledHandler(evt) {
   const element = evt.detail.element;
@@ -68,15 +67,6 @@ const PanelModule = (servicesManager, commandsManager) => {
       />
     );
   };
-
-  cornerstone.events.addEventListener(
-    cornerstone.EVENTS.ELEMENT_ENABLED,
-    elementEnabledHandler
-  );
-  cornerstone.events.addEventListener(
-    cornerstone.EVENTS.ELEMENT_DISABLED,
-    elementDisabledHandler
-  );
 
   return {
     menuOptions: [

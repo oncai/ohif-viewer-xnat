@@ -350,7 +350,6 @@ const RTStructTag = {
   RTReferencedStudySequence: 'x30060012',
   RTReferencedSeriesSequence: 'x30060014',
   SeriesInstanceUID: 'x0020000e',
-  ReferencedSOPInstanceUID: 'x00081155',
   StructureSetName: 'x30060004',
   StructureSetLabel: 'x30060002',
 };

@@ -64,7 +64,7 @@ class SimpleDialog extends Component {
                 <h4 className="title">{this.props.headerTitle}</h4>
               </div>
               <div className="content">{this.props.children}</div>
-              <div className="footer">
+              <div className="simpleDialog-footer">
                 <button className="btn btn-default" onClick={this.onClose}>
                   Cancel
                 </button>

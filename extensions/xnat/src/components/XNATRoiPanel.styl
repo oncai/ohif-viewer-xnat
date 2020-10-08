@@ -89,7 +89,7 @@
     border-color: var(--ui-gray-light)
 
   .roiCollectionBody
-    height: calc(90% - 180px)
+    height: 90% //calc(90% - 180px)
     overflow-y: auto
     overflow-x: hidden
     scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
@@ -107,7 +107,7 @@
 
   .roiCollectionBody.limitHeight
     height: auto
-    max-height: 300px
+    max-height: 90%
     padding-right: 18px
     overflow-y: auto
     overflow-x: hidden
@@ -194,8 +194,8 @@
     color: var(--text-primary-color)
     background-color: transparent
 
-    &:focus
-      outline: none
+    &:focus, &:hover
+      outline: solid 1px var(--ui-sky-blue);
 
   .roiColor
     height: 15px;

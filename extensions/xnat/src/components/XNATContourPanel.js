@@ -608,9 +608,9 @@ export default class XNATContourPanel extends React.Component {
 
           {/* CONTOUR LIST */}
           <div className="roiCollectionBody">
+            <h4>In-Progress Contour Collections</h4>
             <div className="workingCollectionHeader">
-              {/*<h4> {structureSet.name} </h4>*/}
-              <h4 style={{ flex: 1, marginRight: 5 }}>
+              <h4 style={{ flex: 1, marginRight: 5, marginLeft: 2 }}>
                 <input
                   name="roiContourName"
                   className="roiEdit"
