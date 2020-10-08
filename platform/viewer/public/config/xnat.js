@@ -1,4 +1,11 @@
 window.config = {
+  version: {
+    major: 3,
+    minor: 0,
+    patch: 0,
+    dev: 'a',
+    build: 1008
+  },
   // default: '/'
   routerBasename: '/',
   extensions: [],

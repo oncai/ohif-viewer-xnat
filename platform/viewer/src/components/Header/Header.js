@@ -85,6 +85,21 @@ function Header(props) {
     setOptions(optionsValue);
   }, [setOptions, show, t, user, userManager]);
 
+  let versionStr = '';
+  const version = window.config.version;
+  if (version) {
+    versionStr = `v${version.major}.${version.minor}.${version.patch}`;
+    if (version.dev) {
+      versionStr += `-${version.dev}`
+    }
+    if (version.build) {
+      versionStr += ` build-${version.build}`
+    }
+    if (version.dev) {
+      versionStr += t(' | INVESTIGATIONAL USE ONLY');
+    }
+  }
+
   return (
     <>
       {/*<div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>*/}
@@ -118,7 +133,8 @@ function Header(props) {
 
         <div className="header-menu">
           <span className="research-use">
-            {t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
+            {/*{t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}*/}
+            {versionStr}
           </span>
           <Dropdown
             titleElement={<OptionsElement />}
