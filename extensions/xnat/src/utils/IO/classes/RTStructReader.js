@@ -28,12 +28,14 @@ export default class RTStructReader {
     this._structureSetLabel = this._dataSet.string(
       RTStructTag['StructureSetLabel']
     );
+    this._roiNames = {};
 
     this._sopInstancesInSeries = this._getSopInstancesInSeries();
 
     this._freehand3DStore = modules.freehand3D;
 
     if (this._sopInstancesInSeries.length > 0) {
+      this._extractROINames();
       this._extractROIContours();
     }
   }
@@ -139,6 +141,23 @@ export default class RTStructReader {
   }
 
   /**
+   * _extractROINames - extracts the ROI names.
+   *
+   * @returns {null}
+   */
+  _extractROINames() {
+    const StructureSetROISequence = this._dataSet.elements[
+      RTStructTag['StructureSetROISequence']
+      ];
+    const ROIs = StructureSetROISequence.items;
+    for (let i = 0; i < ROIs.length; i++) {
+      const ROINumber = ROIs[i].dataSet.string(RTStructTag.ROINumber);
+      const ROIName = ROIs[i].dataSet.string(RTStructTag.ROIName);
+      this._roiNames[ROINumber] = ROIName;
+    }
+  }
+
+  /**
    * _extractROIContours - extracts the contours from the RTSTRUCT.
    *
    * @returns {null}
@@ -187,12 +206,17 @@ export default class RTStructReader {
 
     uid = `${this._sopInstanceUid}.${this._structureSetLabel}.${ROINumber}`;
 
-    if (this._structureSetName) {
-      // StructureSetName is Type 3: Optional
-      name = `${this._structureSetName} Lesion ${ROINumber}`;
+    const roiName = this._roiNames[ROINumber];
+    if (roiName) {
+      name = roiName;
     } else {
-      // StructureSetLabel is Type: Mandatory and not empty
-      name = ` ${this._structureSetLabel} Lesion ${ROINumber}`;
+      if (this._structureSetName) {
+        // StructureSetName is Type 3: Optional
+        name = `${this._structureSetName} Lesion ${ROINumber}`;
+      } else {
+        // StructureSetLabel is Type: Mandatory and not empty
+        name = ` ${this._structureSetLabel} Lesion ${ROINumber}`;
+      }
     }
 
     this._addStructureSetIfNotPresent();
@@ -334,6 +358,7 @@ const RTStructTag = {
   SOPInstanceUID: 'x00080018',
   ROIContourSequence: 'x30060039',
   ROINumber: 'x30060022',
+  ROIName: 'x30060026',
   ReferencedROINumber: 'x30060084',
   ContourSequence: 'x30060040',
   ContourImageSequence: 'x30060016',
