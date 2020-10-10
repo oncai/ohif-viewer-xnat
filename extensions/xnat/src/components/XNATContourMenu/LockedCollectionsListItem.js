@@ -6,6 +6,7 @@ import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 
 import '../XNATRoiPanel.styl';
+import WorkingCollectionListItem from './WorkingCollectionListItem';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -18,12 +19,14 @@ export default class LockedCollectionsListItem extends React.Component {
     collection: PropTypes.any,
     onUnlockClick: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
+    onClick: PropTypes.func,
   };
 
   static defaultProps = {
     collection: undefined,
     onUnlockClick: undefined,
     SeriesInstanceUID: undefined,
+    onClick: undefined,
   };
 
   constructor(props = {}) {
@@ -74,7 +77,7 @@ export default class LockedCollectionsListItem extends React.Component {
   }
 
   render() {
-    const { collection, onUnlockClick } = this.props;
+    const { collection, onUnlockClick, onClick } = this.props;
     const { expanded, visible } = this.state;
 
     const metadata = collection.metadata;
@@ -93,35 +96,57 @@ export default class LockedCollectionsListItem extends React.Component {
     );
 
     return (
-      <React.Fragment>
-        <tr>
-          <td width="10%" className="centered-cell">
-            <button className="small" onClick={this.onToggleVisibilityClick}>
-              {visibleButton}
-            </button>
-          </td>
-          <td width="70%">{metadata.name}</td>
-          <td width="10%" className="centered-cell">
-            <button className="small" onClick={this.onShowHideClick}>
-              {showHideIcon}
-            </button>
-          </td>
-          <td width="10%" className="centered-cell">
-            <button
-              className="small"
+      <div className="collectionSection">
+        <div className="header">
+          <h5>{metadata.name}</h5>
+          <div className="icons">
+            <Icon
+              name="lock"
+              className="icon"
+              width="20px"
+              height="20px"
               onClick={() => {
                 onUnlockClick(metadata.uid);
               }}
-            >
-              <Icon name="lock" />
-            </button>
-          </td>
-        </tr>
+            />
+            <Icon
+              name={visible ? "eye" : "eye-closed"}
+              className="icon"
+              width="20px"
+              height="20px"
+              onClick={this.onShowHideClick}
+            />
+            <Icon
+              name={`angle-double-${expanded ? 'down' : 'up'}`}
+              className="icon"
+              width="20px"
+              height="20px"
+              onClick={() => {
+                this.setState({ expanded: !expanded });
+              }}
+            />
+          </div>
+        </div>
 
-        {expanded && (
-          <React.Fragment>
+        {expanded &&
+        <div>
+          <table className="collectionTable">
+            <thead>
+              <tr>
+                <th width="5%" className="centered-cell">
+                  #
+                </th>
+                <th width="85%" className="left-aligned-cell">
+                  ROI Name
+                </th>
+                <th width="10%" className="centered-cell">
+                  N
+                </th>
+              </tr>
+            </thead>
+            <tbody>
             {ROIContourArray.map(roiContour => (
-              <tr key={roiContour.metadata.uid} className="subRow">
+              <tr key={roiContour.metadata.uid}>
                 <td className="centered-cell">
                   <ColoredCircle color={roiContour.metadata.color} />
                 </td>
@@ -129,13 +154,20 @@ export default class LockedCollectionsListItem extends React.Component {
                   {roiContour.metadata.name}
                 </td>
                 <td className="centered-cell">
-                  {roiContour.metadata.polygonCount}
+                  <a
+                    style={{ cursor: 'pointer', color: 'white' }}
+                    onClick={() => roiContour.metadata.polygonCount ? onClick(roiContour.metadata.uid) : null}
+                  >
+                    {roiContour.metadata.polygonCount}
+                  </a>
                 </td>
               </tr>
             ))}
-          </React.Fragment>
-        )}
-      </React.Fragment>
+             </tbody>
+          </table>
+        </div>
+        }
+      </div>
     );
   }
 }
