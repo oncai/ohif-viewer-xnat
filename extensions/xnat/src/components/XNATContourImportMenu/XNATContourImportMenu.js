@@ -254,6 +254,8 @@ export default class XNATContourImportMenu extends React.Component {
               referencedSeriesInstanceUid: referencedScan.seriesInstanceUid,
               referencedSeriesNumber: referencedScan.seriesNumber,
               name: data_fields.name,
+              date: data_fields.date,
+              time: data_fields.time,
               getFilesUri: `data/archive/experiments/${data_fields.imageSession_ID}/assessors/${data_fields.ID}/files?format=json`,
             });
           }
@@ -507,16 +509,18 @@ export default class XNATContourImportMenu extends React.Component {
           <table className="collectionTable">
             <thead>
               <tr>
-                <th width="10%" className="centered-cell">
+                <th width="5%" className="centered-cell">
                   <input
                     type="checkbox"
+                    className="checkboxInCell"
                     checked={selectAllChecked}
                     value={selectAllChecked}
                     onChange={this.onChangeSelectAllCheckbox}
                   />
                 </th>
-                <th width="50%">Name</th>
-                <th width="40%">Referenced Scan</th>
+                <th width="45%">Name</th>
+                <th width="20%">Timestamp</th>
+                <th width="30%">Referenced Scan</th>
               </tr>
             </thead>
             <tbody>
@@ -524,15 +528,15 @@ export default class XNATContourImportMenu extends React.Component {
                 <tr key={`${roiCollection.name}_${index}`}>
                   <td className="centered-cell">
                     <input
-                      // className="roi-import-list-item-check"
                       type="checkbox"
-                      name="sync"
+                      className="checkboxInCell"
                       onChange={evt => this.onChangeCheckbox(evt, index)}
                       checked={selectedCheckboxes[index]}
                       value={selectedCheckboxes[index]}
                     />
                   </td>
                   <td>{roiCollection.name}</td>
+                  <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
                   <td>
                     {`${roiCollection.experimentLabel} - ${roiCollection.referencedSeriesNumber}`}
                   </td>

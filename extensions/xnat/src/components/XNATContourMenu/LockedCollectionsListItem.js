@@ -83,18 +83,6 @@ export default class LockedCollectionsListItem extends React.Component {
     const metadata = collection.metadata;
     const ROIContourArray = collection.ROIContourArray;
 
-    const showHideIcon = visible ? (
-      <Icon name="eye" />
-    ) : (
-      <Icon name="eye-closed" />
-    );
-
-    const visibleButton = expanded ? (
-      <Icon name="chevron-down" />
-    ) : (
-      <Icon name="plus" />
-    );
-
     return (
       <div className="collectionSection">
         <div className="header">
