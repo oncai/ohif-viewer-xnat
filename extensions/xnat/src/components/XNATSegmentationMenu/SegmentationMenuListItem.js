@@ -2,7 +2,7 @@ import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
-import '../XNATSegmentationPanel.styl';
+import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 

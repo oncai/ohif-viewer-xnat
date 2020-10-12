@@ -17,7 +17,7 @@ import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentatio
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
 
-import './XNATSegmentationPanel.styl';
+import './XNATRoiPanel.styl';
 import { Icon } from '@ohif/ui';
 
 const refreshViewports = () => {
@@ -482,12 +482,16 @@ export default class XNATSegmentationPanel extends React.Component {
       component = (
         <div className="xnatPanel">
           <div className="panelHeader">
-            <h3>Mask Collection</h3>
-            <button
-              onClick={() => this.setState({ showSegmentationSettings: true })}
-            >
-              settings
-            </button>
+            <div className="title-with-icon">
+              <h3>Mask-based ROIs</h3>
+              <Icon
+                className="settings-icon"
+                name="cog"
+                width="20px"
+                height="20px"
+                onClick={() => this.setState({ showSegmentationSettings: true })}
+              />
+            </div>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATSegmentationImportMenu}
               ExportCallbackOrComponent={ExportCallbackOrComponent}
@@ -519,7 +523,8 @@ export default class XNATSegmentationPanel extends React.Component {
                   <th width="30%" className="left-aligned-cell">
                     Type
                   </th>
-                  <th width="10%" className="centered-cell" />
+                  <th width="5%" className="centered-cell" />
+                  <th width="5%" className="centered-cell" />
                 </tr>
               </thead>
               <tbody>

@@ -8,7 +8,6 @@ import SegmentationExportListItem from './SegmentationExportListItem.js';
 import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 
-import './XNATSegmentationExportMenu.styl';
 import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -228,7 +227,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
-          <h3>Export Mask Collections</h3>
+          <h3>Export mask-based ROI collection</h3>
           {!exporting && (
             <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />
@@ -244,15 +243,15 @@ export default class XNATSegmentationExportMenu extends React.Component {
               <label style={{ marginRight: 5 }}>Name</label>
               <input
                 name="segBuilderTextInput"
-                // className="form-themed form-control"
                 onChange={this.onTextInputChange}
                 type="text"
                 defaultValue={defaultName}
                 tabIndex="-1"
                 autoComplete="off"
+                style={{ flex: 1 }}
               />
             </div>
-            <button onClick={this.onExportButtonClick}>
+            <button onClick={this.onExportButtonClick} style={{ marginLeft: 10 }}>
               <Icon name="xnat-export" />
               Export selected
             </button>

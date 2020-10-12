@@ -506,7 +506,7 @@ export default class XNATContourImportMenu extends React.Component {
         importBody = <p>No data to import.</p>;
       } else {
         importBody = (
-          <table className="collectionTable">
+          <table className="collectionTable" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 <th width="5%" className="centered-cell">

@@ -2,7 +2,7 @@ import React from 'react';
 import SegmentationMenuListItem from './SegmentationMenuListItem.js';
 import { newSegment } from './utils/segmentationMetadataIO';
 
-import '../XNATSegmentationPanel.styl';
+import '../XNATRoiPanel.styl';
 import { Icon } from '@ohif/ui';
 
 /**
