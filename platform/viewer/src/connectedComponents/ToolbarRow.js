@@ -18,6 +18,8 @@ import ConnectedCineDialog from './ConnectedCineDialog';
 import ConnectedLayoutButton from './ConnectedLayoutButton';
 import { withAppContext } from '../context/AppContext';
 
+import store from '../store';
+
 class ToolbarRow extends Component {
   // TODO: Simplify these? isOpen can be computed if we say "any" value for selected,
   // closed if selected is null/undefined
@@ -314,6 +316,8 @@ function _handleToolbarButtonClick(button, evt, props) {
       ({ options }) => options && !options.togglable
     );
     this.setState({ activeButtons: [...toggables, button] });
+    // Update activeTool ins store
+    store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: button.commandOptions.toolName});
   } else if (button.type === 'builtIn') {
     this._handleBuiltIn(button);
   }

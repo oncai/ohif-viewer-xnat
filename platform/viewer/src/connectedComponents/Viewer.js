@@ -57,6 +57,7 @@ class Viewer extends Component {
     activeViewportIndex: PropTypes.number.isRequired,
     isStudyLoaded: PropTypes.bool,
     dialog: PropTypes.object,
+    activeTool: PropTypes.string,
   };
 
   constructor(props) {
@@ -338,6 +339,7 @@ class Viewer extends Component {
                   viewports={this.props.viewports}
                   studies={this.props.studies}
                   activeIndex={this.props.activeViewportIndex}
+                  activeTool={this.props.activeTool}
                 />
               )}
             </SidePanel>
