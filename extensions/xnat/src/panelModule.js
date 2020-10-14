@@ -1,20 +1,8 @@
 import React from 'react';
-import cornerstone from 'cornerstone-core';
-import csTools from 'cornerstone-tools';
 import XNATNavigationPanel from './components/XNATNavigationPanel.js';
 import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 import XNATSegmentationColorSelectModal from './components/XNATSegmentationColorSelectModal/XNATSegmentationColorSelectModal';
-
-function elementEnabledHandler(evt) {
-  const element = evt.detail.element;
-  element.addEventListener(csTools.EVENTS.MOUSE_CLICK, handleRightClick);
-}
-
-function elementDisabledHandler(evt) {
-  const element = evt.detail.element;
-  element.removeEventListener(csTools.EVENTS.MOUSE_CLICK, handleRightClick);
-}
 
 const PanelModule = (servicesManager, commandsManager) => {
   const { UIModalService } = servicesManager.services;

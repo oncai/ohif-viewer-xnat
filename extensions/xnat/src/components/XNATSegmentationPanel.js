@@ -20,6 +20,8 @@ import { utils } from '@ohif/core';
 import './XNATRoiPanel.styl';
 import { Icon } from '@ohif/ui';
 
+import TOOL_NAMES from '../peppermint-tools/toolNames.js';
+
 const refreshViewports = () => {
   cornerstoneTools.store.state.enabledElements.forEach(element => {
     cornerstone.updateImage(element);
@@ -68,6 +70,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: PropTypes.any,
     viewports: PropTypes.any,
     activeIndex: PropTypes.any,
+    activeTool: PropTypes.string,
     showColorSelectModal: PropTypes.func.isRequired,
   };
 
@@ -76,6 +79,7 @@ export default class XNATSegmentationPanel extends React.Component {
     studies: undefined,
     viewports: undefined,
     activeIndex: undefined,
+    activeTool: '',
     showColorSelectModal: undefined,
   };
 
@@ -540,7 +544,12 @@ export default class XNATSegmentationPanel extends React.Component {
               </tbody>
             </table>
           </div>
-          <BrushSettings />
+          {
+            (this.props.activeTool === TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL ||
+              this.props.activeTool === TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL)
+            &&
+            <BrushSettings/>
+          }
         </div>
       );
     }
