@@ -1,4 +1,4 @@
-import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
+import { Polygon } from '../../../peppermint-tools';
 import dicomParser from 'dicom-parser';
 import cornerstoneTools from 'cornerstone-tools';
 

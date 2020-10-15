@@ -10,7 +10,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
-import generateSegmentationMetadata from '../peppermint-tools/utils/generateSegmentationMetadata';
+import { generateSegmentationMetadata, PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
 import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegmentationImportMenu';
 import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentationSettings';
@@ -19,8 +19,6 @@ import { utils } from '@ohif/core';
 
 import './XNATRoiPanel.styl';
 import { Icon } from '@ohif/ui';
-
-import TOOL_NAMES from '../peppermint-tools/toolNames.js';
 
 const refreshViewports = () => {
   cornerstoneTools.store.state.enabledElements.forEach(element => {
@@ -545,8 +543,8 @@ export default class XNATSegmentationPanel extends React.Component {
             </table>
           </div>
           {
-            (this.props.activeTool === TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL ||
-              this.props.activeTool === TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL)
+            (this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL ||
+              this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL)
             &&
             <BrushSettings/>
           }

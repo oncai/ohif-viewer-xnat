@@ -2,8 +2,6 @@ import checkAndSetPermissions from './utils/checkAndSetPermissions';
 import sessionMap from './utils/sessionMap.js';
 import csTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
-import { commandsManager } from '@ohif/viewer/src/App';
-import TOOL_NAMES from './peppermint-tools/toolNames';
 import onKeyDownEvent from './utils/onKeyDownEvent';
 import KEY_COMMANDS from './utils/keyCommands';
 

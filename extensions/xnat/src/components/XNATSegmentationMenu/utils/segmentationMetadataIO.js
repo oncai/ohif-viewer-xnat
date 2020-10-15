@@ -1,5 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
-import generateSegmentationMetadata from '../../../peppermint-tools/utils/generateSegmentationMetadata';
+import { generateSegmentationMetadata } from '../../../peppermint-tools';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 

@@ -1,13 +1,12 @@
 import cornerstoneTools from 'cornerstone-tools';
-import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
-import TOOL_NAMES from '../../../peppermint-tools/toolNames';
+import { Polygon, PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
 
 const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
 
 const modules = cornerstoneTools.store.modules;
 
-const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
+const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
 /**
  * @class RoiExtractor - Extracts polygons from cornerstoneTools for exporting

@@ -1,15 +1,13 @@
 import csTools from 'cornerstone-tools';
 import { commandsManager, servicesManager } from '@ohif/viewer/src/App';
 import XNATContextMenu from './XNATContextMenu';
-import Polygon from '../../peppermint-tools/utils/classes/Polygon';
-import generateUID from '../../peppermint-tools/utils/generateUID';
-import TOOL_NAMES from '../../peppermint-tools/toolNames';
+import { Polygon, generateUID, PEPPERMINT_TOOL_NAMES } from '../../peppermint-tools'
 import refreshViewport from '../../utils/refreshViewport';
 
 const modules = csTools.store.modules;
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
 
-const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
+const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
 const _getDefaultPosition = event => ({
   x: (event && event.currentPoints.client.x) || 0,

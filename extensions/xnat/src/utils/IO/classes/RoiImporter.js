@@ -1,10 +1,9 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
-import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
+import { Polygon, PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
 import AIMReader from './AIMReader.js';
 import RTStructReader from './RTStructReader.js';
 import { utils } from '@ohif/core';
-import TOOL_NAMES from '../../../peppermint-tools/toolNames';
 
 const { studyMetadataManager } = utils;
 
@@ -12,7 +11,7 @@ const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
 const modules = cornerstoneTools.store.modules;
 
-const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
+const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
 const { getToolForElement, setToolPassive } = cornerstoneTools;
 

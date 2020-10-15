@@ -1,6 +1,6 @@
 import { commandsManager } from '@ohif/viewer/src/App';
 import csTools from 'cornerstone-tools';
-import TOOL_NAMES from '../peppermint-tools/toolNames';
+import { PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 import KEY_COMMANDS from './keyCommands';
 import refreshViewport from './refreshViewport';
 
@@ -9,7 +9,7 @@ export default function onKeyDownEvent(keyCommand) {
   if (keyCommand === KEY_COMMANDS.FREEHANDROI_CANCEL_DRAWING
     || keyCommand === KEY_COMMANDS.FREEHANDROI_COMPLETE_DRAWING) {
     const element = commandsManager.runCommand('getActiveViewportEnabledElement');
-    const tool = csTools.getToolForElement(element, TOOL_NAMES.FREEHAND_ROI_3D_TOOL);
+    const tool = csTools.getToolForElement(element, PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL);
     if (tool.mode === 'active') {
       if (keyCommand === KEY_COMMANDS.FREEHANDROI_CANCEL_DRAWING) {
         tool.cancelDrawing(element);

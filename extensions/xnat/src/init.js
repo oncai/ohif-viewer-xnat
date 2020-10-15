@@ -1,18 +1,16 @@
 import cornerstoneTools from 'cornerstone-tools';
 
-import freehand3DModule from './peppermint-tools/modules/freehand3DModule.js';
-import extendSegmentationModule from './peppermint-tools/modules/extendSegmentationModule';
-import { handleContourContextMenu } from './components/XNATContextMenu';
-
-import TOOL_NAMES from './peppermint-tools/toolNames';
-
 import {
+  PEPPERMINT_TOOL_NAMES,
+  freehand3DModule,
+  extendSegmentationModule,
   FreehandRoi3DTool,
   FreehandRoi3DSculptorTool,
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
-} from './peppermint-tools/tools';
+} from './peppermint-tools';
+import { handleContourContextMenu } from './components/XNATContextMenu';
 
 const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
 
@@ -77,7 +75,7 @@ export default function init({ servicesManager, commandsManager, configuration =
 
   // subscribe to context menu handler
   commandsManager.runCommand('subscribeToContextMenuHandler', {
-    tools: [TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
+    tools: [PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
     contextMenuCallback: handleContourContextMenu,
     dialogIds: ['context-menu',],
   }, 'ACTIVE_VIEWPORT::CORNERSTONE');
