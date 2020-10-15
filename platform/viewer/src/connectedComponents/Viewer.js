@@ -58,6 +58,7 @@ class Viewer extends Component {
     isStudyLoaded: PropTypes.bool,
     dialog: PropTypes.object,
     activeTool: PropTypes.string,
+    preferences: PropTypes.object,
   };
 
   constructor(props) {
@@ -294,6 +295,7 @@ class Viewer extends Component {
               this.setState(updatedState);
             }}
             studies={this.props.studies}
+            preferences={this.props.preferences}
           />
         </ErrorBoundaryDialog>
 

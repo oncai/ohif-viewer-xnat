@@ -59,6 +59,15 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
       },
+      {
+        id: 'NVIDIAClaraAIAA',
+        label: 'NVIDIA AIAA',
+        icon: 'dot-circle',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
+        experimentalFeature: true,
+      },
       // {
       //   id: 'CorrectionScissors',
       //   label: 'Correction Scissors',
