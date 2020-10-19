@@ -1,6 +1,6 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
-import { Range } from '@ohif/ui';
+import { Range, SelectTree } from '@ohif/ui';
 
 import '../XNATRoiPanel.styl';
 
@@ -141,26 +141,20 @@ export default class BrushSettings extends React.Component {
 
       customGates = (
         <div>
-          <div className="brush-settings-horizontal-box">
+          <div className="footerSectionItem" style={{ margin: '10px 5px' }}>
             <label htmlFor="customGateMin">Min:</label>
-            <input
-              className="form-themed form-control"
-              type="range"
-              id="start"
-              name="customGateMin"
+            <Range
+              id="customGateMin"
               min={-1024}
               max={3072}
               defaultValue={customRange[0]}
               onChange={this.onCustomGateMinChange}
             />
           </div>
-          <div className="brush-settings-horizontal-box">
+          <div className="footerSectionItem">
             <label htmlFor="customGateMax">Max:</label>
-            <input
-              className="form-themed form-control"
-              type="range"
-              id="start"
-              name="customGateMax"
+            <Range
+              id="customGateMax"
               min={-1024}
               max={3072}
               defaultValue={customRange[1]}
@@ -173,47 +167,47 @@ export default class BrushSettings extends React.Component {
 
     return (
       <div className="roiPanelFooter">
-        <h3> Smart CT Gate Selection</h3>
-        <div className="roiPanelMenuOption">
-          <select
-            // className="form-themed form-control"
-            style={{ width: '100%', height: 30 }}
-            onChange={this.onGateChange}
-            value={activeGate}
-          >
-            {gates.map(gate => (
-              <option key={gate.name} value={gate.name}>{`${gate.name} [${
-                gate.range[0]
-              }, ${gate.range[1]}]`}</option>
-            ))}
-          </select>
+        <div className="footerSection">
+        <h5> Smart CT Gate Selection</h5>
+          <div className="footerSectionItem">
+            <select
+              // className="form-themed form-control"
+              onChange={this.onGateChange}
+              value={activeGate}
+            >
+              {gates.map(gate => (
+                <option key={gate.name} value={gate.name}>{`${gate.name} [${
+                  gate.range[0]
+                }, ${gate.range[1]}]`}</option>
+              ))}
+            </select>
+          </div>
+          {customGates}
         </div>
 
-        {customGates}
-
-        <h3 style={{ marginTop: 15 }}> Smart/Auto Gate Settings </h3>
-        <label htmlFor="holeFill">{holeFillLabel}</label>
-        <input
-          className="form-themed form-control"
-          type="range"
-          id="start"
-          name="holeFill"
-          min={holeFillRange[0]}
-          defaultValue={holeFill}
-          max={holeFillRange[1]}
-          onChange={this.onHoleFillChange}
-        />
-        <label htmlFor="strayRemove">{strayRemoveLabel}</label>
-        <input
-          className="form-themed form-control"
-          type="range"
-          id="start"
-          name="strayRemove"
-          min={strayRemoveRange[0]}
-          defaultValue={strayRemove}
-          max={strayRemoveRange[1]}
-          onChange={this.onStrayRemoveChange}
-        />
+        <div className="footerSection">
+          <h5> Smart/Auto Gate Settings </h5>
+          <div className="footerSectionItem" style={{ flexDirection: 'column' }}>
+            <p>{holeFillLabel}</p>
+            <Range
+              name="holeFill"
+              min={holeFillRange[0]}
+              max={holeFillRange[1]}
+              value={holeFill}
+              onChange={this.onHoleFillChange}
+            >
+            </Range>
+          </div>
+          <div className="footerSectionItem" style={{ flexDirection: 'column' }}>
+            <p>{strayRemoveLabel}</p>
+            <Range
+              min={strayRemoveRange[0]}
+              value={strayRemove}
+              max={strayRemoveRange[1]}
+              onChange={this.onStrayRemoveChange}
+            />
+          </div>
+        </div>
       </div>
     );
   }

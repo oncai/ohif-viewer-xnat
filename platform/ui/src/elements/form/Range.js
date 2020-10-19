@@ -10,8 +10,8 @@ class Range extends Component {
   }
 
   handleChange = event => {
-    this.setState({ value: event.target.value });
     if (this.props.onChange) this.props.onChange(event);
+    this.setState({ value: event.target.value });
   };
 
   render() {

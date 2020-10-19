@@ -5,7 +5,6 @@ import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import WorkingCollectionList from './XNATContourMenu/WorkingCollectionList.js';
 import LockedCollectionsList from './XNATContourMenu/LockedCollectionsList.js';
-import RoiContourSettings from './XNATContourMenu/RoiContourSettings.js';
 import ContourPanelSettings from './XNATContourMenu/ContourPanelSettings.js';
 import unlockStructureSet from '../utils/unlockStructureSet.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
@@ -640,7 +639,6 @@ export default class XNATContourPanel extends React.Component {
             )}
           </div>
 
-          {/*<RoiContourSettings />*/}
         </div>
       );
     }
