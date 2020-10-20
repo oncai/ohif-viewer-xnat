@@ -50,8 +50,8 @@ function ExperimentalFeatures({ onClose }) {
   const hasErrors = false;
 
   const onToggleClick = event => {
-    const $target = event.target;
-    const { key } = $target.dataset;
+    const target = event.target;
+    const { key } = target.dataset;
 
     if (!state.features[key]) {
       return;
@@ -63,6 +63,7 @@ function ExperimentalFeatures({ onClose }) {
     setState(prevState => ({
       ...prevState,
       features: {
+        ...prevState.features,
         [key]: {
           ...feature,
           enabled: !isEnabled,
