@@ -12,6 +12,12 @@ import {
 } from './peppermint-tools';
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
+import {
+  // DeepgrowProbeTool,
+  // DExtr3DProbeTool,
+  AIAAProbeTool
+} from './aiaa-tools';
+
 const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
 
 const defaultConfig = {
@@ -55,6 +61,7 @@ export default function init({ servicesManager, commandsManager, configuration =
   const config = Object.assign({}, defaultConfig, configuration);
   const segmentationModule = cornerstoneTools.getModule('segmentation');
 
+  // add custom setters & getters to the CSTools segmentation module
   extendSegmentationModule(segmentationModule, config);
 
   register('module', 'freehand3D', freehand3DModule);
@@ -69,6 +76,10 @@ export default function init({ servicesManager, commandsManager, configuration =
     Brush3DAutoGatedTool,
     FreehandRoi3DTool,
     FreehandRoi3DSculptorTool,
+    /* AIAA Tools */
+    // DeepgrowProbeTool,
+    // DExtr3DProbeTool,
+    AIAAProbeTool,
   ];
 
   tools.forEach(addTool);

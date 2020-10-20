@@ -1,4 +1,5 @@
 import { PEPPERMINT_TOOL_NAMES } from './peppermint-tools';
+import { AIAA_TOOL_NAMES } from  './aiaa-tools';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -73,7 +74,7 @@ const definitions = [
         icon: 'dot-circle',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
+        commandOptions: { toolName: AIAA_TOOL_NAMES.AIAA_PROB_TOOL },
         experimentalFeature: true,
       },
     ],

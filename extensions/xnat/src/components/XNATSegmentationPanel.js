@@ -20,6 +20,10 @@ import { utils } from '@ohif/core';
 import './XNATRoiPanel.styl';
 import { Icon } from '@ohif/ui';
 
+/* AIAA */
+import { AIAA_TOOL_NAMES } from '../aiaa-tools'
+import { AIAAMenu } from './AIAAMenu';
+
 const refreshViewports = () => {
   cornerstoneTools.store.state.enabledElements.forEach(element => {
     cornerstone.updateImage(element);
@@ -548,6 +552,9 @@ export default class XNATSegmentationPanel extends React.Component {
             &&
             <BrushSettings/>
           }
+          {/*{this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL &&*/}
+            <AIAAMenu />
+          {/*}*/}
         </div>
       );
     }

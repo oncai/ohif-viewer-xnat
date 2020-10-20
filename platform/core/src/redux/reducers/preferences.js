@@ -19,8 +19,11 @@ const defaultState = {
       id: 'NVIDIAClaraAIAA',
       name: 'NVIDIA Clara AIAA',
       enabled: false,
-      settings: {},
-    }
+      settings: {
+        serverUrl: '',
+        overlapSegments: false,
+      },
+    },
   },
 };
 
