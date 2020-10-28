@@ -18,15 +18,15 @@ export default class AIAAMenuSettings extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    this.state = {
-      settings: { ...props.settings },
+    this._settings = {
+      ...props.settings,
     };
 
     this.onBlurSeverURL = this.onBlurSeverURL.bind(this);
   }
 
   onBlurSeverURL = evt => {
-    this.state.settings.serverUrl = evt.target.value;
+    this._settings.serverUrl = evt.target.value;
   }
 
   render() {
@@ -46,7 +46,7 @@ export default class AIAAMenuSettings extends React.Component {
         <div className="footerSectionItem">
           <button
             onClick={() => {
-              this.props.onSave(this.state.settings)}
+              this.props.onSave(this._settings)}
             }
             style={{ marginLeft: 'auto' }}
           >

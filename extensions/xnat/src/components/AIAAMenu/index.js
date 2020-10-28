@@ -1,5 +1,5 @@
-import AIAAMenu from './AIAAMenu.js';
+import ConnectedAIAAMenu from './ConnectedAIAAMenu.js';
 
 export {
-  AIAAMenu,
+  ConnectedAIAAMenu,
 };

@@ -13,9 +13,8 @@ import {
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
 import {
-  // DeepgrowProbeTool,
-  // DExtr3DProbeTool,
-  AIAAProbeTool
+  AIAAProbeTool,
+  AIAAModule,
 } from './aiaa-tools';
 
 const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
@@ -64,11 +63,15 @@ export default function init({ servicesManager, commandsManager, configuration =
   // add custom setters & getters to the CSTools segmentation module
   extendSegmentationModule(segmentationModule, config);
 
+  // register the freehand3D module
   register('module', 'freehand3D', freehand3DModule);
   const freehand3DStore = modules.freehand3D;
 
   freehand3DStore.state.interpolate = config.interpolate;
   freehand3DStore.state.displayStats = config.showFreehandStats;
+
+  // register the AIAA module
+  register('module', 'aiaa', AIAAModule);
 
   const tools = [
     Brush3DTool,

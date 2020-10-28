@@ -1,10 +1,13 @@
 import csTools from 'cornerstone-tools';
+import showNotification from '../../components/common/showNotification.js';
 
 const { ProbeTool, getToolState } = csTools;
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const draw = csTools.importInternal('drawing/draw');
 const drawHandles = csTools.importInternal('drawing/drawHandles');
 const getNewContext = csTools.importInternal('drawing/getNewContext');
+
+const modules = csTools.store.modules;
 
 export default class AIAAProbeTool extends ProbeTool {
   constructor(props = {}) {
@@ -37,6 +40,16 @@ export default class AIAAProbeTool extends ProbeTool {
     //   console.info('AIAAProbe::createNewMeasurement');
     //   return;
     // }
+
+    const aiaaModule = modules.aiaa;
+    if (!aiaaModule.state.menuIsOpen) {
+      showNotification(
+        'Masks Panel needs to be active to use AIAA tools',
+        'warning',
+        'NVIDIA AIAA'
+      );
+      return;
+    }
 
     console.debug(eventData);
     let res = super.createNewMeasurement(eventData);
