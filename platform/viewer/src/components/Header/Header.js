@@ -164,7 +164,7 @@ Header.propTypes = {
 
 Header.defaultProps = {
   useLargeLogo: false,
-  children: OHIFLogo(),
+  children: <OHIFLogo />,
 };
 
 export default withTranslation(['Header', 'AboutModal'])(

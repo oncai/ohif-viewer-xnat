@@ -15919,6 +15919,11 @@ react-i18next@^10.11.0:
     "@babel/runtime" "^7.3.1"
     html-parse-stringify2 "2.0.1"
 
+react-idle-timer@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/react-idle-timer/-/react-idle-timer-4.4.2.tgz#52bd8798d1bc8107548fedfab955be1e4a99d9c7"
+  integrity sha512-ORLyVFXj/4tTZL63ztbJDtPqQK2LzZw/QXSMakTR/VGdL0VQqJ6Zg43HJmY6HcwUj8i5bjvf8gJYl5s7N+9eiw==
+
 react-input-autosize@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-2.2.2.tgz#fcaa7020568ec206bc04be36f4eb68e647c4d8c2"

@@ -2,7 +2,6 @@ import init from './init.js';
 import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
-import { servicesManager } from '@ohif/viewer/src/App';
 
 export default {
   /**
@@ -35,6 +34,8 @@ export {
   xnatAuthenticate,
   reassignInstanceUrls,
 } from './utils/xnatDev';
+
+export { userManagement } from './utils/userManagement.js';
 
 export { XNATICONS } from './elements';
 
