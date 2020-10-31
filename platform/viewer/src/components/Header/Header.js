@@ -137,7 +137,8 @@ function Header(props) {
             {versionStr}
           </span>
           <Dropdown
-            titleElement={<OptionsElement />}
+            // titleElement={<OptionsElement />}
+            title={t('Options')}
             list={options}
             align="right"
           />
