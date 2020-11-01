@@ -42,23 +42,23 @@ export function newSegment(enabledElement) {
   }
 }
 
-function segmentInputCallback(data) {
+export function segmentInputCallback(data) {
   if (!data) {
     return;
   }
 
-  const { label, categoryUID, typeUID, modifierUID, segIndex, element } = data;
+  const { segmentLabel, categoryUID, typeUID, modifierUID, segmentIndex, element } = data;
 
   const metadata = generateSegmentationMetadata(
-    label,
+    segmentLabel,
     categoryUID,
     typeUID,
     modifierUID
   );
 
   // TODO -> support for multiple labelmaps.
-  segmentationModule.setters.metadata(element, 0, segIndex, metadata);
-  segmentationModule.setters.activeSegmentIndex(element, segIndex);
+  segmentationModule.setters.metadata(element, 0, segmentIndex, metadata);
+  segmentationModule.setters.activeSegmentIndex(element, segmentIndex);
 }
 
 /**

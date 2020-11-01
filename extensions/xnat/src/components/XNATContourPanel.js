@@ -14,7 +14,6 @@ import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu
 import refreshViewport from '../utils/refreshViewport';
 
 import { Icon } from '@ohif/ui';
-import ConfirmationDialog from './common/ConfirmationDialog';
 
 import './XNATRoiPanel.styl';
 

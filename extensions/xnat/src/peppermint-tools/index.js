@@ -1,8 +1,10 @@
 import PEPPERMINT_TOOL_NAMES from './toolNames.js';
+
 import {
   freehand3DModule,
   extendSegmentationModule
 } from './modules';
+
 import {
   FreehandRoi3DTool,
   FreehandRoi3DSculptorTool,
@@ -10,10 +12,14 @@ import {
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
 } from './tools';
-import Polygon from './utils/classes/Polygon.js';
-import interpolate from './utils/freehandInterpolate/interpolate.js';
-import generateSegmentationMetadata from './utils/generateSegmentationMetadata.js';
-import generateUID from './utils/generateUID.js';
+
+import {
+  Polygon,
+  interpolate,
+  generateSegmentationMetadata,
+  generateUID,
+  GeneralAnatomyList,
+} from './utils';
 
 export {
   PEPPERMINT_TOOL_NAMES,
@@ -31,4 +37,5 @@ export {
   interpolate,
   generateSegmentationMetadata,
   generateUID,
+  GeneralAnatomyList,
 };

@@ -8,7 +8,7 @@ import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuL
 import BrushSettings from './XNATSegmentationMenu/BrushSettings.js';
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
-import { editSegmentInput } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
+import { segmentInputCallback } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
 import { generateSegmentationMetadata, PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
@@ -16,11 +16,14 @@ import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegment
 import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentationSettings';
 import getElementFromFirstImageId from '../utils/getElementFromFirstImageId';
 import { utils } from '@ohif/core';
+import { Icon } from '@ohif/ui';
+import MaskRoiPropertyModal from './XNATSegmentationMenu/MaskRoiPropertyModal.js';
+import showModal from './common/showModal.js';
 
 import './XNATRoiPanel.styl';
-import { Icon } from '@ohif/ui';
 
 /* AIAA */
+import { AIAA_TOOL_NAMES } from '../aiaa-tools'
 import { ConnectedAIAAMenu } from './AIAAMenu';
 
 const refreshViewports = () => {
@@ -89,6 +92,7 @@ export default class XNATSegmentationPanel extends React.Component {
 
     this.onSegmentChange = this.onSegmentChange.bind(this);
     this.onEditClick = this.onEditClick.bind(this);
+    this.onUpdateProperty = this.onUpdateProperty.bind(this);
     this.onDeleteClick = this.onDeleteClick.bind(this);
     this.onIOComplete = this.onIOComplete.bind(this);
     this.onNewSegment = this.onNewSegment.bind(this);
@@ -154,7 +158,7 @@ export default class XNATSegmentationPanel extends React.Component {
   }
 
   cornerstoneEventListenerHandler() {
-    this.refreshSegmentList(this.firstImageId);
+    this.refreshSegmentList(this.state.firstImageId);
   }
 
   refreshSegmentList(firstImageId) {
@@ -325,7 +329,21 @@ export default class XNATSegmentationPanel extends React.Component {
    * @returns {null}
    */
   onEditClick(segmentIndex, metadata) {
-    editSegmentInput(segmentIndex, metadata);
+    const onUpdateProperty = this.onUpdateProperty;
+    showModal(
+      MaskRoiPropertyModal,
+      {metadata, segmentIndex, onUpdateProperty},
+      metadata.segmentLabel);
+  }
+
+  /**
+   * onUpdateProperty - A callback for onEditClick.
+   */
+  onUpdateProperty(data) {
+    const { firstImageId } = this.state;
+    const element = getElementFromFirstImageId(firstImageId);
+    segmentInputCallback({...data, element});
+    this.refreshSegmentList(firstImageId);
   }
 
   /**
@@ -522,11 +540,11 @@ export default class XNATSegmentationPanel extends React.Component {
                   <th width="5%" className="centered-cell">
                     #
                   </th>
-                  <th width="55%" className="left-aligned-cell">
+                  <th width="85%" className="left-aligned-cell">
                     Label
-                  </th>
-                  <th width="30%" className="left-aligned-cell">
-                    Type
+                    <span
+                      style={{ color: 'var(--text-secondary-color)' }}
+                    > - Type </span>
                   </th>
                   <th width="5%" className="centered-cell" />
                   <th width="5%" className="centered-cell" />
@@ -551,13 +569,13 @@ export default class XNATSegmentationPanel extends React.Component {
             &&
             <BrushSettings/>
           }
-          {/*{this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL &&*/}
+          {this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL &&
             <ConnectedAIAAMenu
               studies={this.props.studies}
               viewports={this.props.viewports}
               activeIndex={this.props.activeIndex}
             />
-          {/*}*/}
+          }
         </div>
       );
     }
