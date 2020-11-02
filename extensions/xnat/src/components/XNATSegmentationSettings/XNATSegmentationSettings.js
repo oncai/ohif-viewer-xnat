@@ -38,7 +38,7 @@ const SegmentationSettings = ({
   return (
     <div className="dcmseg-segmentation-settings">
       <div className="settings-title">
-        <h3>Segmentations Settings</h3>
+        <h3>Mask ROI Settings</h3>
         <button className="return-button" onClick={onBack}>
           Back
         </button>

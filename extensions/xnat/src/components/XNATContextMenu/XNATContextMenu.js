@@ -2,10 +2,6 @@ import { ContextMenu } from '@ohif/ui';
 import PropTypes from 'prop-types';
 import csTools from 'cornerstone-tools';
 import React from 'react';
-import { commandsManager } from '@ohif/viewer/src/App';
-import TOOL_NAMES from '../../peppermint-tools/toolNames';
-
-const toolType = TOOL_NAMES.FREEHAND_ROI_3D_TOOL;
 
 const modules = csTools.store.modules;
 

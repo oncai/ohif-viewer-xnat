@@ -5,7 +5,6 @@ import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import WorkingCollectionList from './XNATContourMenu/WorkingCollectionList.js';
 import LockedCollectionsList from './XNATContourMenu/LockedCollectionsList.js';
-import RoiContourSettings from './XNATContourMenu/RoiContourSettings.js';
 import ContourPanelSettings from './XNATContourMenu/ContourPanelSettings.js';
 import unlockStructureSet from '../utils/unlockStructureSet.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
@@ -15,7 +14,6 @@ import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu
 import refreshViewport from '../utils/refreshViewport';
 
 import { Icon } from '@ohif/ui';
-import ConfirmationDialog from './common/ConfirmationDialog';
 
 import './XNATRoiPanel.styl';
 
@@ -525,12 +523,12 @@ export default class XNATContourPanel extends React.Component {
     const { viewports, activeIndex } = this.props;
     const freehand3DStore = modules.freehand3D;
 
-    // default structurset
-    const defaultStructureSet = freehand3DStore.getters.structureSet(
-      SeriesInstanceUID
-    );
-    const defaultStructureSetName =
-      defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
+    // // default structurset
+    // const defaultStructureSet = freehand3DStore.getters.structureSet(
+    //   SeriesInstanceUID
+    // );
+    // const defaultStructureSetName =
+    //   defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
 
     let component;
 
@@ -606,82 +604,40 @@ export default class XNATContourPanel extends React.Component {
             />
           </div>
 
-          {/* CONTOUR LIST */}
+          {/* CONTOUR COLLECTION LISTS */}
           <div className="roiCollectionBody">
-            <h4>In-Progress Contour Collections</h4>
+            {/* WORKING COLLECTIONS */}
             <div className="workingCollectionHeader">
-              <h4 style={{ flex: 1, marginRight: 5, marginLeft: 2 }}>
-                <input
-                  name="roiContourName"
-                  className="roiEdit"
-                  onChange={this.onRoiCollectionNameChange}
-                  type="text"
-                  autoComplete="off"
-                  defaultValue={defaultStructureSetName}
-                  placeholder="Unnamed ROI collection"
-                  tabIndex="1"
-                />
-              </h4>
-              <div>
-                <button onClick={this.onNewRoiButtonClick}>
-                  <Icon name="xnat-tree-plus" /> Contour-based ROI
-                </button>
-                {/*<button onClick={this.onRemoveRoiButtonClick}>*/}
-                {/*  <Icon name="trash" /> Remove*/}
-                {/*</button>*/}
-              </div>
+              <h4> In-Progress Contour Collections </h4>
             </div>
-            <table className="collectionTable">
-              <thead>
-                <tr>
-                  <th width="5%" className="centered-cell">
-                    #
-                  </th>
-                  <th width="55%" className="left-aligned-cell">
-                    Name
-                  </th>
-                  <th width="10%" className="centered-cell">
-                    N
-                  </th>
-                  <th width="10%" className="centered-cell" />
-                  <th width="10%" className="centered-cell" />
-                </tr>
-              </thead>
-              <tbody>
-                {SeriesInstanceUID && (
-                  <WorkingCollectionList
-                    workingCollection={workingCollection}
-                    activeROIContourIndex={activeROIContourIndex}
-                    onRoiChange={this.onRoiChange}
-                    onRoiRemove={this.onRemoveRoiButtonClick}
-                    SeriesInstanceUID={SeriesInstanceUID}
-                    onContourClick={this.onContourClick}
-                  />
-                )}
-              </tbody>
-            </table>
-            {/*</div>*/}
+            {SeriesInstanceUID && (
+              <WorkingCollectionList
+                workingCollection={workingCollection}
+                activeROIContourIndex={activeROIContourIndex}
+                onRoiChange={this.onRoiChange}
+                onRoiRemove={this.onRemoveRoiButtonClick}
+                SeriesInstanceUID={SeriesInstanceUID}
+                onContourClick={this.onContourClick}
+                onRoiCollectionNameChange={this.onRoiCollectionNameChange}
+                onNewRoiButtonClick={this.onNewRoiButtonClick}
+              />
+            )}
+            {/* LOCKED COLLECTIONS */}
             {lockedCollections.length !== 0 && (
-              // <div className="roiCollectionBody">
               <>
                 <div className="lockedCollectionHeader">
                   <h4> Imported Contour Collections </h4>
                 </div>
-                <table className="collectionTable">
-                  <tbody>
-                    <LockedCollectionsList
-                      lockedCollections={lockedCollections}
-                      onUnlockClick={this.confirmUnlockOnUnlockClick}
-                      SeriesInstanceUID={SeriesInstanceUID}
-                    />
-                  </tbody>
-                </table>
+                <LockedCollectionsList
+                  lockedCollections={lockedCollections}
+                  onUnlockClick={this.confirmUnlockOnUnlockClick}
+                  SeriesInstanceUID={SeriesInstanceUID}
+                  onContourClick={this.onContourClick}
+                />
               </>
-              // </div>
             )}
           </div>
 
-          {/*<RoiContourSettings />*/}
         </div>
       );
     }

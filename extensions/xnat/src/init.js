@@ -1,18 +1,21 @@
 import cornerstoneTools from 'cornerstone-tools';
 
-import freehand3DModule from './peppermint-tools/modules/freehand3DModule.js';
-import extendSegmentationModule from './peppermint-tools/modules/extendSegmentationModule';
-import { handleContourContextMenu } from './components/XNATContextMenu';
-
-import TOOL_NAMES from './peppermint-tools/toolNames';
-
 import {
+  PEPPERMINT_TOOL_NAMES,
+  freehand3DModule,
+  extendSegmentationModule,
   FreehandRoi3DTool,
   FreehandRoi3DSculptorTool,
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
-} from './peppermint-tools/tools';
+} from './peppermint-tools';
+import { handleContourContextMenu } from './components/XNATContextMenu';
+
+import {
+  AIAAProbeTool,
+  AIAAModule,
+} from './aiaa-tools';
 
 const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
 
@@ -57,13 +60,18 @@ export default function init({ servicesManager, commandsManager, configuration =
   const config = Object.assign({}, defaultConfig, configuration);
   const segmentationModule = cornerstoneTools.getModule('segmentation');
 
+  // add custom setters & getters to the CSTools segmentation module
   extendSegmentationModule(segmentationModule, config);
 
+  // register the freehand3D module
   register('module', 'freehand3D', freehand3DModule);
   const freehand3DStore = modules.freehand3D;
 
   freehand3DStore.state.interpolate = config.interpolate;
   freehand3DStore.state.displayStats = config.showFreehandStats;
+
+  // register the AIAA module
+  register('module', 'aiaa', AIAAModule);
 
   const tools = [
     Brush3DTool,
@@ -71,13 +79,17 @@ export default function init({ servicesManager, commandsManager, configuration =
     Brush3DAutoGatedTool,
     FreehandRoi3DTool,
     FreehandRoi3DSculptorTool,
+    /* AIAA Tools */
+    // DeepgrowProbeTool,
+    // DExtr3DProbeTool,
+    AIAAProbeTool,
   ];
 
   tools.forEach(addTool);
 
   // subscribe to context menu handler
   commandsManager.runCommand('subscribeToContextMenuHandler', {
-    tools: [TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
+    tools: [PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
     contextMenuCallback: handleContourContextMenu,
     dialogIds: ['context-menu',],
   }, 'ACTIVE_VIEWPORT::CORNERSTONE');

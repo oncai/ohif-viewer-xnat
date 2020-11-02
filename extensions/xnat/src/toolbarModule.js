@@ -1,4 +1,5 @@
-import TOOL_NAMES from './peppermint-tools/toolNames';
+import { PEPPERMINT_TOOL_NAMES } from './peppermint-tools';
+import { AIAA_TOOL_NAMES } from  './aiaa-tools';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -18,7 +19,7 @@ const definitions = [
         icon: 'xnat-contour-freehand',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: TOOL_NAMES.FREEHAND_ROI_3D_TOOL },
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL },
       },
       {
         id: 'FreehandRoiSculptor',
@@ -26,7 +27,7 @@ const definitions = [
         icon: 'xnat-contour-freehand-sculpt',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL },
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL },
       },
     ],
   },
@@ -41,7 +42,7 @@ const definitions = [
         icon: 'xnat-mask-manual',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_TOOL },
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_TOOL },
       },
       {
         id: 'Brush3DHUGatedTool',
@@ -49,7 +50,7 @@ const definitions = [
         icon: 'xnat-mask-smart-ct',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL },
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL },
       },
       {
         id: 'Brush3DAutoGatedTool',
@@ -57,7 +58,7 @@ const definitions = [
         icon: 'xnat-mask-auto',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
       },
       // {
       //   id: 'CorrectionScissors',
@@ -67,6 +68,15 @@ const definitions = [
       //   commandName: 'setToolActive',
       //   commandOptions: { toolName: 'CorrectionScissors' },
       // },
+      {
+        id: 'NVIDIAClaraAIAA',
+        label: 'NVIDIA AIAA',
+        icon: 'dot-circle',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: AIAA_TOOL_NAMES.AIAA_PROB_TOOL },
+        experimentalFeature: true,
+      },
     ],
   },
 ];

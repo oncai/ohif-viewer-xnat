@@ -547,7 +547,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
-          <h3>Import Mask Collections</h3>
+          <h3>Import mask-based ROI collections</h3>
           {importing ? null : (
             <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />

@@ -18,6 +18,8 @@ import ConnectedCineDialog from './ConnectedCineDialog';
 import ConnectedLayoutButton from './ConnectedLayoutButton';
 import { withAppContext } from '../context/AppContext';
 
+import store from '../store';
+
 class ToolbarRow extends Component {
   // TODO: Simplify these? isOpen can be computed if we say "any" value for selected,
   // closed if selected is null/undefined
@@ -33,6 +35,7 @@ class ToolbarRow extends Component {
     // NOTE: withDialog, withModal HOCs
     dialog: PropTypes.any,
     modal: PropTypes.any,
+    preferences: PropTypes.object
   };
 
   static defaultProps = {
@@ -240,6 +243,19 @@ function _getExpandableButtonComponent(button, activeButtons) {
     }
 
     return childButton;
+  }).filter(button => {
+    let isEnabled = true;
+    if ('experimentalFeature' in button) {
+      const { experimentalFeatures = {} } = this.props.preferences;
+      const feature = Object.keys(experimentalFeatures).filter(key => {
+        return (experimentalFeatures[key].id === button.id)
+          && experimentalFeatures[key].enabled;
+      })[0];
+
+      isEnabled = feature !== undefined;
+    }
+
+    return isEnabled;
   });
 
   return (
@@ -255,13 +271,13 @@ function _getExpandableButtonComponent(button, activeButtons) {
 
 function _getDefaultButtonComponent(button, activeButtons) {
   return (
-    <ToolbarButton
-      key={button.id}
-      label={button.label}
-      icon={button.icon}
-      onClick={_handleToolbarButtonClick.bind(this, button)}
-      isActive={activeButtons.map(button => button.id).includes(button.id)}
-    />
+      <ToolbarButton
+        key={button.id}
+        label={button.label}
+        icon={button.icon}
+        onClick={_handleToolbarButtonClick.bind(this, button)}
+        isActive={activeButtons.map(button => button.id).includes(button.id)}
+      />
   );
 }
 /**
@@ -314,6 +330,8 @@ function _handleToolbarButtonClick(button, evt, props) {
       ({ options }) => options && !options.togglable
     );
     this.setState({ activeButtons: [...toggables, button] });
+    // Update activeTool ins store
+    store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: button.commandOptions.toolName});
   } else if (button.type === 'builtIn') {
     this._handleBuiltIn(button);
   }

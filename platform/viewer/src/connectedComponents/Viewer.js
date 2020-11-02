@@ -57,6 +57,8 @@ class Viewer extends Component {
     activeViewportIndex: PropTypes.number.isRequired,
     isStudyLoaded: PropTypes.bool,
     dialog: PropTypes.object,
+    activeTool: PropTypes.string,
+    preferences: PropTypes.object,
   };
 
   constructor(props) {
@@ -293,6 +295,7 @@ class Viewer extends Component {
               this.setState(updatedState);
             }}
             studies={this.props.studies}
+            preferences={this.props.preferences}
           />
         </ErrorBoundaryDialog>
 
@@ -338,6 +341,7 @@ class Viewer extends Component {
                   viewports={this.props.viewports}
                   studies={this.props.studies}
                   activeIndex={this.props.activeViewportIndex}
+                  activeTool={this.props.activeTool}
                 />
               )}
             </SidePanel>

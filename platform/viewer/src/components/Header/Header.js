@@ -137,7 +137,8 @@ function Header(props) {
             {versionStr}
           </span>
           <Dropdown
-            titleElement={<OptionsElement />}
+            // titleElement={<OptionsElement />}
+            title={t('Options')}
             list={options}
             align="right"
           />
@@ -164,7 +165,7 @@ Header.propTypes = {
 
 Header.defaultProps = {
   useLargeLogo: false,
-  children: OHIFLogo(),
+  children: <OHIFLogo />,
 };
 
 export default withTranslation(['Header', 'AboutModal'])(

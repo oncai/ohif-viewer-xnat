@@ -4,12 +4,12 @@ import {
 } from 'cornerstone-tools';
 
 import getSeriesInstanceUidFromImageId from './getSeriesInstanceUidFromImageId.js';
-import TOOL_NAMES from '../peppermint-tools/toolNames';
+import { PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 
 const modules = store.modules;
 const globalToolStateManager = globalImageIdSpecificToolStateManager;
 
-const { FREEHAND_ROI_3D_TOOL } = TOOL_NAMES;
+const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
 /**
  * Unlock a structureSet, moving them to the working directory

@@ -13,12 +13,14 @@ export default class LockedCollectionsList extends React.Component {
     lockedCollections: PropTypes.any,
     onUnlockClick: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
+    onContourClick: PropTypes.func,
   };
 
   static defaultProps = {
     lockedCollections: undefined,
     onUnlockClick: undefined,
     SeriesInstanceUID: undefined,
+    onContourClick: undefined,
   };
 
   constructor(props = {}) {
@@ -26,7 +28,12 @@ export default class LockedCollectionsList extends React.Component {
   }
 
   render() {
-    const { lockedCollections, onUnlockClick, SeriesInstanceUID } = this.props;
+    const {
+      lockedCollections,
+      onUnlockClick,
+      SeriesInstanceUID,
+      onContourClick
+    } = this.props;
 
     return (
       <React.Fragment>
@@ -36,6 +43,7 @@ export default class LockedCollectionsList extends React.Component {
             collection={collection}
             onUnlockClick={onUnlockClick}
             SeriesInstanceUID={SeriesInstanceUID}
+            onClick={onContourClick}
           />
         ))}
       </React.Fragment>

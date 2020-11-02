@@ -14,6 +14,17 @@ const defaultState = {
   generalPreferences: {
     // language: 'en-US'
   },
+  experimentalFeatures: {
+    NVIDIAClaraAIAA: {
+      id: 'NVIDIAClaraAIAA',
+      name: 'NVIDIA Clara AIAA',
+      enabled: false,
+      settings: {
+        serverUrl: '',
+        overlapSegments: false,
+      },
+    },
+  },
 };
 
 const preferences = (state = defaultState, action) => {

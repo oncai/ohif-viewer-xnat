@@ -2,7 +2,7 @@ import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
-import '../XNATSegmentationPanel.styl';
+import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -13,7 +13,6 @@ export default class SegmentationMenuListItem extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    this.onTextInputChange = this.onTextInputChange.bind(this);
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
     this.onColorChangeCallback = this.onColorChangeCallback.bind(this);
@@ -59,17 +58,6 @@ export default class SegmentationMenuListItem extends React.Component {
     }
 
     return typeWithModifier;
-  }
-
-  onTextInputChange(evt) {
-    const SegmentLabel = evt.target.value;
-    const { labelmap3D, segmentIndex } = this.props;
-
-    if (SegmentLabel.replace(' ', '').length > 0) {
-      labelmap3D.metadata[segmentIndex].SegmentLabel = SegmentLabel;
-    }
-
-    this.setState({ segmentLabel: SegmentLabel });
   }
 
   onShowHideClick() {
@@ -120,28 +108,25 @@ export default class SegmentationMenuListItem extends React.Component {
             }}
           />
         </td>
-        <td className="left-aligned-cell">
-          <input
-            name="segLabel"
-            className="roiEdit"
-            onChange={this.onTextInputChange}
-            type="text"
-            autoComplete="off"
-            defaultValue={segmentLabel}
-            placeholder="Enter ROI Name..."
-            tabIndex="1"
-          />
-        </td>
         <td>
           <a
-            style={{ cursor: 'pointer', color: 'white' }}
+            style={{ cursor: 'pointer'}}
             onClick={() => {
               onEditClick(segmentIndex, metadata);
             }}
           >
-            {typeWithModifier}
-            {' - '}
-            {segmentCategory}
+            <span
+              style={{ color: 'var(--text-primary-color)' }}
+            >
+              {segmentLabel}
+            </span>
+            <span
+              style={{ color: 'var(--text-secondary-color)', display: 'block' }}
+            >
+              {typeWithModifier}
+              {' - '}
+              {segmentCategory}
+            </span>
           </a>
         </td>
         <td className="centered-cell">

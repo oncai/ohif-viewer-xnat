@@ -6,12 +6,11 @@ import refreshViewport from '../../utils/refreshViewport';
 import SettingsSection from '../common/SettingsSection';
 
 import '../common/XNATSettings.styl';
-// import '../XNATRoiPanel.styl';
 
 const modules = csTools.store.modules;
 
 /**
- * @class RoiContourSettings - A component that allows the user to change
+ * @class ContourPanelSettings - A component that allows the user to change
  * configuration of the freehand3D tools.
  */
 export default class ContourPanelSettings extends React.Component {
@@ -89,7 +88,7 @@ export default class ContourPanelSettings extends React.Component {
           </button>
         </div>
         <SettingsSection>
-          <div className="roiPanelMenuOption">
+          <div>
             <input
               type="checkbox"
               name="interpolate"

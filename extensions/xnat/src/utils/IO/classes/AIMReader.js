@@ -1,5 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
-import Polygon from '../../../peppermint-tools/utils/classes/Polygon';
+import { Polygon } from '../../../peppermint-tools';
 
 const modules = cornerstoneTools.store.modules;
 
