@@ -133,3 +133,13 @@ export function reassignInstanceUrls(studies) {
     });
   });
 }
+
+export async function saveFile(blob, filename) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = URL.createObjectURL(blob);
+  a.addEventListener('click', (e) => {
+    setTimeout(() => URL.revokeObjectURL(a.href), 10 * 1000);
+  });
+  a.click();
+};

@@ -1,16 +1,15 @@
+import AIAAClient from '../client/AIAAClient.js';
 
 const state = {
+  points: new Map(),
   menuIsOpen: false,
 };
 
-const configuration = {};
-
-const api = {
-  client: undefined,
-  isConnected: false,
-  isSuccess: true,
-  models: [],
+const configuration = {
+  ann_minPoints: 6,
 };
+
+const client = new AIAAClient();
 
 const getters = {};
 
@@ -21,5 +20,5 @@ export default {
   getters,
   setters,
   configuration,
-  api,
+  client,
 };

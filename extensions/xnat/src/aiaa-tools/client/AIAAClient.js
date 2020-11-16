@@ -1,140 +1,175 @@
-import { api_get, api_post_file, api_put } from './restApi.js';
+import ApiWrapper from './ApiWrapper.js';
+import AIAA_TOOL_TYPES from '../toolTypes.js';
+import createDicomVolume from '../utils/createDicomVolume.js';
+import prepareRunParameters from '../utils/prepareRunParameters.js';
+import showNotification from '../../components/common/showNotification';
+import csTools from 'cornerstone-tools';
+import { saveFile } from '../../utils/xnatDev.js';
 
-const fixUrl = (urlStr) => {
-  const pattern = /^((http|https):\/\/)/;
-  let str = urlStr.endsWith('/') ? urlStr.slice(0, -1) : urlStr;
-  if (!pattern.test(urlStr)) {
-    str = 'http://' + str;
-  }
-  return str;
-};
+const modules = csTools.store.modules;
+
+const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
+const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
 
 export default class AIAAClient {
-  constructor(url) {
-    this._server_url = fixUrl(url);
+  constructor() {
+    this._aiaaModule = modules.aiaa;
+    this.api = new ApiWrapper('');
+    this.isConnected = false;
+    this.isSuccess = true;
+    this.models = [];
+    this.currentTool = AIAA_TOOL_TYPES[0];
+    this.currentModel = null;
   }
 
-  setServerURL(url) {
-    this._server_url = fixUrl(url);
-  }
+  getModels = async () => {
+    const response = await this.api.getModels();
+    if (response.status !== 200) {
+      showNotification(
+        `Failed to fetch models! Reason: ${response.data}`,
+        'error',
+        'NVIDIA AIAA'
+      );
 
-  getServerURL(url) {
-    return this._server_url;
-  }
+      this.isConnected = false;
+      this.models = [];
 
-  getModelsURL() {
-    return new URL('/v1/models', this._server_url);
-  }
-
-  getLogsURL(lines = 100) {
-    const log_url = new URL('logs', this._server_url);
-    log_url.searchParams.append('lines', lines);
-    return log_url;
-  }
-
-  /**
-   * Use either model name or label to query available models in AIAA
-   * @param {string} model_name
-   * @param {string} label
-   */
-  async getModels(model_name = undefined, label = undefined) {
-    console.info('AIAA fetching models');
-    let model_url = new URL(this.getModelsURL().toString());
-
-    if (model_name !== undefined) {
-      model_url.searchParams.append('model', model_name);
-    } else if (label !== undefined) {
-      model_url.searchParams.append('label', label);
+      return false;
     }
 
-    return await api_get(model_url.toString());
+    // showNotification(
+    //   'Fetched available models',
+    //   'success',
+    //   'NVIDIA AIAA'
+    // );
+
+    this.isConnected = true;
+    this.models = response.data;
+
+    return true;
   }
 
-  /**
-   * Calls AIAA create session API
-   *
-   * @param image_in
-   * @param params
-   * @param {int} expiry: expiry in seconds.
-   *
-   * @return {string} session_id
-   *
-   */
-  async createSession(image_in, params, expiry = 0) {
-    console.info('AIAAClient - create session');
-    let session_url = new URL('/session/', this.server_url);
-    session_url.searchParams.append('expiry', expiry);
-    return await api_put(session_url.toString(), params, image_in);
-  }
+  runModel = async parameters => {
+    const { SeriesInstanceUID, imageIds } = parameters;
+    let session_id = await this._getSession(SeriesInstanceUID)
 
-  /**
-   * Get AIAA session API
-   *
-   * @param session_id
-   * @param {boolean} update_ts: session continue
-   *
-   * @return {string} session_id
-   *
-   */
-  async getSession(session_id, update_ts = false) {
-    console.info('AIAAClient - get session');
-    let session_url = new URL('/session/' + session_id, this.server_url);
-    if (update_ts) {
-      session_url.searchParams.append('update_ts', update_ts);
-    }
-    return await api_get(session_url.toString());
-  }
-
-  async segmentation(model_name, image_in, session_id = undefined, output_type = '.nrrd') {
-    const params = {};
-    if (output_type) {
-      params.result_extension = output_type;
-      params.result_dtype = 'uint16';
-      params.result_compress = true;
+    // Create session if not available
+    if (session_id === null) {
+      const res = await this._createSession(SeriesInstanceUID, imageIds);
+      if (!res) {
+        return;
+      }
+      session_id =
+        this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
     }
 
-    return this.inference('segmentation', model_name, params, image_in, session_id);
+    // Construct run parameters
+    const runParams = prepareRunParameters({
+      model: this.currentModel,
+      fgPoints: [],
+      bgPoints: [],
+    });
+
+    showNotification(
+      `Running ${this.currentModel.name}, please wait...`,
+      'info',
+      'NVIDIA AIAA'
+    );
+
+    // Request to run model on AIAA server
+    const response = await this.api.runModel(
+      runParams.apiUrl,
+      runParams.params,
+      this.currentModel.name,
+      session_id
+    );
+
+    if (response.status === 200) {
+      const data = response.data;
+      const imageBlob = new Blob([data],
+        { type: 'application/octet-stream' });
+      saveFile(imageBlob, 'mask.nrrd');
+      console.log('Done!');
+    } else {
+      showNotification(
+        `Failed to run ${this.currentModel.name}! Reason: ${response.data}`,
+        'error',
+        'NVIDIA AIAA'
+      );
+    }
   }
 
-  async deepgrow(model_name, foreground, background, image_in, session_id = undefined, output_type = '.nrrd') {
-    const params = {
-      foreground: foreground,
-      background: background,
-    };
-    if (output_type) {
-      params.result_extension = output_type;
-      params.result_dtype = 'uint16';
-      params.result_compress = true;
+  _getSession = async SeriesInstanceUID => {
+    let session_id = null;
+
+    // check if session is available
+    const sessionID_cookie =
+      this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
+    if (sessionID_cookie) {
+      const response = await this.api.getSession(sessionID_cookie, true);
+      if (response.status === 200) {
+        session_id = sessionID_cookie;
+      }
     }
 
-    return this.inference('deepgrow', model_name, params, image_in, session_id);
+    return session_id;
   }
 
-  async dextr3d(model_name, points, image_in, session_id = undefined, output_type = '.nrrd') {
-    const params = {
-      points: points,
-    };
-    if (output_type) {
-      params.result_extension = output_type;
-      params.result_dtype = 'uint16';
-      params.result_compress = true;
+  _createSession = async (SeriesInstanceUID, imageIds) => {
+    let res = false;
+    const useNifti = false;
+
+    showNotification(
+      'Creating a new AIAA Session, please wait...',
+      'info',
+      'NVIDIA AIAA'
+    );
+
+    const volumeBuffer = await createDicomVolume(imageIds);
+    const response =
+      await this.api.createSession(volumeBuffer, null, SESSION_EXPIRY);
+
+    if (response.status === 200) {
+      const { session_id } = response.data;
+      this._setCookie(
+        `${SESSION_ID_PREFIX}${SeriesInstanceUID}`,
+        session_id
+      );
+      res = true;
+
+      showNotification(
+        'AIAA Session was created successfully',
+        'success',
+        'NVIDIA AIAA'
+      );
+
+    } else {
+      showNotification(
+        `Failed to create AIAA Session! Reason: ${response.data}`,
+        'error',
+        'NVIDIA AIAA'
+      );
     }
 
-    return this.inference('dextr3d', model_name, params, image_in, session_id);
+    return res;
   }
 
-  async inference(api, model_name, params, image_in, session_id = undefined) {
-    console.info('AIAAClient - calling ' + api);
-    let seg_url = new URL('/v1/' + api, this.server_url);
-    seg_url.searchParams.append('model', model_name);
+  _setCookie = (name, value) => {
+    document.cookie = `${name}=${escape(value)}`;
+  }
 
-    // TODO:: parse multi-part
-    seg_url.searchParams.append('output', 'image');
-    if (session_id !== undefined) {
-      seg_url.searchParams.append('session_id', session_id);
+  _getCookie = (name) => {
+    let value = null;
+
+    if (document.cookie !== '') {
+      const result = document.cookie
+        .split('; ')
+        .find(row => row.startsWith(name));
+      if (result) {
+        value = unescape(result.split('=')[1]);
+      }
     }
 
-    console.info(params);
-    return await api_post_file(seg_url.toString(), params, image_in);
+    return value;
   }
 }

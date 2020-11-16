@@ -18,7 +18,7 @@ export default class AIAAProbeTool extends ProbeTool {
         drawHandles: true,
         handleRadius: 2,
         eventName: 'nvidiaaiaaprobeevent',
-        color: ['red', 'blue'],
+        color: ['yellow', 'blue'],
       },
     };
 

@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import csTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
+import csTools, { getToolState } from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
-import { AIAAClient } from '../../aiaa-tools';
 import AIAAMenuSettings from './AIAAMenuSettings';
 import AIAAToolkit from './AIAAToolkit';
 import showNotification from '../common/showNotification';
+import { AIAA_TOOL_TYPES } from '../../aiaa-tools';
 
 import '../XNATRoiPanel.styl';
 
@@ -16,6 +17,7 @@ export default class AIAAMenu extends React.Component {
     studies: PropTypes.any,
     viewports: PropTypes.any,
     activeIndex: PropTypes.any,
+    firstImageId: PropTypes.any,
     featureStore: PropTypes.object,
     onUpdateFeatureStore: PropTypes.func,
   }
@@ -24,6 +26,7 @@ export default class AIAAMenu extends React.Component {
     studies: undefined,
     viewports: undefined,
     activeIndex: undefined,
+    firstImageId: undefined,
     featureStore: undefined,
     onUpdateFeatureStore: undefined,
   }
@@ -31,34 +34,79 @@ export default class AIAAMenu extends React.Component {
   constructor(props = {}) {
     super(props);
 
+    const { settings } = props.featureStore;
+    this._aiaaModule = modules.aiaa;
+    this._aiaaClient = this._aiaaModule.client;
+    this._aiaaClient.api.setServerURL(settings.serverUrl);
+
+    const { viewports, studies, activeIndex } = props;
+    this._viewParameters =
+      this.getViewParameters(viewports, studies, activeIndex);
+
     this.state = {
       showSettings: false,
-      models: [],
+      models: this._aiaaClient.models,
       api: {
-        isConnected: false,
-        isConnecting: true,
+        isConnected: this._aiaaClient.isConnected,
+        isConnecting: !this._aiaaClient.isConnected,
       },
     };
-
-    const { settings } = props.featureStore;
-    this._aiaaClient = new AIAAClient(settings.serverUrl);
 
     this.onToggleShowSettings = this.onToggleShowSettings.bind(this);
     this.onSaveSettings = this.onSaveSettings.bind(this);
     this.onGetModels = this.onGetModels.bind(this);
+    this.onToolUpdate = this.onToolUpdate.bind(this);
+    this.onRunModel = this.onRunModel.bind(this);
   }
 
   componentDidMount() {
     const { settings } = this.props.featureStore;
-    const aiaaModule = modules.aiaa;
-    aiaaModule.state.menuIsOpen = true;
-    aiaaModule.api.client = this._aiaaClient;
-    this.onGetModels(settings.serverUrl);
+    this._aiaaModule.state.menuIsOpen = true;
+    if (!this._aiaaClient.isConnected) {
+      this.onGetModels();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.firstImageId !== prevProps.firstImageId) {
+      const { viewports, studies, activeIndex } = props;
+      this._viewParameters =
+        this.getViewParameters(viewports, studies, activeIndex);
+    }
   }
 
   componentWillUnmount() {
-    const aiaaModule = modules.aiaa;
-    aiaaModule.state.menuIsOpen = false;
+    this._aiaaModule.state.menuIsOpen = false;
+  }
+
+  getViewParameters(viewports, studies, activeIndex) {
+    const viewport = viewports[activeIndex];
+    const { PatientID } = studies[activeIndex];
+
+    const {
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      displaySetInstanceUID,
+    } = viewport;
+
+    const element = cornerstone.getEnabledElements()[activeIndex].element;
+    const stackToolState = csTools.getToolState(element, 'stack');
+    const imageIds = stackToolState.data[0].imageIds;
+
+    // const imageIdsToIndex = new Map();
+    // for (let i = 0; i < imageIds.length; i++) {
+    //   imageIdsToIndex.set(imageIds[i], i);
+    // }
+
+    return {
+      PatientID,
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      displaySetInstanceUID,
+      imageIds,
+      // imageIdsToIndex,
+      element,
+    };
   }
 
   onToggleShowSettings = () => {
@@ -72,7 +120,8 @@ export default class AIAAMenu extends React.Component {
 
     const { featureStore, onUpdateFeatureStore } = this.props;
     if(featureStore.settings.serverUrl !== newSettings.serverUrl) {
-      this.onGetModels(newSettings.serverUrl);
+      this._aiaaClient.api.setServerURL(newSettings.serverUrl);
+      this.onGetModels();
     }
 
     if (!_.isEqual(newSettings, featureStore.settings)) {
@@ -87,7 +136,7 @@ export default class AIAAMenu extends React.Component {
     }
   }
 
-  onGetModels = async (serverUrl) => {
+  onGetModels = async () => {
     this.setState({
       models: [],
       api: {
@@ -96,39 +145,26 @@ export default class AIAAMenu extends React.Component {
       }
     });
 
-    const aiaaModule = modules.aiaa;
-    aiaaModule.api.client.setServerURL(serverUrl);
-    let response = await aiaaModule.api.client.getModels();
-    if (response.status !== 200) {
-      showNotification(
-        `Failed to fetch models! Reason: ${response.data}`,
-        'error',
-        'NVIDIA AIAA'
-      );
-
-      this.setState({
-        api: {
-          isConnected: false,
-          isConnecting: false,
-        }
-      });
-
-      return;
-    }
-
-    // showNotification(
-    //   'Fetched available models',
-    //   'success',
-    //   'NVIDIA AIAA'
-    // );
-
+    await this._aiaaClient.getModels();
     this.setState({
-      models: response.data,
+      models: this._aiaaClient.models,
       api: {
-        isConnected: true,
+        isConnected: this._aiaaClient.isConnected,
         isConnecting: false,
       }
     });
+  }
+
+  onToolUpdate = async () => {
+    console.log(this._aiaaClient.currentTool);
+  }
+
+  onRunModel = async () => {
+    const parameters = {
+      SeriesInstanceUID: this._viewParameters.SeriesInstanceUID,
+      imageIds: this._viewParameters.imageIds,
+    };
+    this._aiaaClient.runModel(parameters);
   }
 
   render() {
@@ -139,11 +175,11 @@ export default class AIAAMenu extends React.Component {
     let statusMessage = null;
     if (api.isConnecting) {
       statusMessage =
-        <p>{`Connecting to ${this._aiaaClient.getServerURL()} ...`}</p>
+        <p>{`Connecting to ${this._aiaaClient.api.getServerURL()} ...`}</p>
     } else if (!api.isConnected) {
       statusMessage =
         <p style={{ color: 'var(--snackbar-error)' }}>
-          {`Error connecting to ${this._aiaaClient.getServerURL()}`}
+          {`Error connecting to ${this._aiaaClient.api.getServerURL()}`}
         </p>
     }
 
@@ -173,7 +209,7 @@ export default class AIAAMenu extends React.Component {
               width="15px"
               height="15px"
               style={{ marginTop: 5 }}
-              onClick={() => this.onGetModels(settings.serverUrl)}
+              onClick={() => this.onGetModels()}
             />
           }
         </div>
@@ -192,6 +228,8 @@ export default class AIAAMenu extends React.Component {
               :
               <AIAAToolkit
                 models={models}
+                onToolUpdate={this.onToolUpdate}
+                onRunModel={this.onRunModel}
               />
           )
         }
