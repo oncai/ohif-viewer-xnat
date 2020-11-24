@@ -19,6 +19,7 @@ import UserManagerContext from '../context/UserManagerContext';
 import AppContext from '../context/AppContext';
 
 import './Viewer.css';
+import csTools from 'cornerstone-tools';
 
 class Viewer extends Component {
   static propTypes = {
@@ -210,6 +211,12 @@ class Viewer extends Component {
 
       this.timepointApi.retrieveTimepoints({ PatientID });
       this.measurementApi.retrieveMeasurements(PatientID, [currentTimepointId]);
+    }
+
+    if (this.props.activeTool !== prevProps.activeTool) {
+      if (prevProps.activeTool === 'AIAAProbeTool') {
+        csTools.setToolDisabled('AIAAProbeTool', {});
+      }
     }
   }
 

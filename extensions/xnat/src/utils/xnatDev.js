@@ -142,4 +142,60 @@ export async function saveFile(blob, filename) {
     setTimeout(() => URL.revokeObjectURL(a.href), 10 * 1000);
   });
   a.click();
-};
+}
+
+export async function readFile() {
+  let inFile = null;
+
+  const reader = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: reader.result,
+        });
+      };
+      reader.onerror = error => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  await new Promise((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    const a = document.createElement('a');
+    a.addEventListener('click', (e) => {
+      input.click();
+    });
+    a.click();
+    input.onchange = () => {
+      resolve({
+        file: input.files[0],
+      });
+    }
+    input.oncancel = () => {
+      reject('User cancelled file dialog');
+    }
+  }).then(data => {
+    const { file } = data;
+    inFile = file;
+  }).catch(error => {
+    console.log(error);
+  });
+
+  let arrayBuffer = null;
+  if (inFile !== null) {
+    await reader(inFile)
+      .then(data => {
+        const { content } = data;
+        arrayBuffer = content;
+      }).catch(error => {
+        console.log(error);
+      });
+  }
+
+  return arrayBuffer;
+}

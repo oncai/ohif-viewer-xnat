@@ -261,10 +261,10 @@ export default class XNATSegmentationPanel extends React.Component {
     });
   }
 
-  onNewSegment() {
+  async onNewSegment(label = 'Unnamed Segment') {
     let { labelmap3D, firstImageId } = this.state;
 
-    const newMetadata = generateSegmentationMetadata('Unnamed Segment');
+    const newMetadata = generateSegmentationMetadata(label);
 
     if (labelmap3D) {
       const { metadata } = labelmap3D;
@@ -305,6 +305,10 @@ export default class XNATSegmentationPanel extends React.Component {
       activeSegmentIndex,
       labelmap3D,
     });
+
+    refreshViewports();
+
+    return activeSegmentIndex;
   }
 
   /**
@@ -319,6 +323,8 @@ export default class XNATSegmentationPanel extends React.Component {
     labelmap3D.activeSegmentIndex = segmentIndex;
 
     this.setState({ activeSegmentIndex: segmentIndex });
+
+    refreshViewports();
   }
 
   /**
@@ -352,15 +358,22 @@ export default class XNATSegmentationPanel extends React.Component {
    * @returns {null}
    */
   onDeleteClick(segment) {
-    const { firstImageId, activeSegmentIndex } = this.state;
+    const { firstImageId, activeSegmentIndex, labelmap3D } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
 
     segmentationModule.setters.deleteSegment(element, activeSegmentIndex);
 
     const segments = this.constructor._segments(firstImageId);
 
+    let segmentIndex = 0;
+    if (segments.length > 0) {
+      segmentIndex = segments[segments.length - 1].index;
+    }
+    labelmap3D.activeSegmentIndex = segmentIndex;
+
     this.setState({
       segments,
+      activeSegmentIndex: segmentIndex,
     });
   }
 
@@ -465,7 +478,7 @@ export default class XNATSegmentationPanel extends React.Component {
       : XNATSegmentationExportMenu;
 
     const addSegmentButton = isFractional ? null : (
-      <button onClick={this.onNewSegment}>
+      <button onClick={() => this.onNewSegment()}>
         <Icon name="xnat-tree-plus" /> Add
       </button>
     );
@@ -574,6 +587,9 @@ export default class XNATSegmentationPanel extends React.Component {
               studies={this.props.studies}
               viewports={this.props.viewports}
               activeIndex={this.props.activeIndex}
+              firstImageId={firstImageId}
+              segmentsData={{ segments, activeSegmentIndex }}
+              onNewSegment={this.onNewSegment}
             />
           }
         </div>

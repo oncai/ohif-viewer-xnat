@@ -2,18 +2,16 @@ import ApiWrapper from './ApiWrapper.js';
 import AIAA_TOOL_TYPES from '../toolTypes.js';
 import createDicomVolume from '../utils/createDicomVolume.js';
 import prepareRunParameters from '../utils/prepareRunParameters.js';
+import readNrrd from '../utils/readNrrd.js';
 import showNotification from '../../components/common/showNotification';
-import csTools from 'cornerstone-tools';
-import { saveFile } from '../../utils/xnatDev.js';
-
-const modules = csTools.store.modules;
+import { saveFile, readFile } from '../../utils/xnatDev.js';
+import testModelList from './testModelList.js';
 
 const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
 
 export default class AIAAClient {
   constructor() {
-    this._aiaaModule = modules.aiaa;
     this.api = new ApiWrapper('');
     this.isConnected = false;
     this.isSuccess = true;
@@ -49,15 +47,17 @@ export default class AIAAClient {
     return true;
   }
 
-  runModel = async parameters => {
+  runModel = async (parameters, updateStatusModal) => {
     const { SeriesInstanceUID, imageIds } = parameters;
+    updateStatusModal('Getting AIAA session info ...');
     let session_id = await this._getSession(SeriesInstanceUID)
 
     // Create session if not available
     if (session_id === null) {
+      updateStatusModal('Creating a new AIAA session ...');
       const res = await this._createSession(SeriesInstanceUID, imageIds);
       if (!res) {
-        return;
+        return null;
       }
       session_id =
         this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
@@ -70,11 +70,12 @@ export default class AIAAClient {
       bgPoints: [],
     });
 
-    showNotification(
-      `Running ${this.currentModel.name}, please wait...`,
-      'info',
-      'NVIDIA AIAA'
-    );
+    updateStatusModal(`Running ${this.currentModel.name}, please wait...`);
+    // showNotification(
+    //   `Running ${this.currentModel.name}, please wait...`,
+    //   'info',
+    //   'NVIDIA AIAA'
+    // );
 
     // Request to run model on AIAA server
     const response = await this.api.runModel(
@@ -85,18 +86,43 @@ export default class AIAAClient {
     );
 
     if (response.status === 200) {
-      const data = response.data;
-      const imageBlob = new Blob([data],
-        { type: 'application/octet-stream' });
-      saveFile(imageBlob, 'mask.nrrd');
-      console.log('Done!');
+      const { header, image } = readNrrd(response.data);
+      // showNotification(
+      //   'Model run complete',
+      //   'success',
+      //   'NVIDIA AIAA'
+      // );
+      // Debug
+      // const imageBlob = new Blob([response.data],
+      //   { type: 'application/octet-stream' });
+      // saveFile(imageBlob, 'mask.nrrd');
+      console.log(header);
+      return { header, image };
     } else {
       showNotification(
         `Failed to run ${this.currentModel.name}! Reason: ${response.data}`,
         'error',
         'NVIDIA AIAA'
       );
+      return null;
     }
+  }
+
+  getTestModels = async () => {
+    this.isConnected = true;
+    this.models = testModelList;
+
+    return true;
+  }
+
+  readTestFile = async () => {
+    const buffer = await readFile();
+    if (buffer === null) {
+      return null;
+    }
+
+    const { header, image } = readNrrd(buffer);
+    return { header, image };
   }
 
   _getSession = async SeriesInstanceUID => {

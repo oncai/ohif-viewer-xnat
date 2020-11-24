@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import csTools from 'cornerstone-tools';
-import { AIAA_TOOL_TYPES, AIAA_MODEL_TYPES } from '../../aiaa-tools'
+import { AIAA_TOOL_TYPES, AIAA_MODEL_TYPES } from '../../aiaa-tools';
 import showNotification from '../common/showNotification.js';
 
 import '../XNATRoiPanel.styl';
@@ -12,12 +12,14 @@ export default class AIAAToolkit extends React.Component {
   static propTypes = {
     models: PropTypes.array,
     onToolUpdate: PropTypes.func,
+    onClearPoints: PropTypes.func,
     onRunModel: PropTypes.func,
   }
 
   static defaultProps = {
     models: [],
     onToolUpdate: undefined,
+    onClearPoints: undefined,
     onRunModel: undefined,
   }
 
@@ -62,6 +64,7 @@ export default class AIAAToolkit extends React.Component {
     });
 
     if (toolModels === undefined || toolModels.length === 0) {
+      this._aiaaClient.currentModel = null;
       return (
         <div className="footerSectionItem" style={{ marginTop: 0 }}>
           <p style={{ color: 'var(--snackbar-error)' }}>
@@ -71,7 +74,7 @@ export default class AIAAToolkit extends React.Component {
       );
     }
 
-    if (this._aiaaClient.currentModel == null) {
+    if (this._aiaaClient.currentModel === null) {
       this._aiaaClient.currentModel = toolModels[0];
     } else {
       let modelIndex = toolModels.findIndex(model => {
@@ -110,6 +113,25 @@ export default class AIAAToolkit extends React.Component {
         <div className="footerSectionItem" style={{ marginTop: 0}}>
           <p>{this._aiaaClient.currentModel.description}</p>
         </div>
+        {currentTool.type !== AIAA_MODEL_TYPES.SEGMENTATION &&
+          <div
+            className="footerSectionItem"
+            style={{ marginTop: 0, marginBottom: 10 }}
+          >
+            <button
+              style={{ marginLeft: 'auto' }}
+              onClick={() => this.props.onClearPoints(false)}
+            >
+              Clear segment points
+            </button>
+            <button
+              style={{ marginLeft: 5 }}
+              onClick={this.props.onClearPoints}
+            >
+              Clear all points
+            </button>
+          </div>
+        }
       </React.Fragment>
     );
   }

@@ -1,5 +1,9 @@
 import csTools from 'cornerstone-tools';
 import showNotification from '../../components/common/showNotification.js';
+import AIAA_MODEL_TYPES from '../modelTypes';
+import cornerstone from 'cornerstone-core';
+import addLabelmap2D from 'cornerstone-tools/src/store/modules/segmentationModule/addLabelmap2D';
+import cornerstoneTools from 'cornerstone-tools';
 
 const { ProbeTool, getToolState } = csTools;
 const triggerEvent = csTools.importInternal('util/triggerEvent');
@@ -8,6 +12,7 @@ const drawHandles = csTools.importInternal('drawing/drawHandles');
 const getNewContext = csTools.importInternal('drawing/getNewContext');
 
 const modules = csTools.store.modules;
+const segmentationModule = csTools.getModule('segmentation');
 
 export default class AIAAProbeTool extends ProbeTool {
   constructor(props = {}) {
@@ -24,56 +29,86 @@ export default class AIAAProbeTool extends ProbeTool {
 
     const initialProps = Object.assign(defaultProps, props);
     super(initialProps);
+
+    this._aiaaModule = modules.aiaa;
   }
 
-  uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      let r = (Math.random() * 16) | 0,
-        v = c == 'x' ? r : (r & 0x3) | 0x8;
+  preMouseDownCallback(evt) {
+    let isActive = false;
 
-      return v.toString(16);
-    });
-  }
-
-  createNewMeasurement(eventData) {
-    // if (this.name === 'AIAAProbe') {
-    //   console.info('AIAAProbe::createNewMeasurement');
-    //   return;
-    // }
-
-    const aiaaModule = modules.aiaa;
-    if (!aiaaModule.state.menuIsOpen) {
+    if (!this._aiaaModule.state.menuIsOpen) {
       showNotification(
         'Masks Panel needs to be active to use AIAA tools',
         'warning',
         'NVIDIA AIAA'
       );
-      return;
+    } else if (!this._aiaaModule.client.isConnected) {
+      showNotification(
+        'Not connected to AIAA Server',
+        'warning',
+        'NVIDIA AIAA'
+      );
+    } else if (this._aiaaModule.client.currentTool.type
+      === AIAA_MODEL_TYPES.SEGMENTATION) {
+      // Ignore adding points for the segmentation tool
+    } else if (this._aiaaModule.client.currentModel === null) {
+      // Ignore adding points for tools with no models
+    } else {
+      const labelmaps3D = segmentationModule.getters.labelmaps3D(
+        evt.detail.element
+      );
+      if (!labelmaps3D.labelmaps3D || !labelmaps3D.labelmaps3D[0].activeSegmentIndex) {
+        showNotification(
+          'Mask collection has no segments, please add a label first',
+          'warning',
+          'NVIDIA AIAA'
+        );
+      } else {
+        isActive = true;
+      }
     }
 
-    console.debug(eventData);
+    if (!isActive) {
+      this._preventPropagation(evt);
+    }
+
+    return isActive;
+  }
+
+  createNewMeasurement(eventData) {
     let res = super.createNewMeasurement(eventData);
     if (res) {
-      res.uuid = res.uuid || this.uuidv4();
-      res.color = this.configuration.color[eventData.event.ctrlKey ? 1 : 0];
-      res.ctrlKey = eventData.event.ctrlKey;
+      const labelmap3D = segmentationModule.getters.labelmap3D(
+        eventData.element, 0
+      );
+      const { activeSegmentIndex, metadata } = labelmap3D;
+
+      const toolType = this._aiaaModule.client.currentTool.type;
+      const config = this._aiaaModule.configuration;
+      const colors = toolType !== AIAA_MODEL_TYPES.DEEPGROW ?
+        config.annotationPointColors : config.deepgrowPointColors;
+
+      res.segmentUid = metadata[activeSegmentIndex].uid;
+      res.toolType = toolType;
+      res.uuid = res.uuid || this._uuidv4();
+      res.ctrlKey = toolType !== AIAA_MODEL_TYPES.DEEPGROW ?
+        false : eventData.event.ctrlKey;
+      res.color = colors[res.ctrlKey ? 1 : 0];
       res.imageId = eventData.image.imageId;
       res.x = eventData.currentPoints.image.x;
       res.y = eventData.currentPoints.image.y;
 
-      console.info('TRIGGERING AIAA PROB EVENT: ' + this.configuration.eventName);
-      console.info(res);
+      // Add point to toolstate
+      // const stackToolState = csTools.getToolState(element, 'stack');
+      // const imageIds = stackToolState.data[0].imageIds;
+
       triggerEvent(eventData.element, this.configuration.eventName, res);
     }
+
     return res;
   }
 
   renderToolData(evt) {
-    // if (this.name === 'AIAAProbe') {
-    //   console.info('AIAAProbe::renderToolData');
-    //   return;
-    // }
-
     const eventData = evt.detail;
     const { handleRadius } = this.configuration;
 
@@ -82,15 +117,28 @@ export default class AIAAProbeTool extends ProbeTool {
       return;
     }
 
+    const labelmap3D = segmentationModule.getters.labelmap3D(
+      eventData.element, 0
+    );
+    const { activeSegmentIndex, metadata } = labelmap3D;
+    const segUid = metadata[activeSegmentIndex].uid;
+
     const context = getNewContext(eventData.canvasContext.canvas);
     for (let i = 0; i < toolData.data.length; i++) {
       const data = toolData.data[i];
-      if (data.imageId !== eventData.image.imageId) {
+      if (data.segmentUid !== segUid) {
         continue;
       }
-      if (data.visible === false) {
+      if (data.toolType !== this._aiaaModule.client.currentTool.type) {
         continue;
       }
+
+      // if (data.imageId !== eventData.image.imageId) {
+      //   continue;
+      // }
+      // if (data.visible === false) {
+      //   continue;
+      // }
 
       draw(context, context => {
         const color = data.color;
@@ -100,5 +148,20 @@ export default class AIAAProbeTool extends ProbeTool {
         });
       });
     }
+  }
+
+  _uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      let r = (Math.random() * 16) | 0,
+        v = c == 'x' ? r : (r & 0x3) | 0x8;
+
+      return v.toString(16);
+    });
+  }
+
+  _preventPropagation(evt) {
+    evt.stopImmediatePropagation();
+    evt.stopPropagation();
+    evt.preventDefault();
   }
 }
