@@ -35,6 +35,7 @@ export default class AIAAProbeTool extends ProbeTool {
 
   preMouseDownCallback(evt) {
     let isActive = false;
+    const toolType = this._aiaaModule.client.currentTool.type;
 
     if (!this._aiaaModule.state.menuIsOpen) {
       showNotification(
@@ -48,11 +49,13 @@ export default class AIAAProbeTool extends ProbeTool {
         'warning',
         'NVIDIA AIAA'
       );
-    } else if (this._aiaaModule.client.currentTool.type
-      === AIAA_MODEL_TYPES.SEGMENTATION) {
+    } else if (toolType === AIAA_MODEL_TYPES.SEGMENTATION) {
       // Ignore adding points for the segmentation tool
     } else if (this._aiaaModule.client.currentModel === null) {
       // Ignore adding points for tools with no models
+    } else if (toolType === AIAA_MODEL_TYPES.ANNOTATION
+      && evt.detail.event.ctrlKey) {
+      // Igonore right-mouse click for annotation tool type
     } else {
       const labelmaps3D = segmentationModule.getters.labelmaps3D(
         evt.detail.element
@@ -88,19 +91,34 @@ export default class AIAAProbeTool extends ProbeTool {
       const colors = toolType !== AIAA_MODEL_TYPES.DEEPGROW ?
         config.annotationPointColors : config.deepgrowPointColors;
 
+      const stackToolState = csTools.getToolState(eventData.element, 'stack');
+      const imageIds = stackToolState.data[0].imageIds;
+
       res.segmentUid = metadata[activeSegmentIndex].uid;
       res.toolType = toolType;
       res.uuid = res.uuid || this._uuidv4();
-      res.ctrlKey = toolType !== AIAA_MODEL_TYPES.DEEPGROW ?
-        false : eventData.event.ctrlKey;
+      res.ctrlKey = eventData.event.ctrlKey;
       res.color = colors[res.ctrlKey ? 1 : 0];
       res.imageId = eventData.image.imageId;
       res.x = eventData.currentPoints.image.x;
       res.y = eventData.currentPoints.image.y;
+      res.z = imageIds.indexOf(res.imageId);
 
-      // Add point to toolstate
-      // const stackToolState = csTools.getToolState(element, 'stack');
-      // const imageIds = stackToolState.data[0].imageIds;
+      // Add point to the tool's module state
+      const pointData = {
+        x: res.x,
+        y: res.y,
+        z: res.z,
+        imageId: res.imageId,
+        background: res.ctrlKey,
+        toolType: toolType,
+        uuid: res.uuid,
+      };
+
+      this._aiaaModule.setters.point(
+        res.segmentUid,
+        pointData
+      );
 
       triggerEvent(eventData.element, this.configuration.eventName, res);
     }
@@ -113,7 +131,7 @@ export default class AIAAProbeTool extends ProbeTool {
     const { handleRadius } = this.configuration;
 
     const toolData = getToolState(evt.currentTarget, this.name);
-    if (!toolData) {
+    if (!toolData || !toolData.data || !toolData.data.length) {
       return;
     }
 
@@ -121,6 +139,9 @@ export default class AIAAProbeTool extends ProbeTool {
       eventData.element, 0
     );
     const { activeSegmentIndex, metadata } = labelmap3D;
+    if (metadata[activeSegmentIndex] === undefined) {
+      return;
+    }
     const segUid = metadata[activeSegmentIndex].uid;
 
     const context = getNewContext(eventData.canvasContext.canvas);

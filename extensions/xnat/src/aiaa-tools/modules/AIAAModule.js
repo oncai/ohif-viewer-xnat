@@ -14,13 +14,7 @@ const configuration = {
 
 const client = new AIAAClient();
 
-const getters = {};
-
-const setters = {
-  points: setPoints,
-};
-
-function setPoints(toolType, segmentUid, pointData) {
+function setPoint(segmentUid, pointData) {
   let points;
   if (!state.points.has(segmentUid)) {
     points = [];
@@ -29,45 +23,89 @@ function setPoints(toolType, segmentUid, pointData) {
     points = state.points.get(segmentUid);
   }
 
-  points.push({
-    toolType: toolType,
-    pos: [pointData.x, pointData.y, pointData.z],
-    background: pointData.background,
-  });
+  points.push(pointData);
+}
 
-  /*
-  let segments = [];
-  if (!state.points.has(SeriesInstanceUID)) {
-    state.points.set(SeriesInstanceUID, segments);
-  } else {
-    segments = state.points.get(SeriesInstanceUID);
-  }
+function getSegmentPoints(segmentUid, toolType) {
+  let segmentPoints = {
+    fg: [],
+    bg: [],
+  };
 
-  let segIndex = segments.findIndex(seg => {
-    return seg.uid === segmentUid;
-  });
-
-  if (segIndex < 0) {
-    segments.push({
-      uid: segmentUid,
-      fg: [], // foreground points
-      bg: [], // background points
+  if (state.points.has(segmentUid)) {
+    const points = state.points.get(segmentUid);
+    const toolPoints = points.filter(p => {
+      return p.toolType === toolType;
     });
-    segIndex = 0;
+    segmentPoints.fg = toolPoints.filter(p => {
+      return !p.background;
+    }).map(p => [p.x, p.y, p.z]);
+    segmentPoints.bg = toolPoints.filter(p => {
+      return p.background;
+    }).map(p => [p.x, p.y, p.z]);
   }
 
-  const pointArray = pointData.background ?
-    segments[segIndex].bg : segments[segIndex].fg;
-
-  pointArray.push([
-    pointData.x, pointData.y, pointData.z
-  ]);
-  */
+  return segmentPoints;
 }
 
-function getPoints(SeriesInstanceUID, segmentUid) {
-  let points = [];
+function removePointsForSegment(segmentUid, toolType) {
+  if (!state.points.has(segmentUid)) {
+    return {};
+  }
+
+  let points = state.points.get(segmentUid);
+  let imageIdsPoints = {};
+  points = points.filter(p => {
+    if (p.toolType === toolType) {
+      let idPoints = imageIdsPoints[p.imageId];
+      if (idPoints === undefined) {
+        idPoints = imageIdsPoints[p.imageId] = [];
+      }
+      idPoints.push(p.uuid);
+      return false;
+    }
+    return true;
+  });
+
+  if (points.length === 0) {
+    state.points.delete(segmentUid);
+  } else {
+    state.points.set(segmentUid, points);
+  }
+
+  return imageIdsPoints;
 }
+
+function removePointsForAllSegments(segmentUids, toolType) {
+  let imageIdsPoints = {};
+  segmentUids.forEach(segUid => {
+    const segPoints = removePointsForSegment(segUid, toolType);
+    Object.keys(segPoints).forEach(id => {
+      let idPoints = imageIdsPoints[id];
+      if (idPoints === undefined) {
+        idPoints = [];
+      }
+      imageIdsPoints[id] = [].concat(idPoints, segPoints[id]);
+    });
+  });
+
+  return imageIdsPoints;
+}
+
+function removeAllPointsForSegment(segmentUid) {
+  state.points.delete(segmentUid);
+}
+
+const getters = {
+  segmentPoints: getSegmentPoints,
+};
+
+const setters = {
+  point: setPoint,
+  removePointsForSegment,
+  removePointsForAllSegments,
+  removeAllPointsForSegment,
+};
 
 export default {
   state,

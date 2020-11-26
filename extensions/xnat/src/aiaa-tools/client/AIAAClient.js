@@ -48,7 +48,7 @@ export default class AIAAClient {
   }
 
   runModel = async (parameters, updateStatusModal) => {
-    const { SeriesInstanceUID, imageIds } = parameters;
+    const { SeriesInstanceUID, imageIds, segmentPoints } = parameters;
     updateStatusModal('Getting AIAA session info ...');
     let session_id = await this._getSession(SeriesInstanceUID)
 
@@ -64,10 +64,16 @@ export default class AIAAClient {
     }
 
     // Construct run parameters
+    let fgPoints = [];
+    let bgPoints = [];
+    if (!_.isEmpty(segmentPoints)) {
+      fgPoints = segmentPoints.fg;
+      bgPoints = segmentPoints.bg;
+    }
     const runParams = prepareRunParameters({
       model: this.currentModel,
-      fgPoints: [],
-      bgPoints: [],
+      fgPoints: fgPoints,
+      bgPoints: bgPoints,
     });
 
     updateStatusModal(`Running ${this.currentModel.name}, please wait...`);

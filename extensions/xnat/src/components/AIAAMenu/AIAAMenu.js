@@ -14,7 +14,7 @@ import '../XNATRoiPanel.styl';
 
 const modules = csTools.store.modules;
 const segmentationModule = csTools.getModule('segmentation');
-const LOCAL_TEST = true;
+const LOCAL_TEST = false;
 
 export default class AIAAMenu extends React.Component {
   static propTypes = {
@@ -107,30 +107,35 @@ export default class AIAAMenu extends React.Component {
   }
 
   async aiaaProbToolEventListenerHandler(evt) {
-    // const { segments, activeSegmentIndex } = this.props.segmentsData;
-    // let segIndex = segments.findIndex(seg => {
-    //   return seg.index === activeSegmentIndex;
-    // });
-    // if (segIndex < 0) {
-    //   segIndex = segments.length - 1;
-    // }
-    // const segmentUid = segments[segIndex].metadata.uid;
-    const { imageIds } = this._viewParameters;
-    const { x, y, imageId, ctrlKey, segmentUid, toolType, color } = evt.detail;
-    const pointData = {
-      x: x,
-      y: y,
-      z: imageIds.indexOf(imageId),
-      imageId: imageId,
-      background: ctrlKey,
-      color: color,
-    };
-
-    this._aiaaModule.setters.points(
-      toolType,
-      segmentUid,
-      pointData
+    const { z, segmentUid, toolType } = evt.detail;
+    let segmentPoints = this._aiaaModule.getters.segmentPoints(
+      segmentUid, toolType
     );
+
+    if (toolType === AIAA_MODEL_TYPES.ANNOTATION) {
+      const minPoints = this._aiaaModule.configuration.annotationMinPoints;
+      if (segmentPoints.fg.length === 1) {
+        showNotification(
+          `The Annotation tool requires >= ${minPoints} points to run`,
+          'warning',
+          'NVIDIA AIAA'
+        );
+        return;
+      } else if (segmentPoints.fg.length < minPoints) {
+        return;
+      }
+    }
+
+    if (toolType === AIAA_MODEL_TYPES.DEEPGROW) {
+      segmentPoints.fg = segmentPoints.fg.filter(p => {
+        return p[2] === z;
+      });
+      segmentPoints.bg = segmentPoints.bg.filter(p => {
+        return p[2] === z;
+      });
+    }
+
+    this.onRunModel(segmentPoints);
   }
 
   getViewParameters(viewports, studies, activeIndex) {
@@ -191,10 +196,54 @@ export default class AIAAMenu extends React.Component {
   onClearPoints(all = true) {
     const toolType = this._aiaaClient.currentTool.type;
     const { element, imageIds } = this._viewParameters;
+    const { segments, activeSegmentIndex } = this.props.segmentsData;
 
+    let imageIdsPoints;
+    if (!all) {
+      const segIndex = segments.findIndex(seg => {
+        return seg.index === activeSegmentIndex;
+      });
+      if (segIndex < 0) {
+        return;
+      }
+      const segmentUid = segments[segIndex].metadata.uid;
+      imageIdsPoints = this._aiaaModule.setters.removePointsForSegment(
+        segmentUid, toolType
+      );
+    } else {
+      // Remove tool points for all segments
+      let segmentUids = [];
+      segments.forEach(seg => {
+        segmentUids.push(seg.metadata.uid);
+      });
+      if (segmentUids.length === 0) {
+        return;
+      }
+      imageIdsPoints = this._aiaaModule.setters.removePointsForAllSegments(
+        segmentUids, toolType
+      );
+    }
+
+    if (_.isEmpty(imageIdsPoints)) {
+      return;
+    }
+
+    const enabledElement = cornerstone.getEnabledElement(element);
+    const currentImageId = enabledElement.image.imageId;
+    Object.keys(imageIdsPoints).forEach(id => {
+        enabledElement.image.imageId = id;
+        const toolData = csTools.getToolState(enabledElement.element, 'AIAAProbeTool');
+        if (!toolData) {
+          return;
+        }
+        const pointUuids = imageIdsPoints[id];
+        toolData.data = toolData.data.filter(data => {
+          return pointUuids.indexOf(data.uuid) === -1;
+        });
+    });
+    enabledElement.image.imageId = currentImageId;
 
     refreshViewport();
-
   }
 
   onGetModels = async () => {
@@ -234,7 +283,7 @@ export default class AIAAMenu extends React.Component {
     refreshViewport();
   }
 
-  onRunModel = async () => {
+  onRunModel = async (segmentPoints = {}) => {
     const modal = showStatusModal();
 
     let runResult;
@@ -244,6 +293,7 @@ export default class AIAAMenu extends React.Component {
       const parameters = {
         SeriesInstanceUID: this._viewParameters.SeriesInstanceUID,
         imageIds: this._viewParameters.imageIds,
+        segmentPoints: segmentPoints,
       };
 
       runResult = await this._aiaaClient.runModel(parameters, updateStatusModal);
@@ -254,18 +304,9 @@ export default class AIAAMenu extends React.Component {
       return;
     }
 
-    const { segments, activeSegmentIndex } = this.props.segmentsData;
-    let activeIndex = activeSegmentIndex;
-
-    // Create new segment if collection is empty (for annotation & deepgraw)
-    // if (this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.ANNOTATION
-    //   || this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.DEEPGROW) {
-    //   if (segments.length === 0) {
-    //     activeIndex =
-    //       await this.props.onNewSegment(
-    //         `AIAA - ${this._aiaaClient.currentTool.name}`);
-    //   }
-    // } else
+    // const { segmentsData } = this.props;
+    // let activeIndex = segmentsData.activeSegmentIndex;
+    let activeIndex;
     if (this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.SEGMENTATION) {
       const labels = this._aiaaClient.currentModel.labels;
       let indexes = [];
@@ -276,14 +317,20 @@ export default class AIAAMenu extends React.Component {
         );
       }
       activeIndex = indexes[0];
+    } else {
+      const labelmap3D = segmentationModule.getters.labelmap3D(
+        this._viewParameters.element, 0
+      );
+      const { activeSegmentIndex } = labelmap3D;
+      activeIndex = activeSegmentIndex;
     }
 
-    this.updateLabelmap(runResult.image, activeIndex);
+    this.updateLabelmap(runResult.image, activeIndex, segmentPoints);
 
     modal.close();
   }
 
-  updateLabelmap(image, activeIndex) {
+  updateLabelmap(image, activeIndex, segmentPoints) {
     /*
                             updateView      slice
     seg / ann               null            null
@@ -315,14 +362,13 @@ export default class AIAAMenu extends React.Component {
     const slicelengthInBytes = image.byteLength / numberOfFrames;
     const sliceLength = slicelengthInBytes / 2; //UInt16
 
-
-    for (let s = 0; s < numberOfFrames; s++) {
+    const updateSlice = s => {
       const sliceOffset = slicelengthInBytes * s;
       const imageData = new Uint16Array(image, sliceOffset, sliceLength);
 
-      if (imageData.indexOf(1) === -1) {
-        continue;
-      }
+      // if (imageData.indexOf(1) === -1) {
+      //   return;
+      // }
 
       const labelmap = segmentationModule.getters.labelmap2DByImageIdIndex(
         labelmap3D, s, sliceLength, 1
@@ -338,44 +384,44 @@ export default class AIAAMenu extends React.Component {
 
       segmentationModule.setters.updateSegmentsOnLabelmap2D(labelmap);
 
-      refreshViewport();
-
-      // debugger;
-      // return;
-
-      // if (!labelmaps2D[s]) {
-      //
-      // }
-
-      // if (!labelmaps2D[s]
-      //   || !labelmaps2D[s].segmentsOnLabelmap
-      //   || !labelmaps2D[s].segmentsOnLabelmap.length) {
-      //   // In case when the slice has no segments
-      //   updateType = 'override';
-      // }
-
       // let useSourceBuffer = false;
       // for (let j = 0; j < imageData.length; j++) {
-        // if (updateType === 'overlap') {
-        //   if (imageData[j] > 0) {
-        //     labelmapData[j] = imageData[j] + segmentOffset;
-        //   }
-        //   useSourceBuffer = true;
-        // } else if (updateType === 'override') {
-        //   if (labelmapData[j] === activeIndex) {
-        //     labelmapData[j] = 0;
-        //   }
-        //   if (imageData[j] > 0) {
-        //     labelmapData[j] = imageData[j] + segmentOffset;
-        //   }
-        //   useSourceBuffer = true;
-        // } else {
-        //   if (imageData[j] > 0) {
-        //     imageData[j] = imageData[j] + segmentOffset;
-        //   }
-        // }
+      // if (updateType === 'overlap') {
+      //   if (imageData[j] > 0) {
+      //     labelmapData[j] = imageData[j] + segmentOffset;
+      //   }
+      //   useSourceBuffer = true;
+      // } else if (updateType === 'override') {
+      //   if (labelmapData[j] === activeIndex) {
+      //     labelmapData[j] = 0;
+      //   }
+      //   if (imageData[j] > 0) {
+      //     labelmapData[j] = imageData[j] + segmentOffset;
+      //   }
+      //   useSourceBuffer = true;
+      // } else {
+      //   if (imageData[j] > 0) {
+      //     imageData[j] = imageData[j] + segmentOffset;
+      //   }
       // }
+      // }
+    };
+
+    if (this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.DEEPGROW) {
+      let sliceIndex;
+      if (segmentPoints.fg.length > 0) {
+        sliceIndex = segmentPoints.fg[0][2];
+      } else if (segmentPoints.bg.length > 0) {
+        sliceIndex = segmentPoints.fg[0][2];
+      }
+      updateSlice(sliceIndex);
+    } else {
+      for (let s = 0; s < numberOfFrames; s++) {
+        updateSlice(s);
+      }
     }
+
+    refreshViewport();
   }
 
   render() {
