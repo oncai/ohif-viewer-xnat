@@ -28,14 +28,14 @@ function api_get(url) {
   console.info('GET:: ' + url);
   return axios
     .get(url)
-    .then(function(response) {
-      console.info(response);
+    .then((response) => {
       return response;
     })
-    .catch(function(error) {
-      return error;
-    })
-    .finally(function() {
+    .catch((error) => {
+      return {
+        status: 0,
+        data: error.message,
+      };
     });
 }
 
@@ -50,14 +50,14 @@ function api_post_file(url, params, file) {
         accept: 'multipart/form-data',
       },
     })
-    .then(function(response) {
-      console.info(response);
+    .then((response) => {
       return response;
     })
-    .catch(function(error) {
-      return error;
-    })
-    .finally(function() {
+    .catch((error) => {
+      return {
+        status: 0,
+        data: error.message,
+      };
     });
 }
 
@@ -71,12 +71,14 @@ function api_put(url, params, file) {
         accept: 'application/json',
       },
     })
-    .then(function(response) {
-      console.info(response);
+    .then((response) => {
       return response;
     })
-    .catch(function(error) {
-      return error;
+    .catch((error) => {
+      return {
+        status: 0,
+        data: error.message,
+      };
     });
 }
 

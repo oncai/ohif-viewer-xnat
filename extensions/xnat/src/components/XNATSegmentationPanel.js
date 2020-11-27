@@ -261,7 +261,7 @@ export default class XNATSegmentationPanel extends React.Component {
     });
   }
 
-  async onNewSegment(label = 'Unnamed Segment') {
+  onNewSegment(label = 'Unnamed Segment') {
     let { labelmap3D, firstImageId } = this.state;
 
     const newMetadata = generateSegmentationMetadata(label);

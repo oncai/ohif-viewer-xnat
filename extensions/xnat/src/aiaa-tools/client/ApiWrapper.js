@@ -85,44 +85,6 @@ export default class ApiWrapper {
     return api_put(session_url.toString(), params, image_in);
   }
 
-  // async segmentation(model_name, image_in, session_id = undefined, output_type = '.nrrd') {
-  //   const params = {};
-  //   if (output_type) {
-  //     params.result_extension = output_type;
-  //     params.result_dtype = 'uint16';
-  //     params.result_compress = true;
-  //   }
-  //
-  //   return this.inference('segmentation', model_name, params, image_in, session_id);
-  // }
-  //
-  // async deepgrow(model_name, foreground, background, image_in, session_id = undefined, output_type = '.nrrd') {
-  //   const params = {
-  //     foreground: foreground,
-  //     background: background,
-  //   };
-  //   if (output_type) {
-  //     params.result_extension = output_type;
-  //     params.result_dtype = 'uint16';
-  //     params.result_compress = true;
-  //   }
-  //
-  //   return this.inference('deepgrow', model_name, params, image_in, session_id);
-  // }
-  //
-  // async dextr3d(model_name, points, image_in, session_id = undefined, output_type = '.nrrd') {
-  //   const params = {
-  //     points: points,
-  //   };
-  //   if (output_type) {
-  //     params.result_extension = output_type;
-  //     params.result_dtype = 'uint16';
-  //     params.result_compress = true;
-  //   }
-  //
-  //   return this.inference('dextr3d', model_name, params, image_in, session_id);
-  // }
-
   async runModel(api, params, model_name, session_id) {
     console.info('AIAAClient - calling ' + api);
     let url = new URL(`/v1/${api}`, this._server_url);

@@ -312,7 +312,7 @@ export default class AIAAMenu extends React.Component {
       let indexes = [];
       for (let l = 0; l < labels.length; l++) {
         indexes.push(
-          await this.props.onNewSegment(
+          this.props.onNewSegment(
             `AIAA - ${labels[l]}`)
         );
       }
@@ -358,17 +358,12 @@ export default class AIAAMenu extends React.Component {
     }
 
     const numberOfFrames = imageIds.length;
-    const labelmaps2D = labelmap3D.labelmaps2D;
     const slicelengthInBytes = image.byteLength / numberOfFrames;
     const sliceLength = slicelengthInBytes / 2; //UInt16
 
-    const updateSlice = s => {
+    const updateSlice = (s, override = false) => {
       const sliceOffset = slicelengthInBytes * s;
       const imageData = new Uint16Array(image, sliceOffset, sliceLength);
-
-      // if (imageData.indexOf(1) === -1) {
-      //   return;
-      // }
 
       const labelmap = segmentationModule.getters.labelmap2DByImageIdIndex(
         labelmap3D, s, sliceLength, 1
@@ -379,6 +374,8 @@ export default class AIAAMenu extends React.Component {
       for (let j = 0; j < imageData.length; j++) {
         if (imageData[j] > 0) {
           labelmapData[j] = imageData[j] + segmentOffset;
+        } else if (override && labelmapData[j] === activeIndex) {
+          labelmapData[j] = 0;
         }
       }
 
@@ -414,7 +411,7 @@ export default class AIAAMenu extends React.Component {
       } else if (segmentPoints.bg.length > 0) {
         sliceIndex = segmentPoints.fg[0][2];
       }
-      updateSlice(sliceIndex);
+      updateSlice(sliceIndex, true);
     } else {
       for (let s = 0; s < numberOfFrames; s++) {
         updateSlice(s);
