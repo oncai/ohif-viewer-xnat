@@ -361,7 +361,12 @@ export default class XNATSegmentationPanel extends React.Component {
     const { firstImageId, activeSegmentIndex, labelmap3D } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
 
-    const segmentUid = labelmap3D.metadata[activeSegmentIndex].uid;
+    // Delete segment AIAA points
+    if ('aiaa' in cornerstoneTools.store.modules) {
+      const aiaaModule = cornerstoneTools.store.modules.aiaa;
+      const segmentUid = labelmap3D.metadata[activeSegmentIndex].uid;
+      aiaaModule.setters.removeAllPointsForSegment(segmentUid);
+    }
 
     segmentationModule.setters.deleteSegment(element, activeSegmentIndex);
 
@@ -372,12 +377,6 @@ export default class XNATSegmentationPanel extends React.Component {
       segmentIndex = segments[segments.length - 1].index;
     }
     labelmap3D.activeSegmentIndex = segmentIndex;
-
-    // Delete segment AIAA points
-    if (this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL) {
-      const aiaaModule = cornerstoneTools.store.modules.aiaa;
-      aiaaModule.setters.removeAllPointsForSegment(segmentUid);
-    }
 
     this.setState({
       segments,
