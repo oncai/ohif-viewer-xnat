@@ -1,9 +1,7 @@
 import csTools from 'cornerstone-tools';
 import showNotification from '../../components/common/showNotification.js';
 import AIAA_MODEL_TYPES from '../modelTypes';
-import cornerstone from 'cornerstone-core';
-import addLabelmap2D from 'cornerstone-tools/src/store/modules/segmentationModule/addLabelmap2D';
-import cornerstoneTools from 'cornerstone-tools';
+import { generateSegmentationMetadata } from '../../peppermint-tools';
 
 const { ProbeTool, getToolState } = csTools;
 const triggerEvent = csTools.importInternal('util/triggerEvent');
@@ -57,18 +55,7 @@ export default class AIAAProbeTool extends ProbeTool {
       && evt.detail.event.ctrlKey) {
       // Igonore right-mouse click for annotation tool type
     } else {
-      const labelmaps3D = segmentationModule.getters.labelmaps3D(
-        evt.detail.element
-      );
-      if (!labelmaps3D.labelmaps3D || !labelmaps3D.labelmaps3D[0].activeSegmentIndex) {
-        showNotification(
-          'Mask collection has no segments, please add a label first',
-          'warning',
-          'NVIDIA AIAA'
-        );
-      } else {
-        isActive = true;
-      }
+      isActive = true;
     }
 
     if (!isActive) {
@@ -81,20 +68,17 @@ export default class AIAAProbeTool extends ProbeTool {
   createNewMeasurement(eventData) {
     let res = super.createNewMeasurement(eventData);
     if (res) {
-      const labelmap3D = segmentationModule.getters.labelmap3D(
-        eventData.element, 0
-      );
-      const { activeSegmentIndex, metadata } = labelmap3D;
-
       const toolType = this._aiaaModule.client.currentTool.type;
       const config = this._aiaaModule.configuration;
       const colors = toolType !== AIAA_MODEL_TYPES.DEEPGROW ?
         config.annotationPointColors : config.deepgrowPointColors;
 
-      const stackToolState = csTools.getToolState(eventData.element, 'stack');
-      const imageIds = stackToolState.data[0].imageIds;
+      const {
+        segmentUid,
+        currentImageIdIndex
+      } = this._getSegmentData(eventData.element);
 
-      res.segmentUid = metadata[activeSegmentIndex].uid;
+      res.segmentUid = segmentUid;
       res.toolType = toolType;
       res.uuid = res.uuid || this._uuidv4();
       res.ctrlKey = eventData.event.ctrlKey;
@@ -102,7 +86,7 @@ export default class AIAAProbeTool extends ProbeTool {
       res.imageId = eventData.image.imageId;
       res.x = eventData.currentPoints.image.x;
       res.y = eventData.currentPoints.image.y;
-      res.z = imageIds.indexOf(res.imageId);
+      res.z = currentImageIdIndex;
 
       // Add point to the tool's module state
       const pointData = {
@@ -178,6 +162,40 @@ export default class AIAAProbeTool extends ProbeTool {
 
       return v.toString(16);
     });
+  }
+
+  _getSegmentData(element) {
+    const {
+      labelmap3D,
+      currentImageIdIndex,
+      activeLabelmapIndex,
+    } = segmentationModule.getters.labelmap2D(element);
+
+    const segmentIndex = labelmap3D.activeSegmentIndex;
+    let metadata = labelmap3D.metadata[segmentIndex];
+
+    if (!metadata) {
+      let label = 'Unnamed Segment';
+      const modelLabels = this._aiaaModule.client.currentModel.labels;
+      if (modelLabels.length > 0) {
+        label = modelLabels[0];
+      }
+      metadata = generateSegmentationMetadata(label);
+
+      segmentationModule.setters.metadata(
+        element,
+        activeLabelmapIndex,
+        segmentIndex,
+        metadata
+      );
+
+      triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
+    }
+
+    return {
+      segmentUid: metadata.uid,
+      currentImageIdIndex,
+    };
   }
 
   _preventPropagation(evt) {
