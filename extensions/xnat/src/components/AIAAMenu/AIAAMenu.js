@@ -9,12 +9,13 @@ import showNotification from '../common/showNotification';
 import { showStatusModal, updateStatusModal } from '../common/statusModal.js';
 import { AIAA_TOOL_TYPES, AIAA_MODEL_TYPES } from '../../aiaa-tools';
 import refreshViewport from '../../utils/refreshViewport.js';
+import { removeEmptyLabelmaps2D } from '../../peppermint-tools'
 
 import '../XNATRoiPanel.styl';
 
 const modules = csTools.store.modules;
 const segmentationModule = csTools.getModule('segmentation');
-const LOCAL_TEST = false;
+const LOCAL_TEST = true;
 
 export default class AIAAMenu extends React.Component {
   static propTypes = {
@@ -365,6 +366,11 @@ export default class AIAAMenu extends React.Component {
       const sliceOffset = slicelengthInBytes * s;
       const imageData = new Uint16Array(image, sliceOffset, sliceLength);
 
+      const imageHasData = imageData.some(pixel => pixel !== 0);
+      if (!imageHasData) {
+        return;
+      }
+
       const labelmap = segmentationModule.getters.labelmap2DByImageIdIndex(
         labelmap3D, s, sliceLength, 1
       );
@@ -380,28 +386,6 @@ export default class AIAAMenu extends React.Component {
       }
 
       segmentationModule.setters.updateSegmentsOnLabelmap2D(labelmap);
-
-      // let useSourceBuffer = false;
-      // for (let j = 0; j < imageData.length; j++) {
-      // if (updateType === 'overlap') {
-      //   if (imageData[j] > 0) {
-      //     labelmapData[j] = imageData[j] + segmentOffset;
-      //   }
-      //   useSourceBuffer = true;
-      // } else if (updateType === 'override') {
-      //   if (labelmapData[j] === activeIndex) {
-      //     labelmapData[j] = 0;
-      //   }
-      //   if (imageData[j] > 0) {
-      //     labelmapData[j] = imageData[j] + segmentOffset;
-      //   }
-      //   useSourceBuffer = true;
-      // } else {
-      //   if (imageData[j] > 0) {
-      //     imageData[j] = imageData[j] + segmentOffset;
-      //   }
-      // }
-      // }
     };
 
     if (this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.DEEPGROW) {
@@ -417,6 +401,8 @@ export default class AIAAMenu extends React.Component {
         updateSlice(s);
       }
     }
+
+    removeEmptyLabelmaps2D(labelmap3D);
 
     refreshViewport();
   }

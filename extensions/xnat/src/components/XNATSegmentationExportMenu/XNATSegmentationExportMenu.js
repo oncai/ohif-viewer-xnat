@@ -95,7 +95,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
           console.log(error);
           // TODO -> Work on backup mechanism, disabled for now.
           //localBackup.saveBackUpForActiveSeries();
-          displayExportFailedDialog(seriesInstanceUid);
+          // displayExportFailedDialog(seriesInstanceUid);
           this.props.onExportCancel();
         });
     });
