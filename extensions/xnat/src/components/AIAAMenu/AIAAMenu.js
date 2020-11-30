@@ -15,7 +15,7 @@ import '../XNATRoiPanel.styl';
 
 const modules = csTools.store.modules;
 const segmentationModule = csTools.getModule('segmentation');
-const LOCAL_TEST = true;
+const LOCAL_TEST = false;
 
 export default class AIAAMenu extends React.Component {
   static propTypes = {
