@@ -104,7 +104,9 @@ export default class AIAAProbeTool extends ProbeTool {
         pointData
       );
 
-      triggerEvent(eventData.element, this.configuration.eventName, res);
+      if (!eventData.event.altKey) {
+        triggerEvent(eventData.element, this.configuration.eventName, res);
+      }
     }
 
     return res;
