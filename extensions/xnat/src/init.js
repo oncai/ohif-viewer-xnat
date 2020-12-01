@@ -80,8 +80,6 @@ export default function init({ servicesManager, commandsManager, configuration =
     FreehandRoi3DTool,
     FreehandRoi3DSculptorTool,
     /* AIAA Tools */
-    // DeepgrowProbeTool,
-    // DExtr3DProbeTool,
     AIAAProbeTool,
   ];
 

@@ -286,6 +286,8 @@ export default class XNATSegmentationImportMenu extends React.Component {
               collectionType: data_fields.collectionType,
               label: data_fields.label,
               name: data_fields.name,
+              date: data_fields.date,
+              time: data_fields.time,
               getFilesUri: `/data/archive/experiments/${data_fields.imageSession_ID}/assessors/${data_fields.ID}/files?format=json`,
             });
           }
@@ -511,8 +513,9 @@ export default class XNATSegmentationImportMenu extends React.Component {
             <table className="collectionTable">
               <thead>
                 <tr>
-                  <th width="10%" className="centered-cell" />
-                  <th width="90%">Name</th>
+                  <th width="5%" className="centered-cell" />
+                  <th width="75%">Name</th>
+                  <th width="20%">Timestamp</th>
                 </tr>
               </thead>
               <tbody>
@@ -532,6 +535,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
                         />
                       </td>
                       <td>{roiCollection.name}</td>
+                      <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
                     </tr>
                   )
                 )}

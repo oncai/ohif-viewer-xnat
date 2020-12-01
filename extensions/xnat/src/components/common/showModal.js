@@ -16,6 +16,8 @@ const showModal = (content, contentProps, title = '') => {
       customClassName: 'modal-autoWidth',
     });
   }
+
+  return { close: UIModalService.hide };
 };
 
 export default showModal;

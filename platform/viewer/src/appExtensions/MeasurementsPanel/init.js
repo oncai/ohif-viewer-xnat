@@ -41,10 +41,10 @@ export default function init({
   const onMeasurementAdded = onMeasurementsChanged.bind(this, 'added');
   const onMeasurementRemoved = onMeasurementsChanged.bind(this, 'removed');
   const onMeasurementModified = onMeasurementsChanged.bind(this, 'modified');
-  const onLabelmapModified = onMeasurementsChanged.bind(
-    this,
-    'labelmapModified'
-  );
+  // const onLabelmapModified = onMeasurementsChanged.bind(
+  //   this,
+  //   'labelmapModified'
+  // );
 
   const _getDefaultPosition = event => ({
     x: (event && event.currentPoints.client.x) || 0,
@@ -238,10 +238,10 @@ export default function init({
       csTools.EVENTS.MEASUREMENT_MODIFIED,
       onMeasurementModified
     );
-    element.addEventListener(
-      csTools.EVENTS.LABELMAP_MODIFIED,
-      onLabelmapModified
-    );
+    // element.addEventListener(
+    //   csTools.EVENTS.LABELMAP_MODIFIED,
+    //   onLabelmapModified
+    // );
 
     // element.addEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
     // element.addEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
@@ -266,10 +266,10 @@ export default function init({
       csTools.EVENTS.MEASUREMENT_MODIFIED,
       onMeasurementModified
     );
-    element.removeEventListener(
-      csTools.EVENTS.LABELMAP_MODIFIED,
-      onLabelmapModified
-    );
+    // element.removeEventListener(
+    //   csTools.EVENTS.LABELMAP_MODIFIED,
+    //   onLabelmapModified
+    // );
 
     // element.removeEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
     // element.removeEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
