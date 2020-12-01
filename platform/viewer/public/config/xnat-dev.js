@@ -3,8 +3,8 @@ window.config = {
     major: 3,
     minor: 0,
     patch: 0,
-    dev: 'b',
-    build: 1103
+    dev: 'SNAPSHOT',
+    build: 1201
   },
   // default: '/'
   routerBasename: '/',
