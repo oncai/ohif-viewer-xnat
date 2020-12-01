@@ -18,7 +18,7 @@ export default class ApiWrapper {
     this._server_url = fixUrl(url);
   }
 
-  getServerURL(url) {
+  getServerURL() {
     return this._server_url;
   }
 

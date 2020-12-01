@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
+import isValidUrl from '../../utils/isValidUrl.js';
 
 import '../XNATRoiPanel.styl';
 
@@ -18,8 +19,14 @@ export default class AIAAMenuSettings extends React.Component {
   constructor(props = {}) {
     super(props);
 
+    const validUrl = isValidUrl(props.settings.serverUrl);
+
     this._settings = {
-      ...props.settings,
+      ...props.settings
+    };
+
+    this.state = {
+      validUrl: validUrl,
     };
 
     this.onBlurSeverURL = this.onBlurSeverURL.bind(this);
@@ -27,10 +34,14 @@ export default class AIAAMenuSettings extends React.Component {
 
   onBlurSeverURL = evt => {
     this._settings.serverUrl = evt.target.value;
+    this.setState({
+      validUrl: isValidUrl(evt.target.value),
+    });
   }
 
   render() {
     const { settings } = this.props;
+    const { validUrl } = this.state;
 
     return (
       <div className="footerSection">
@@ -40,7 +51,7 @@ export default class AIAAMenuSettings extends React.Component {
             id="aiaaServerURL"
             type="text"
             defaultValue={settings.serverUrl}
-            onBlur={this.onBlurSeverURL}
+            onChange={this.onBlurSeverURL}
           />
         </div>
         <div className="footerSectionItem">
@@ -48,6 +59,7 @@ export default class AIAAMenuSettings extends React.Component {
             onClick={() => {
               this.props.onSave(this._settings)}
             }
+            disabled={!validUrl}
             style={{ marginLeft: 'auto' }}
           >
             Save

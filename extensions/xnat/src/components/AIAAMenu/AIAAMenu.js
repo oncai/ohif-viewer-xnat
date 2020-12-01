@@ -9,7 +9,8 @@ import showNotification from '../common/showNotification';
 import { showStatusModal, updateStatusModal } from '../common/statusModal.js';
 import { AIAA_TOOL_TYPES, AIAA_MODEL_TYPES } from '../../aiaa-tools';
 import refreshViewport from '../../utils/refreshViewport.js';
-import { removeEmptyLabelmaps2D } from '../../peppermint-tools'
+import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
+import isValidUrl from '../../utils/isValidUrl.js';
 
 import '../XNATRoiPanel.styl';
 
@@ -152,17 +153,11 @@ export default class AIAAMenu extends React.Component {
     const stackToolState = csTools.getToolState(element, 'stack');
     const imageIds = stackToolState.data[0].imageIds;
 
-    // const imageIdsToIndex = new Map();
-    // for (let i = 0; i < imageIds.length; i++) {
-    //   imageIdsToIndex.set(imageIds[i], i);
-    // }
-
     return {
       StudyInstanceUID,
       SeriesInstanceUID,
       displaySetInstanceUID,
       imageIds,
-      // imageIdsToIndex,
       element,
     };
   }
@@ -248,6 +243,10 @@ export default class AIAAMenu extends React.Component {
   }
 
   onGetModels = async () => {
+    if (!isValidUrl(this._aiaaClient.api.getServerURL())) {
+      return;
+    }
+
     const modal = showStatusModal('Collecting model list from AIAA server...');
     this.setState({
       models: [],
@@ -413,7 +412,12 @@ export default class AIAAMenu extends React.Component {
     const { showSettings, api, models } = this.state;
 
     let statusMessage = null;
-    if (api.isConnecting) {
+    if (settings.serverUrl.length === 0) {
+      statusMessage =
+        <p style={{ color: 'var(--snackbar-error)' }}>
+          To use AIAA tools, please enter a valid server URL in settings
+        </p>
+    } else if (api.isConnecting) {
       statusMessage =
         <p>{`Connecting to ${this._aiaaClient.api.getServerURL()} ...`}</p>
     } else if (!api.isConnected) {
