@@ -7,6 +7,7 @@ import generateDateTimeAndLabel from '../../utils/IO/helpers/generateDateAndTime
 import SegmentationExportListItem from './SegmentationExportListItem.js';
 import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
+import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
 
 import '../XNATRoiPanel.styl';
 
@@ -75,7 +76,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
       );
 
       dicomSegExporter
-        .exportToXNAT(false)
+        .exportToXNAT()
         .then(success => {
           console.log('PUT successful.');
           // Store that we've 'imported' a collection for this series.
@@ -95,7 +96,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
           console.log(error);
           // TODO -> Work on backup mechanism, disabled for now.
           //localBackup.saveBackUpForActiveSeries();
-          displayExportFailedDialog(seriesInstanceUid);
+          // displayExportFailedDialog(seriesInstanceUid);
           this.props.onExportCancel();
         });
     });
@@ -132,11 +133,17 @@ export default class XNATSegmentationExportMenu extends React.Component {
    * @returns {null}
    */
   componentDidMount() {
-    const { firstImageId, labelmap3D } = this.props;
+    const { firstImageId } = this.props;
+    const element = getElementForFirstImageId(firstImageId);
+    const { labelmaps3D, activeLabelmapIndex } =
+      segmentationModule.getters.labelmaps3D(element);
+    const labelmap3D = labelmaps3D[activeLabelmapIndex];
 
     if (!firstImageId || !labelmap3D) {
       return;
     }
+
+    removeEmptyLabelmaps2D(labelmap3D);
 
     const importMetadata = segmentationModule.setters.importMetadata(
       firstImageId
@@ -151,10 +158,17 @@ export default class XNATSegmentationExportMenu extends React.Component {
 
     for (let i = 0; i < metadata.length; i++) {
       if (metadata[i]) {
-        segList.push({
-          index: i,
-          metadata: metadata[i],
+        // Check if the segment has labelmap data
+        const hasData =
+          labelmap3D.labelmaps2D.some(labelmap2D => {
+            return labelmap2D.segmentsOnLabelmap.includes(i);
         });
+        if (hasData) {
+          segList.push({
+            index: i,
+            metadata: metadata[i],
+          });
+        }
       }
     }
 
@@ -180,7 +194,17 @@ export default class XNATSegmentationExportMenu extends React.Component {
       defaultName = segList[0].metadata.SegmentLabel;
     }
 
-    if (exporting) {
+    const emptySegList = segList.length === 0;
+
+    if (emptySegList) {
+      segExportListBody = (
+        <>
+          <h5>
+            Empty segments data. Export is no available.
+          </h5>
+        </>
+      );
+    } else if (exporting) {
       segExportListBody = (
         <>
           <h5>
@@ -237,7 +261,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
 
         <div className="roiCollectionBody limitHeight">{segExportListBody}</div>
 
-        {!exporting && (
+        {!exporting && !emptySegList && (
           <div className="roiCollectionFooter">
             <div>
               <label style={{ marginRight: 5 }}>Name</label>
@@ -251,9 +275,12 @@ export default class XNATSegmentationExportMenu extends React.Component {
                 style={{ flex: 1 }}
               />
             </div>
-            <button onClick={this.onExportButtonClick} style={{ marginLeft: 10 }}>
+            <button
+              onClick={this.onExportButtonClick}
+              style={{ marginLeft: 10 }}
+            >
               <Icon name="xnat-export" />
-              Export selected
+              Export
             </button>
           </div>
         )}

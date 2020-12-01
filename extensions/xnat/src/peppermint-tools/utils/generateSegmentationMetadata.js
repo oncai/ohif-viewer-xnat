@@ -1,4 +1,5 @@
 import GeneralAnatomyList from './GeneralAnatomyList.js';
+import generateUID from'../utils/generateUID.js';
 
 const categories = GeneralAnatomyList.SegmentationCodes.Category;
 
@@ -27,6 +28,7 @@ export default function generateMetadata(
       CodingSchemeDesignator: type.CodingSchemeDesignator,
       CodeMeaning: type.CodeMeaning,
     },
+    uid: generateUID(),
   };
 
   if (modifierUID) {

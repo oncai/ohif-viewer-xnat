@@ -19,6 +19,7 @@ import {
   generateSegmentationMetadata,
   generateUID,
   GeneralAnatomyList,
+  removeEmptyLabelmaps2D,
 } from './utils';
 
 export {
@@ -38,4 +39,5 @@ export {
   generateSegmentationMetadata,
   generateUID,
   GeneralAnatomyList,
+  removeEmptyLabelmaps2D
 };

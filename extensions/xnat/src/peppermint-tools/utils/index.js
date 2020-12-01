@@ -3,6 +3,7 @@ import interpolate from './freehandInterpolate/interpolate.js';
 import generateSegmentationMetadata from './generateSegmentationMetadata.js';
 import generateUID from './generateUID.js';
 import GeneralAnatomyList from './GeneralAnatomyList.js';
+import removeEmptyLabelmaps2D from './removeEmptyLabelmaps2D.js';
 
 export {
   Polygon,
@@ -10,4 +11,5 @@ export {
   generateSegmentationMetadata,
   generateUID,
   GeneralAnatomyList,
+  removeEmptyLabelmaps2D,
 };

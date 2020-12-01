@@ -5,6 +5,8 @@ import { store } from 'cornerstone-tools';
 import '../XNATRoiPanel.styl';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
+import showModal from '../common/showModal.js';
+import LabelEditModal from '../common/LabelEditModal.js';
 
 const modules = store.modules;
 
@@ -36,31 +38,46 @@ export default class WorkingCollectionListItem extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    this.onTextInputChange = this.onTextInputChange.bind(this);
+    this.onEditClick = this.onEditClick.bind(this);
+    this.onUpdateLabel = this.onUpdateLabel.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
 
-    const visible = this.props.metadata.visible;
+    const { visible, name } = this.props.metadata;
 
     this.state = {
       visible,
+      name,
     };
   }
 
-  onTextInputChange(evt) {
-    const name = evt.target.value;
+  onUpdateLabel(data) {
+    const { newLabel , itemId } = data;
     const { SeriesInstanceUID } = this.props;
 
-    if (name.replace(' ', '').length > 0) {
-      const metadata = this.props.metadata;
-      const freehand3DModule = modules.freehand3D;
+    const freehand3DModule = modules.freehand3D;
 
-      freehand3DModule.setters.ROIContourName(
-        name,
-        SeriesInstanceUID,
-        'DEFAULT',
-        metadata.uid
-      );
-    }
+    freehand3DModule.setters.ROIContourName(
+      newLabel,
+      SeriesInstanceUID,
+      'DEFAULT',
+      itemId
+    );
+
+    this.setState({ name: newLabel });
+  }
+
+  onEditClick() {
+    const { metadata } = this.props;
+    const onUpdateLabel = this.onUpdateLabel;
+    showModal(
+      LabelEditModal,
+      {
+        labelTag: 'ROI Name',
+        currentLabel: metadata.name,
+        itemId: metadata.uid,
+        onUpdateProperty: onUpdateLabel,
+      }
+    );
   }
 
   /**
@@ -113,16 +130,12 @@ export default class WorkingCollectionListItem extends React.Component {
           />
         </td>
         <td className="left-aligned-cell">
-          <input
-            name="roiContourName"
-            className="roiEdit"
-            onChange={this.onTextInputChange}
-            type="text"
-            autoComplete="off"
-            defaultValue={name}
-            placeholder="Enter ROI Name..."
-            tabIndex="1"
-          />
+          <a
+            style={{ cursor: 'pointer', color: 'var(--text-primary-color)'}}
+            onClick={this.onEditClick}
+          >
+            {name}
+          </a>
         </td>
         <td className="centered-cell">
           <a

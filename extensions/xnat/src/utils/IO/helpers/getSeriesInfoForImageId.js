@@ -18,6 +18,8 @@ export default function getSeriesInfoForImageId(viewportData) {
     StudyInstanceUID: studyInstanceUid,
     SeriesInstanceUID: seriesInstanceUid,
     images,
+    SeriesDate,
+    SeriesTime,
   } = displaySet;
 
   const firstImage = images[0];
@@ -35,16 +37,16 @@ export default function getSeriesInfoForImageId(viewportData) {
 
   const sopClassUid = sopCommonModule.sopClassUID;
   const modality = generalSeriesModule.modality;
-  const seriesDate = `${generalSeriesModule.seriesDate.year}${generalSeriesModule.seriesDate.month}${generalSeriesModule.seriesDate.day}`;
-  const seriesTime = `${generalSeriesModule.seriesTime.hours}${generalSeriesModule.seriesTime.minutes}${generalSeriesModule.seriesTime.seconds}`;
+  // const seriesDate = `${generalSeriesModule.seriesDate.year}${generalSeriesModule.seriesDate.month}${generalSeriesModule.seriesDate.day}`;
+  // const seriesTime = `${generalSeriesModule.seriesTime.hours}${generalSeriesModule.seriesTime.minutes}${generalSeriesModule.seriesTime.seconds}`;
   //.${generalSeriesModule.seriesTime.fractionalSeconds}`;
 
   const seriesInfo = {
     studyInstanceUid,
     seriesInstanceUid,
     modality,
-    startDate: seriesDate,
-    startTime: seriesTime,
+    startDate: SeriesDate,//seriesDate,
+    startTime: SeriesTime,//seriesTime,
     sopClassUid,
     // TODO: Need to supply this metadata
     person: {

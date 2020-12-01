@@ -12,16 +12,6 @@ function MaskRoiPropertyModal(props) {
     onClose,
   } = props;
 
-  // let currentModifierUID = null;
-  // if (
-  //   metadata.SegmentedPropertyTypeCodeSequence
-  //     .SegmentedPropertyTypeModifierCodeSequence
-  // ) {
-  //   currentModifierUID =
-  //     metadata.SegmentedPropertyTypeCodeSequence
-  //       .SegmentedPropertyTypeModifierCodeSequence.CodeValue;
-  // }
-
   const [state, setState] = useState({
     segmentLabel: metadata.SegmentLabel,
     categoryUID: metadata.SegmentedPropertyCategoryCodeSequence.CodeValue,
@@ -97,7 +87,7 @@ function MaskRoiPropertyModal(props) {
     setState({
       ...state,
       segmentLabel: label,
-      validLabel: label.length > 0
+      validLabel: label.length > 0 && label.length <= 64
     });
   }
 
@@ -226,8 +216,8 @@ function MaskRoiPropertyModal(props) {
 }
 
 MaskRoiPropertyModal.propTypes = {
-  labelmap3D: PropTypes.object,
-  activeSegmentIndex: PropTypes.number,
+  metadata: PropTypes.object,
+  segmentIndex: PropTypes.number,
   onUpdateProperty: PropTypes.func,
   onClose: PropTypes.func,
 };

@@ -1,9 +1,10 @@
 import React from 'react';
 import cornerstoneTools from 'cornerstone-tools';
+import ColoredCircle from '../common/ColoredCircle';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
-import './XNATSegmentationExportMenu.styl';
+import '../XNATRoiPanel.styl';
 
 export default class MaskExportListItem extends React.Component {
   constructor(props = {}) {
@@ -48,10 +49,7 @@ export default class MaskExportListItem extends React.Component {
     return (
       <tr>
         <td className="left-aligned-cell">
-          <i
-            className="fa fa-square"
-            style={{ color: this._getColor(segIndex) }}
-          />
+          <ColoredCircle color={this._getColor(segIndex)} />{' '}
           {metadata.SegmentLabel}
         </td>
         <td>{metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning}</td>

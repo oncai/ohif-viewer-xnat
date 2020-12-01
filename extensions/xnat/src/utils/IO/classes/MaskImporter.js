@@ -5,6 +5,7 @@ import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 import { utils } from '@ohif/core';
 import Segmentation from './_tempDCMJSFork/Segmentation_4X_fork';
 import colorMaps from '../../../constants/colorMaps';
+import { generateUID } from '../../../peppermint-tools';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -113,6 +114,11 @@ export default class MaskImporter {
         }
 
         const metadata = segMetadata.data;
+        metadata.forEach(seg => {
+          if (seg !== undefined) {
+            seg.uid = generateUID();
+          }
+        });
 
         if (isFractional) {
           segmentationModule.setters.fractionalLabelmap3DByFirstImageId(
