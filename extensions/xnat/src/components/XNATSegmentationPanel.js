@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import MenuIOButtons from './common/MenuIOButtons.js';
-
 //import SegmentationMenuDeleteConfirmation from './SegmentationMenuDeleteConfirmation.js';
 import SegmentationMenuListBody from './XNATSegmentationMenu/SegmentationMenuListBody.js';
 import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuListHeader.js';

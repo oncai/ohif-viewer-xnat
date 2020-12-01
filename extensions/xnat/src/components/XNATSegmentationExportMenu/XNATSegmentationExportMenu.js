@@ -275,9 +275,12 @@ export default class XNATSegmentationExportMenu extends React.Component {
                 style={{ flex: 1 }}
               />
             </div>
-            <button onClick={this.onExportButtonClick} style={{ marginLeft: 10 }}>
+            <button
+              onClick={this.onExportButtonClick}
+              style={{ marginLeft: 10 }}
+            >
               <Icon name="xnat-export" />
-              Export selected
+              Export
             </button>
           </div>
         )}
