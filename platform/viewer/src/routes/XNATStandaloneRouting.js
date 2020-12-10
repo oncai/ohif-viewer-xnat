@@ -11,7 +11,6 @@ import NotFound from '../routes/NotFound';
 import {
   isLoggedIn,
   xnatAuthenticate,
-  reassignInstanceUrls,
 } from '@xnat-ohif/extension-xnat';
 
 const { log, metadata, utils } = OHIF;
@@ -249,9 +248,11 @@ class XNATStandaloneRouting extends Component {
       search = search.slice(1, search.length);
       const query = qs.parse(search);
 
-      const rootUrl = getRootUrl();
+      let rootUrl = getRootUrl();
 
       if (process.env.NODE_ENV === 'development') {
+        console.info('XNATStandaloneRouting Development mode! .........');
+        rootUrl = process.env.XNAT_PROXY;
         // Authenticate to XNAT
         const loggedIn = await isLoggedIn();
         console.info('Logged in XNAT? ' + loggedIn);
@@ -259,6 +260,8 @@ class XNATStandaloneRouting extends Component {
           await xnatAuthenticate();
         }
       }
+
+      console.log(`rootUrl: ${rootUrl}`);
 
       let {
         server,
@@ -268,11 +271,6 @@ class XNATStandaloneRouting extends Component {
       } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
       if (studies) {
-        if (process.env.NODE_ENV === 'development') {
-          // assign instance file urls to proxy value
-          reassignInstanceUrls(studies);
-        }
-
         // Remove series with no instances
         studies = studies.filter(study => {
           study.series = study.series.filter(series => {
@@ -280,6 +278,9 @@ class XNATStandaloneRouting extends Component {
           });
           return study.series !== undefined;
         });
+
+        // Reassign instance URLs
+        reassignInstanceUrls(studies, rootUrl);
 
         // Parse data here and add to metadata provider
         await updateMetaDataProvider(studies);
@@ -389,15 +390,32 @@ function getRootUrl() {
 
   rootPlusPort += pathLessViewer;
 
+  return rootPlusPort;
+}
+
+function reassignInstanceUrls(studies, rootUrl) {
+  const archiveUrl = '/data/archive/';
+  // remove protocol
+  let xnatRoot = rootUrl.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+  let dicomweb = 'dicomweb://';
   if (process.env.NODE_ENV === 'development') {
-    console.info('### XNATStandaloneRouting Development mode! ...............');
-    const XNAT_PROXY = process.env.XNAT_PROXY;
-    rootPlusPort = XNAT_PROXY;
+    dicomweb = 'dicomweb:';
   }
 
-  console.log(rootPlusPort);
+  studies.forEach(study => {
+    study.series.forEach(series => {
+      series.instances.forEach(instance => {
+        let relUrl = instance.url;
+        if (relUrl.startsWith('dicomweb')) {
+          // Strip to relative URL
+          const idx = relUrl.indexOf(archiveUrl);
+          relUrl = relUrl.substring(idx);
+        }
+        instance.url = `${dicomweb}${xnatRoot}${relUrl}`;
+      });
+    });
+  });
 
-  return rootPlusPort;
 }
 
 async function updateMetaDataProvider(studies) {
