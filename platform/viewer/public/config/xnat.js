@@ -4,7 +4,7 @@ window.config = {
     minor: 0,
     patch: 0,
     dev: 'SNAPSHOT',
-    build: 1201
+    build: 1210
   },
   // default: '/'
   routerBasename: '/',

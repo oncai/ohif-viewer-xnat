@@ -32,7 +32,6 @@ export default {
 export {
   isLoggedIn,
   xnatAuthenticate,
-  reassignInstanceUrls,
 } from './utils/xnatDev';
 
 export { userManagement } from './utils/userManagement.js';
