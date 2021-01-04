@@ -19,6 +19,7 @@ const extractStyleChunksRule = require('./rules/extractStyleChunks.js');
 // ~~ Directories
 const SRC_DIR = path.join(__dirname, '../src');
 const DIST_DIR = path.join(__dirname, '../dist');
+const ROOT_MODULES_DIR = path.join(__dirname, '../../../node_modules');
 const PUBLIC_DIR = path.join(__dirname, '../public');
 // ~~ Env Vars
 const HTML_TEMPLATE = process.env.HTML_TEMPLATE || 'index.html';
@@ -45,6 +46,12 @@ module.exports = (env, argv) => {
     module: {
       rules: [...extractStyleChunksRule(isProdBuild)],
     },
+    resolve: {
+      // Fix itkModulesPath - https://github.com/InsightSoftwareConsortium/itk-js/issues/140
+      alias: {
+        './itkConfig$': `${PUBLIC_DIR}/config/itkConfig.js`,
+      }
+    },
     plugins: [
       // Uncomment to generate bundle analyzer
       // new BundleAnalyzerPlugin(),
@@ -70,6 +77,15 @@ module.exports = (env, argv) => {
         {
           from: `${PUBLIC_DIR}/${APP_CONFIG}`,
           to: `${DIST_DIR}/app-config.js`,
+        },
+        // ITK - https://insightsoftwareconsortium.github.io/itk-js/examples/webpack.html
+        {
+          from: `${ROOT_MODULES_DIR}/itk/WebWorkers`,
+          to: `${DIST_DIR}/itk/WebWorkers`,
+        },
+        {
+          from: `${ROOT_MODULES_DIR}/itk/ImageIOs`,
+          to: `${DIST_DIR}/itk/ImageIOs`,
         },
       ]),
       // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin#webpack-4-standalone-installation

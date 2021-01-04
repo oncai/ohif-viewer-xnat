@@ -173,7 +173,7 @@ export default class AIAAProbeTool extends ProbeTool {
       activeLabelmapIndex,
     } = segmentationModule.getters.labelmap2D(element);
 
-    const segmentIndex = labelmap3D.activeSegmentIndex;
+    let segmentIndex = labelmap3D.activeSegmentIndex;
     let metadata = labelmap3D.metadata[segmentIndex];
 
     if (!metadata) {
@@ -183,6 +183,8 @@ export default class AIAAProbeTool extends ProbeTool {
         label = modelLabels[0];
       }
       metadata = generateSegmentationMetadata(label);
+
+      segmentIndex = labelmap3D.activeSegmentIndex = 1;
 
       segmentationModule.setters.metadata(
         element,

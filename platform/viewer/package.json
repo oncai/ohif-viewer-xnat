@@ -93,7 +93,8 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "vtk.js": "^11.14.0",
-    "react-idle-timer": "^4.4.2"
+    "react-idle-timer": "^4.4.2",
+    "itk": "^13.2.1"
   },
   "devDependencies": {
     "cypress": "^3.8.0",

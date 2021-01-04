@@ -1,9 +1,9 @@
 import Model_Types from '../modelTypes.js';
 
 
-export default function prepareRunParameters(paramsIn) {
+export default function prepareRunParameters(paramsIn, useNifti = false) {
   const { model, fgPoints, bgPoints } = paramsIn;
-  const output_type = '.nrrd';
+  const output_type = useNifti ? '.nii.gz' : '.nrrd';
   let apiUrl = '';
 
   const params = {

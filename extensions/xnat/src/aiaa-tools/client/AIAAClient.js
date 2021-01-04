@@ -1,14 +1,17 @@
 import ApiWrapper from './ApiWrapper.js';
 import AIAA_TOOL_TYPES from '../toolTypes.js';
 import createDicomVolume from '../utils/createDicomVolume.js';
+import createNiftiVolume from '../utils/createNiftiVolume.js';
 import prepareRunParameters from '../utils/prepareRunParameters.js';
 import readNrrd from '../utils/readNrrd.js';
+import readNifti from '../utils/readNifti.js';
 import showNotification from '../../components/common/showNotification';
 import { saveFile, readFile } from '../../utils/xnatDev.js';
 import testModelList from './testModelList.js';
 
 const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
+const USE_NIFTI = true;
 
 export default class AIAAClient {
   constructor() {
@@ -74,7 +77,7 @@ export default class AIAAClient {
       model: this.currentModel,
       fgPoints: fgPoints,
       bgPoints: bgPoints,
-    });
+    }, USE_NIFTI);
 
     updateStatusModal(`Running ${this.currentModel.name}, please wait...`);
     // showNotification(
@@ -92,18 +95,16 @@ export default class AIAAClient {
     );
 
     if (response.status === 200) {
-      const { header, image } = readNrrd(response.data);
-      // showNotification(
-      //   'Model run complete',
-      //   'success',
-      //   'NVIDIA AIAA'
-      // );
-      // Debug
       // const imageBlob = new Blob([response.data],
       //   { type: 'application/octet-stream' });
-      // saveFile(imageBlob, 'mask.nrrd');
-      console.log(header);
-      return { header, image };
+      // saveFile(imageBlob, 'mask_image');
+      if (USE_NIFTI) {
+        const { image, maskImageSize } = await readNifti(response.data);
+        return { data: image, size: maskImageSize };
+      } else {
+        const { image, maskImageSize } = readNrrd(response.data);
+        return { data: image, size: maskImageSize };
+      }
     } else {
       showNotification(
         `Failed to run ${this.currentModel.name}! Reason: ${response.data}`,
@@ -121,14 +122,19 @@ export default class AIAAClient {
     return true;
   }
 
-  readTestFile = async () => {
+  readTestFile = async (imageIds) => {
     const buffer = await readFile();
     if (buffer === null) {
       return null;
     }
 
-    const { header, image } = readNrrd(buffer);
-    return { header, image };
+    if (USE_NIFTI) {
+      const { image, maskImageSize } = await readNifti(buffer);
+      return { data: image, size: maskImageSize };
+    } else {
+      const { image, maskImageSize } = readNrrd(buffer);
+      return { data: image, size: maskImageSize };
+    }
   }
 
   _getSession = async SeriesInstanceUID => {
@@ -149,7 +155,6 @@ export default class AIAAClient {
 
   _createSession = async (SeriesInstanceUID, imageIds) => {
     let res = false;
-    const useNifti = false;
 
     showNotification(
       'Creating a new AIAA Session, please wait...',
@@ -157,7 +162,18 @@ export default class AIAAClient {
       'NVIDIA AIAA'
     );
 
-    const volumeBuffer = await createDicomVolume(imageIds);
+    let volumeBuffer;
+    if (USE_NIFTI) {
+      const niftiBuffer = await createNiftiVolume(imageIds);
+      volumeBuffer = {
+        data: new Blob([niftiBuffer],
+          { type: 'application/octet-stream' }),
+        name: 'image.nii.gz',
+      };
+    } else {
+      volumeBuffer = await createDicomVolume(imageIds);
+    }
+
     const response =
       await this.api.createSession(volumeBuffer, null, SESSION_EXPIRY);
 

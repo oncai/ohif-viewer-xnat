@@ -150,14 +150,11 @@ export default class AIAAMenu extends React.Component {
     } = viewport;
 
     const element = cornerstone.getEnabledElements()[activeIndex].element;
-    const stackToolState = csTools.getToolState(element, 'stack');
-    const imageIds = stackToolState.data[0].imageIds;
 
     return {
       StudyInstanceUID,
       SeriesInstanceUID,
       displaySetInstanceUID,
-      imageIds,
       element,
     };
   }
@@ -191,7 +188,7 @@ export default class AIAAMenu extends React.Component {
 
   onClearPoints(all = true) {
     const toolType = this._aiaaClient.currentTool.type;
-    const { element, imageIds } = this._viewParameters;
+    const { element } = this._viewParameters;
     const { segments, activeSegmentIndex } = this.props.segmentsData;
 
     let imageIdsPoints;
@@ -227,15 +224,15 @@ export default class AIAAMenu extends React.Component {
     const enabledElement = cornerstone.getEnabledElement(element);
     const currentImageId = enabledElement.image.imageId;
     Object.keys(imageIdsPoints).forEach(id => {
-        enabledElement.image.imageId = id;
-        const toolData = csTools.getToolState(enabledElement.element, 'AIAAProbeTool');
-        if (!toolData) {
-          return;
-        }
-        const pointUuids = imageIdsPoints[id];
-        toolData.data = toolData.data.filter(data => {
-          return pointUuids.indexOf(data.uuid) === -1;
-        });
+      enabledElement.image.imageId = id;
+      const toolData = csTools.getToolState(enabledElement.element, 'AIAAProbeTool');
+      if (!toolData) {
+        return;
+      }
+      const pointUuids = imageIdsPoints[id];
+      toolData.data = toolData.data.filter(data => {
+        return pointUuids.indexOf(data.uuid) === -1;
+      });
     });
     enabledElement.image.imageId = currentImageId;
 
@@ -286,21 +283,52 @@ export default class AIAAMenu extends React.Component {
   onRunModel = async (segmentPoints = {}) => {
     const modal = showStatusModal();
 
-    let runResult;
+    const { element } = this._viewParameters;
+    const imageIds = _getImageIdsForElement(element);
+    const enabledElement = cornerstone.getEnabledElement(element);
+    const refImage = enabledElement.image;
+    const refImageSize = {
+      width: refImage.width,
+      height: refImage.height,
+      numberOfFrames: imageIds.length,
+    };
+
+    let maskImage;
     if (LOCAL_TEST) {
-      runResult = await this._aiaaClient.readTestFile();
+      maskImage = await this._aiaaClient.readTestFile(imageIds);
     } else {
       const parameters = {
         SeriesInstanceUID: this._viewParameters.SeriesInstanceUID,
-        imageIds: this._viewParameters.imageIds,
+        imageIds,
         segmentPoints: segmentPoints,
       };
 
-      runResult = await this._aiaaClient.runModel(parameters, updateStatusModal);
+      maskImage = await this._aiaaClient.runModel(parameters, updateStatusModal);
     }
 
-    if (runResult === null) {
+    if (maskImage === null || maskImage.data === null) {
       modal.close();
+      showNotification(
+        'Error in parsing the mask image',
+        'error',
+        'NVIDIA AIAA'
+      );
+      return;
+    }
+
+    const maskImageSize = maskImage.size;
+    console.log(`Mask image size = 
+                ${maskImageSize.width}, 
+                ${maskImageSize.height}, 
+                ${maskImageSize.numberOfFrames}`);
+
+    if(!_.isEqual(refImageSize, maskImageSize)) {
+      modal.close();
+      showNotification(
+        'Error: Size mismatch between the mask and reference images',
+        'error',
+        'NVIDIA AIAA'
+      );
       return;
     }
 
@@ -325,12 +353,16 @@ export default class AIAAMenu extends React.Component {
       activeIndex = activeSegmentIndex;
     }
 
-    this.updateLabelmap(runResult.image, activeIndex, segmentPoints);
+    this.updateLabelmap(
+      maskImage.data,
+      maskImage.size,
+      activeIndex,
+      segmentPoints);
 
     modal.close();
   }
 
-  updateLabelmap(image, activeIndex, segmentPoints) {
+  updateLabelmap(image, size, activeIndex, segmentPoints) {
     /*
                             updateView      slice
     seg / ann               null            null
@@ -340,8 +372,7 @@ export default class AIAAMenu extends React.Component {
     let updateType = undefined;
     const segmentOffset = activeIndex - 1;
 
-    const { firstImageId, segmentsData } = this.props;
-    const { imageIds } = this._viewParameters;
+    const { firstImageId } = this.props;
 
     const { state } = segmentationModule;
     const brushStackState = state.series[firstImageId];
@@ -357,13 +388,22 @@ export default class AIAAMenu extends React.Component {
       return;
     }
 
-    const numberOfFrames = imageIds.length;
-    const slicelengthInBytes = image.byteLength / numberOfFrames;
-    const sliceLength = slicelengthInBytes / 2; //UInt16
+    const slicelengthInBytes = image.byteLength / size.numberOfFrames;
+    const sliceLength = size.width * size.height; //slicelengthInBytes / 2; //UInt16
+    const bytesPerVoxel = slicelengthInBytes / sliceLength;
+
+    if (bytesPerVoxel !== 1 && bytesPerVoxel !== 2) {
+      console.error(
+        `No method for parsing ArrayBuffer to ${bytesPerVoxel}-byte array`
+      );
+      return;
+    }
+
+    const typedArray = bytesPerVoxel === 1 ? Uint8Array : Uint16Array;
 
     const updateSlice = (s, override = false) => {
       const sliceOffset = slicelengthInBytes * s;
-      const imageData = new Uint16Array(image, sliceOffset, sliceLength);
+      const imageData = new typedArray(image, sliceOffset, sliceLength);
 
       const imageHasData = imageData.some(pixel => pixel !== 0);
       if (!imageHasData) {
@@ -371,7 +411,7 @@ export default class AIAAMenu extends React.Component {
       }
 
       const labelmap = segmentationModule.getters.labelmap2DByImageIdIndex(
-        labelmap3D, s, sliceLength, 1
+        labelmap3D, s, size.height, size.width
       );
 
       let labelmapData = labelmap.pixelData;
@@ -396,7 +436,7 @@ export default class AIAAMenu extends React.Component {
       }
       updateSlice(sliceIndex, true);
     } else {
-      for (let s = 0; s < numberOfFrames; s++) {
+      for (let s = 0; s < size.numberOfFrames; s++) {
         updateSlice(s);
       }
     }
@@ -447,14 +487,14 @@ export default class AIAAMenu extends React.Component {
             onClick={this.onToggleShowSettings}
           />
           {!showSettings &&
-            <Icon
-              className="settings-icon"
-              name="reset"
-              width="15px"
-              height="15px"
-              style={{ marginTop: 5 }}
-              onClick={() => this.onGetModels()}
-            />
+          <Icon
+            className="settings-icon"
+            name="reset"
+            width="15px"
+            height="15px"
+            style={{ marginTop: 5 }}
+            onClick={() => this.onGetModels()}
+          />
           }
         </div>
         {showSettings ?
@@ -481,4 +521,9 @@ export default class AIAAMenu extends React.Component {
       </div>
     );
   }
+}
+
+function _getImageIdsForElement(element) {
+  const stackToolState = csTools.getToolState(element, 'stack');
+  return stackToolState.data[0].imageIds;
 }

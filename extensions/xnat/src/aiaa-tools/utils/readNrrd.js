@@ -3,6 +3,11 @@ import pako from 'pako';
 
 
 export default function readNrrd(data) {
+  const maskImageSize = {
+    width: 0,
+    height: 0,
+    numberOfFrames: 0,
+  };
   const nrrdfile = nrrd.parse(data);
 
   // Currently gzip is not supported in nrrd.js
@@ -19,8 +24,14 @@ export default function readNrrd(data) {
   delete header.data;
   delete header.buffer;
 
+  const dims = header.sizes;
+  maskImageSize.width = dims[0];
+  maskImageSize.height = dims[1];
+  maskImageSize.numberOfFrames = dims[2];
+
   return {
     header,
     image,
+    maskImageSize,
   };
 }
