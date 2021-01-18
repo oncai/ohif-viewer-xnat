@@ -59,7 +59,7 @@
     "@ohif/extension-dicom-rt": "^0.2.1",
     "@ohif/extension-dicom-segmentation": "^0.3.1",
     "@ohif/extension-lesion-tracker": "^0.2.0",
-    "@ohif/extension-vtk": "^1.6.4",
+    "@ohif/extension-vtk": "^1.9.3",
     "@xnat-ohif/extension-xnat": "^4.2.7",
     "@ohif/i18n": "^0.52.8",
     "@ohif/ui": "^1.5.1",

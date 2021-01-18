@@ -185,10 +185,28 @@ class OHIFVTKViewport extends Component {
         // Create VTK Image Data with buffer as input
         labelmapDataObject = vtkImageData.newInstance();
 
-        const dataArray = vtkDataArray.newInstance({
+        /*const dataArray = vtkDataArray.newInstance({
           numberOfComponents: 1, // labelmap with single component
           values: new Uint16Array(labelmapBuffer),
-        });
+        });*/
+        // TODO: Not a general solution - Only support for one fractional segment!
+        // ======= Fork from master.  ========
+        let dataArray;
+
+        if (labelmap3D.isFractional) {
+          // We need to set this or it will be crazy, as each color is a different segment.
+
+          dataArray = vtkDataArray.newInstance({
+            numberOfComponents: 1, // labelmap with single component
+            values: new Uint8Array(labelmap3D.probabilityBuffer),
+          });
+        } else {
+          dataArray = vtkDataArray.newInstance({
+            numberOfComponents: 1, // labelmap with single component
+            values: new Uint16Array(labelmapBuffer),
+          });
+        }
+        // ======== End fork from master. ========
 
         labelmapDataObject.getPointData().setScalars(dataArray);
         labelmapDataObject.setDimensions(...imageDataObject.dimensions);
@@ -206,7 +224,31 @@ class OHIFVTKViewport extends Component {
         labelmapCache[vtkLabelmapID] = labelmapDataObject;
       }
 
-      labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
+      // labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
+      // TODO: Not a general solution - Only support for one fractional segment!
+      // ======= Fork from master.  ========
+      if (labelmap3D.isFractional) {
+        if (
+          Array.isArray(state.colorLutTables[labelmap3D.colorLUTIndex][1][0])
+        ) {
+          // Using a colormap, copy it.
+          labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex][1];
+        } else {
+          // Derive a colormap with 256 colors
+          // TODO -> This doesn't work well as its volume rendering, so opacity layers and it saturates/
+          // Shows you the incorrect value.
+          labelmapColorLUT = [];
+          const color = state.colorLutTables[labelmap3D.colorLUTIndex][1];
+
+          for (let i = 0; i < 256; i++) {
+            labelmapColorLUT.push([color[0], color[1], color[2], i]);
+          }
+        }
+      } else {
+        labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
+      }
+
+      // ======== End fork from master. ========
     }
 
     return {
@@ -363,7 +405,7 @@ class OHIFVTKViewport extends Component {
 
     if (
       displaySet.displaySetInstanceUID !==
-      prevDisplaySet.displaySetInstanceUID ||
+        prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
       displaySet.frameIndex !== prevDisplaySet.frameIndex
     ) {
