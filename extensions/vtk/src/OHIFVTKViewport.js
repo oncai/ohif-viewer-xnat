@@ -50,26 +50,29 @@ class OHIFVTKViewport extends Component {
     volumes: null,
     paintFilterLabelMapImageData: null,
     paintFilterBackgroundImageData: null,
+    percentComplete: 0,
+    isLoaded: false,
   };
 
   static propTypes = {
     viewportData: PropTypes.shape({
-      studies: PropTypes.array,
+      studies: PropTypes.array.isRequired,
       displaySet: PropTypes.shape({
-        StudyInstanceUID: PropTypes.string,
-        displaySetInstanceUID: PropTypes.string,
+        StudyInstanceUID: PropTypes.string.isRequired,
+        displaySetInstanceUID: PropTypes.string.isRequired,
         sopClassUIDs: PropTypes.arrayOf(PropTypes.string),
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
       }),
     }),
-    viewportIndex: PropTypes.number,
+    viewportIndex: PropTypes.number.isRequired,
     children: PropTypes.node,
     onScroll: PropTypes.func,
+    servicesManager: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
-    onScroll: () => {},
+    onScroll: () => { },
   };
 
   static id = 'OHIFVTKViewport';
@@ -156,6 +159,15 @@ class OHIFVTKViewport extends Component {
       const { activeLabelmapIndex } = brushStackState;
       const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
 
+      if (brushStackState.labelmaps3D.length > 1 && this.props.viewportIndex === 0) {
+        const { UINotificationService } = this.props.servicesManager.services;
+        UINotificationService.show({
+          title: 'Overlapping Segmentation Found',
+          message: 'Overlapping segmentations cannot be displayed when in MPR mode',
+          type: 'info',
+        });
+      }
+
       this.segmentsDefaultProperties = labelmap3D.segmentsHidden.map(
         isHidden => {
           return { visible: !isHidden };
@@ -173,26 +185,10 @@ class OHIFVTKViewport extends Component {
         // Create VTK Image Data with buffer as input
         labelmapDataObject = vtkImageData.newInstance();
 
-        // TODO: Not a general solution - Only support for one fractional segment!
-        // ======= Fork from master.  ========
-
-        let dataArray;
-
-        if (labelmap3D.isFractional) {
-          // We need to set this or it will be crazy, as each color is a different segment.
-
-          dataArray = vtkDataArray.newInstance({
-            numberOfComponents: 1, // labelmap with single component
-            values: new Uint8Array(labelmap3D.probabilityBuffer),
-          });
-        } else {
-          dataArray = vtkDataArray.newInstance({
-            numberOfComponents: 1, // labelmap with single component
-            values: new Uint16Array(labelmapBuffer),
-          });
-        }
-
-        // ======== End fork from master. ========
+        const dataArray = vtkDataArray.newInstance({
+          numberOfComponents: 1, // labelmap with single component
+          values: new Uint16Array(labelmapBuffer),
+        });
 
         labelmapDataObject.getPointData().setScalars(dataArray);
         labelmapDataObject.setDimensions(...imageDataObject.dimensions);
@@ -210,30 +206,7 @@ class OHIFVTKViewport extends Component {
         labelmapCache[vtkLabelmapID] = labelmapDataObject;
       }
 
-      // TODO: Not a general solution - Only support for one fractional segment!
-      // ======= Fork from master.  ========
-      if (labelmap3D.isFractional) {
-        if (
-          Array.isArray(state.colorLutTables[labelmap3D.colorLUTIndex][1][0])
-        ) {
-          // Using a colormap, copy it.
-          labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex][1];
-        } else {
-          // Derive a colormap with 256 colors
-          // TODO -> This doesn't work well as its volume rendering, so opacity layers and it saturates/
-          // Shows you the incorrect value.
-          labelmapColorLUT = [];
-          const color = state.colorLutTables[labelmap3D.colorLUTIndex][1];
-
-          for (let i = 0; i < 256; i++) {
-            labelmapColorLUT.push([color[0], color[1], color[2], i]);
-          }
-        }
-      } else {
-        labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
-      }
-
-      // ======== End fork from master. ========
+      labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
     }
 
     return {
@@ -390,7 +363,7 @@ class OHIFVTKViewport extends Component {
 
     if (
       displaySet.displaySetInstanceUID !==
-        prevDisplaySet.displaySetInstanceUID ||
+      prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
       displaySet.frameIndex !== prevDisplaySet.frameIndex
     ) {
@@ -401,34 +374,54 @@ class OHIFVTKViewport extends Component {
   loadProgressively(imageDataObject) {
     loadImageData(imageDataObject);
 
-    const { isLoading, insertPixelDataPromises } = imageDataObject;
-
-    const NumberOfFrames = insertPixelDataPromises.length;
+    const { isLoading, imageIds } = imageDataObject;
 
     if (!isLoading) {
       this.setState({ isLoaded: true });
       return;
     }
 
-    insertPixelDataPromises.forEach(promise => {
-      promise.then(numberProcessed => {
-        const percentComplete = Math.floor(
-          (numberProcessed * 100) / NumberOfFrames
-        );
+    const NumberOfFrames = imageIds.length;
 
-        if (percentComplete !== this.state.percentComplete) {
-          this.setState({
-            percentComplete,
+    const onPixelDataInsertedCallback = numberProcessed => {
+      const percentComplete = Math.floor(
+        (numberProcessed * 100) / NumberOfFrames
+      );
+
+      if (percentComplete !== this.state.percentComplete) {
+        this.setState({
+          percentComplete,
+        });
+      }
+    };
+
+    const onPixelDataInsertedErrorCallback = error => {
+      const { UINotificationService } = this.props.servicesManager.services;
+
+      if (!this.hasError) {
+        if (this.props.viewportIndex === 0) {
+          // Only show the notification from one viewport 1 in MPR2D.
+          UINotificationService.show({
+            title: 'MPR Load Error',
+            message: error.message,
+            type: 'error',
+            autoClose: false,
           });
         }
-      });
-    });
 
-    Promise.all(insertPixelDataPromises).then(() => {
+        this.hasError = true;
+      }
+    };
+
+    const onAllPixelDataInsertedCallback = () => {
       this.setState({
         isLoaded: true,
       });
-    });
+    };
+
+    imageDataObject.onPixelDataInserted(onPixelDataInsertedCallback);
+    imageDataObject.onAllPixelDataInserted(onAllPixelDataInsertedCallback);
+    imageDataObject.onPixelDataInsertedError(onPixelDataInsertedErrorCallback);
   }
 
   render() {
