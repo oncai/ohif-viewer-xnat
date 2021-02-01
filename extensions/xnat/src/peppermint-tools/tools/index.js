@@ -3,6 +3,10 @@ import FreehandRoi3DSculptorTool from './FreehandRoi3DSculptorTool';
 import Brush3DTool from './segmentation/Brush3DTool';
 import Brush3DHUGatedTool from './segmentation/Brush3DHUGatedTool';
 import Brush3DAutoGatedTool from './segmentation/Brush3DAutoGatedTool';
+import XNATSphericalBrushTool from './segmentation/XNATSphericalBrushTool';
+import XNATCircleScissorsTool from './segmentation/XNATCircleScissorsTool';
+import XNATFreehandScissorsTool from './segmentation/XNATFreehandScissorsTool';
+import XNATRectangleScissorsTool from './segmentation/XNATRectangleScissorsTool';
 
 export {
   FreehandRoi3DTool,
@@ -10,4 +14,8 @@ export {
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
+  XNATSphericalBrushTool,
+  XNATCircleScissorsTool,
+  XNATFreehandScissorsTool,
+  XNATRectangleScissorsTool,
 };

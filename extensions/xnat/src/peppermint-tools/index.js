@@ -11,6 +11,10 @@ import {
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
+  XNATSphericalBrushTool,
+  XNATFreehandScissorsTool,
+  XNATCircleScissorsTool,
+  XNATRectangleScissorsTool,
 } from './tools';
 
 import {
@@ -33,6 +37,10 @@ export {
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
+  XNATSphericalBrushTool,
+  XNATFreehandScissorsTool,
+  XNATCircleScissorsTool,
+  XNATRectangleScissorsTool,
   /* Utils */
   Polygon,
   interpolate,

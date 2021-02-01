@@ -56,11 +56,13 @@ export default class Brush3DTool extends BrushTool {
       this.paintEventData.previousPixelData = previousPixelData;
     }
 
-    const segmentIndex = labelmap3D.activeSegmentIndex;
+    let segmentIndex = labelmap3D.activeSegmentIndex;
     let metadata = labelmap3D.metadata[segmentIndex];
 
     if (!metadata) {
       metadata = generateSegmentationMetadata('Unnamed Segment');
+
+      segmentIndex = labelmap3D.activeSegmentIndex = 1;
 
       segmentationModule.setters.metadata(
         element,

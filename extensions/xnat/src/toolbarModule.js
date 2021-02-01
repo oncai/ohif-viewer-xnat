@@ -79,6 +79,45 @@ const definitions = [
       },
     ],
   },
+  {
+    id: 'otherBrushTools',
+    label: 'Mask Tools',
+    icon: 'ellipse-circle',
+    buttons: [
+      {
+        id: 'SphericalBrush',
+        label: 'Spherical',
+        icon: 'sphere',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_SPHERICAL_BRUSH_TOOL },
+      },
+      {
+        id: 'FreehandScissors',
+        label: 'Freehand',
+        icon: 'inline-edit',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_FREEHAND_SCISSORS_TOOL },
+      },
+      {
+        id: 'CircleScissors',
+        label: 'Circle',
+        icon: 'circle',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_CIRCLE_SCISSORS_TOOL },
+      },
+      {
+        id: 'RectangleScissors',
+        label: 'Rectangle',
+        icon: 'stop',
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_RECTANGLE_SCISSORS_TOOL },
+      },
+    ]
+  },
 ];
 
 export default {

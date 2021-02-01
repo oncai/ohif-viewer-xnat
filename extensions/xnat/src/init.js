@@ -9,6 +9,10 @@ import {
   Brush3DTool,
   Brush3DHUGatedTool,
   Brush3DAutoGatedTool,
+  XNATSphericalBrushTool,
+  XNATFreehandScissorsTool,
+  XNATCircleScissorsTool,
+  XNATRectangleScissorsTool,
 } from './peppermint-tools';
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
@@ -81,6 +85,11 @@ export default function init({ servicesManager, commandsManager, configuration =
     FreehandRoi3DSculptorTool,
     /* AIAA Tools */
     AIAAProbeTool,
+    /* Additional maks tools */
+    XNATSphericalBrushTool,
+    XNATFreehandScissorsTool,
+    XNATCircleScissorsTool,
+    XNATRectangleScissorsTool,
   ];
 
   tools.forEach(addTool);
