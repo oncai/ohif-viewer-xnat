@@ -54,9 +54,9 @@ function formatTM(time, strFormat = 'HH:mm:ss') {
   //
   // Goal: '24:12:12'
   try {
-    const inputFormat = 'HHmmss.SSS';
-    const strTime = time.toString().substring(0, inputFormat.length);
-    const parsedDateTime = parse(strTime, 'HHmmss.SSS', new Date(0));
+    const inputFormat = 'HHmmss';
+    const strTime = '19700101 ' + time.toString().substring(0, inputFormat.length);
+    const parsedDateTime = parse(strTime, 'yyyyMMdd HHmmss');
     const formattedDateTime = format(parsedDateTime, strFormat);
 
     return formattedDateTime;
