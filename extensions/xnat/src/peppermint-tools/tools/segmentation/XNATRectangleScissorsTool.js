@@ -15,6 +15,15 @@ export default class XNATCircleScissorsTool extends RectangleScissorsTool {
   }
 
   preMouseDownCallback(evt) {
-    preMouseDownCallback(evt.detail.element);
+    const { detail } = evt;
+
+    preMouseDownCallback(detail.element);
+
+    const { event } = detail;
+    if (event.ctrlKey) {
+      this.activeStrategy = 'ERASE_INSIDE';
+    } else {
+      this.activeStrategy = 'FILL_INSIDE';
+    }
   }
 }

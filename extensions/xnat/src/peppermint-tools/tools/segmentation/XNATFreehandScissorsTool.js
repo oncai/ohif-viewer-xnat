@@ -15,7 +15,15 @@ export default class XNATFreehandScissorsTool extends FreehandScissorsTool {
   }
 
   preMouseDownCallback(evt) {
-    preMouseDownCallback(evt.detail.element);
-    // super.preMouseDownCallback(evt);
+    const { detail } = evt;
+
+    preMouseDownCallback(detail.element);
+
+    const { event } = detail;
+    if (event.ctrlKey) {
+      this.activeStrategy = 'ERASE_INSIDE';
+    } else {
+      this.activeStrategy = 'FILL_INSIDE';
+    }
   }
 }
