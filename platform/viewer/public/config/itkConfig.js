@@ -6,8 +6,10 @@
 // - MeshIOs/
 // - PolyDataIOs/
 //
+const PUBLIC_URL = process.env.PUBLIC_URL || '';
+
 var itkConfig = {
-  itkModulesPath: '/itk'
+  itkModulesPath: `${PUBLIC_URL}itk`
 };
 
 export default itkConfig;
