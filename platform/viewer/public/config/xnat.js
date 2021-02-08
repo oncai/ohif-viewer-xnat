@@ -4,7 +4,7 @@ window.config = {
     minor: 0,
     patch: 0,
     dev: '',
-    build: 1304
+    build: 1408
   },
   // default: '/'
   routerBasename: '/',
