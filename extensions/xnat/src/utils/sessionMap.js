@@ -6,6 +6,12 @@ const _map = {
   parentProject: '',
   experiment: '',
   view: '',
+  aiaaSettings: {
+    serverUrl: {
+      site: '',
+      project: '',
+    }
+  },
 };
 
 const sessionMap = {
@@ -193,6 +199,16 @@ const sessionMap = {
    */
   getView: view => {
     return _map.view;
+  },
+
+  getAiaaSettings: () => {
+    return _map.aiaaSettings;
+  },
+  setAiaaSiteUrl: url => {
+    _map.aiaaSettings.serverUrl.site = url;
+  },
+  setAiaaProjectUrl: url => {
+    _map.aiaaSettings.serverUrl.project = url;
   },
 };
 

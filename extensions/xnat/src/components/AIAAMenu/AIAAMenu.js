@@ -11,6 +11,7 @@ import { AIAA_TOOL_TYPES, AIAA_MODEL_TYPES } from '../../aiaa-tools';
 import refreshViewport from '../../utils/refreshViewport.js';
 import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
 import isValidUrl from '../../utils/isValidUrl.js';
+import sessionMap from '../../utils/sessionMap';
 
 import '../XNATRoiPanel.styl';
 
@@ -47,7 +48,16 @@ export default class AIAAMenu extends React.Component {
     const { settings } = props.featureStore;
     this._aiaaModule = modules.aiaa;
     this._aiaaClient = this._aiaaModule.client;
-    this._aiaaClient.api.setServerURL(settings.serverUrl);
+    // this._aiaaClient.api.setServerURL(settings.serverUrl);
+
+    this._serverUrl = '';
+    const { site, project } = sessionMap.getAiaaSettings().serverUrl;
+    if (project.length !== 0) {
+      this._serverUrl = project;
+    } else if (site.length !== 0) {
+      this._serverUrl = site;
+    }
+    this._aiaaClient.api.setServerURL(this._serverUrl);
 
     const { viewports, studies, activeIndex } = props;
     this._viewParameters =
@@ -451,19 +461,22 @@ export default class AIAAMenu extends React.Component {
     const { settings } = featureStore;
     const { showSettings, api, models } = this.state;
 
+    const serverUrl = this._serverUrl;
+
     let statusMessage = null;
-    if (settings.serverUrl.length === 0) {
+    // if (settings.serverUrl.length === 0) {
+    if (serverUrl.length === 0) {
       statusMessage =
         <p style={{ color: 'var(--snackbar-error)' }}>
-          To use AIAA tools, please enter a valid server URL in settings
+          To use AIAA tools, please ask a site admin to add server URL
         </p>
     } else if (api.isConnecting) {
       statusMessage =
-        <p>{`Connecting to ${this._aiaaClient.api.getServerURL()} ...`}</p>
+        <p>{`Connecting to ${serverUrl} ...`}</p>
     } else if (!api.isConnected) {
       statusMessage =
         <p style={{ color: 'var(--snackbar-error)' }}>
-          {`Error connecting to ${this._aiaaClient.api.getServerURL()}`}
+          {`Error connecting to ${serverUrl}`}
         </p>
     }
 
@@ -478,30 +491,31 @@ export default class AIAAMenu extends React.Component {
             </>
             }
           </h4>
-          <Icon
-            className="settings-icon"
-            name={showSettings ? 'xnat-cancel' : 'cog'}
-            width="15px"
-            height="15px"
-            style={{ marginTop: 5, marginLeft: 'auto' }}
-            onClick={this.onToggleShowSettings}
-          />
-          {!showSettings &&
+          {/*<Icon*/}
+          {/*  className="settings-icon"*/}
+          {/*  name={showSettings ? 'xnat-cancel' : 'cog'}*/}
+          {/*  width="15px"*/}
+          {/*  height="15px"*/}
+          {/*  style={{ marginTop: 5, marginLeft: 'auto' }}*/}
+          {/*  onClick={this.onToggleShowSettings}*/}
+          {/*/>*/}
+          {/*{!showSettings &&*/}
           <Icon
             className="settings-icon"
             name="reset"
             width="15px"
             height="15px"
-            style={{ marginTop: 5 }}
+            style={{ marginTop: 5, marginLeft: 'auto' }}
             onClick={() => this.onGetModels()}
           />
-          }
+          {/*}*/}
         </div>
-        {showSettings ?
-          <AIAAMenuSettings
-            settings={settings}
-            onSave={this.onSaveSettings}
-          /> :
+        {
+          // showSettings ?
+          // <AIAAMenuSettings
+          //   settings={settings}
+          //   onSave={this.onSaveSettings}
+          // /> :
           (statusMessage ?
               <div className="footerSection" style={{ marginBottom: 5 }}>
                 <div className="footerSectionItem"
@@ -511,6 +525,7 @@ export default class AIAAMenu extends React.Component {
               </div>
               :
               <AIAAToolkit
+                serverUrl={serverUrl}
                 models={models}
                 onToolUpdate={this.onToolUpdate}
                 onClearPoints={this.onClearPoints}

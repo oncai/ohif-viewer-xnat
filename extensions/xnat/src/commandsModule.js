@@ -4,6 +4,7 @@ import csTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import onKeyDownEvent from './utils/onKeyDownEvent';
 import KEY_COMMANDS from './utils/keyCommands';
+import queryAiaaSettings from './utils/IO/queryAiaaSettings';
 
 // "actions" doesn't really mean anything
 // these are basically ambigous sets of implementation(s)
@@ -89,6 +90,11 @@ const definitions = {
     },
     storeContexts: [],
     options: { evt: null },
+  },
+  xnatCheckAndSetAiaaSettings: {
+    commandFn: queryAiaaSettings,
+    storeContexts: [],
+    options: { projectId: null },
   },
 };
 

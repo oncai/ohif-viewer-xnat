@@ -10,6 +10,7 @@ const modules = csTools.store.modules;
 
 export default class AIAAToolkit extends React.Component {
   static propTypes = {
+    serverUrl: PropTypes.string,
     models: PropTypes.array,
     onToolUpdate: PropTypes.func,
     onClearPoints: PropTypes.func,
@@ -17,6 +18,7 @@ export default class AIAAToolkit extends React.Component {
   }
 
   static defaultProps = {
+    serverUrl: undefined,
     models: [],
     onToolUpdate: undefined,
     onClearPoints: undefined,
@@ -137,6 +139,7 @@ export default class AIAAToolkit extends React.Component {
   }
 
   render() {
+    const { serverUrl } = this.props;
     const { currentTool } = this.state;
     let currentToolIndex = AIAA_TOOL_TYPES.findIndex(tool => {
       return tool.type === currentTool.type;
@@ -150,6 +153,9 @@ export default class AIAAToolkit extends React.Component {
 
     return (
       <React.Fragment>
+        <div className="footerSection" style={{ marginBottom: 5 }}>
+          Server URL: {serverUrl}
+        </div>
         <div className="footerSection" style={{ marginBottom: 5 }}>
           <div className="footerSectionItem">
             <label htmlFor="aiaaToolList">AIAA Tool</label>

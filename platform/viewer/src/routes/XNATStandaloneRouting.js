@@ -37,6 +37,15 @@ class XNATStandaloneRouting extends Component {
     return new Promise((resolve, reject) => {
       const { projectId, subjectId, experimentId, experimentLabel } = query;
 
+      commandsManager.runCommand('xnatSetRootUrl', {
+        url: rootUrl,
+      });
+
+      // Query AIAA settings
+      commandsManager.runCommand('xnatCheckAndSetAiaaSettings', {
+        projectId: projectId,
+      });
+
       if (!projectId || !subjectId) {
         //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
         return reject(
@@ -55,10 +64,6 @@ class XNATStandaloneRouting extends Component {
           `This experiment is shared view of ${experimentId} from ${parentProjectId}`
         );
       }
-
-      commandsManager.runCommand('xnatSetRootUrl', {
-        url: rootUrl,
-      });
 
       commandsManager.runCommand('xnatCheckAndSetPermissions', {
         projectId,
