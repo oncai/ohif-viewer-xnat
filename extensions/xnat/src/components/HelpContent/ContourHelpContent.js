@@ -23,10 +23,7 @@ const ContourHelpContent = () => {
 
         <h5>Contour List</h5>
         <ul>
-          <li>Click on the "+ ROI Contour" button to add a new ROI Contour.</li>
-          <li>
-            Click on a button in the Draw column to select which color to draw.
-          </li>
+          <li>Click on the "+ Contour ROI" button to add a new ROI Contour.</li>
           <li>Click on a ROI Contour's name to edit it.</li>
         </ul>
 
@@ -47,6 +44,16 @@ const ContourHelpContent = () => {
           ROIContour in the list, the collection name will default to the ROIContour
           name.
         </p>
+
+        <h5>
+          <Icon
+            className="settings-icon"
+            name="cog"
+            width="10px"
+            height="10px"
+          />
+          <span style={{ fontWeight: 'bold' }}> Settings</span>
+        </h5>
 
         <h5>Interpolation</h5>
         <p>
@@ -116,17 +123,33 @@ const ContourHelpContent = () => {
         </ul>
         <h5>Shortcuts</h5>
         <ul>
-          <li>Clicking ‘N’ will create a new volume and activate it.</li>
           <li>
-            Alt-click (cmd-click on mac) a contour node to select it as the active
-            ROI for drawing.
-          </li>
-          <li>Double-click a contour node to change the name of an ROI.</li>
-          <li>
-            Clicking 'delete' whilst drawing will cancel the contour you are
+            Pressing 'c' key whilst drawing will cancel the contour you are
             drawing.
           </li>
-          <li> Clicking escape whilst drawing will quickly close the contour.</li>
+          <li> Pressing 'enter' key whilst drawing will quickly close the contour.</li>
+        </ul>
+        <h5>Context Menu</h5>
+        Right-click on any node in a contour to show context menu.
+        <ul>
+          <li>
+            Delete contour: removes that contour.
+          </li>
+          <li>
+            Copy contour: copies the contour data to clipboard.
+          </li>
+        </ul>
+        If the contour clipboard isn't empty, clicking anywhere on the image
+        shows another context menu.
+        <ul>
+          <li>
+            Paste contour: pastes contour with data from the clipboard on the
+            current image slice. Advanced paste functions will be implemented
+            in future releases.
+          </li>
+          <li>
+            Empty clipboard: clears the contour data stored in the clipboard.
+          </li>
         </ul>
       </div>
     );

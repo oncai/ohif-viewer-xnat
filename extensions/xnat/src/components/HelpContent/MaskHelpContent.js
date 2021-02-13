@@ -16,22 +16,21 @@ const MaskHelpContent = () => {
         <h3>Masking Overview</h3>
         <p>
           A segment is defined as a 3D mask of a particular color, defining one
-          region of interest. The Segments side panel displays a list of segments
-          displayed on the scan in the active viewport, as well as some global
-          settings for brush tools.
+          region of interest. The "Mask-based ROIs" side panel displays a list
+          of segments displayed on the scan in the active viewport, as well as
+          settings relevant to the active masking tool.
         </p>
 
-        <h5>Segment List</h5>
+        <h5>Segment List (New Mask Collection)</h5>
         <ul>
-          <li>Click on the "+ Segment" button to add a new segment.</li>
+          <li>Click on the "+ Add" button to add a new segment.</li>
           <li>
-            Click on a button in the Paint column to select which color to paint.
+            Click "Remove" to delete a segment from your working collection.
           </li>
           <li>Click on a segment's label or type to edit its metadata.</li>
           <li>Click hide to hide a segment.</li>
           <li>
-            Click delete to delete a segment from your working collection. You will
-            be asked to confirm your choice, as this can't be done.
+            Click on the "Palette" button to select which color to paint.
           </li>
         </ul>
 
@@ -47,23 +46,13 @@ const MaskHelpContent = () => {
           You can export the labelmap. Overlapping segments are valid and can be
           exported.
         </p>
-        <h5>Smart CT Gate Selection</h5>
-        <p>
-          This option allows you to select the tissue type the Smart CT brush uses.
-          You can also specify a custom gate in Hounsfield Units.
-        </p>
-        <h5>Smart/Auto Gate Settings</h5>
-        <p>These settings affect both the Smart CT and Auto Brush tools.</p>
+
+        <h5>Shortcuts</h5>
+        The following shortcuts are available (where applicable) for all
+        masking tools.
         <ul>
-          <li>
-            The first slider sets the size of holes to fill in whilst painting, as a
-            fraction of the primary region painted within the brush circle.
-          </li>
-          <li>
-            The second slider sets the size of non-primary regions to ignore whilst
-            painting, as a fraction of the primary region painted within the brush
-            circle. Regions smaller than this threshold will not be painted.
-          </li>
+          <li>Use the [ and ] keys to increase/decrease the brush size.</li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
         </ul>
       </div>
     );
@@ -80,12 +69,8 @@ const MaskHelpContent = () => {
         <ul>
           <li>Click on the canvas to paint with the selected color.</li>
           <li>Drag to make brush strokes.</li>
-          <li>Use the + and - keys to increase/decrease the brush size.</li>
-          <li>Use the [ and ] keys to change the mask color.</li>
-          <li>Ctrl + click with the brush to erase that mask color.</li>
-          <li>
-            Use the N key to quickly switch to the first unused segmentation color.
-          </li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
+          <li>Use the [ and ] keys to increase/decrease the brush size.</li>
         </ul>
       </div>
     );
@@ -108,16 +93,28 @@ const MaskHelpContent = () => {
         <ul>
           <li>Click on the canvas to paint with the selected color.</li>
           <li>Drag to make brush strokes.</li>
-          <li>Use the + and - keys to increase/decrease the brush size.</li>
-          <li>Use the [ and ] keys to change the mask color.</li>
-          <li>Ctrl + click with the brush to erase that mask color.</li>
+        </ul>
+        <h5>Smart CT Gate Selection</h5>
+        <p>
+          This option allows you to select the tissue type the Smart CT brush uses.
+          You can also specify a custom gate in Hounsfield Units.
+        </p>
+        <h5>Smart/Auto Gate Settings</h5>
+        <p>These settings affect both the Smart CT and Auto Brush tools.</p>
+        <ul>
           <li>
-            Use the N key to quickly switch to the first unused segmentation color.
+            The first slider sets the size of holes to fill in whilst painting, as a
+            fraction of the primary region painted within the brush circle.
+          </li>
+          <li>
+            The second slider sets the size of non-primary regions to ignore whilst
+            painting, as a fraction of the primary region painted within the brush
+            circle. Regions smaller than this threshold will not be painted.
           </li>
         </ul>
       </div>
     );
-  };
+  }
 
   const renderAutoInfo = () => {
     return (
@@ -136,12 +133,141 @@ const MaskHelpContent = () => {
         <ul>
           <li>Click on the canvas to paint with the selected color.</li>
           <li>Drag to make brush strokes.</li>
-          <li>Use the + and - keys to increase/decrease the brush size.</li>
-          <li>Use the [ and ] keys to change the mask color.</li>
-          <li>Ctrl + click with the brush to erase that mask color.</li>
+        </ul>
+        <h5>Smart CT Gate Selection</h5>
+        <p>
+          This option allows you to select the tissue type the Smart CT brush uses.
+          You can also specify a custom gate in Hounsfield Units.
+        </p>
+        <h5>Smart/Auto Gate Settings</h5>
+        <p>These settings affect both the Smart CT and Auto Brush tools.</p>
+        <ul>
           <li>
-            Use the N key to quickly switch to the first unused segmentation color.
+            The first slider sets the size of holes to fill in whilst painting, as a
+            fraction of the primary region painted within the brush circle.
           </li>
+          <li>
+            The second slider sets the size of non-primary regions to ignore whilst
+            painting, as a fraction of the primary region painted within the brush
+            circle. Regions smaller than this threshold will not be painted.
+          </li>
+        </ul>
+      </div>
+    );
+  };
+
+  const otherToolsInfo = () => {
+    return (
+      <div>
+        <h3>Other Masking Tools</h3>
+        <p>
+          A group of standard tools for manipulating labelmap data.
+        </p>
+        <h5>Circle Scissors Tool</h5>
+        <ul>
+          <li>Click once on the canvas to set the circle center.</li>
+          <li>Drag outwards of the center and release to fill with the selected color.</li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
+        </ul>
+        <h5>Rectangle Scissors Tool</h5>
+        <ul>
+          <li>Click once on the canvas to set one corner or the rectangle.</li>
+          <li>Drag around the corner and release to fill with the selected color.</li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
+        </ul>
+        <h5>Freehand Scissors Tool</h5>
+        <ul>
+          <li>Click once and drag the mouse around the region of interest.</li>
+          <li>Release the mouse to fill with the selected color.</li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
+        </ul>
+        <h5>Spherical Brush Tool</h5>
+        <p>
+          Similar to the standard brush but it paints mask in 3D.
+        </p>
+        <ul>
+          <li>Click on the canvas to paint with the selected color.</li>
+          <li>Drag to make brush strokes.</li>
+          <li>Ctrl + click before drawing to erase selected mask color.</li>
+          <li>Use the [ and ] keys to increase/decrease the brush size.</li>
+        </ul>
+      </div>
+    );
+  };
+
+  const aiaaToolInfo = () => {
+    return (
+      <div>
+        <h3>NVIDIA AIAA Tools</h3>
+        <p>
+          The viewer integrates the NVIDIA AI-Assisted Annotation tools listed
+          below. This feature is currently experimental. It can be enabled/disabled
+          from the "Experimental Features" section in "Options->Preferences".
+          Also to use this feature, an AIAA server URL should be set by a site admin.
+        </p>
+        <p>
+          To use the AIAA tools, click on the AIAA button under the Mask toolbar
+          button. This brings up the AIAA menu in the "Mask-based ROIs" side panel.
+        </p>
+
+        <h5>Annotation (DEXTR3D)</h5>
+        <p>
+          The DEXTR3D (or Deep Extreme cut in 3D) tool requires to provide 6+
+          extreme points on the edges of an organ.
+        </p>
+        <ul>
+          <li>Select "Annotation" from the "AIAA tool" dropdown list.</li>
+          <li>Select which model to use from the "Annotation models" dropdown list.</li>
+          <li>
+            Click 6+ more points on edges around an organ. The points can be
+            selected over multiple slices.
+          </li>
+          <li>
+            Once the first 6 points were selected, the viewer will request from
+            the server to run the analysis using the chosen model. The result
+            of annotation is painted on the image in 3D after it was received
+            back from the AIAA server.
+          </li>
+          <li>
+            The clicks for consecutive points initiate the annotation requests
+            and result rendering automatically for each additional point.
+          </li>
+        </ul>
+
+        <h5>Deepgrow</h5>
+        <p>
+          Deepgrow annotation requires a single point, but can then be refined
+          progressively by addition of more points. Deepgrow runs in 2D only.
+        </p>
+        <ul>
+          <li>Select "Deepgorw" from the "AIAA tool" dropdown list.</li>
+          <li>
+            Click to add a foreground point within an organ/ROI. The points can
+            be selected over multiple slices, but the annotation is only performed
+            for the current slice.
+          </li>
+          <li>
+            Once a point was clicked, the viewer will request from
+            the server to run the analysis. The result is rendered back on the
+            currently displayed slice in the viewer.
+          </li>
+          <li>
+            To clear areas with over-segmentation, use ctrl + click to add a
+            background point.
+          </li>
+        </ul>
+
+        <h5>Segmentation</h5>
+        <p>
+          Fully automated segmentation with no additional input.
+        </p>
+        <ul>
+          <li>Select "Segmentation" from the "AIAA tool" dropdown list.</li>
+          <li>
+            Select which model to use from the "Segmentation models" dropdown
+            list.
+          </li>
+          <li>Click "Run".</li>
         </ul>
       </div>
     );
@@ -157,6 +283,10 @@ const MaskHelpContent = () => {
         return renderSmartCTInfo();
       case 3:
         return renderAutoInfo();
+      case 4:
+        return otherToolsInfo();
+      case 5:
+        return aiaaToolInfo();
       default:
         break;
     }
@@ -184,6 +314,16 @@ const MaskHelpContent = () => {
           <li onClick={() => setTabIndex(3)} className={getTabClass(3)}>
             <button>
               <Icon name="xnat-mask-auto" />
+            </button>
+          </li>
+          <li onClick={() => setTabIndex(4)} className={getTabClass(4)}>
+            <button>
+              <Icon name="ellipse-circle" />
+            </button>
+          </li>
+          <li onClick={() => setTabIndex(5)} className={getTabClass(5)}>
+            <button>
+              <Icon name="dot-circle" />
             </button>
           </li>
         </ul>
