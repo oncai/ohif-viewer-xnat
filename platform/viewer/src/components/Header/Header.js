@@ -9,7 +9,7 @@ import { UserPreferences } from './../UserPreferences';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
 //
-import { ICRHelpContent} from '@xnat-ohif/extension-xnat';
+import { ICRHelpContent, ICRAboutContent } from '@xnat-ohif/extension-xnat';
 
 function OptionsElement(props) {
   return (
@@ -70,6 +70,15 @@ function Header(props) {
           show({
             content: UserPreferences,
             title: t('User Preferences'),
+          }),
+      },
+      {
+        title: t('About'),
+        icon: { name: 'info' },
+        onClick: () =>
+          show({
+            content: ICRAboutContent,
+            title: t('OHIF-XNAT Viewer | About'),
           }),
       },
     ];

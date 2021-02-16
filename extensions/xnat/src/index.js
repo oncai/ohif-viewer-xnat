@@ -45,3 +45,7 @@ export { XNATScanBrowser } from './components/XNATScanBrowser/XNATScanBrowser';
 export {
   XNATViewportOverlay,
 } from './components/XNATViewportOverlay/XNATViewportOverlay';
+
+export {
+  ICRAboutContent,
+} from './components/AboutContent/ICRAboutContent';

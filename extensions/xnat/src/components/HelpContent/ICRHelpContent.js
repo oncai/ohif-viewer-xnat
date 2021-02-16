@@ -33,7 +33,6 @@ export const ICRHelpContent = () => {
 
   return (
     <div className="icr-help">
-      {/*<div className="icr-help">*/}
       <ul className="nav nav-tabs help-header">
         <li onClick={() => setTabIndex(0)} className={getTabClass(0)}>
           <button>
