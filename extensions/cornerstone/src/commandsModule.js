@@ -278,7 +278,9 @@ const commandsModule = ({ servicesManager }) => {
       window.store.dispatch(setViewportSpecificData(activeViewportIndex, displaySet));
 
       cornerstone.getEnabledElements().forEach(enabledElement => {
-        cornerstone.updateImage(enabledElement.element);
+        if (enabledElement.image) {
+          cornerstone.updateImage(enabledElement.element);
+        }
       });
     },
     subscribeToContextMenuHandler: ({ tools, contextMenuCallback, dialogIds }) => {

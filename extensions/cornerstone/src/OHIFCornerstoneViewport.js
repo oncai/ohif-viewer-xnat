@@ -4,8 +4,10 @@ import ConnectedCornerstoneViewport from './ConnectedCornerstoneViewport';
 import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
+import debounce from 'lodash.debounce';
 
 import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
+import './CustomLoader.css';
 
 const { StackManager } = OHIF.utils;
 
@@ -229,7 +231,21 @@ class OHIFCornerstoneViewport extends Component {
           activeViewportIndex: viewportIndex,
         });
       }
-    };
+    }
+
+    const debouncedNewImageHandler = debounce(({ currentImageIdIndex, sopInstanceUid }) => {
+      const { displaySet } = this.props.viewportData;
+      const { StudyInstanceUID } = displaySet;
+
+      if (currentImageIdIndex > 0) {
+        this.props.onNewImage({
+          StudyInstanceUID,
+          SOPInstanceUID: sopInstanceUid,
+          frameIndex: currentImageIdIndex,
+          activeViewportIndex: viewportIndex,
+        });
+      }
+    }, 700);
 
     return (
       <>
@@ -237,9 +253,11 @@ class OHIFCornerstoneViewport extends Component {
           viewportIndex={viewportIndex}
           imageIds={imageIds}
           viewportOverlayComponent={XNATViewportOverlay}
+          loadingIndicatorComponent={CustomLoader}
           imageIdIndex={currentImageIdIndex}
-          onNewImage={newImageHandler}
-          // onNewImageDebounceTime={700}
+          onNewImage={debouncedNewImageHandler}
+          // onNewImage={newImageHandler}
+          onNewImageDebounceTime={0}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}
           // isPlaying={false}
@@ -250,6 +268,25 @@ class OHIFCornerstoneViewport extends Component {
         />
         {childrenWithProps}
       </>
+    );
+  }
+}
+
+class CustomLoader extends Component {
+  render() {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '47%',
+          left: '47%',
+          width: '100%',
+          height: '100%',
+          color: 'white',
+        }}
+      >
+        <div className="loader"></div>
+      </div>
     );
   }
 }
