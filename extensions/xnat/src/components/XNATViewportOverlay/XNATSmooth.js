@@ -12,11 +12,23 @@ class XNATSmooth extends React.PureComponent {
       smooth: true,
     };
 
+    this.element = React.createRef()
+
     this.onToggleClick = this.onToggleClick.bind(this);
   }
 
+  componentDidMount() {
+    this.element.current.addEventListener('mousedown', this, false);
+    this.element.current.addEventListener('touchstart', this, false);
+  }
+
+  handleEvent(evt) {
+    // Don't propagate to parent (csTools via viewport)
+    evt.stopPropagation();
+  }
+
   onToggleClick({ target }) {
-    const smooth = this.state.smooth;
+    const { smooth } = this.state;
     this.setState({ smooth: !smooth });
 
     // let viewportIndex = window.store.getState().viewports.activeViewportIndex;
@@ -27,15 +39,19 @@ class XNATSmooth extends React.PureComponent {
   }
 
   render() {
+    const { smooth } = this.state;
+
     return (
-      <div>
+      <div ref={this.element}>
         Smooth
         <input
           className="smoothCheckbox"
           type="checkbox"
           name="smooth"
-          checked={this.state.smooth}
+          tabIndex="-1"
+          checked={smooth}
           onChange={this.onToggleClick}
+          // onTouchEnd={this.onToggleClick}
         />
       </div>
     );
