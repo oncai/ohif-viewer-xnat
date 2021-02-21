@@ -84,6 +84,9 @@ const CornerstoneViewportDownloadForm = ({ onClose, activeViewportIndex }) => {
 
   const toggleAnnotations = (toggle, viewportElement) => {
     cornerstoneTools.store.state.tools.forEach(({ name }) => {
+      if (name === 'FreehandRoi3DSculptorTool') {
+        return;
+      }
       if (toggle) {
         cornerstoneTools.setToolEnabledForElement(viewportElement, name);
       } else {
