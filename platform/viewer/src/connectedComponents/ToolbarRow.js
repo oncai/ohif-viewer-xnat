@@ -189,8 +189,8 @@ class ToolbarRow extends Component {
               onValueChanged={onPressLeft}
             />
           </div>
-          {buttonComponents}
           <ConnectedLayoutButton />
+          {buttonComponents}
           <div
             className="pull-right m-t-1 rm-x-1"
             style={{ marginLeft: 'auto' }}
