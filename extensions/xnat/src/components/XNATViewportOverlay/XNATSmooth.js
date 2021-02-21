@@ -1,10 +1,15 @@
 import React from 'react';
 import cornerstone from 'cornerstone-core';
+import PropTypes from 'prop-types';
 import { commandsManager } from '@ohif/viewer/src/App';
 
 import './XNATViewportOverlay.styl';
 
 class XNATSmooth extends React.PureComponent {
+  static propTypes = {
+    viewportIndex: PropTypes.number,
+  };
+
   constructor(props) {
     super(props);
 
@@ -12,37 +17,26 @@ class XNATSmooth extends React.PureComponent {
       smooth: true,
     };
 
-    this.element = React.createRef()
-
     this.onToggleClick = this.onToggleClick.bind(this);
-  }
-
-  componentDidMount() {
-    this.element.current.addEventListener('mousedown', this, false);
-    this.element.current.addEventListener('touchstart', this, false);
-  }
-
-  handleEvent(evt) {
-    // Don't propagate to parent (csTools via viewport)
-    evt.stopPropagation();
   }
 
   onToggleClick({ target }) {
     const { smooth } = this.state;
-    this.setState({ smooth: !smooth });
 
     // let viewportIndex = window.store.getState().viewports.activeViewportIndex;
     const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
     const enabledElement = cornerstone.getEnabledElement(dom);
     enabledElement.viewport.pixelReplication = smooth;
     cornerstone.updateImage(enabledElement.element);
+
+    this.setState({ smooth: !smooth });
   }
 
   render() {
     const { smooth } = this.state;
 
     return (
-      <div ref={this.element}>
+      <div>
         Smooth
         <input
           className="smoothCheckbox"
@@ -51,7 +45,6 @@ class XNATSmooth extends React.PureComponent {
           tabIndex="-1"
           checked={smooth}
           onChange={this.onToggleClick}
-          // onTouchEnd={this.onToggleClick}
         />
       </div>
     );

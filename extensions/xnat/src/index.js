@@ -2,6 +2,7 @@ import init from './init.js';
 import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
+import stackSynchronizer from './utils/StackSynchronizer/StackSynchronizer';
 
 export default {
   /**
@@ -49,3 +50,7 @@ export {
 export {
   ICRAboutContent,
 } from './components/AboutContent/ICRAboutContent';
+
+export {
+  stackSynchronizer
+};

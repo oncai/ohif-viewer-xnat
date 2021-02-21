@@ -44,7 +44,10 @@ export default {
       );
     };
 
-    return ExtendedOHIFCornerstoneViewport;
+    return OHIFCornerstoneViewport;
+
+    // Causes random image jumping while using CINE
+    // return ExtendedOHIFCornerstoneViewport;
   },
   getToolbarModule() {
     return toolbarModule;

@@ -1,7 +1,9 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
+import cornerstone from 'cornerstone-core';
+import stackSynchronizer from '../../utils/StackSynchronizer/StackSynchronizer';
 
 import './XNATViewportOverlay.styl';
+
 
 class XNATSync extends React.PureComponent {
   constructor(props) {
@@ -10,11 +12,21 @@ class XNATSync extends React.PureComponent {
     this.state = {
       isChecked: false,
     };
+
+    this.onToggleClick = this.onToggleClick.bind(this);
   }
 
-  // static propTypes = {
-  //   isChecked: PropTypes.bool.isRequired,
-  // };
+  onToggleClick({ target }) {
+    let viewportIndex = window.store.getState().viewports.activeViewportIndex;
+    const element = cornerstone.getEnabledElements()[viewportIndex].element;
+    if (target.checked) {
+      stackSynchronizer.add(element);
+    } else {
+      stackSynchronizer.remove(element);
+    }
+
+    this.setState({ isChecked: target.checked });
+  }
 
   render() {
     const { isChecked } = this.state;
@@ -26,7 +38,8 @@ class XNATSync extends React.PureComponent {
           className="syncCheckbox"
           type="checkbox"
           name="smooth"
-          value={isChecked}
+          checked={isChecked}
+          onChange={this.onToggleClick}
         />
       </div>
     );

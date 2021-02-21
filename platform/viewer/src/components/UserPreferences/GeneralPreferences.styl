@@ -1,18 +1,37 @@
 .GeneralPreferences
-  display: flex;
-  padding: 20px 0;
+  display: flex
+  flex-direction: column
+  padding: 20px 0
 
-  .language
-    display: flex;
-    width: 50%;
+  h2
+    font-size 14px
+    font-weight normal
+    margin-top: 25px
+    margin-bottom: 0
+    margin-left: 15px
+    color: var(--active-color)
 
-    .languageLabel
-      display: flex;
-      flex-basis: 0;
-      flex-grow: 1.5;
-      justify-content: flex-end;
-      padding-right: 20px;
+  hr
+    width 50%
+    margin-left: 15px
+    border-color: var(--active-color)
+
+  select
+    min-width: 150px
+
+  .generalItem
+    display: flex
+    margin-top: 10px
+    margin-left: 15px
+    margin-right: auto
+
+    .generalLabel
+      display: flex
+      flex-basis: 0
+      flex-grow: 1.5
+      justify-content: flex-end
+      padding-right: 20px
 
     .language-select
-      flex-grow: 1.5;
-      flex-basis: 0;
+      flex-grow: 1.5
+      flex-basis: 0

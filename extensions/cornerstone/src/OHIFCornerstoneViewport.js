@@ -255,7 +255,7 @@ class OHIFCornerstoneViewport extends Component {
           viewportOverlayComponent={XNATViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           imageIdIndex={currentImageIdIndex}
-          onNewImage={debouncedNewImageHandler}
+          // onNewImage={debouncedNewImageHandler}
           // onNewImage={newImageHandler}
           onNewImageDebounceTime={0}
           // ~~ Connected (From REDUX)
