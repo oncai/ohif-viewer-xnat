@@ -388,6 +388,8 @@ export default class XNATContourImportMenu extends React.Component {
 
     if (this._numCollectionsParsed === this._numCollectionsToParse) {
       this.props.onImportComplete();
+    } else {
+      this.updateProgress(0);
     }
   }
 

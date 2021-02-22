@@ -78,6 +78,8 @@ export default class RoiImporter {
   _addPolygonsToToolStateManager(polygons, importType) {
     const toolStateManager = globalToolStateManager.saveToolState();
 
+    const numpPolygons = polygons.length;
+
     for (let i = 0; i < polygons.length; i++) {
       const polygon = polygons[i];
       const sopInstanceUid = polygon.sopInstanceUid;
@@ -90,6 +92,10 @@ export default class RoiImporter {
         toolStateManager,
         correspondingImageId,
         importType
+      );
+
+      this.updateProgressCallback(
+        Math.floor(((i + 1) * 100) / numpPolygons)
       );
     }
 
