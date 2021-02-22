@@ -255,6 +255,7 @@ class OHIFCornerstoneViewport extends Component {
           viewportOverlayComponent={XNATViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           imageIdIndex={currentImageIdIndex}
+          // onNewImage causes random image jumping while/after using CINE
           // onNewImage={debouncedNewImageHandler}
           // onNewImage={newImageHandler}
           onNewImageDebounceTime={0}
