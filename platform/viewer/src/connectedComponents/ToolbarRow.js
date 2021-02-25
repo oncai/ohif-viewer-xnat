@@ -173,6 +173,9 @@ class ToolbarRow extends Component {
       this.state.activeButtons
     );
 
+    const showLayoutButton =
+      this.props.activeContexts.includes('ACTIVE_VIEWPORT::CORNERSTONE');
+
     const onPress = (side, value) => {
       this.props.handleSidePanelChange(side, value);
     };
@@ -189,7 +192,7 @@ class ToolbarRow extends Component {
               onValueChanged={onPressLeft}
             />
           </div>
-          <ConnectedLayoutButton />
+          {showLayoutButton && <ConnectedLayoutButton />}
           {buttonComponents}
           <div
             className="pull-right m-t-1 rm-x-1"
