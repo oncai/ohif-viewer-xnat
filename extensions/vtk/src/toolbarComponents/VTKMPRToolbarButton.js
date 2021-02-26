@@ -41,6 +41,9 @@ const _isDisplaySetReconstructable = (viewportSpecificData = {}, activeViewportI
   // A better heuristic would be checking 4D tags, e.g. the presence of multiple TemporalPositionIdentifier values.
   // However, some studies (e.g. https://github.com/OHIF/Viewers/issues/2113) do not have such tags.
 
+  // Slows performance dramatically (for frames 300+)
+  // ToDo: move out to check only upon clicking (toolbarClickCallback)
+  /*
   for (let ii = 0; ii < displaySet.numImageFrames; ++ii) {
     const image = displaySet.images[ii];
     if (!image) continue;
@@ -88,6 +91,7 @@ const _isDisplaySetReconstructable = (viewportSpecificData = {}, activeViewportI
       }
     }
   }
+  */
 
   return displaySet.isReconstructable;
 };

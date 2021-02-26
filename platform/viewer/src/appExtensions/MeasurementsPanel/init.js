@@ -279,14 +279,14 @@ export default function init({
     // element.removeEventListener(cornerstone.EVENTS.NEW_IMAGE, onNewImage);
   }
 
-  cornerstone.events.addEventListener(
-    cornerstone.EVENTS.ELEMENT_ENABLED,
-    elementEnabledHandler
-  );
-  cornerstone.events.addEventListener(
-    cornerstone.EVENTS.ELEMENT_DISABLED,
-    elementDisabledHandler
-  );
+  // cornerstone.events.addEventListener(
+  //   cornerstone.EVENTS.ELEMENT_ENABLED,
+  //   elementEnabledHandler
+  // );
+  // cornerstone.events.addEventListener(
+  //   cornerstone.EVENTS.ELEMENT_DISABLED,
+  //   elementDisabledHandler
+  // );
 
   // subscribe to context menu handler
   commandsManager.runCommand('subscribeToContextMenuHandler', {

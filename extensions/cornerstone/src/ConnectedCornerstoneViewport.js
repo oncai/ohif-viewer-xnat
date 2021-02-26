@@ -2,7 +2,7 @@ import CornerstoneViewport from 'react-cornerstone-viewport';
 import OHIF from '@ohif/core';
 import { connect } from 'react-redux';
 import throttle from 'lodash.throttle';
-import { setEnabledElement } from './state';
+import { setEnabledElement, setActiveViewportIndex, getActiveViewportIndex } from './state';
 
 const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
 const {
@@ -32,6 +32,9 @@ const mapStateToProps = (state, ownProps) => {
   // If this is the active viewport, enable prefetching.
   const { viewportIndex } = ownProps; //.viewportData;
   const isActive = viewportIndex === state.viewports.activeViewportIndex;
+  if (isActive) {
+    setActiveViewportIndex(viewportIndex);
+  }
   const viewportSpecificData =
     state.viewports.viewportSpecificData[viewportIndex] || {};
 
@@ -66,7 +69,10 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
   return {
     setViewportActive: () => {
-      dispatch(setViewportActive(viewportIndex));
+      // Fire dispatch only when switching viewports
+      if (viewportIndex !== getActiveViewportIndex()) {
+        dispatch(setViewportActive(viewportIndex));
+      }
     },
 
     setViewportSpecificData: data => {
