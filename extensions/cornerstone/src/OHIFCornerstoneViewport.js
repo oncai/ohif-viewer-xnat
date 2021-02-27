@@ -9,7 +9,7 @@ import debounce from 'lodash.debounce';
 import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
 import './CustomLoader.css';
 
-const { StackManager } = OHIF.utils;
+const { StackManager, studyMetadataManager } = OHIF.utils;
 
 class OHIFCornerstoneViewport extends Component {
   state = {
@@ -234,18 +234,33 @@ class OHIFCornerstoneViewport extends Component {
     }
 
     const debouncedNewImageHandler = debounce(({ currentImageIdIndex, sopInstanceUid }) => {
-      const { displaySet } = this.props.viewportData;
-      const { StudyInstanceUID } = displaySet;
+      // const { displaySet } = this.props.viewportData;
+      // const { StudyInstanceUID } = displaySet;
 
       if (currentImageIdIndex > 0) {
-        this.props.onNewImage({
-          StudyInstanceUID,
-          SOPInstanceUID: sopInstanceUid,
-          frameIndex: currentImageIdIndex,
-          activeViewportIndex: viewportIndex,
+        // onNewImage causes random image jumping while/after using CINE
+        // this.props.onNewImage({
+        //   StudyInstanceUID,
+        //   SOPInstanceUID: sopInstanceUid,
+        //   frameIndex: currentImageIdIndex,
+        //   activeViewportIndex: viewportIndex,
+        // });
+
+        const study = studyMetadataManager.get(
+          this.props.viewportData.displaySet.StudyInstanceUID
+        );
+
+        // ToDo: look into setViewportSpecificData broken dispatch
+        // props..displayset doesn't update, use findDisplaySet instead
+        const displaySet = study.findDisplaySet(ds => {
+          return ds.images && ds.images.find(i => i.getSOPInstanceUID() === sopInstanceUid)
         });
+
+        displaySet.SOPInstanceUID = sopInstanceUid;
+        displaySet.frameIndex = currentImageIdIndex;
+        this.state.viewportData.stack.currentImageIdIndex = currentImageIdIndex;
       }
-    }, 300);
+    }, 700);
 
     return (
       <>
@@ -255,8 +270,8 @@ class OHIFCornerstoneViewport extends Component {
           viewportOverlayComponent={XNATViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           imageIdIndex={currentImageIdIndex}
-          // onNewImage causes random image jumping while/after using CINE
           onNewImage={debouncedNewImageHandler}
+          // newImageHandler slows scrolling
           // onNewImage={newImageHandler}
           onNewImageDebounceTime={0}
           // ~~ Connected (From REDUX)

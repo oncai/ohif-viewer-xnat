@@ -2,7 +2,7 @@ import csTools from 'cornerstone-tools';
 
 class StackSynchronizer {
   constructor() {
-    this.sycStrategy = 'Index';
+    this.sycStrategy = 'Position';
   }
 
   changeSynchronizationStrategy(newStrategy) {
