@@ -22,6 +22,9 @@ export default function generateDateTimeAndLabel(labelPrefix) {
     }
   });
 
+  // Pad milliseconds with zeros
+  const milliseconds = `00${d.getMilliseconds().toString()}`.slice(-3);
+
   const dateTimeFormated =
     dateTime.year +
     dateTime.month +
@@ -35,6 +38,6 @@ export default function generateDateTimeAndLabel(labelPrefix) {
     label: `${labelPrefix}_${dateTimeFormated.slice(
       0,
       8
-    )}_${dateTimeFormated.slice(8, 14)}`,
+    )}_${dateTimeFormated.slice(8, 14)}_${milliseconds}`,
   };
 }
