@@ -2,9 +2,9 @@ window.config = {
   version: {
     major: 3,
     minor: 0,
-    patch: 0,
+    patch: 1,
     dev: '',
-    build: 1427
+    // build: 2
   },
   // default: '/'
   routerBasename: '/',

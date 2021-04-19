@@ -23,14 +23,14 @@ function formatPN(name) {
   return cleaned.trim();
 }
 
-function formatDA(date, strFormat = 'MMM d, YYYY') {
+function formatDA(date, strFormat = 'MMM DD, YYYY') {
   if (!date) {
     return;
   }
 
   // Goal: 'Apr 5, 1999'
   try {
-    const parsedDateTime = parse(date, 'yyyyMMdd', new Date());
+    const parsedDateTime = parse(date, 'YYYYMMDD', new Date());
     const formattedDateTime = format(parsedDateTime, strFormat);
 
     return formattedDateTime;
