@@ -41,6 +41,21 @@ function OHIFLogo() {
     debounce: 500
   });
 
+  let versionStr = '';
+  const version = window.config.version;
+  if (version) {
+    versionStr = `v${version.major}.${version.minor}.${version.patch}`;
+    if (version.dev) {
+      versionStr += `-${version.dev}`
+    }
+    if (version.build) {
+      versionStr += ` build-${version.build}`
+    }
+    if (version.dev) {
+      versionStr += t(' | INVESTIGATIONAL USE ONLY');
+    }
+  }
+
 
   return (
     <a
@@ -51,7 +66,10 @@ function OHIFLogo() {
     >
       <Icon name="xnat-ohif-logo" className="header-logo-image" />
       <Icon name="xnat-icr-logo" className="header-logo-image-icr" />
-      <div className="header-logo-text">OHIF-XNAT Viewer</div>
+      <div className="header-logo-text">
+        OHIF-XNAT Viewer <span style={{ color: '#91b9cd', fontSize: 13 }}>|{` ${versionStr}`}</span>
+
+      </div>
       {/*<Icon name="ohif-logo" className="header-logo-image" />*/}
       {/* Logo text would fit smaller displays at two lines:
        *
