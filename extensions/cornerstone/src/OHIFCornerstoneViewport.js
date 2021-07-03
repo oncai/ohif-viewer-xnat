@@ -4,12 +4,11 @@ import ConnectedCornerstoneViewport from './ConnectedCornerstoneViewport';
 import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
-import debounce from 'lodash.debounce';
 
 import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
 import './CustomLoader.css';
 
-const { StackManager, studyMetadataManager } = OHIF.utils;
+const { StackManager } = OHIF.utils;
 
 class OHIFCornerstoneViewport extends Component {
   state = {
@@ -183,7 +182,7 @@ class OHIFCornerstoneViewport extends Component {
 
     if (
       displaySet.displaySetInstanceUID !==
-      prevDisplaySet.displaySetInstanceUID ||
+        prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
       displaySet.frameIndex !== prevDisplaySet.frameIndex
     ) {
@@ -198,6 +197,7 @@ class OHIFCornerstoneViewport extends Component {
       return null;
     }
     const { viewportIndex } = this.props;
+    const { inconsistencyWarnings } = this.props.viewportData.displaySet;
     const {
       imageIds,
       currentImageIdIndex,
@@ -231,49 +231,22 @@ class OHIFCornerstoneViewport extends Component {
           activeViewportIndex: viewportIndex,
         });
       }
-    }
+    };
 
-    const debouncedNewImageHandler = debounce(({ currentImageIdIndex, sopInstanceUid }) => {
-      // const { displaySet } = this.props.viewportData;
-      // const { StudyInstanceUID } = displaySet;
-
-      if (currentImageIdIndex > 0) {
-        // onNewImage causes random image jumping while/after using CINE
-        // this.props.onNewImage({
-        //   StudyInstanceUID,
-        //   SOPInstanceUID: sopInstanceUid,
-        //   frameIndex: currentImageIdIndex,
-        //   activeViewportIndex: viewportIndex,
-        // });
-
-        const study = studyMetadataManager.get(
-          this.props.viewportData.displaySet.StudyInstanceUID
-        );
-
-        // ToDo: look into setViewportSpecificData broken dispatch
-        // props..displayset doesn't update, use findDisplaySet instead
-        const displaySet = study.findDisplaySet(ds => {
-          return ds.images && ds.images.find(i => i.getSOPInstanceUID() === sopInstanceUid)
-        });
-
-        displaySet.SOPInstanceUID = sopInstanceUid;
-        displaySet.frameIndex = currentImageIdIndex;
-        this.state.viewportData.stack.currentImageIdIndex = currentImageIdIndex;
-      }
-    }, 700);
+    const ViewportOverlay = props => {
+      return <XNATViewportOverlay {...props} inconsistencyWarnings={inconsistencyWarnings} />
+    };
 
     return (
       <>
         <ConnectedCornerstoneViewport
           viewportIndex={viewportIndex}
           imageIds={imageIds}
-          viewportOverlayComponent={XNATViewportOverlay}
-          loadingIndicatorComponent={CustomLoader}
           imageIdIndex={currentImageIdIndex}
-          onNewImage={debouncedNewImageHandler}
-          // newImageHandler slows scrolling
-          // onNewImage={newImageHandler}
-          onNewImageDebounceTime={0}
+          onNewImageDebounced={newImageHandler}
+          onNewImageDebounceTime={300}
+          viewportOverlayComponent={ViewportOverlay}
+          loadingIndicatorComponent={CustomLoader}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}
           // isPlaying={false}
