@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.51.4...@ohif/extension-dicom-microscopy@0.52.0) (2021-03-04)
+
+
+### Features
+
+* **log:** add new log service ([14d6454](https://github.com/OHIF/Viewers/commit/14d6454eafaa2ccb50e133c2945c9558052ea27e))
+
+
+
+
+
+## [0.51.4](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.51.3...@ohif/extension-dicom-microscopy@0.51.4) (2021-01-21)
+
+**Note:** Version bump only for package @ohif/extension-dicom-microscopy
+
+
+
+
+
+## [0.51.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.51.2...@ohif/extension-dicom-microscopy@0.51.3) (2020-09-10)
+
+**Note:** Version bump only for package @ohif/extension-dicom-microscopy
+
+
+
+
+
+## [0.51.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.51.1...@ohif/extension-dicom-microscopy@0.51.2) (2020-09-03)
+
+**Note:** Version bump only for package @ohif/extension-dicom-microscopy
+
+
+
+
+
+## [0.51.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.51.0...@ohif/extension-dicom-microscopy@0.51.1) (2020-08-28)
+
+**Note:** Version bump only for package @ohif/extension-dicom-microscopy
+
+
+
+
+
 # [0.51.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-microscopy@0.50.9...@ohif/extension-dicom-microscopy@0.51.0) (2020-06-04)
 
 
