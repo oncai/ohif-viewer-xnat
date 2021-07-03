@@ -1,12 +1,63 @@
-import { parse, format } from 'date-fns';
+import moment from 'moment';
 import cornerstone from 'cornerstone-core';
 
+/**
+ * Checks if value is valid.
+ *
+ * @param {number} value
+ * @returns {boolean} is valid.
+ */
+function isValidNumber(value) {
+  return typeof value === 'number' && !isNaN(value);
+}
+
+/**
+ * Formats number precision.
+ *
+ * @param {number} number
+ * @param {number} precision
+ * @returns {number} formatted number.
+ */
 function formatNumberPrecision(number, precision) {
   if (number !== null) {
     return parseFloat(number).toFixed(precision);
   }
 }
 
+/**
+ * Formats DICOM date.
+ *
+ * @param {string} date
+ * @param {string} strFormat
+ * @returns {string} formatted date.
+ */
+function formatDICOMDate(date, strFormat = 'MMM D, YYYY') {
+  return moment(date, 'YYYYMMDD').format(strFormat);
+}
+
+/**
+ *    DICOM Time is stored as HHmmss.SSS, where:
+ *      HH 24 hour time:
+ *        m mm        0..59   Minutes
+ *        s ss        0..59   Seconds
+ *        S SS SSS    0..999  Fractional seconds
+ *
+ *        Goal: '24:12:12'
+ *
+ * @param {*} time
+ * @param {string} strFormat
+ * @returns {string} formatted name.
+ */
+function formatDICOMTime(time, strFormat = 'HH:mm:ss') {
+  return moment(time, 'HH:mm:ss').format(strFormat);
+}
+
+/**
+ * Formats a patient name for display purposes
+ *
+ * @param {string} name
+ * @returns {string} formatted name.
+ */
 function formatPN(name) {
   if (!name) {
     return;
@@ -14,7 +65,7 @@ function formatPN(name) {
 
   // Convert the first ^ to a ', '. String.replace() only affects
   // the first appearance of the character.
-  const commaBetweenFirstAndLast = name.toString().replace('^', ', ');
+  const commaBetweenFirstAndLast = name.replace('^', ', ');
 
   // Replace any remaining '^' characters with spaces
   const cleaned = commaBetweenFirstAndLast.replace(/\^/g, ' ');
@@ -23,54 +74,12 @@ function formatPN(name) {
   return cleaned.trim();
 }
 
-function formatDA(date, strFormat = 'MMM DD, YYYY') {
-  if (!date) {
-    return;
-  }
-
-  // Goal: 'Apr 5, 1999'
-  try {
-    const parsedDateTime = parse(date, 'YYYYMMDD', new Date());
-    const formattedDateTime = format(parsedDateTime, strFormat);
-
-    return formattedDateTime;
-  } catch (err) {
-    // swallow?
-  }
-
-  return;
-}
-
-function formatTM(time, strFormat = 'HH:mm:ss') {
-  if (!time) {
-    return;
-  }
-
-  // DICOM Time is stored as HHmmss.SSS, where:
-  //      HH 24 hour time:
-  //      m mm    0..59   Minutes
-  //      s ss    0..59   Seconds
-  //      S SS SSS    0..999  Fractional seconds
-  //
-  // Goal: '24:12:12'
-  try {
-    const inputFormat = 'HHmmss';
-    const strTime = '19700101 ' + time.toString().substring(0, inputFormat.length);
-    const parsedDateTime = parse(strTime, 'yyyyMMdd HHmmss');
-    const formattedDateTime = format(parsedDateTime, strFormat);
-
-    return formattedDateTime;
-  } catch (err) {
-    // swallow?
-  }
-
-  return;
-}
-
-function isValidNumber(value) {
-  return typeof value === 'number' && !isNaN(value);
-}
-
+/**
+ * Gets compression type
+ *
+ * @param {number} imageId
+ * @returns {string} comrpession type.
+ */
 function getCompression(imageId) {
   const generalImageModule =
     cornerstone.metaData.get('generalImageModule', imageId) || {};
@@ -93,10 +102,10 @@ function getCompression(imageId) {
 }
 
 export {
-  formatNumberPrecision,
-  formatPN,
-  formatDA,
-  formatTM,
   isValidNumber,
-  getCompression,
+  formatNumberPrecision,
+  formatDICOMDate,
+  formatDICOMTime,
+  formatPN,
+  getCompression
 };
