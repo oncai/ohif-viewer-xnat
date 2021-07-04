@@ -347,7 +347,7 @@ const _mapStudiesToNewFormat = studies => {
     study.displaySets =
       study.displaySets ||
       studyMetadata.createDisplaySets(sopClassHandlerModules);
-    studyMetadata.setDisplaySets(study.displaySets);
+    // studyMetadata.setDisplaySets(study.displaySets);
 
     studyMetadataManager.add(studyMetadata);
     uniqueStudyUIDs.add(study.StudyInstanceUID);

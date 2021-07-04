@@ -1,29 +1,18 @@
 window.config = {
-  version: {
-    major: 3,
-    minor: 0,
-    patch: 2,
-    dev: 'a',
-    // build: 2
-  },
-  // default: '/'
   routerBasename: '/',
   extensions: [],
-  showStudyList: false,
-  filterQueryParam: false,
-  disableServersCache: false,
+  showStudyList: true,
   servers: {
     dicomWeb: [
       {
-        name: 'DCM4CHEE',
-        wadoUriRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/wado',
-        qidoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
-        wadoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
-        qidoSupportsIncludeField: true,
-        imageRendering: 'wadors',
-        thumbnailRendering: 'wadors',
+        name: 'dicomweb_server',
+        wadoUriRoot: 'http://localhost:5985',
+        qidoRoot: 'http://localhost:5985',
+        wadoRoot: 'http://localhost:5985',
+        qidoSupportsIncludeField: false,
+        imageRendering: 'wadouri',
+        thumbnailRendering: 'wadouri',
         enableStudyLazyLoad: true,
-        // supportsFuzzyMatching: true,
       },
     ],
   },
@@ -118,36 +107,10 @@ window.config = {
       label: 'W/L Preset 8',
       keys: ['8'],
     },
-    // ~ XNAT extension
     {
       commandName: 'windowLevelPreset9',
       label: 'W/L Preset 9',
       keys: ['9'],
-    },
-    {
-      commandName: 'cancelTask',
-      label: 'Cancel',
-      keys: ['esc'],
-    },
-    {
-      commandName: 'xnatCancelROIDrawing',
-      label: 'Cancel contour',
-      keys: ['c'],
-    },
-    {
-      commandName: 'xnatCompleteROIDrawing',
-      label: 'Complete contour',
-      keys: ['enter'],
-    },
-    {
-      commandName: 'xnatIncreaseBrushSize',
-      label: 'Increase brush size',
-      keys: [']'],
-    },
-    {
-      commandName: 'xnatDecreaseBrushSize',
-      label: 'Decrease brush size',
-      keys: ['['],
     },
   ],
   cornerstoneExtensionConfig: {},

@@ -3,7 +3,7 @@ describe('OHIF Cornerstone Hotkeys', () => {
     cy.checkStudyRouteInViewer(
       '1.2.840.113619.2.5.1762583153.215519.978957063.78'
     );
-    cy.expectMinimumThumbnails(5);
+    cy.expectMinimumThumbnails(3);
   });
 
   beforeEach(() => {
@@ -91,7 +91,7 @@ describe('OHIF Cornerstone Hotkeys', () => {
       ':nth-child(2) > .viewport-wrapper > .viewport-element > .ViewportOrientationMarkers.noselect > .left-mid.orientation-marker'
     ).as('viewport2InfoMidLeft');
     cy.get(
-      ':nth-child(2) > .viewport-wrapper > .viewport-element > .ViewportOverlay > div.bottom-right.overlay-element > div'
+      ':nth-child(2) > .viewport-wrapper > .viewport-element > .OHIFCornerstoneViewportOverlay > div.bottom-right.overlay-element > div'
     ).as('viewport2InfoBottomRight');
 
     // Press multiples hotkeys on viewport #2

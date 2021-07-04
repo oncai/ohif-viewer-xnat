@@ -202,10 +202,10 @@ class OHIFStandaloneViewer extends Component {
                   {match === null ? (
                     <></>
                   ) : (
-                    <ErrorBoundary context={match.url}>
-                      <Component match={match} location={this.props.location} />
-                    </ErrorBoundary>
-                  )}
+                      <ErrorBoundary context={match.url}>
+                        <Component match={match} location={this.props.location} />
+                      </ErrorBoundary>
+                    )}
                 </CSSTransition>
               )}
             </Route>

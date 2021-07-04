@@ -2,8 +2,8 @@ window.config = {
   version: {
     major: 3,
     minor: 0,
-    patch: 1,
-    dev: '',
+    patch: 2,
+    dev: 'a',
     // build: 2
   },
   // default: '/'
@@ -11,6 +11,7 @@ window.config = {
   extensions: [],
   showStudyList: false,
   filterQueryParam: false,
+  disableServersCache: false,
   servers: {
     dicomWeb: [
       {
