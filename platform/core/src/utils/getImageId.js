@@ -30,12 +30,7 @@ export default function getImageId(instance, frame, thumbnail = false) {
 
   if (instance.url) {
     if (frame !== undefined) {
-      if (!instance.url.startsWith('dicomweb')) {
-        instance.url = updateQueryStringParameter(instance.url, 'frame', frame);
-      } else if (instance.url.includes('resources/DICOM/files')) {
-        // ToDo: use a neater way to recognise that source is XANT
-        instance.url = updateQueryStringParameter(instance.url, 'frame', frame);
-      }
+      instance.url = updateQueryStringParameter(instance.url, 'frame', frame);
     }
 
     return instance.url;
