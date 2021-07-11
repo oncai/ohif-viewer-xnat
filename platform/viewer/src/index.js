@@ -24,12 +24,12 @@ import ReactDOM from 'react-dom';
  * the defaultExtensions property.
  */
 import OHIFVTKExtension from '@ohif/extension-vtk';
-import OHIFDicomHtmlExtension from '@ohif/extension-dicom-html';
-import OHIFDicomSegmentationExtension from '@ohif/extension-dicom-segmentation';
-import OHIFDicomRtExtension from '@ohif/extension-dicom-rt';
+// import OHIFDicomHtmlExtension from '@ohif/extension-dicom-html';
+// import OHIFDicomSegmentationExtension from '@ohif/extension-dicom-segmentation';
+// import OHIFDicomRtExtension from '@ohif/extension-dicom-rt';
 import OHIFDicomMicroscopyExtension from '@ohif/extension-dicom-microscopy';
-import OHIFDicomPDFExtension from '@ohif/extension-dicom-pdf';
-//import OHIFDicomTagBrowserExtension from '@ohif/extension-dicom-tag-browser';
+// import OHIFDicomPDFExtension from '@ohif/extension-dicom-pdf';
+import OHIFDicomTagBrowserExtension from '@ohif/extension-dicom-tag-browser';
 // Add this for Debugging purposes:
 //import OHIFDebuggingExtension from '@ohif/extension-debugging';
 import OHIFXNATExtension from '@xnat-ohif/extension-xnat'
@@ -49,13 +49,13 @@ const appProps = {
   config,
   defaultExtensions: [
     OHIFVTKExtension,
-    OHIFDicomHtmlExtension,
+    // OHIFDicomHtmlExtension,
     OHIFDicomMicroscopyExtension,
-    OHIFDicomPDFExtension,
+    // OHIFDicomPDFExtension,
     // OHIFDicomSegmentationExtension,
     // OHIFDicomRtExtension,
     //OHIFDebuggingExtension,
-    //OHIFDicomTagBrowserExtension,
+    OHIFDicomTagBrowserExtension,
     OHIFXNATExtension,
   ],
 };

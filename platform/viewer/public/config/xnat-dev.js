@@ -1,9 +1,9 @@
 window.config = {
   version: {
     major: 3,
-    minor: 0,
-    patch: 2,
-    dev: 'a',
+    minor: 1,
+    patch: 0,
+    dev: '',
     // build: 2
   },
   // default: '/'

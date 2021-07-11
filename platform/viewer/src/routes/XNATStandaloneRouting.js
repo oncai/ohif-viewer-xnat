@@ -288,7 +288,7 @@ class XNATStandaloneRouting extends Component {
         reassignInstanceUrls(studies, rootUrl);
 
         // Parse data here and add to metadata provider
-        await updateMetaDataProvider(studies);
+        // await updateMetaDataProvider(studies);
 
         const {
           studies: updatedStudies,
@@ -438,6 +438,7 @@ async function updateMetaDataProvider(studies) {
         series.instances.map(async instance => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
+          naturalizedDicom.PatientName = study.PatientName;
           naturalizedDicom.StudyDescription = study.StudyDescription;
           naturalizedDicom.SeriesNumber = series.SeriesNumber;
           //ToDo: do we need PaletteColorLookupTableData & OverlayData?

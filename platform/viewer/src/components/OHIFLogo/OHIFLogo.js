@@ -52,7 +52,7 @@ function OHIFLogo() {
       versionStr += ` build-${version.build}`
     }
     if (version.dev) {
-      versionStr += t(' | INVESTIGATIONAL USE ONLY');
+      versionStr += ' | INVESTIGATIONAL USE ONLY';
     }
   }
 

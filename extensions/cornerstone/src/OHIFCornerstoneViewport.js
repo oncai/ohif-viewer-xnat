@@ -5,6 +5,7 @@ import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 
+// import OHIFCornerstoneViewportOverlay from './components/OHIFCornerstoneViewportOverlay';
 import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
 import './CustomLoader.css';
 
@@ -233,9 +234,9 @@ class OHIFCornerstoneViewport extends Component {
       }
     };
 
-    const ViewportOverlay = props => {
-      return <XNATViewportOverlay {...props} inconsistencyWarnings={inconsistencyWarnings} />
-    };
+    // const ViewportOverlay = props => {
+    //   return <XNATViewportOverlay {...props} inconsistencyWarnings={inconsistencyWarnings} />
+    // };
 
     return (
       <>
@@ -245,7 +246,7 @@ class OHIFCornerstoneViewport extends Component {
           imageIdIndex={currentImageIdIndex}
           onNewImageDebounced={newImageHandler}
           onNewImageDebounceTime={300}
-          viewportOverlayComponent={ViewportOverlay}
+          viewportOverlayComponent={XNATViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}

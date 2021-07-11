@@ -1,70 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Icon } from '@ohif/ui';
+import React from 'react';
 import { XNATThumbnail } from './XNATThumbnail';
-import './XNATScanBrowser.styl';
 
-function XNATScanItem(props) {
-  const {
-    study,
-    studyIndex,
-    onThumbnailClick,
-    onThumbnailDoubleClick,
-    supportsDrag,
-  } = props;
+import './XNATStudyBrowser.styl';
 
-  const [expanded, setExpanded] = useState(true);
-
-  const getExpandIcon = () => {
-    if (expanded) {
-      return <Icon name="xnat-tree-minus" />;
-    }
-    return <Icon name="xnat-tree-plus" />;
-  };
-
-  return (
-    <React.Fragment key={studyIndex}>
-      <div className="studyDescription">
-        <a
-          className="btn btn-sm btn-secondary"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {getExpandIcon()}
-        </a>
-        {study.StudyDescription}
-      </div>
-      {expanded ? (
-        <StudyThumbnails
-          study={study}
-          supportsDrag={supportsDrag}
-          studyIndex={studyIndex}
-          onThumbnailClick={onThumbnailClick}
-          onThumbnailDoubleClick={onThumbnailDoubleClick}
-        />
-      ) : null}
-    </React.Fragment>
-  );
-}
-
-const noop = () => {};
-
-XNATScanItem.propTypes = {
-  study: PropTypes.any,
-  studyIndex: PropTypes.any,
-  supportsDrag: PropTypes.bool,
-  onThumbnailClick: PropTypes.func,
-  onThumbnailDoubleClick: PropTypes.func,
-};
-
-XNATScanItem.defaultProps = {
-  study: undefined,
-  studyIndex: undefined,
-  supportsDrag: true,
-  onThumbnailClick: noop,
-  onThumbnailDoubleClick: noop,
-};
-
-const StudyThumbnails = props => {
+const XNATStudyThumbnails = props => {
   const {
     study,
     supportsDrag,
@@ -80,6 +19,7 @@ const StudyThumbnails = props => {
     .map((thumb, thumbIndex) => {
       // TODO: Thumb has more props than we care about?
       const {
+        active,
         altImageText,
         displaySetInstanceUID,
         imageId,
@@ -88,6 +28,7 @@ const StudyThumbnails = props => {
         SeriesDescription,
         SeriesNumber,
         stackPercentComplete,
+        hasWarnings,
       } = thumb;
 
       return (
@@ -97,6 +38,7 @@ const StudyThumbnails = props => {
           data-cy="thumbnail-list"
         >
           <XNATThumbnail
+            active={active}
             supportsDrag={supportsDrag}
             key={`${studyIndex}_${thumbIndex}`}
             id={`${studyIndex}_${thumbIndex}`} // Unused?
@@ -110,6 +52,7 @@ const StudyThumbnails = props => {
             numImageFrames={numImageFrames}
             SeriesDescription={SeriesDescription}
             SeriesNumber={SeriesNumber}
+            hasWarnings={hasWarnings}
             stackPercentComplete={stackPercentComplete}
             // Events
             onClick={onThumbnailClick.bind(undefined, displaySetInstanceUID)}
@@ -120,4 +63,4 @@ const StudyThumbnails = props => {
     });
 };
 
-export { XNATScanItem };
+export default XNATStudyThumbnails;

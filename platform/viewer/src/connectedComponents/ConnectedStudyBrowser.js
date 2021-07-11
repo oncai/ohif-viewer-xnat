@@ -1,10 +1,10 @@
 import OHIF from '@ohif/core';
 import { connect } from 'react-redux';
-import { StudyBrowser } from '@ohif/ui';
+// import { StudyBrowser } from '@ohif/ui';
 import cloneDeep from 'lodash.clonedeep';
 import findDisplaySetByUID from './findDisplaySetByUID';
 import { servicesManager } from './../App.js';
-import { XNATScanBrowser } from '@xnat-ohif/extension-xnat';
+import { XNATStudyBrowser } from '@xnat-ohif/extension-xnat';
 
 const { studyMetadataManager } = OHIF.utils;
 const { setActiveViewportSpecificData } = OHIF.redux.actions;
@@ -98,6 +98,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 const ConnectedStudyBrowser = connect(
   mapStateToProps,
   mapDispatchToProps
-)(XNATScanBrowser);
+)(XNATStudyBrowser);
 
 export default ConnectedStudyBrowser;

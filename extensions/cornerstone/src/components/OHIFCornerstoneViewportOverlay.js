@@ -1,7 +1,8 @@
+import { PureComponent } from 'react';
 import React from 'react';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
-import './XNATViewportOverlay.css';
+import './OHIFCornerstoneViewportOverlay.css';
 import {
   isValidNumber,
   formatNumberPrecision,
@@ -9,15 +10,13 @@ import {
   formatDICOMTime,
   formatPN,
   getCompression
-} from './helpers';
+} from '../utils/formatStudy';
 import classNames from 'classnames';
 import { Icon } from '@ohif/ui/src/elements/Icon';
 import { Tooltip } from '@ohif/ui/src/components/tooltip';
 import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
-import XNATSmooth from './XNATSmooth';
-import XNATSync from './XNATSync';
 
-class XNATViewportOverlay extends React.PureComponent {
+class OHIFCornerstoneViewportOverlay extends PureComponent {
   static propTypes = {
     scale: PropTypes.number.isRequired,
     windowWidth: PropTypes.oneOfType([
@@ -32,10 +31,6 @@ class XNATViewportOverlay extends React.PureComponent {
     imageIndex: PropTypes.number.isRequired,
     stackSize: PropTypes.number.isRequired,
     inconsistencyWarnings: PropTypes.array.isRequired
-  };
-
-  static defaultProps = {
-    inconsistencyWarnings: [],
   };
 
   render() {
@@ -132,8 +127,6 @@ class XNATViewportOverlay extends React.PureComponent {
           <div>
             {formatDICOMDate(studyDate)} {formatDICOMTime(studyTime)}
           </div>
-          <XNATSync />
-          <XNATSmooth />
         </div>
         <div className="bottom-right overlay-element">
           <div>Zoom: {zoomPercentage}%</div>
@@ -171,4 +164,4 @@ class XNATViewportOverlay extends React.PureComponent {
   }
 }
 
-export { XNATViewportOverlay };
+export default OHIFCornerstoneViewportOverlay;
