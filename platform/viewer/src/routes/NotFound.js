@@ -11,7 +11,8 @@ export default function NotFound({ message = 'Sorry, this page does not exist.',
     <div className={'not-found'}>
       <div>
         <h4>{message}</h4>
-        {showGoBackButton && context.appConfig.showStudyList && (
+        {/*{showGoBackButton && context.appConfig.showStudyList && (*/}
+        {showGoBackButton && (
           <h5>
             <Link to={'/'}>Go back to XNAT</Link>
           </h5>

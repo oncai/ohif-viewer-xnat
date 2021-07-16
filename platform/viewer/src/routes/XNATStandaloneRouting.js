@@ -211,8 +211,8 @@ class XNATStandaloneRouting extends Component {
               });
 
               // TODO -> clean this
-              studiesI[0].StudyDescription =
-                experimentList[i].label || experimentList[i].ID;
+              // studiesI[0].StudyDescription =
+              //   experimentList[i].label || experimentList[i].ID;
 
               console.log(`Studies[${i}]`);
 
@@ -288,7 +288,7 @@ class XNATStandaloneRouting extends Component {
         reassignInstanceUrls(studies, rootUrl);
 
         // Parse data here and add to metadata provider
-        // await updateMetaDataProvider(studies);
+        await updateMetaDataProvider(studies);
 
         const {
           studies: updatedStudies,
@@ -438,15 +438,21 @@ async function updateMetaDataProvider(studies) {
         series.instances.map(async instance => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
-          naturalizedDicom.PatientName = study.PatientName;
+          naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
           naturalizedDicom.StudyDescription = study.StudyDescription;
           naturalizedDicom.SeriesNumber = series.SeriesNumber;
+          naturalizedDicom.SeriesDescription = series.SeriesDescription;
+          if (!naturalizedDicom.PlanarConfiguration) {
+            naturalizedDicom.PlanarConfiguration = 0;
+          }
           //ToDo: do we need PaletteColorLookupTableData & OverlayData?
 
           // Add instance to metadata provider.
-          await metadataProvider.addInstance(naturalizedDicom);
+          await metadataProvider.addInstance(naturalizedDicom, {imageId});
 
           // Add imageId specific mapping to this data as the URL isn't necessarliy WADO-URI.
+          // I.e. here the imageId is added w/o frame number for multi-frame images
+          // Also added in StackManager => createAndAddStack for WADO-URI
           metadataProvider.addImageIdToUIDs(imageId, {
             StudyInstanceUID,
             SeriesInstanceUID,
