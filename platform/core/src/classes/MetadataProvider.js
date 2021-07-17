@@ -1,9 +1,13 @@
 import dcmjs from 'dcmjs';
 import queryString from 'query-string';
 import dicomParser from 'dicom-parser';
+import cornerstone from 'cornerstone-core';
 import getPixelSpacingInformation from '../utils/metadataProvider/getPixelSpacingInformation';
 import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
 import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
+import validNumber from '../utils/metadataProvider/validNumber';
+
+const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
 
 class MetadataProvider {
   constructor() {
@@ -20,6 +24,69 @@ class MetadataProvider {
       writable: false,
       value: new Map(),
     });
+    this.datasets = {};
+    this.isMetadataLoadedFromImage = [];
+  }
+
+  loadMetadataFromImage(imageId) {
+    if (this.isMetadataLoadedFromImage.includes(imageId)) {
+      return;
+    }
+
+    if (imageId in cornerstone.imageCache.imageCache) {
+      const imageCache = cornerstone.imageCache.imageCache[imageId];
+
+      if (imageCache.loaded) {
+        const arrayBuffer = imageCache.image.data.byteArray.buffer;
+        this.isMetadataLoadedFromImage.push(imageId);
+        let dataset;
+        if (arrayBuffer) {
+          // Exclude PixelData
+          const dicomData = DicomMessage.readFile(arrayBuffer, {untilTag: '7FE00010', includeUntilTagValue: false});
+          dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
+        }
+
+        if (dataset) {// Update instance data
+          const uids = this._getUIDsFromImageID(imageId);
+          if (!uids) {
+            return;
+          }
+          const { StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID } = uids;
+
+          const study = this.studies.get(StudyInstanceUID);
+          if (!study) {
+            return;
+          }
+
+          const series = study.series.get(SeriesInstanceUID);
+          if (!series) {
+            return;
+          }
+
+          let instance = series.instances.get(SOPInstanceUID);
+          if (!instance) {
+            instance = {};
+          }
+          instance = {...instance, ...dataset};
+          series.instances.set(SOPInstanceUID, instance);
+        }
+      }
+    }
+  }
+
+  _paletteColorArrayBufferToLUT(paletteColorLookupTableData, lutDescriptor) {
+    const numLutEntries = lutDescriptor[0];
+    const bits = lutDescriptor[2];
+    const byteArray = bits === 16 ?
+      new Uint16Array(paletteColorLookupTableData) :
+      new Uint8Array(paletteColorLookupTableData);
+    const lut = [];
+
+    for (let i = 0; i < numLutEntries; i++) {
+      lut[i] = byteArray[i];
+    }
+
+    return lut;
   }
 
   async addInstance(dicomJSONDatasetOrP10ArrayBuffer, options = {}) {
@@ -52,6 +119,7 @@ class MetadataProvider {
       SOPInstanceUID,
     } = naturalizedDataset;
 
+    this._getAndCacheStudyDataset(StudyInstanceUID, dicomJSONDataset);
     const study = this._getAndCacheStudy(StudyInstanceUID);
     const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
     const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
@@ -60,8 +128,47 @@ class MetadataProvider {
 
     if (options.server !== undefined) {
       await this._checkBulkDataAndInlineBinaries(instance, options.server);
+    } else {
+      if (instance.PhotometricInterpretation === 'PALETTE COLOR') {
+        const image = await cornerstone.loadAndCacheImage(options.imageId);
+        const arrayBuffer = image.data.byteArray.buffer;
+        this.isMetadataLoadedFromImage.push(options.imageId);
+        let dataset;
+        if (arrayBuffer) {
+          // Exclude PixelData
+          const dicomData = DicomMessage.readFile(arrayBuffer, {untilTag: '7FE00010', includeUntilTagValue: false});
+          dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
+        }
+        // const newInstance = {...instance, ...dataset};
+        const {
+          RedPaletteColorLookupTableDescriptor,
+          GreenPaletteColorLookupTableDescriptor,
+          BluePaletteColorLookupTableDescriptor,
+          RedPaletteColorLookupTableData,
+          GreenPaletteColorLookupTableData,
+          BluePaletteColorLookupTableData,
+        } = dataset;
+
+        dataset.RedPaletteColorLookupTableData =
+          this._paletteColorArrayBufferToLUT(
+            RedPaletteColorLookupTableData,
+            RedPaletteColorLookupTableDescriptor
+          );
+        dataset.GreenPaletteColorLookupTableData =
+          this._paletteColorArrayBufferToLUT(
+            GreenPaletteColorLookupTableData,
+            GreenPaletteColorLookupTableDescriptor
+          );
+        dataset.BluePaletteColorLookupTableData =
+          this._paletteColorArrayBufferToLUT(
+            BluePaletteColorLookupTableData,
+            BluePaletteColorLookupTableDescriptor
+          );
+
+        series.instances.set(SOPInstanceUID, dataset);
+      }
     }
-    
+
     return instance;
   }
 
@@ -71,6 +178,16 @@ class MetadataProvider {
     // An example would be dicom hosted at some random site.
 
     this.imageIdToUIDs.set(imageId, uids);
+  }
+
+  _getAndCacheStudyDataset(StudyInstanceUID, dataset) {
+    if (!this.datasets[StudyInstanceUID]) {
+      this.datasets[StudyInstanceUID] = dataset;
+    }
+  }
+
+  getStudyDataset(StudyInstanceUID) {
+    return this.datasets[StudyInstanceUID];
   }
 
   _getAndCacheStudy(StudyInstanceUID) {
@@ -85,6 +202,7 @@ class MetadataProvider {
 
     return study;
   }
+
   _getAndCacheSeriesFromStudy(study, SeriesInstanceUID) {
     let series = study.series.get(SeriesInstanceUID);
 
@@ -132,13 +250,34 @@ class MetadataProvider {
   }
 
   get(query, imageId, options = { fallback: false }) {
-    const instance = this._getInstance(imageId);
+    let instance;
+
+    const enableMetaPrefetch = true;
+    if (enableMetaPrefetch &&
+      (process.env.APP_CONFIG === 'config/xnat-dev.js' || process.env.APP_CONFIG === 'config/xnat.js')) {
+      // Attempt to load metadata from instance
+      let imageIdToUse = imageId;
+      const frameIndex = imageId.indexOf('frame=');
+      if (frameIndex > 0) {
+        imageIdToUse = imageId.substr(0, frameIndex - 1);
+      }
+      this.loadMetadataFromImage(imageIdToUse);
+
+      instance = this._getInstance(imageIdToUse);
+    } else {
+      // Standard OHIF/DICOMWeb implementation
+      instance = this._getInstance(imageId);
+    }
 
     if (query === INSTANCE) {
       return instance;
     }
 
-    return this.getTagFromInstance(query, instance, options);
+    const meta = this.getTagFromInstance(query, instance, options);
+
+    return meta;
+
+    // return this.getTagFromInstance(query, instance, options);
   }
 
   getTag(query, imageId, options) {
@@ -195,6 +334,7 @@ class MetadataProvider {
           studyInstanceUID: instance.StudyInstanceUID,
           seriesDate,
           seriesTime,
+          seriesDescription: instance.SeriesDescription,
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.PATIENT_STUDY_MODULE:
@@ -273,7 +413,7 @@ class MetadataProvider {
 
         break;
       case WADO_IMAGE_LOADER_TAGS.VOI_LUT_MODULE:
-        const { WindowCenter, WindowWidth } = instance;
+        let { WindowCenter, WindowWidth } = instance;
 
         const windowCenter = Array.isArray(WindowCenter)
           ? WindowCenter
@@ -283,15 +423,17 @@ class MetadataProvider {
           : [WindowWidth];
 
         metadata = {
-          windowCenter,
-          windowWidth,
+          windowCenter: validNumber(windowCenter),
+          windowWidth: validNumber(windowWidth),
         };
 
         break;
       case WADO_IMAGE_LOADER_TAGS.MODALITY_LUT_MODULE:
+        const rescaleSlope = validNumber(instance.RescaleSlope);
+        const rescaleIntercept = validNumber(instance.RescaleIntercept);
         metadata = {
-          rescaleIntercept: instance.RescaleIntercept,
-          rescaleSlope: instance.RescaleSlope,
+          rescaleIntercept,
+          rescaleSlope,
           rescaleType: instance.RescaleType,
         };
         break;
@@ -390,7 +532,11 @@ class MetadataProvider {
 
         let patientName;
         if (PatientName) {
-          patientName = PatientName.Alphabetic;
+          if (PatientName.Alphabetic) {
+            patientName = PatientName.Alphabetic;
+          } else {
+            patientName = PatientName;
+          }
         }
 
         metadata = {

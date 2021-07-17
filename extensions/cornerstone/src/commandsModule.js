@@ -12,6 +12,14 @@ const scroll = cornerstoneTools.import('util/scroll');
 const { studyMetadataManager } = OHIF.utils;
 const { setViewportSpecificData } = OHIF.redux.actions;
 
+const refreshCornerstoneViewports = () => {
+  cornerstone.getEnabledElements().forEach(enabledElement => {
+    if (enabledElement.image) {
+      cornerstone.updateImage(enabledElement.element);
+    }
+  });
+};
+
 const commandsModule = ({ servicesManager }) => {
   const actions = {
     rotateViewport: ({ viewports, rotation }) => {
@@ -182,10 +190,7 @@ const commandsModule = ({ servicesManager }) => {
 
       measurementApi.syncMeasurementsAndToolData();
 
-      // Update images in all active viewports
-      cornerstone.getEnabledElements().forEach(enabledElement => {
-        cornerstone.updateImage(enabledElement.element);
-      });
+      refreshCornerstoneViewports();
     },
     getNearbyToolData({ element, canvasCoordinates, availableToolTypes }) {
       const nearbyTool = {};
@@ -264,24 +269,32 @@ const commandsModule = ({ servicesManager }) => {
       StudyInstanceUID,
       SOPInstanceUID,
       frameIndex,
-      activeViewportIndex
+      activeViewportIndex,
+      refreshViewports = true,
     }) => {
       const study = studyMetadataManager.get(StudyInstanceUID);
 
       const displaySet = study.findDisplaySet(ds => {
-        return ds.images && ds.images.find(i => i.getSOPInstanceUID() === SOPInstanceUID)
+        return (
+          ds.images &&
+          ds.images.find(i => i.getSOPInstanceUID() === SOPInstanceUID)
+        );
       });
+
+      if (!displaySet) {
+        return;
+      }
 
       displaySet.SOPInstanceUID = SOPInstanceUID;
       displaySet.frameIndex = frameIndex;
 
-      window.store.dispatch(setViewportSpecificData(activeViewportIndex, displaySet));
+      window.store.dispatch(
+        setViewportSpecificData(activeViewportIndex, displaySet)
+      );
 
-      cornerstone.getEnabledElements().forEach(enabledElement => {
-        if (enabledElement.image) {
-          cornerstone.updateImage(enabledElement.element);
-        }
-      });
+      if (refreshViewports) {
+        refreshCornerstoneViewports();
+      }
     },
     subscribeToContextMenuHandler: ({ tools, contextMenuCallback, dialogIds }) => {
       contextMenuHandler.subscribe(tools, contextMenuCallback, dialogIds);

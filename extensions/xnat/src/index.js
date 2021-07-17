@@ -41,7 +41,7 @@ export { XNATICONS } from './elements';
 
 export { ICRHelpContent } from './components/HelpContent/ICRHelpContent';
 
-export { XNATScanBrowser } from './components/XNATScanBrowser/XNATScanBrowser';
+export { XNATStudyBrowser } from './components/XNATStudyBrowser/XNATStudyBrowser';
 
 export {
   XNATViewportOverlay,

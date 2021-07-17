@@ -1,8 +1,8 @@
 window.config = {
   version: {
     major: 3,
-    minor: 0,
-    patch: 1,
+    minor: 1,
+    patch: 0,
     dev: '',
     // build: 2
   },
@@ -11,6 +11,7 @@ window.config = {
   extensions: [],
   showStudyList: false,
   filterQueryParam: false,
+  disableServersCache: false,
   servers: {
     dicomWeb: [
       {

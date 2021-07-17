@@ -3,7 +3,7 @@ import cornerstone from 'cornerstone-core';
 import PropTypes from 'prop-types';
 import { commandsManager } from '@ohif/viewer/src/App';
 
-import './XNATViewportOverlay.styl';
+import './XNATViewportOverlay.css';
 
 class XNATSmooth extends React.PureComponent {
   static propTypes = {

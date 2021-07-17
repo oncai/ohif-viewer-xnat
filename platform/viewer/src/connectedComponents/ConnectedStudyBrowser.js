@@ -1,10 +1,12 @@
 import OHIF from '@ohif/core';
 import { connect } from 'react-redux';
-import { StudyBrowser } from '@ohif/ui';
+// import { StudyBrowser } from '@ohif/ui';
 import cloneDeep from 'lodash.clonedeep';
 import findDisplaySetByUID from './findDisplaySetByUID';
-import { XNATScanBrowser } from '@xnat-ohif/extension-xnat';
+import { servicesManager } from './../App.js';
+import { XNATStudyBrowser } from '@xnat-ohif/extension-xnat';
 
+const { studyMetadataManager } = OHIF.utils;
 const { setActiveViewportSpecificData } = OHIF.redux.actions;
 
 // TODO
@@ -40,10 +42,53 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     onThumbnailClick: displaySetInstanceUID => {
-      const displaySet = findDisplaySetByUID(
+      let displaySet = findDisplaySetByUID(
         ownProps.studyMetadata,
         displaySetInstanceUID
       );
+
+      if (displaySet.isDerived) {
+        const { Modality } = displaySet;
+        if (Modality === 'SEG' && servicesManager) {
+          const {LoggerService, UINotificationService} = servicesManager.services;
+          const onDisplaySetLoadFailureHandler = error => {
+            LoggerService.error({ error, message: error.message });
+            UINotificationService.show({
+              title: 'DICOM Segmentation Loader',
+              message: error.message,
+              type: 'error',
+              autoClose: true,
+            });
+          };
+
+          const {referencedDisplaySet, activatedLabelmapPromise} = displaySet.getSourceDisplaySet(
+            ownProps.studyMetadata,
+            true,
+            onDisplaySetLoadFailureHandler
+          );
+          displaySet = referencedDisplaySet;
+
+          activatedLabelmapPromise.then((activatedLabelmapIndex) => {
+            const selectionFired = new CustomEvent("extensiondicomsegmentationsegselected", {
+              "detail": {"activatedLabelmapIndex":activatedLabelmapIndex}
+            });
+            document.dispatchEvent(selectionFired);
+          });
+
+        } else {
+          displaySet = displaySet.getSourceDisplaySet(ownProps.studyMetadata);
+        }
+
+        if (!displaySet) {
+          throw new Error(
+            `Referenced series for ${Modality} dataset not present.`
+          );
+        }
+
+        if (!displaySet) {
+          throw new Error('Source data not present');
+        }
+      }
 
       dispatch(setActiveViewportSpecificData(displaySet));
     },
@@ -53,6 +98,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 const ConnectedStudyBrowser = connect(
   mapStateToProps,
   mapDispatchToProps
-)(XNATScanBrowser);
+)(XNATStudyBrowser);
 
 export default ConnectedStudyBrowser;

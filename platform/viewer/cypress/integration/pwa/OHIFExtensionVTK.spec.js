@@ -3,10 +3,14 @@ describe('OHIF VTK Extension', () => {
     cy.checkStudyRouteInViewer(
       '1.3.6.1.4.1.25403.345050719074.3824.20170125113417.1'
     );
-    cy.expectMinimumThumbnails(7);
+    cy.expectMinimumThumbnails(3);
+
+    // TODO: Added 1s wait because we are loading initial series list
+    // from QIDO-RS, which is breaking some cypress checks
+
 
     //Waiting for the desired thumbnail content to be displayed
-    cy.get('[data-cy="thumbnail-list"]').should($list => {
+    cy.get('[data-cy="thumbnail-list"]').wait(1000).should($list => {
       expect($list).to.contain('CT WB 5.0  B35f');
     });
 
@@ -15,7 +19,7 @@ describe('OHIF VTK Extension', () => {
     // has data from a drag-n-drop
     // Drag and drop third thumbnail into first viewport
     cy.get('[data-cy="thumbnail-list"]')
-      .contains('CT WB 5.0  B35f')
+      .eq(2)
       .drag('.viewport-drop-target');
 
     //Select 2D MPR button
@@ -36,9 +40,6 @@ describe('OHIF VTK Extension', () => {
     cy.get('@wwwcBtn')
       .should('be.visible')
       .contains('WWWC');
-    cy.get('@rotateBtn')
-      .should('be.visible')
-      .contains('Rotate');
     cy.get('@slabSlider')
       .should('be.visible')
       .contains('Slab Thickness');
@@ -89,24 +90,5 @@ describe('OHIF VTK Extension', () => {
           initialLabelText
         );
       });
-  });
-
-  it('checks Rotate tool', () => {
-    cy.get('@rotateBtn').click();
-
-    // Click and Move the mouse inside the viewport
-    cy.get('[data-cy="viewport-container-0"]')
-      .trigger('mousedown', 'center', {
-        which: 1,
-      })
-      .trigger('mousemove', 'top', { which: 1 })
-      .trigger('mousedown', 'center', {
-        which: 1,
-      })
-      .trigger('mousemove', 'top', { which: 1 })
-      .trigger('mouseup', { which: 1 });
-
-    //Take Screenshot
-    cy.screenshot('VTK Rotate tool - Should rotate image');
   });
 });

@@ -3,6 +3,322 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.13.13](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.12...@ohif/core@2.13.13) (2021-06-03)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.12](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.11...@ohif/core@2.13.12) (2021-06-02)
+
+
+### Bug Fixes
+
+* **dicom-html:** Add parsed dicom meta info section ([#2419](https://github.com/OHIF/Viewers/issues/2419)) ([403688b](https://github.com/OHIF/Viewers/commit/403688b18c52468fc1101166ec0c1734fb710039))
+
+
+
+
+
+## [2.13.11](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.10...@ohif/core@2.13.11) (2021-05-17)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.10](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.9...@ohif/core@2.13.10) (2021-04-22)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.9](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.8...@ohif/core@2.13.9) (2021-04-22)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.8](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.7...@ohif/core@2.13.8) (2021-04-21)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.7](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.6...@ohif/core@2.13.7) (2021-04-21)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.6](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.5...@ohif/core@2.13.6) (2021-04-21)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.5](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.4...@ohif/core@2.13.5) (2021-04-16)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.4](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.3...@ohif/core@2.13.4) (2021-04-15)
+
+
+### Bug Fixes
+
+* **wl:** fix metadata provider window level issues after dicomweb update (string vs number) ([8681036](https://github.com/OHIF/Viewers/commit/8681036b2133cfc325658691a256a86b5e36705f))
+
+
+
+
+
+## [2.13.3](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.2...@ohif/core@2.13.3) (2021-03-26)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.13.2](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.1...@ohif/core@2.13.2) (2021-03-25)
+
+
+### Bug Fixes
+
+* IDC-2288: Update toolbar tabs after derived displayset loaded ([#2307](https://github.com/OHIF/Viewers/issues/2307)) ([6e723eb](https://github.com/OHIF/Viewers/commit/6e723ebced58852007ca553792c740976cfc4201))
+
+
+
+
+
+## [2.13.1](https://github.com/OHIF/Viewers/compare/@ohif/core@2.13.0...@ohif/core@2.13.1) (2021-03-09)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+# [2.13.0](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.5...@ohif/core@2.13.0) (2021-03-04)
+
+
+### Features
+
+* **log:** add new log service ([14d6454](https://github.com/OHIF/Viewers/commit/14d6454eafaa2ccb50e133c2945c9558052ea27e))
+
+
+
+
+
+## [2.12.5](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.4...@ohif/core@2.12.5) (2021-03-03)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.12.4](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.3...@ohif/core@2.12.4) (2021-02-25)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.12.3](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.2...@ohif/core@2.12.3) (2021-02-05)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.12.2](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.1...@ohif/core@2.12.2) (2021-02-05)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.12.1](https://github.com/OHIF/Viewers/compare/@ohif/core@2.12.0...@ohif/core@2.12.1) (2021-01-21)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+# [2.12.0](https://github.com/OHIF/Viewers/compare/@ohif/core@2.11.1...@ohif/core@2.12.0) (2020-12-10)
+
+
+### Features
+
+* visualize overlapping segments in cornerstone ([#2185](https://github.com/OHIF/Viewers/issues/2185)) ([29fceac](https://github.com/OHIF/Viewers/commit/29fceacee97d51f1952a0f6b574c66596d32c201))
+
+
+
+
+
+## [2.11.1](https://github.com/OHIF/Viewers/compare/@ohif/core@2.11.0...@ohif/core@2.11.1) (2020-12-03)
+
+
+### Bug Fixes
+
+* fallback to original dataset VR for XS ([f57725a](https://github.com/OHIF/Viewers/commit/f57725ac8bfd59ea46ab334a1823882afadefba1))
+
+
+
+
+
+# [2.11.0](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.7...@ohif/core@2.11.0) (2020-12-03)
+
+
+### Features
+
+* add show scroll option to modal ([be494a7](https://github.com/OHIF/Viewers/commit/be494a7376d15777dbe598289c4ecdb9f48a6a48))
+
+
+
+
+
+## [2.10.7](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.6...@ohif/core@2.10.7) (2020-10-07)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.10.6](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.5...@ohif/core@2.10.6) (2020-09-30)
+
+
+### Bug Fixes
+
+* use SeriesMetadata method instead of property in findMostRecentStructuredReport ([#2038](https://github.com/OHIF/Viewers/issues/2038)) ([91364db](https://github.com/OHIF/Viewers/commit/91364db8820efc86665db258d0044c16fb3e2c87)), closes [#1714](https://github.com/OHIF/Viewers/issues/1714)
+
+
+
+
+
+## [2.10.5](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.4...@ohif/core@2.10.5) (2020-09-10)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.10.4](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.3...@ohif/core@2.10.4) (2020-09-03)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.10.3](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.2...@ohif/core@2.10.3) (2020-09-03)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.10.2](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.1...@ohif/core@2.10.2) (2020-09-02)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.10.1](https://github.com/OHIF/Viewers/compare/@ohif/core@2.10.0...@ohif/core@2.10.1) (2020-08-28)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+# [2.10.0](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.14...@ohif/core@2.10.0) (2020-08-18)
+
+
+### Features
+
+* 🎸 Update react-vtkjs-viewport usage to use requestPool ([#1984](https://github.com/OHIF/Viewers/issues/1984)) ([bb5f30c](https://github.com/OHIF/Viewers/commit/bb5f30ce2a0192d2e021beaaadfff22fd38e17b9))
+
+
+
+
+
+## [2.9.14](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.13...@ohif/core@2.9.14) (2020-08-10)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.9.13](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.12...@ohif/core@2.9.13) (2020-07-22)
+
+
+### Bug Fixes
+
+* Switch DICOMFileUploader to use the UIModalService ([#1904](https://github.com/OHIF/Viewers/issues/1904)) ([7772fee](https://github.com/OHIF/Viewers/commit/7772fee21ae6a65994e1251e2f1d2554b47781be))
+
+
+
+
+
+## [2.9.12](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.11...@ohif/core@2.9.12) (2020-07-13)
+
+
+### Bug Fixes
+
+* 🐛 - Put guards in all places that a cornerstone re-render ([#1899](https://github.com/OHIF/Viewers/issues/1899)) ([451f7ea](https://github.com/OHIF/Viewers/commit/451f7eab9258e7a193eb362e0926b13aedc4b3c9))
+
+
+
+
+
+## [2.9.11](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.10...@ohif/core@2.9.11) (2020-07-13)
+
+**Note:** Version bump only for package @ohif/core
+
+
+
+
+
+## [2.9.10](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.9...@ohif/core@2.9.10) (2020-07-13)
+
+
+### Bug Fixes
+
+* 🐛 Fix RT Panel hide/show and Fix looping load errors ([#1877](https://github.com/OHIF/Viewers/issues/1877)) ([e7cc735](https://github.com/OHIF/Viewers/commit/e7cc735c03d02eeb0d3af4ba02c15ed4f81bbec2))
+
+
+
+
+
 ## [2.9.9](https://github.com/OHIF/Viewers/compare/@ohif/core@2.9.8...@ohif/core@2.9.9) (2020-06-18)
 
 **Note:** Version bump only for package @ohif/core

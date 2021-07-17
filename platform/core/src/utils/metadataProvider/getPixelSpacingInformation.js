@@ -98,6 +98,18 @@ export default function getPixelSpacingInformation(instance) {
     };
   } else if (
     SequenceOfUltrasoundRegions &&
+    Array.isArray(SequenceOfUltrasoundRegions) &&
+    SequenceOfUltrasoundRegions.length > 1
+  ) {
+    log.warn(
+      'Sequence of Ultrasound Regions > one entry. This is not yet implemented, all measurements will be shown in pixels.'
+    );
+    return {
+      PixelSpacing: undefined,
+      type: TYPES.UNKNOWN,
+    };
+  } else if (
+    SequenceOfUltrasoundRegions &&
     typeof SequenceOfUltrasoundRegions === 'object'
   ) {
     const { PhysicalDeltaX, PhysicalDeltaY } = SequenceOfUltrasoundRegions;
@@ -106,14 +118,6 @@ export default function getPixelSpacingInformation(instance) {
     return {
       PixelSpacing: USPixelSpacing,
     };
-  } else if (
-    SequenceOfUltrasoundRegions &&
-    Array.isArray(SequenceOfUltrasoundRegions) &&
-    SequenceOfUltrasoundRegions.length > 1
-  ) {
-    log.warn(
-      'Sequence of Ultrasound Regions > one entry. This is not yet implemented, all measurements will be shown in pixels.'
-    );
   } else if (isProjection === false && !ImagerPixelSpacing) {
     // If only Pixel Spacing is present, and this is not a projection radiograph,
     // we can stop here

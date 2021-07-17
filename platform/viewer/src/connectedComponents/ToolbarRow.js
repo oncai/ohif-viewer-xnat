@@ -62,6 +62,9 @@ class ToolbarRow extends Component {
     this.seriesPerStudyCount = [];
 
     this._handleBuiltIn = _handleBuiltIn.bind(this);
+    this._onDerivedDisplaySetsLoadedAndCached = this._onDerivedDisplaySetsLoadedAndCached.bind(
+      this
+    );
 
     this.updateButtonGroups();
   }
@@ -89,7 +92,7 @@ class ToolbarRow extends Component {
         // Note: This does not cleanly handle `studies` prop updating with panel open
         const isDisabled =
           typeof menuOption.isDisabled === 'function' &&
-          menuOption.isDisabled(this.props.studies);
+          menuOption.isDisabled(this.props.studies, this.props.activeViewport);
 
         if (hasActiveContext && !isDisabled) {
           const menuOptionEntry = {
@@ -112,30 +115,61 @@ class ToolbarRow extends Component {
     // });
   }
 
+  componentDidMount() {
+    /*
+     * TODO: Improve the way we notify parts of the app
+     * that depends on derived display sets to be loaded.
+     * (Implement pubsub for better tracking of derived display sets)
+     */
+    document.addEventListener(
+      'deriveddisplaysetsloadedandcached',
+      this._onDerivedDisplaySetsLoadedAndCached
+    );
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener(
+      'deriveddisplaysetsloadedandcached',
+      this._onDerivedDisplaySetsLoadedAndCached
+    );
+  }
+
+  _onDerivedDisplaySetsLoadedAndCached() {
+    this.updateButtonGroups();
+    this.setState({
+      toolbarButtons: _getVisibleToolbarButtons.call(this),
+    });
+  }
+
   componentDidUpdate(prevProps) {
     const activeContextsChanged =
       prevProps.activeContexts !== this.props.activeContexts;
 
     const prevStudies = prevProps.studies;
+    const prevActiveViewport = prevProps.activeViewport;
+    const activeViewport = this.props.activeViewport;
     const studies = this.props.studies;
     const seriesPerStudyCount = this.seriesPerStudyCount;
 
-    let studiesUpdated = false;
+    let shouldUpdate = false;
 
-    if (prevStudies.length !== studies.length) {
-      studiesUpdated = true;
+    if (
+      prevStudies.length !== studies.length ||
+      prevActiveViewport !== activeViewport
+    ) {
+      shouldUpdate = true;
     } else {
       for (let i = 0; i < studies.length; i++) {
         if (studies[i].series.length !== seriesPerStudyCount[i]) {
           seriesPerStudyCount[i] = studies[i].series.length;
 
-          studiesUpdated = true;
+          shouldUpdate = true;
           break;
         }
       }
     }
 
-    if (studiesUpdated) {
+    if (shouldUpdate) {
       this.updateButtonGroups();
     }
 
@@ -280,13 +314,13 @@ function _getExpandableButtonComponent(button, activeButtons) {
 
 function _getDefaultButtonComponent(button, activeButtons) {
   return (
-      <ToolbarButton
-        key={button.id}
-        label={button.label}
-        icon={button.icon}
-        onClick={_handleToolbarButtonClick.bind(this, button)}
-        isActive={activeButtons.map(button => button.id).includes(button.id)}
-      />
+    <ToolbarButton
+      key={button.id}
+      label={button.label}
+      icon={button.icon}
+      onClick={_handleToolbarButtonClick.bind(this, button)}
+      isActive={activeButtons.map(button => button.id).includes(button.id)}
+    />
   );
 }
 /**

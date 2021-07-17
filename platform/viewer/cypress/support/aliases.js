@@ -25,10 +25,10 @@ export function initCommonElementsAliases() {
     '.pull-left > .RoundedButtonGroup > .roundedButtonWrapper > .roundedButton'
   ).as('seriesBtn');
   cy.get('section.sidepanel.from-left').as('seriesPanel');
-  cy.get('div.ViewportOverlay > div.bottom-left.overlay-element > div').as(
+  cy.get('div.OHIFCornerstoneViewportOverlay > div.bottom-left.overlay-element > div').as(
     'viewportInfoBottomLeft'
   );
-  cy.get('div.ViewportOverlay > div.bottom-right.overlay-element > div').as(
+  cy.get('div.OHIFCornerstoneViewportOverlay > div.bottom-right.overlay-element > div').as(
     'viewportInfoBottomRight'
   );
   cy.get('.left-mid.orientation-marker').as('viewportInfoMidLeft');
@@ -47,7 +47,6 @@ export function initVTKToolsAliases() {
   cy.get('[data-cy="exit 2d mpr"]').as('exit2dmprBtn');
   cy.get('[data-cy="crosshairs"]').as('crosshairsBtn');
   cy.get('[data-cy="wwwc"]').as('wwwcBtn');
-  cy.get('[data-cy="rotate"]').as('rotateBtn');
   cy.get('.slab-thickness').as('slabSlider');
   cy.get('.select-ohif').as('modeDropdown');
   cy.get('.ohif-check-label').as('modeCheckbox');
