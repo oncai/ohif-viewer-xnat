@@ -59,6 +59,7 @@ const updateSegmentationConfiguration = (configuration, newConfiguration) => {
   configuration.outlineWidth = newConfiguration.outlineWidth;
   configuration.fillAlphaInactive = newConfiguration.fillAlphaInactive;
   configuration.outlineAlphaInactive = newConfiguration.outlineAlphaInactive;
+  configuration.radius = newConfiguration.radius;
   refreshViewports();
 };
 
@@ -586,7 +587,7 @@ export default class XNATSegmentationPanel extends React.Component {
             (this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL ||
               this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL)
             &&
-            <BrushSettings/>
+            <BrushSettings />
           }
           {this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL &&
             <ConnectedAIAAMenu

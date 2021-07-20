@@ -6,7 +6,8 @@ import '../XNATRoiPanel.styl';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const { configuration } = segmentationModule;
-const minGateSeperation = 10;
+const minGateSeparation = 1;
+const maxGateSeparation = 100;
 
 /**
  * @class BrushSettings - A component that allows the user to change
@@ -24,6 +25,7 @@ export default class BrushSettings extends React.Component {
       activeGate: configuration.activeGate,
       customGateRangeMin: customGateRange[0],
       customGateRangeMax: customGateRange[1],
+      customGateSeparation: configuration.customGateSeparation,
     };
 
     this.onGateChange = this.onGateChange.bind(this);
@@ -31,6 +33,7 @@ export default class BrushSettings extends React.Component {
     this.onCustomGateMaxChange = this.onCustomGateMaxChange.bind(this);
     this.onHoleFillChange = this.onHoleFillChange.bind(this);
     this.onStrayRemoveChange = this.onStrayRemoveChange.bind(this);
+    this.onCustomGateSeparationChange = this.onCustomGateSeparationChange.bind(this);
   }
 
   /**
@@ -41,6 +44,8 @@ export default class BrushSettings extends React.Component {
    */
   onGateChange(evt) {
     const val = evt.target.value;
+
+    this.saveGateSettings('activeGate', val);
 
     this.setState({ activeGate: val });
     configuration.activeGate = val;
@@ -56,12 +61,14 @@ export default class BrushSettings extends React.Component {
   onCustomGateMinChange(evt) {
     let val = Number(evt.target.value);
 
-    const customRangeMax = this.state.customGateRangeMax;
+    const { customGateRangeMax, customGateSeparation } = this.state;
 
-    if (val > customRangeMax - minGateSeperation) {
-      val = customRangeMax - minGateSeperation;
+    if (val > customGateRangeMax - customGateSeparation) {
+      val = customGateRangeMax - customGateSeparation;
       evt.target.value = val;
     }
+
+    this.saveGateSettings('customGate.range[0]', val);
 
     this.setState({ customGateRangeMin: val });
     segmentationModule.setters.customGateRange(val, null);
@@ -77,15 +84,51 @@ export default class BrushSettings extends React.Component {
   onCustomGateMaxChange(evt) {
     let val = Number(evt.target.value);
 
-    const customRangeMin = this.state.customGateRangeMin;
+    const { customGateRangeMin, customGateSeparation } = this.state;
 
-    if (val < customRangeMin + minGateSeperation) {
-      val = customRangeMin + minGateSeperation;
+    if (val < customGateRangeMin + customGateSeparation) {
+      val = customGateRangeMin + customGateSeparation;
       evt.target.value = val;
     }
 
+    this.saveGateSettings('customGate.range[1]', val);
+
     this.setState({ customGateRangeMax: val });
     segmentationModule.setters.customGateRange(null, val);
+  }
+
+  onCustomGateSeparationChange(evt) {
+    let val = Number(evt.target.value);
+
+    if (val < minGateSeparation) {
+      val = minGateSeparation;
+    } else if (val > maxGateSeparation) {
+      val = maxGateSeparation;
+    }
+
+    this.saveGateSettings('customGate.separation', val);
+    this.setState({ customGateSeparation: val });
+  }
+
+  saveGateSettings(field, value) {
+    const {
+      activeGate,
+      customGateRangeMin,
+      customGateRangeMax,
+      customGateSeparation,
+    } = this.state;
+
+    const gateSettings = {
+      customGate: {
+        range: [customGateRangeMin, customGateRangeMax],
+        separation: customGateSeparation,
+      },
+      activeGate: activeGate,
+    };
+
+    _.set(gateSettings, field, value);
+
+    localStorage.setItem('xnat-gate-settings', JSON.stringify(gateSettings));
   }
 
   /**
@@ -120,7 +163,12 @@ export default class BrushSettings extends React.Component {
     const holeFillRange = configuration.holeFillRange;
     const strayRemoveRange = configuration.strayRemoveRange;
 
-    const { holeFill, strayRemove, activeGate } = this.state;
+    const {
+      holeFill,
+      strayRemove,
+      activeGate,
+      customGateSeparation,
+    } = this.state;
 
     const gates = configuration.gates;
 
@@ -141,6 +189,19 @@ export default class BrushSettings extends React.Component {
 
       customGates = (
         <div>
+          <div className="footerSectionItem">
+            <label htmlFor="gateSeparation">Gate Separation:</label>
+            <input
+              id="gateSeparation"
+              type="number"
+              className="preferencesInput"
+              min={minGateSeparation}
+              max={maxGateSeparation}
+              step={1}
+              value={customGateSeparation}
+              onChange={this.onCustomGateSeparationChange}
+            />
+          </div>
           <div className="footerSectionItem" style={{ margin: '10px 5px' }}>
             <label htmlFor="customGateMin">Min:</label>
             <Range
@@ -168,7 +229,7 @@ export default class BrushSettings extends React.Component {
     return (
       <div className="roiPanelFooter">
         <div className="footerSection">
-        <h5> Smart CT Gate Selection</h5>
+          <h5> Smart CT Gate Selection</h5>
           <div className="footerSectionItem">
             <select
               // className="form-themed form-control"
@@ -195,10 +256,12 @@ export default class BrushSettings extends React.Component {
               max={holeFillRange[1]}
               value={holeFill}
               onChange={this.onHoleFillChange}
-            >
-            </Range>
+            />
           </div>
-          <div className="footerSectionItem" style={{ flexDirection: 'column' }}>
+          <div
+            className="footerSectionItem"
+            style={{ flexDirection: 'column' }}
+          >
             <p>{strayRemoveLabel}</p>
             <Range
               min={strayRemoveRange[0]}
