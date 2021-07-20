@@ -41,6 +41,9 @@ function Header(props) {
   const [options, setOptions] = useState([]);
   const hasLink = linkText && linkPath;
 
+  const xnatPath =
+    window.location.origin + window.location.pathname.split('VIEWER')[0];
+
   useEffect(() => {
     const optionsValue = [
       {
@@ -111,6 +114,10 @@ function Header(props) {
           )}
 
           {children}
+
+          <a href={xnatPath} className="header-btn header-studyListLinkSection">
+            Back to XNAT
+          </a>
 
           {hasLink && (
             <Link

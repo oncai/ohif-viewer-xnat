@@ -4,7 +4,7 @@ import { Range } from '@ohif/ui';
 
 import './XNATSegmentationSettings.css';
 
-const SegmentationSettings = ({
+const XNATSegmentationSettings = ({
   configuration,
   onBack,
   onChange,
@@ -19,6 +19,7 @@ const SegmentationSettings = ({
     outlineWidth: configuration.outlineWidth,
     fillAlphaInactive: configuration.fillAlphaInactive,
     outlineAlphaInactive: configuration.outlineAlphaInactive,
+    radius: configuration.radius,
   });
 
   useEffect(() => {
@@ -33,7 +34,94 @@ const SegmentationSettings = ({
     setState(state => ({ ...state, [field]: value }));
   };
 
-  const toFloat = value => parseFloat(value / 100).toFixed(2);
+  const toFloat = value => (parseFloat(value) / 100).toFixed(2);
+
+  const SegmentFill = (
+    <div
+      className="settings-group"
+      style={{ marginBottom: state.renderFill ? 15 : 0 }}
+    >
+      <CustomCheck
+        label="Segment Fill"
+        checked={state.renderFill}
+        onChange={() => check('renderFill')}
+      />
+      {state.renderFill && (
+        <CustomRange
+          label="Opacity"
+          step={1}
+          min={0}
+          max={100}
+          value={state.fillAlpha * 100}
+          onChange={event => save('fillAlpha', toFloat(event.target.value))}
+          showPercentage
+        />
+      )}
+    </div>
+  );
+
+  const SegmentOutline = (
+    <div
+      className="settings-group"
+      style={{ marginBottom: state.renderOutline ? 15 : 0 }}
+    >
+      <CustomCheck
+        label="Segment Outline"
+        checked={state.renderOutline}
+        onChange={() => check('renderOutline')}
+      />
+      {state.renderOutline && (
+        <>
+          {!disabledFields.includes('outlineAlpha') && (
+            <CustomRange
+              value={state.outlineAlpha * 100}
+              label="Opacity"
+              showPercentage
+              step={1}
+              min={0}
+              max={100}
+              onChange={event =>
+                save('outlineAlpha', toFloat(event.target.value))
+              }
+            />
+          )}
+          {!disabledFields.includes('outlineWidth') && (
+            <CustomRange
+              value={state.outlineWidth}
+              label="Width"
+              showValue
+              step={1}
+              min={0}
+              max={5}
+              onChange={event =>
+                save('outlineWidth', parseInt(event.target.value))
+              }
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const BrushSize = (
+    <div
+      className="settings-group"
+      style={{ marginBottom: 15 }}
+    >
+      <div className="custom-check">
+        <label>Brush Size</label>
+      </div>
+      <CustomRange
+        label="Radius"
+        step={1}
+        min={configuration.minRadius}
+        max={configuration.maxRadius}
+        value={state.radius}
+        onChange={event => save('radius', parseInt(event.target.value))}
+        showValue
+      />
+    </div>
+  );
 
   return (
     <div className="dcmseg-segmentation-settings">
@@ -43,67 +131,9 @@ const SegmentationSettings = ({
           Back
         </button>
       </div>
-      <div
-        className="settings-group"
-        style={{ marginBottom: state.renderFill ? 15 : 0 }}
-      >
-        <CustomCheck
-          label="Segment Fill"
-          checked={state.renderFill}
-          onChange={() => check('renderFill')}
-        />
-        {state.renderFill && (
-          <CustomRange
-            label="Opacity"
-            step={1}
-            min={0}
-            max={100}
-            value={state.fillAlpha * 100}
-            onChange={event => save('fillAlpha', toFloat(event.target.value))}
-            showPercentage
-          />
-        )}
-      </div>
-      <div
-        className="settings-group"
-        style={{ marginBottom: state.renderOutline ? 15 : 0 }}
-      >
-        <CustomCheck
-          label="Segment Outline"
-          checked={state.renderOutline}
-          onChange={() => check('renderOutline')}
-        />
-        {state.renderOutline && (
-          <>
-            {!disabledFields.includes('outlineAlpha') && (
-              <CustomRange
-                value={state.outlineAlpha * 100}
-                label="Opacity"
-                showPercentage
-                step={1}
-                min={0}
-                max={100}
-                onChange={event =>
-                  save('outlineAlpha', toFloat(event.target.value))
-                }
-              />
-            )}
-            {!disabledFields.includes('outlineWidth') && (
-              <CustomRange
-                value={state.outlineWidth}
-                label="Width"
-                showValue
-                step={1}
-                min={0}
-                max={5}
-                onChange={event =>
-                  save('outlineWidth', parseInt(event.target.value))
-                }
-              />
-            )}
-          </>
-        )}
-      </div>
+      {BrushSize}
+      {SegmentFill}
+      {SegmentOutline}
     </div>
   );
 };
@@ -135,7 +165,7 @@ const CustomRange = props => {
   );
 };
 
-SegmentationSettings.propTypes = {
+XNATSegmentationSettings.propTypes = {
   configuration: PropTypes.shape({
     renderFill: PropTypes.bool.isRequired,
     renderOutline: PropTypes.bool.isRequired,
@@ -152,4 +182,4 @@ SegmentationSettings.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-export default SegmentationSettings;
+export default XNATSegmentationSettings;

@@ -20,7 +20,7 @@ function getSessionID() {
     };
 
     xhr.open('GET', url);
-    xhr.ontimeout = 5000;
+    xhr.timeout = 5000;
     xhr.send();
   });
 }

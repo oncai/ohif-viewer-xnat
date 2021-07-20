@@ -387,10 +387,6 @@ function _getJson(url) {
 function getRootUrl() {
   let rootPlusPort = window.location.origin;
 
-  if (window.port) {
-    rootPlusPort += `:${window.port}`;
-  }
-
   const pathLessViewer = window.location.pathname.split('VIEWER')[0];
 
   rootPlusPort += pathLessViewer;
