@@ -83,6 +83,8 @@ export default class SegmentationMenuListItem extends React.Component {
       checked,
       labelmap3D,
       showColorSelectModal,
+      onDeleteClick,
+      onClick,
     } = this.props;
 
     const { visible, segmentLabel, segmentColor } = this.state;
@@ -96,6 +98,16 @@ export default class SegmentationMenuListItem extends React.Component {
     ) : (
       <Icon name="eye-closed" />
     );
+
+    let slices = [];
+    for (const [key, value] of Object.entries(labelmap3D.labelmaps2D)) {
+      if (value.segmentsOnLabelmap.includes(segmentIndex)) {
+        slices.push(key);
+      }
+    }
+    const midSlice = slices.length
+      ? slices[Math.floor(slices.length / 2)]
+      : undefined;
 
     return (
       <tr>
@@ -128,6 +140,21 @@ export default class SegmentationMenuListItem extends React.Component {
               {segmentCategory}
             </span>
           </a>
+        </td>
+        <td className="centered-cell">
+          <a
+            style={{ cursor: 'pointer', color: 'white' }}
+            onClick={() =>
+              midSlice !== undefined ? onClick(segmentIndex, midSlice) : null
+            }
+          >
+            {slices.length ? `${slices.length}` : '0'}
+          </a>
+        </td>
+        <td className="centered-cell">
+          <button className="small" onClick={() => onDeleteClick(segmentIndex)}>
+            <Icon name="trash" style={{ width: 13 }} />
+          </button>
         </td>
         <td className="centered-cell">
           <button className="small" onClick={this.onShowHideClick}>
