@@ -39,7 +39,7 @@ export default class XNATContourImportMenu extends React.Component {
     }
 
     this.state = {
-      selectAllChecked: true,
+      selectAllChecked: false,
       selectedCheckboxes,
       importListReady: false,
       importList: [],
@@ -47,6 +47,7 @@ export default class XNATContourImportMenu extends React.Component {
       progressText: '',
       importProgress: 0,
       interpolate: interpolate,
+      referencedSeriesNumber: 'All',
     };
 
     this._cancelablePromises = [];
@@ -68,10 +69,15 @@ export default class XNATContourImportMenu extends React.Component {
     );
 
     this.updateProgress = this.updateProgress.bind(this);
+    this.onReferencedSeriesChange = this.onReferencedSeriesChange.bind(this);
   }
 
   updateProgress(percent) {
     this.setState({ importProgress: percent });
+  }
+
+  onReferencedSeriesChange(evt) {
+    this.setState({ referencedSeriesNumber: evt.target.value });
   }
 
   /**
@@ -90,11 +96,20 @@ export default class XNATContourImportMenu extends React.Component {
    * @returns {null}
    */
   onChangeSelectAllCheckbox(evt) {
-    const selectedCheckboxes = this.state.selectedCheckboxes;
+    const {
+      selectedCheckboxes,
+      referencedSeriesNumber,
+      importList,
+    } = this.state;
     const checked = evt.target.checked;
 
     for (let i = 0; i < selectedCheckboxes.length; i++) {
-      selectedCheckboxes[i] = checked;
+      if (
+        referencedSeriesNumber === 'All' ||
+        importList[i].referencedSeriesNumber == referencedSeriesNumber
+      ) {
+        selectedCheckboxes[i] = checked;
+      }
     }
 
     this.setState({ selectAllChecked: evt.target.checked, selectedCheckboxes });
@@ -235,6 +250,7 @@ export default class XNATContourImportMenu extends React.Component {
       }
 
       const importList = [];
+      let index = 0;
 
       Promise.all(roiCollectionPromises).then(promisesJSON => {
         promisesJSON.forEach(roiCollectionInfo => {
@@ -247,6 +263,7 @@ export default class XNATContourImportMenu extends React.Component {
             this._collectionEligibleForImport(roiCollectionInfo)
           ) {
             importList.push({
+              index: index++,
               collectionType: data_fields.collectionType,
               label: data_fields.label,
               experimentId: data_fields.imageSession_ID,
@@ -264,7 +281,7 @@ export default class XNATContourImportMenu extends React.Component {
         const selectedCheckboxes = [];
 
         for (let i = 0; i < importList.length; i++) {
-          selectedCheckboxes.push(true);
+          selectedCheckboxes.push(false);
         }
 
         this.setState({
@@ -492,7 +509,19 @@ export default class XNATContourImportMenu extends React.Component {
       importing,
       progressText,
       importProgress,
+      referencedSeriesNumber,
     } = this.state;
+
+    let referencedSeriesNumberList = ['All'];
+    importList.forEach(roiCollection => {
+      if (
+        !referencedSeriesNumberList.includes(
+          roiCollection.referencedSeriesNumber
+        )
+      ) {
+        referencedSeriesNumberList.push(roiCollection.referencedSeriesNumber);
+      }
+    });
 
     let importBody;
 
@@ -522,28 +551,51 @@ export default class XNATContourImportMenu extends React.Component {
                 </th>
                 <th width="45%">Name</th>
                 <th width="20%">Timestamp</th>
-                <th width="30%">Referenced Scan</th>
+                <th width="30%">
+                  Referenced Scan
+                  <select
+                    onChange={this.onReferencedSeriesChange}
+                    value={referencedSeriesNumber}
+                    style={{ display: 'block', width: '100%' }}
+                  >
+                    {referencedSeriesNumberList.map(seriesNumber => (
+                      <option key={seriesNumber} value={seriesNumber}>
+                        {`${seriesNumber}`}
+                      </option>
+                    ))}
+                  </select>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {importList.map((roiCollection, index) => (
-                <tr key={`${roiCollection.name}_${index}`}>
-                  <td className="centered-cell">
-                    <input
-                      type="checkbox"
-                      className="checkboxInCell"
-                      onChange={evt => this.onChangeCheckbox(evt, index)}
-                      checked={selectedCheckboxes[index]}
-                      value={selectedCheckboxes[index]}
-                    />
-                  </td>
-                  <td>{roiCollection.name}</td>
-                  <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
-                  <td>
-                    {`${roiCollection.experimentLabel} - ${roiCollection.referencedSeriesNumber}`}
-                  </td>
-                </tr>
-              ))}
+              {importList
+                .filter(
+                  roiCollection =>
+                    referencedSeriesNumber === 'All' ||
+                    roiCollection.referencedSeriesNumber ==
+                      referencedSeriesNumber
+                )
+                .map(roiCollection => (
+                  <tr key={`${roiCollection.name}_${roiCollection.index}`}>
+                    <td className="centered-cell">
+                      <input
+                        type="checkbox"
+                        className="checkboxInCell"
+                        onChange={evt =>
+                          this.onChangeCheckbox(evt, roiCollection.index)
+                        }
+                        checked={selectedCheckboxes[roiCollection.index]}
+                        value={selectedCheckboxes[roiCollection.index]}
+                      />
+                    </td>
+                    <td>{roiCollection.name}</td>
+                    <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
+                    <td className="centered-cell">
+                      {/*{`${roiCollection.experimentLabel} - ${roiCollection.referencedSeriesNumber}`}*/}
+                      {`${roiCollection.referencedSeriesNumber}`}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         );

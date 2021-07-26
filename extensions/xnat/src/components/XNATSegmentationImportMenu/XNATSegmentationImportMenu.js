@@ -496,26 +496,43 @@ export default class XNATSegmentationImportMenu extends React.Component {
       } else {
         importBody = (
           <>
-            <select
-              // className="form-themed form-control"
-              style={{ width: '100%', height: 30, marginBottom: 10 }}
-              onChange={this.onSelectedScanChange}
-              value={scanSelected}
-            >
-              {importList.map(scan => (
-                <option
-                  key={scan.referencedSeriesInstanceUid}
-                  value={scan.index}
-                >{`${scan.experimentLabel} - ${scan.referencedSeriesNumber}`}</option>
-              ))}
-            </select>
+            {/*<select*/}
+            {/*  // className="form-themed form-control"*/}
+            {/*  style={{ width: '100%', height: 30, marginBottom: 10 }}*/}
+            {/*  onChange={this.onSelectedScanChange}*/}
+            {/*  value={scanSelected}*/}
+            {/*>*/}
+            {/*  {importList.map(scan => (*/}
+            {/*    <option*/}
+            {/*      key={scan.referencedSeriesInstanceUid}*/}
+            {/*      value={scan.index}*/}
+            {/*    >{`${scan.experimentLabel} - ${scan.referencedSeriesNumber}`}</option>*/}
+            {/*  ))}*/}
+            {/*</select>*/}
 
             <table className="collectionTable">
               <thead>
                 <tr>
                   <th width="5%" className="centered-cell" />
-                  <th width="75%">Name</th>
+                  <th width="45%">Name</th>
                   <th width="20%">Timestamp</th>
+                  <th width="30%">
+                    Referenced Scan
+                    <select
+                      onChange={this.onSelectedScanChange}
+                      value={scanSelected}
+                      style={{ display: 'block', width: '100%' }}
+                    >
+                      {importList.map(roiCollection => (
+                        <option
+                          key={roiCollection.referencedSeriesInstanceUid}
+                          value={roiCollection.index}
+                        >
+                          {`${roiCollection.referencedSeriesNumber}`}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -536,6 +553,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
                       </td>
                       <td>{roiCollection.name}</td>
                       <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
+                      <td className="centered-cell">{`${importList[scanSelected].referencedSeriesNumber}`}</td>
                     </tr>
                   )
                 )}
