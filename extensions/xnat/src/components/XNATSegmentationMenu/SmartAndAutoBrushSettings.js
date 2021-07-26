@@ -10,10 +10,10 @@ const minGateSeparation = 1;
 const maxGateSeparation = 100;
 
 /**
- * @class BrushSettings - A component that allows the user to change
+ * @class SmartAndAutoBrushSettings - A component that allows the user to change
  * configuration of the Brush tools.
  */
-export default class BrushSettings extends React.Component {
+export default class SmartAndAutoBrushSettings extends React.Component {
   constructor(props = {}) {
     super(props);
 

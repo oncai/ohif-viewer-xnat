@@ -1,9 +1,6 @@
 import PEPPERMINT_TOOL_NAMES from './toolNames.js';
 
-import {
-  freehand3DModule,
-  extendSegmentationModule
-} from './modules';
+import { freehand3DModule, extendSegmentationModule } from './modules';
 
 import {
   FreehandRoi3DTool,
@@ -15,6 +12,7 @@ import {
   XNATFreehandScissorsTool,
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
+  XNATCorrectionScissorsTool,
 } from './tools';
 
 import {
@@ -41,11 +39,12 @@ export {
   XNATFreehandScissorsTool,
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
+  XNATCorrectionScissorsTool,
   /* Utils */
   Polygon,
   interpolate,
   generateSegmentationMetadata,
   generateUID,
   GeneralAnatomyList,
-  removeEmptyLabelmaps2D
+  removeEmptyLabelmaps2D,
 };

@@ -13,6 +13,7 @@ import {
   XNATFreehandScissorsTool,
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
+  XNATCorrectionScissorsTool
 } from './peppermint-tools';
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
@@ -87,7 +88,7 @@ export default function init({ servicesManager, commandsManager, configuration =
   register('module', 'aiaa', AIAAModule);
 
   // add other segmentation tools directly from cornerstoneTools
-  const { CorrectionScissorsTool, BrushTool } = cornerstoneTools;
+  const { BrushTool } = cornerstoneTools;
   cornerstoneTools.addTool(BrushTool, {
     name: 'BrushEraser',
     configuration: {
@@ -108,7 +109,7 @@ export default function init({ servicesManager, commandsManager, configuration =
     XNATFreehandScissorsTool,
     XNATCircleScissorsTool,
     XNATRectangleScissorsTool,
-    CorrectionScissorsTool,
+    XNATCorrectionScissorsTool,
   ];
 
   tools.forEach(addTool);
