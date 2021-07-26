@@ -108,6 +108,11 @@ const commandsModule = ({ servicesManager }) => {
         return;
       }
 
+      // --> Skip Measurements Service
+      delete toolState[enabledElement.image.imageId];
+      refreshCornerstoneViewports();
+      // <-- Skip Measurements Service
+      /*
       const imageIdToolState = toolState[enabledElement.image.imageId];
 
       const measurementsToRemove = [];
@@ -142,6 +147,7 @@ const commandsModule = ({ servicesManager }) => {
           },
         });
       });
+      */
     },
     nextImage: ({ viewports }) => {
       const enabledElement = getEnabledElement(viewports.activeViewportIndex);
