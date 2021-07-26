@@ -51,7 +51,7 @@ export default class WorkingCollectionListItem extends React.Component {
   }
 
   onUpdateLabel(data) {
-    const { newLabel , itemId } = data;
+    const { newLabel, itemId } = data;
     const { SeriesInstanceUID } = this.props;
 
     const freehand3DModule = modules.freehand3D;
@@ -69,15 +69,12 @@ export default class WorkingCollectionListItem extends React.Component {
   onEditClick() {
     const { metadata } = this.props;
     const onUpdateLabel = this.onUpdateLabel;
-    showModal(
-      LabelEditModal,
-      {
-        labelTag: 'ROI Name',
-        currentLabel: metadata.name,
-        itemId: metadata.uid,
-        onUpdateProperty: onUpdateLabel,
-      }
-    );
+    showModal(LabelEditModal, {
+      labelTag: 'ROI Name',
+      currentLabel: metadata.name,
+      itemId: metadata.uid,
+      onUpdateProperty: onUpdateLabel,
+    });
   }
 
   /**
@@ -131,7 +128,7 @@ export default class WorkingCollectionListItem extends React.Component {
         </td>
         <td className="left-aligned-cell">
           <a
-            style={{ cursor: 'pointer', color: 'var(--text-primary-color)'}}
+            style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
             onClick={this.onEditClick}
           >
             {name}
@@ -140,7 +137,7 @@ export default class WorkingCollectionListItem extends React.Component {
         <td className="centered-cell">
           <a
             style={{ cursor: 'pointer', color: 'white' }}
-            onClick={() => polygonCount ? onClick(metadata.uid) : null}
+            onClick={() => (polygonCount ? onClick(metadata.uid) : null)}
           >
             {polygonCount}
           </a>
