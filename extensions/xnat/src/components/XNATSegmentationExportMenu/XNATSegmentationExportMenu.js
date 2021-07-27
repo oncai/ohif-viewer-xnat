@@ -63,6 +63,8 @@ export default class XNATSegmentationExportMenu extends React.Component {
     const seriesInfo = getSeriesInfoForImageId(viewportData);
     const element = getElementForFirstImageId(firstImageId);
 
+    const xnat_label = `${label}_S${seriesInfo.SeriesNumber}`;
+
     // DICOM-SEG
     const dicomSegWriter = new DICOMSEGWriter(seriesInfo);
     const DICOMSegPromise = dicomSegWriter.write(roiCollectionName, element);
@@ -71,7 +73,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
       const dicomSegExporter = new DICOMSEGExporter(
         segBlob,
         seriesInfo.seriesInstanceUid,
-        label,
+        xnat_label,
         roiCollectionName
       );
 
@@ -84,7 +86,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
           // i.e. not a fresh Mask collection.)
 
           segmentationModule.setters.importMetadata(firstImageId, {
-            label: label,
+            label: xnat_label,
             name: roiCollectionName,
             type: 'SEG',
             modified: false,

@@ -211,8 +211,8 @@ class XNATStandaloneRouting extends Component {
               });
 
               // TODO -> clean this
-              // studiesI[0].StudyDescription =
-              //   experimentList[i].label || experimentList[i].ID;
+              studiesI[0].StudyDescription =
+                experimentList[i].label || experimentList[i].ID;
 
               console.log(`Studies[${i}]`);
 
@@ -435,13 +435,14 @@ async function updateMetaDataProvider(studies) {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
           naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
-          naturalizedDicom.StudyDescription = study.StudyDescription;
+          // naturalizedDicom.StudyDescription = study.StudyDescription;
           naturalizedDicom.SeriesNumber = series.SeriesNumber;
           naturalizedDicom.SeriesDescription = series.SeriesDescription;
           if (!naturalizedDicom.PlanarConfiguration) {
             naturalizedDicom.PlanarConfiguration = 0;
           }
-          //ToDo: do we need PaletteColorLookupTableData & OverlayData?
+          // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
+          // ToDo: OverlayData?
 
           // Add instance to metadata provider.
           await metadataProvider.addInstance(naturalizedDicom, {imageId});

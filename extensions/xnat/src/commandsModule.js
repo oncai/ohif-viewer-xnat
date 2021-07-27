@@ -88,6 +88,13 @@ const definitions = {
     storeContexts: [],
     options: { json: null, sessionVariables: null },
   },
+  xnatGetExperimentID: {
+    commandFn: ({ SeriesInstanceUID }) => {
+      return sessionMap.getExperimentID(SeriesInstanceUID);
+    },
+    storeContexts: [],
+    options: { SeriesInstanceUID: null },
+  },
   xnatCheckAndSetPermissions: {
     commandFn: checkAndSetPermissions,
     storeContexts: [],
