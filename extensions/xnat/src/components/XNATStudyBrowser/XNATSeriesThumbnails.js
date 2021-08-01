@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { XNATThumbnail } from './XNATThumbnail';
+import XnatSessionRoiCollections from '../../utils/IO/queryXnatRois';
+import sessionMap from '../../utils/sessionMap';
 
 import './XNATStudyBrowser.styl';
 
-const XNATStudyThumbnails = props => {
+const XNATSeriesThumbnails = props => {
   const {
     study,
     supportsDrag,
@@ -11,9 +13,27 @@ const XNATStudyThumbnails = props => {
     onThumbnailClick,
     onThumbnailDoubleClick,
   } = props;
+
+  const [hasRois, setHasRois] = useState(undefined);
+
+  useEffect(() => {
+    const queryObject = new XnatSessionRoiCollections();
+    if (
+      process.env.NODE_ENV === 'production' ||
+      process.env.APP_CONFIG === 'config/xnat-dev.js'
+    ) {
+      const session = sessionMap.getSession()[studyIndex];
+      setHasRois(queryObject.queryAll(session));
+    }
+    return () => {
+      queryObject.cancel();
+    };
+  }, []);
+
   const { StudyInstanceUID } = study;
   return study.thumbnails
     .filter(thumb => {
+      // Exclude non-displayable series
       return thumb.imageId !== undefined;
     })
     .map((thumb, thumbIndex) => {
@@ -57,10 +77,12 @@ const XNATStudyThumbnails = props => {
             // Events
             onClick={onThumbnailClick.bind(undefined, displaySetInstanceUID)}
             onDoubleClick={onThumbnailDoubleClick}
+            // XNAT ROIS
+            hasRois={hasRois}
           />
         </div>
       );
     });
 };
 
-export default XNATStudyThumbnails;
+export default XNATSeriesThumbnails;

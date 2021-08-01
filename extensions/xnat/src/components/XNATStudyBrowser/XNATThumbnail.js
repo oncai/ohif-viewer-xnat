@@ -4,6 +4,7 @@ import { useDrag } from 'react-dnd';
 import { ImageThumbnail } from '@ohif/ui';
 import classNames from 'classnames';
 import { Icon, Tooltip, OverlayTrigger } from '@ohif/ui';
+import cornerstone from 'cornerstone-core';
 
 import './XNATThumbnail.styl';
 
@@ -12,21 +13,40 @@ function ThumbnailFooter({
   SeriesNumber,
   InstanceNumber,
   numImageFrames,
-  hasWarnings
+  hasWarnings,
+  hasRois,
+  imageId,
 }) {
   const [inconsistencyWarnings, inconsistencyWarningsSet] = useState([]);
 
   useEffect(() => {
-    let unmounted = false
+    let unmounted = false;
     hasWarnings.then(response => {
       if (!unmounted) {
-        inconsistencyWarningsSet(response)
+        inconsistencyWarningsSet(response);
       }
-    })
+    });
     return () => {
-      unmounted = true
+      unmounted = true;
+    };
+  }, []);
+
+  const [xnatRois, setXnatRois] = useState({});
+
+  useEffect(() => {
+    let unmounted = false;
+    if (hasRois) {
+      hasRois.then(response => {
+        const SeriesInstanceUID = cornerstone.metaData.get('SeriesInstanceUID', imageId);
+        if (response[SeriesInstanceUID]) {
+          setXnatRois(response[SeriesInstanceUID]);
+        }
+      });
     }
-  }, [])
+    return () => {
+      unmounted = true;
+    };
+  }, [hasRois]);
 
   const infoOnly = !SeriesDescription;
 
@@ -52,7 +72,7 @@ function ThumbnailFooter({
   };
 
   const getWarningInfo = (SeriesNumber, inconsistencyWarnings) => {
-    return(
+    return (
       <React.Fragment>
         {inconsistencyWarnings && inconsistencyWarnings.length != 0 ? (
           <OverlayTrigger
@@ -82,6 +102,44 @@ function ThumbnailFooter({
     );
   };
 
+  const getXnatRois = (xnatRois) => {
+    const { RTS, SEG } = xnatRois;
+
+    if (!RTS && !SEG) {
+      return null;
+    }
+
+    const hasRts = RTS.length > 0;
+    const hasSeg = SEG.length > 0;
+
+    return (
+      <div className="series-information">
+        {hasRts && (
+          <div className="item item-series">
+            <Icon
+              name="xnat-contour"
+              width="14"
+              height="14"
+              className="icon roi"
+            />
+            <div className="value roi">{RTS.length}</div>
+          </div>
+        )}
+        {hasSeg && (
+          <div className="item item-series" style={{ marginLeft: RTS ? 5 : 0 }}>
+            <Icon
+              name="xnat-mask"
+              width="14"
+              height="14"
+              className="icon roi"
+            />
+            <div className="value roi">{SEG.length}</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const getSeriesInformation = (
     SeriesNumber,
     InstanceNumber,
@@ -95,8 +153,9 @@ function ThumbnailFooter({
     return (
       <div className="series-information">
         {getInfo(SeriesNumber, 'S:')}
-        {getInfo(InstanceNumber, 'I:')}
+        {/*{getInfo(InstanceNumber, 'I:')}*/}
         {getInfo(numImageFrames, '', 'image-frames')}
+        {getXnatRois(xnatRois)}
         {getWarningInfo(SeriesNumber, inconsistencyWarnings)}
       </div>
     );

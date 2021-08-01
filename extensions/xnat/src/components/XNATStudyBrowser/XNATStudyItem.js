@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
-import XNATStudyThumbnails from './XNATStudyThumbnails';
+import XNATSeriesThumbnails from './XNATSeriesThumbnails';
 import './XNATStudyBrowser.styl';
 
 function XNATStudyItem(props) {
@@ -13,7 +13,7 @@ function XNATStudyItem(props) {
     supportsDrag,
   } = props;
 
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(studyIndex === 0);
 
   const getExpandIcon = () => {
     if (expanded) {
@@ -34,7 +34,7 @@ function XNATStudyItem(props) {
         {study.StudyDescription}
       </div>
       {expanded ? (
-        <XNATStudyThumbnails
+        <XNATSeriesThumbnails
           study={study}
           studyIndex={studyIndex}
           onThumbnailClick={onThumbnailClick}
