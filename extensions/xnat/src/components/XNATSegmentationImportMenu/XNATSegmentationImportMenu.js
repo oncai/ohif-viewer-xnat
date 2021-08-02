@@ -155,7 +155,11 @@ export default class XNATSegmentationImportMenu extends React.Component {
     const scanSelected = currentCollection.scanSelected;
     const segmentationSelected = currentCollection.segmentationSelected;
 
-    const segmentationIndex = importList.findIndex(item => item.id === segmentationSelected );
+    const segmentationIndex = importList.findIndex(
+      item =>
+        item.id === segmentationSelected &&
+        (item.referencedSeriesNumber == scanSelected || scanSelected === 'All')
+    );
 
     if (segmentationIndex < 0) {
       return;
