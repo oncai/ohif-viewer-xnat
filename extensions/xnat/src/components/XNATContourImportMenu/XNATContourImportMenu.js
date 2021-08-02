@@ -6,6 +6,7 @@ import fetchXML from '../../utils/IO/fetchXML.js';
 import fetchArrayBuffer from '../../utils/IO/fetchArrayBuffer.js';
 import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
+import getReferencedScan from '../../utils/getReferencedScan';
 import { Icon } from '@ohif/ui';
 
 import '../XNATRoiPanel.styl';
@@ -30,24 +31,40 @@ export default class XNATContourImportMenu extends React.Component {
   constructor(props = {}) {
     super(props);
 
-    const selectedCheckboxes = [];
-
     const interpolate = modules.freehand3D.state.interpolate;
     if (interpolate) {
       // disable interpolation during import
       modules.freehand3D.state.interpolate = false;
     }
 
+    this._subjectId = sessionMap.getSubject();
+    this._projectId = sessionMap.getProject();
+
+    const sessionSelected = sessionMap.getScan(
+      props.SeriesInstanceUID,
+      'experimentId'
+    );
+
+    this._sessions = sessionMap.getSession();
+    const sessionRoiCollections = {};
+    for (let i = 0; i < this._sessions.length; i++) {
+      const experimentId = this._sessions[i].experimentId;
+      sessionRoiCollections[experimentId] = {
+        experimentLabeL: this._sessions[i].experimentLabeL,
+        importList: [],
+        selectAllChecked: false,
+        scanSelected: 'All',
+      };
+    }
+
     this.state = {
-      selectAllChecked: false,
-      selectedCheckboxes,
+      sessionRoiCollections,
+      sessionSelected,
       importListReady: false,
-      importList: [],
       importing: false,
       progressText: '',
       importProgress: 0,
       interpolate: interpolate,
-      referencedSeriesNumber: 'All',
     };
 
     this._cancelablePromises = [];
@@ -70,6 +87,7 @@ export default class XNATContourImportMenu extends React.Component {
 
     this.updateProgress = this.updateProgress.bind(this);
     this.onReferencedSeriesChange = this.onReferencedSeriesChange.bind(this);
+    this.onSessionSelectedChange = this.onSessionSelectedChange.bind(this);
   }
 
   updateProgress(percent) {
@@ -77,7 +95,15 @@ export default class XNATContourImportMenu extends React.Component {
   }
 
   onReferencedSeriesChange(evt) {
-    this.setState({ referencedSeriesNumber: evt.target.value });
+    const { sessionRoiCollections, sessionSelected } = this.state;
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    currentCollection.scanSelected = evt.target.value;
+
+    this.setState({ sessionRoiCollections });
+  }
+
+  onSessionSelectedChange(evt) {
+    this.setState({ sessionSelected: evt.target.value });
   }
 
   /**
@@ -96,23 +122,24 @@ export default class XNATContourImportMenu extends React.Component {
    * @returns {null}
    */
   onChangeSelectAllCheckbox(evt) {
-    const {
-      selectedCheckboxes,
-      referencedSeriesNumber,
-      importList,
-    } = this.state;
     const checked = evt.target.checked;
+    const { sessionRoiCollections, sessionSelected } = this.state;
 
-    for (let i = 0; i < selectedCheckboxes.length; i++) {
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+    currentCollection.selectAllChecked = checked;
+    const scanSelected = currentCollection.scanSelected;
+
+    for (let i = 0; i < importList.length; i++) {
       if (
-        referencedSeriesNumber === 'All' ||
-        importList[i].referencedSeriesNumber == referencedSeriesNumber
+        scanSelected === 'All' ||
+        importList[i].referencedSeriesNumber == scanSelected
       ) {
-        selectedCheckboxes[i] = checked;
+        importList[i].selected = checked;
       }
     }
 
-    this.setState({ selectAllChecked: evt.target.checked, selectedCheckboxes });
+    this.setState({ sessionRoiCollections });
   }
 
   /**
@@ -122,11 +149,21 @@ export default class XNATContourImportMenu extends React.Component {
    * @param  {number} index number
    * @returns {null}
    */
-  onChangeCheckbox(evt, index) {
-    const selectedCheckboxes = this.state.selectedCheckboxes;
+  onChangeCheckbox(evt, id) {
+    const checked = evt.target.checked;
+    const { sessionRoiCollections, sessionSelected } = this.state;
 
-    selectedCheckboxes[index] = evt.target.checked;
-    this.setState({ selectedCheckboxes });
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+
+    for (let i = 0; i < importList.length; i++) {
+      if (importList[i].id === id) {
+        importList[i].selected = checked;
+        break;
+      }
+    }
+
+    this.setState({ sessionRoiCollections });
   }
 
   /**
@@ -135,16 +172,21 @@ export default class XNATContourImportMenu extends React.Component {
    * @returns {null}
    */
   onImportButtonClick() {
-    const { importList, selectedCheckboxes } = this.state;
+    const { sessionRoiCollections, sessionSelected } = this.state;
+
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+    const scanSelected = currentCollection.scanSelected;
+
+    const collectionsToParse = importList.filter(
+      collection =>
+        collection.selected &&
+        (scanSelected === 'All' ||
+          collection.referencedSeriesNumber == scanSelected)
+    );
 
     this._numCollectionsParsed = 0;
-    this._numCollectionsToParse = 0;
-
-    for (let i = 0; i < importList.length; i++) {
-      if (selectedCheckboxes[i]) {
-        this._numCollectionsToParse++;
-      }
-    }
+    this._numCollectionsToParse = collectionsToParse.length;
 
     if (this._numCollectionsToParse === 0) {
       return;
@@ -153,9 +195,9 @@ export default class XNATContourImportMenu extends React.Component {
     this._updateImportingText('');
     this.setState({ importing: true });
 
-    for (let i = 0; i < importList.length; i++) {
-      if (selectedCheckboxes[i]) {
-        this._importRoiCollection(importList[i]);
+    for (let i = 0; i < collectionsToParse.length; i++) {
+      if (collectionsToParse[i].selected) {
+        this._importRoiCollection(collectionsToParse[i]);
       }
     }
   }
@@ -187,21 +229,15 @@ export default class XNATContourImportMenu extends React.Component {
    * @returns {type}  description
    */
   componentDidMount() {
-    //ToDo: do we need this?
-    // if (this.props.id === 'NOT_ACTIVE') {
-    //   this.setState({ importListReady: true });
-    //   return;
-    // }
+    const { SeriesInstanceUID: activeSeriesInstanceUid } = this.props;
+    const { sessionRoiCollections, sessionSelected } = this.state;
 
-    const sessions = sessionMap.getSession();
-
-    this._subjectId = sessionMap.getSubject();
-    this._projectId = sessionMap.getProject();
+    const activeSessionRoiCollection = sessionRoiCollections[sessionSelected];
 
     const promises = [];
 
-    for (let i = 0; i < sessions.length; i++) {
-      const experimentId = sessions[i].experimentId;
+    for (let i = 0; i < this._sessions.length; i++) {
+      const experimentId = this._sessions[i].experimentId;
 
       const cancelablePromise = fetchJSON(
         `data/archive/projects/${this._projectId}/subjects/${this._subjectId}/experiments/${experimentId}/assessors?format=json`
@@ -245,25 +281,24 @@ export default class XNATContourImportMenu extends React.Component {
 
       if (!roiCollectionPromises.length) {
         this.setState({ importListReady: true });
-
         return;
       }
-
-      const importList = [];
-      let index = 0;
 
       Promise.all(roiCollectionPromises).then(promisesJSON => {
         promisesJSON.forEach(roiCollectionInfo => {
           const data_fields = roiCollectionInfo.items[0].data_fields;
 
-          const referencedScan = this._getReferencedScan(roiCollectionInfo);
+          const referencedScan = getReferencedScan(roiCollectionInfo);
 
           if (
             referencedScan &&
             this._collectionEligibleForImport(roiCollectionInfo)
           ) {
-            importList.push({
-              index: index++,
+            const sessionRoiCollection =
+              sessionRoiCollections[data_fields.imageSession_ID];
+            sessionRoiCollection.importList.push({
+              id: data_fields.ID || data_fields.id,
+              selected: false,
               collectionType: data_fields.collectionType,
               label: data_fields.label,
               experimentId: data_fields.imageSession_ID,
@@ -278,16 +313,18 @@ export default class XNATContourImportMenu extends React.Component {
           }
         });
 
-        const selectedCheckboxes = [];
-
-        for (let i = 0; i < importList.length; i++) {
-          selectedCheckboxes.push(false);
+        const matchingSegment = activeSessionRoiCollection.importList.find(
+          element =>
+            element.referencedSeriesInstanceUid === activeSeriesInstanceUid
+        );
+        if (matchingSegment) {
+          activeSessionRoiCollection.scanSelected =
+            matchingSegment.referencedSeriesNumber;
         }
 
         this.setState({
-          importList,
+          sessionRoiCollections,
           importListReady: true,
-          selectedCheckboxes,
         });
       });
     });
@@ -421,7 +458,7 @@ export default class XNATContourImportMenu extends React.Component {
    */
   _collectionEligibleForImport(collectionInfoJSON) {
     const item = collectionInfoJSON.items[0];
-    const children = item.children;
+    // const children = item.children;
 
     const collectionType = item.data_fields.collectionType;
 
@@ -441,36 +478,6 @@ export default class XNATContourImportMenu extends React.Component {
     }
 
     return true;
-  }
-
-  /**
-   * _getReferencedScan - If the collectionInfoJSON contains a scan from the sessionMap,
-   * return that scan object from the sessionMap.
-   *
-   * @param  {Object} collectionInfoJSON The collection info fetched from XNAT.
-   * @returns {Object|null}
-   */
-  _getReferencedScan(collectionInfoJSON) {
-    const item = collectionInfoJSON.items[0];
-    const children = item.children;
-
-    // Check the collection references this seriesInstanceUid.
-    for (let i = 0; i < children.length; i++) {
-      if (children[i].field === 'references/seriesUID') {
-        const referencedSeriesInstanceUidList = children[i].items;
-
-        for (let j = 0; j < referencedSeriesInstanceUidList.length; j++) {
-          const seriesInstanceUid =
-            referencedSeriesInstanceUidList[j].data_fields.seriesUID;
-
-          const scan = sessionMap.getScan(seriesInstanceUid);
-
-          if (scan) {
-            return scan;
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -502,15 +509,48 @@ export default class XNATContourImportMenu extends React.Component {
 
   render() {
     const {
-      selectAllChecked,
-      selectedCheckboxes,
-      importList,
       importListReady,
       importing,
       progressText,
       importProgress,
-      referencedSeriesNumber,
+      sessionRoiCollections,
+      sessionSelected,
     } = this.state;
+
+    let hasCollections = false;
+    for (let key of Object.keys(sessionRoiCollections)) {
+      if (sessionRoiCollections[key].importList.length > 0) {
+        hasCollections = true;
+        break;
+      }
+    }
+
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+    const selectAllChecked = currentCollection.selectAllChecked;
+    const scanSelected = currentCollection.scanSelected;
+
+    const sessionSelector = (
+      <div className="importSessionList">
+        <h5>Session</h5>
+        <select
+          // className="form-themed form-control"
+          onChange={this.onSessionSelectedChange}
+          value={sessionSelected}
+        >
+          {Object.keys(sessionRoiCollections).map(key => {
+            const session = sessionRoiCollections[key];
+            return (
+              <option
+                key={key}
+                value={key}
+                disabled={session.importList.length === 0}
+              >{`${session.experimentLabeL}`}</option>
+            );
+          })}
+        </select>
+      </div>
+    );
 
     let referencedSeriesNumberList = ['All'];
     importList.forEach(roiCollection => {
@@ -533,71 +573,79 @@ export default class XNATContourImportMenu extends React.Component {
             <h4>{`Loading Data: ${importProgress} %`}</h4>
           </>
         );
-      } else if (importList.length === 0) {
+      } else if (!hasCollections) {
         importBody = <p>No data to import.</p>;
+      } else if (importList.length === 0) {
+        importBody = (
+          <>
+            {sessionSelector}
+            <p>Session has no contour-based ROI collections.</p>
+          </>
+        );
       } else {
         importBody = (
-          <table className="collectionTable" style={{ tableLayout: 'fixed' }}>
-            <thead>
-              <tr>
-                <th width="5%" className="centered-cell">
-                  <input
-                    type="checkbox"
-                    className="checkboxInCell"
-                    checked={selectAllChecked}
-                    value={selectAllChecked}
-                    onChange={this.onChangeSelectAllCheckbox}
-                  />
-                </th>
-                <th width="45%">Name</th>
-                <th width="20%">Timestamp</th>
-                <th width="30%">
-                  Referenced Scan
-                  <select
-                    onChange={this.onReferencedSeriesChange}
-                    value={referencedSeriesNumber}
-                    style={{ display: 'block', width: '100%' }}
-                  >
-                    {referencedSeriesNumberList.map(seriesNumber => (
-                      <option key={seriesNumber} value={seriesNumber}>
-                        {`${seriesNumber}`}
-                      </option>
-                    ))}
-                  </select>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {importList
-                .filter(
-                  roiCollection =>
-                    referencedSeriesNumber === 'All' ||
-                    roiCollection.referencedSeriesNumber ==
-                      referencedSeriesNumber
-                )
-                .map(roiCollection => (
-                  <tr key={`${roiCollection.name}_${roiCollection.index}`}>
-                    <td className="centered-cell">
-                      <input
-                        type="checkbox"
-                        className="checkboxInCell"
-                        onChange={evt =>
-                          this.onChangeCheckbox(evt, roiCollection.index)
-                        }
-                        checked={selectedCheckboxes[roiCollection.index]}
-                        value={selectedCheckboxes[roiCollection.index]}
-                      />
-                    </td>
-                    <td>{roiCollection.name}</td>
-                    <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
-                    <td className="centered-cell">
-                      {/*{`${roiCollection.experimentLabel} - ${roiCollection.referencedSeriesNumber}`}*/}
-                      {`${roiCollection.referencedSeriesNumber}`}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <>
+            {sessionSelector}
+            <table className="collectionTable" style={{ tableLayout: 'fixed' }}>
+              <thead>
+                <tr>
+                  <th width="5%" className="centered-cell">
+                    <input
+                      type="checkbox"
+                      className="checkboxInCell"
+                      checked={selectAllChecked}
+                      value={selectAllChecked}
+                      onChange={this.onChangeSelectAllCheckbox}
+                    />
+                  </th>
+                  <th width="45%">Name</th>
+                  <th width="20%">Timestamp</th>
+                  <th width="30%">
+                    Referenced Scan #
+                    <select
+                      onChange={this.onReferencedSeriesChange}
+                      value={scanSelected}
+                      style={{ display: 'block', width: '100%' }}
+                    >
+                      {referencedSeriesNumberList.map(seriesNumber => (
+                        <option key={seriesNumber} value={seriesNumber}>
+                          {`${seriesNumber}`}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {importList
+                  .filter(
+                    roiCollection =>
+                      scanSelected === 'All' ||
+                      roiCollection.referencedSeriesNumber == scanSelected
+                  )
+                  .map(roiCollection => (
+                    <tr key={`${roiCollection.id}`}>
+                      <td className="centered-cell">
+                        <input
+                          type="checkbox"
+                          className="checkboxInCell"
+                          onChange={evt =>
+                            this.onChangeCheckbox(evt, roiCollection.id)
+                          }
+                          checked={roiCollection.selected}
+                          value={roiCollection.selected}
+                        />
+                      </td>
+                      <td>{roiCollection.name}</td>
+                      <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
+                      <td className="centered-cell">
+                        {`${roiCollection.referencedSeriesNumber}`}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </>
         );
       }
     } else {

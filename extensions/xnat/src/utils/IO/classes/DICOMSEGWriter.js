@@ -1,6 +1,6 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
-import * as dcmjs from 'dcmjs';
+import dcmjs from 'dcmjs';
 import getElementFromFirstImageId from '../../getElementFromFirstImageId';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -34,6 +34,16 @@ export default class DICOMSEGWriter {
       }
 
       const { labelmaps3D } = segmentationModule.getters.labelmaps3D(element);
+      // Temporary workaround to fix DICOM SEG mask orientation
+      // ToDo: check for a reliable fix when upgrading ICR/cornerstone-tools
+      const maxSliceIndex = imageIds.length - 1;
+      const orgLabelmaps2D = labelmaps3D[0].labelmaps2D;
+      const reversedLabelmaps2D = [];
+      orgLabelmaps2D.forEach((item, index) => {
+        reversedLabelmaps2D[maxSliceIndex - index] = item;
+      });
+      labelmaps3D[0].labelmaps2D = reversedLabelmaps2D;
+      //
 
       Promise.all(imagePromises)
         .then(images => {
@@ -63,6 +73,9 @@ export default class DICOMSEGWriter {
         })
         .catch(err => {
           console.log(err);
+        })
+        .finally(() => {
+          labelmaps3D[0].labelmaps2D = orgLabelmaps2D;
         });
     });
   }
