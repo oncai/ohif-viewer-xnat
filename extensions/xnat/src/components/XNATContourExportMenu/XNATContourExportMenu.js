@@ -7,9 +7,9 @@ import generateDateTimeAndLabel from '../../utils/IO/helpers/generateDateAndTime
 import cornerstoneTools from 'cornerstone-tools';
 import getSeriesInfoForImageId from '../../utils/IO/helpers/getSeriesInfoForImageId';
 import lockStructureSet from '../../utils/lockStructureSet';
-
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
+import showNotification from '../common/showNotification';
 
 import '../XNATRoiPanel.styl';
 
@@ -126,14 +126,19 @@ export default class XNATContourExportMenu extends React.Component {
           xnat_label
         );
 
+        showNotification('Contour collection exported successfully', 'success');
+
         this.props.onExportComplete();
       })
       .catch(error => {
         console.log(error);
         // TODO -> Work on backup mechanism, disabled for now.
         //localBackup.saveBackUpForActiveSeries();
+
+        const message = error.message || 'Unknown error';
+        showNotification(message, 'error', 'Error exporting mask collection');
+
         this.props.onExportCancel();
-        //displayExportFailedDialog(seriesInfo.seriesInstanceUid);
       });
   }
 
