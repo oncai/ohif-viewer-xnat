@@ -51,7 +51,7 @@ class XNATViewportOverlay extends React.PureComponent {
     const imagePlaneModule =
       cornerstone.metaData.get('imagePlaneModule', imageId) || {};
     const { rows, columns, sliceThickness, sliceLocation } = imagePlaneModule;
-    const { seriesNumber, seriesDescription } = seriesMetadata;
+    const { seriesNumber, seriesDescription, modality } = seriesMetadata;
 
     const generalStudyModule =
       cornerstone.metaData.get('generalStudyModule', imageId) || {};
@@ -66,8 +66,9 @@ class XNATViewportOverlay extends React.PureComponent {
     const { instanceNumber } = generalImageModule;
 
     const cineModule = cornerstone.metaData.get('cineModule', imageId) || {};
-    const { frameTime } = cineModule;
+    let { frameTime } = cineModule;
 
+    frameTime = frameTime === 0 ? -1 : frameTime;
     const frameRate = formatNumberPrecision(1000 / frameTime, 1);
     const compression = getCompression(imageId);
     const wwwc = `W: ${
@@ -144,6 +145,7 @@ class XNATViewportOverlay extends React.PureComponent {
           <div>{inconsistencyWarningsOn ? getWarningInfo(seriesNumber, inconsistencyWarnings) : ''}</div>
         </div>
         <div className="bottom-left overlay-element">
+          <div>{modality}</div>
           <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
           <div>
             {stackSize > 1

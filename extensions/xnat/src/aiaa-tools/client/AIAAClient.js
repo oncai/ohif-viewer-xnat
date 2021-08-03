@@ -8,6 +8,7 @@ import readNifti from '../utils/readNifti.js';
 import showNotification from '../../components/common/showNotification';
 import { saveFile, readFile } from '../../utils/xnatDev.js';
 import testModelList from './testModelList.js';
+import AIAA_MODEL_TYPES from '../modelTypes';
 
 const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
@@ -46,6 +47,23 @@ export default class AIAAClient {
 
     this.isConnected = true;
     this.models = response.data;
+
+    this.models.forEach(model => {
+      if (model.type === AIAA_MODEL_TYPES.DEEPGROW) {
+        model.is3D = false;
+        if (!model.deepgrow) {
+          const index3D = model.description.toLowerCase().indexOf('3d');
+          if (index3D >= 0) {
+            model.is3D = true;
+          }
+        } else {
+          const index3D = model.deepgrow.toLowerCase().indexOf('3d');
+          if (index3D >= 0) {
+            model.is3D = true;
+          }
+        }
+      }
+    });
 
     return true;
   }

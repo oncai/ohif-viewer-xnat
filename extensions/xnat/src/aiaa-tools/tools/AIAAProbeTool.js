@@ -35,15 +35,15 @@ export default class AIAAProbeTool extends ProbeTool {
     let isActive = false;
     const toolType = this._aiaaModule.client.currentTool.type;
 
-    if (!this._aiaaModule.client.isConnected) {
+    if (!this._aiaaModule.state.menuIsOpen) {
       showNotification(
-        'Not connected to AIAA Server',
+        'Masks Panel needs to be active to use AIAA tools',
         'warning',
         'NVIDIA AIAA'
       );
-    } else if (!this._aiaaModule.state.menuIsOpen) {
+    } else if (!this._aiaaModule.client.isConnected) {
       showNotification(
-        'Masks Panel needs to be active to use AIAA tools',
+        'Not connected to AIAA Server',
         'warning',
         'NVIDIA AIAA'
       );

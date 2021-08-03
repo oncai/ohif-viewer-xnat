@@ -30,8 +30,10 @@ class MetadataProvider {
 
   loadMetadataFromImage(imageId) {
     if (this.isMetadataLoadedFromImage.includes(imageId)) {
-      return;
+      return true;
     }
+
+    let metaLoadedFromImage = false;
 
     if (imageId in cornerstone.imageCache.imageCache) {
       const imageCache = cornerstone.imageCache.imageCache[imageId];
@@ -67,11 +69,15 @@ class MetadataProvider {
           if (!instance) {
             instance = {};
           }
-          instance = {...instance, ...dataset};
+          instance = { ...instance, ...dataset };
           series.instances.set(SOPInstanceUID, instance);
+
+          metaLoadedFromImage = true;
         }
       }
     }
+
+    return metaLoadedFromImage;
   }
 
   _paletteColorArrayBufferToLUT(paletteColorLookupTableData, lutDescriptor) {
@@ -252,20 +258,34 @@ class MetadataProvider {
   get(query, imageId, options = { fallback: false }) {
     let instance;
 
-    const enableMetaPrefetch = true;
-    if (enableMetaPrefetch &&
-      (process.env.APP_CONFIG === 'config/xnat-dev.js' || process.env.APP_CONFIG === 'config/xnat.js')) {
-      // Attempt to load metadata from instance
-      let imageIdToUse = imageId;
-      const frameIndex = imageId.indexOf('frame=');
-      if (frameIndex > 0) {
-        imageIdToUse = imageId.substr(0, frameIndex - 1);
+    let metaLoadedFromImage = false;
+    if (
+      process.env.NODE_ENV === 'production' ||
+      process.env.APP_CONFIG === 'config/xnat-dev.js'
+    ) {
+      if (query === WADO_IMAGE_LOADER_TAGS.VOI_LUT_MODULE) {
+        // The XNAT Viewer plugin sets WL/WW to [80, 400] for missing values
+        return;
       }
-      this.loadMetadataFromImage(imageIdToUse);
 
-      instance = this._getInstance(imageIdToUse);
-    } else {
-      // Standard OHIF/DICOMWeb implementation
+      let enableMetaPrefetch = true;
+      if (enableMetaPrefetch) {
+        // Attempt to load metadata from instance
+        let imageIdToUse = imageId;
+        const frameIndex = imageId.indexOf('frame=');
+        if (frameIndex > 0) {
+          imageIdToUse = imageId.substr(0, frameIndex - 1);
+        }
+        metaLoadedFromImage = this.loadMetadataFromImage(imageIdToUse);
+
+        if (metaLoadedFromImage) {
+          instance = this._getInstance(imageIdToUse);
+        }
+      }
+    }
+
+    if (!metaLoadedFromImage) {
+      // Standard OHIF implementation
       instance = this._getInstance(imageId);
     }
 
