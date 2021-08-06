@@ -1,4 +1,5 @@
 **3.1.0 RC**
+
 - Upgraded to v4.9.20 of the mainstream OHIF Viewer ([@ohif/viewer@4.9.20](https://github.com/OHIF/Viewers/releases/tag/%40ohif%2Fviewer%404.9.20)).
 - Filter ROI collection import list based session label and scan number.
 - DICOM tag browser added.
