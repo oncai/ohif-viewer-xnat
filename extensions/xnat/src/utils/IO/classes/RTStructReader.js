@@ -1,6 +1,7 @@
 import { Polygon } from '../../../peppermint-tools';
 import dicomParser from 'dicom-parser';
 import cornerstoneTools from 'cornerstone-tools';
+import allowStateUpdate from '../../awaitStateUpdate';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -8,14 +9,18 @@ const modules = cornerstoneTools.store.modules;
  * @class RTStructReader - Reads an RTSTRUCT using dicomParser and extracts any ROIContours.
  */
 export default class RTStructReader {
-  constructor(
+  async init(
     rtStructArrayBuffer,
     seriesInstanceUidToImport,
     roiCollectionName,
-    roiCollectionLabel
+    roiCollectionLabel,
+    updateProgressCallback
   ) {
     this._dataSet = this._getdataSet(rtStructArrayBuffer);
     this._isRTStruct();
+
+    this._updateProgressCallback = updateProgressCallback;
+    this._percentComplete = 0;
 
     this._polygons = [];
     this._seriesInstanceUidToImport = seriesInstanceUidToImport;
@@ -36,7 +41,7 @@ export default class RTStructReader {
 
     if (this._sopInstancesInSeries.length > 0) {
       this._extractROINames();
-      this._extractROIContours();
+      await this._extractROIContours();
     }
   }
 
@@ -148,7 +153,7 @@ export default class RTStructReader {
   _extractROINames() {
     const StructureSetROISequence = this._dataSet.elements[
       RTStructTag['StructureSetROISequence']
-      ];
+    ];
     const ROIs = StructureSetROISequence.items;
     for (let i = 0; i < ROIs.length; i++) {
       const ROINumber = ROIs[i].dataSet.string(RTStructTag.ROINumber);
@@ -162,13 +167,31 @@ export default class RTStructReader {
    *
    * @returns {null}
    */
-  _extractROIContours() {
+  async _extractROIContours() {
     const ROIContourSequence = this._dataSet.elements[
       RTStructTag['ROIContourSequence']
     ];
     const ROIContours = ROIContourSequence.items;
+
+    this._percentComplete = 0;
+    let numAllContours = 0;
+    const numContours = [];
     for (let i = 0; i < ROIContours.length; i++) {
-      this._extractOneROIContour(ROIContours[i].dataSet);
+      const contourSequence =
+        ROIContours[i].dataSet.elements[RTStructTag['ContourSequence']];
+      const polygon = contourSequence.items;
+      numContours.push(polygon.length);
+      numAllContours += polygon.length;
+    }
+
+    let extractedNumContours = 0;
+    for (let i = 0; i < ROIContours.length; i++) {
+      await this._extractOneROIContour(
+        ROIContours[i].dataSet,
+        extractedNumContours,
+        numAllContours
+      );
+      extractedNumContours += numContours[i];
     }
   }
 
@@ -178,7 +201,11 @@ export default class RTStructReader {
    * @param  {type} ROIContourDataSet The dataset of the ROIContour.
    * @returns {null}
    */
-  _extractOneROIContour(ROIContourDataSet) {
+  async _extractOneROIContour(
+    ROIContourDataSet,
+    extractedNumContours,
+    numAllContours
+  ) {
     const ROINumber = ROIContourDataSet.string(
       RTStructTag['ReferencedROINumber']
     );
@@ -190,6 +217,15 @@ export default class RTStructReader {
     const polygon = contourSequence.items;
     for (let i = 0; i < polygon.length; i++) {
       this._extractOnePolygon(polygon[i].dataSet, ROIContourUid, ROINumber);
+
+      const percentComplete = Math.floor(
+        ((extractedNumContours + i + 1) * 100) / numAllContours
+      );
+      if (percentComplete !== this._percentComplete) {
+        this._updateProgressCallback(`Reading Buffer: ${percentComplete}%`);
+        this._percentComplete = percentComplete;
+        await allowStateUpdate();
+      }
     }
   }
 

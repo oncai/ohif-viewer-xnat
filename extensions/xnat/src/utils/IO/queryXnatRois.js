@@ -64,6 +64,9 @@ class XnatSessionRoiCollections {
       }
       const promisesJSON = await Promise.all(roiCollectionPromises);
       promisesJSON.forEach(collectionJSON => {
+        if (!collectionJSON) {
+          return;
+        }
         const parsedCollectionJSON = getCollectionInfo(collectionJSON);
         if (parsedCollectionJSON) {
           const { referencedSeriesInstanceUid, collectionType } = parsedCollectionJSON;

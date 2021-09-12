@@ -7,6 +7,7 @@ import sessionMap from '../../utils/sessionMap';
 import getReferencedScan from '../../utils/getReferencedScan';
 import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
+import { Loader } from '../../elements';
 
 import '../XNATRoiPanel.styl';
 
@@ -292,6 +293,10 @@ export default class XNATSegmentationImportMenu extends React.Component {
 
       Promise.all(roiCollectionPromises).then(promisesJSON => {
         promisesJSON.forEach(roiCollectionInfo => {
+          if (!roiCollectionInfo) {
+            return;
+          }
+
           const data_fields = roiCollectionInfo.items[0].data_fields;
 
           const referencedScan = getReferencedScan(roiCollectionInfo);
@@ -599,7 +604,11 @@ export default class XNATSegmentationImportMenu extends React.Component {
         );
       }
     } else {
-      importBody = <h1 style={{ textAlign: 'center' }}>...</h1>;
+      importBody = (
+        <div style={{ textAlign: 'center' }}>
+          <Loader />
+        </div>
+      );
     }
 
     return (

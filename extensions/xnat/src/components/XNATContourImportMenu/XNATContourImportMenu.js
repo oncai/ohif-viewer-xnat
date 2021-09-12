@@ -8,6 +8,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
 import getReferencedScan from '../../utils/getReferencedScan';
 import { Icon } from '@ohif/ui';
+import { Loader } from '../../elements';
 
 import '../XNATRoiPanel.styl';
 
@@ -62,8 +63,8 @@ export default class XNATContourImportMenu extends React.Component {
       sessionSelected,
       importListReady: false,
       importing: false,
-      progressText: '',
-      importProgress: 0,
+      progressText: [],
+      importProgress: '',
       interpolate: interpolate,
     };
 
@@ -90,8 +91,9 @@ export default class XNATContourImportMenu extends React.Component {
     this.onSessionSelectedChange = this.onSessionSelectedChange.bind(this);
   }
 
-  updateProgress(percent) {
-    this.setState({ importProgress: percent });
+  updateProgress(status) {
+    this.setState({ importProgress: status });
+    // console.log(status);
   }
 
   onReferencedSeriesChange(evt) {
@@ -171,7 +173,7 @@ export default class XNATContourImportMenu extends React.Component {
    *
    * @returns {null}
    */
-  onImportButtonClick() {
+  async onImportButtonClick() {
     const { sessionRoiCollections, sessionSelected } = this.state;
 
     const currentCollection = sessionRoiCollections[sessionSelected];
@@ -197,7 +199,7 @@ export default class XNATContourImportMenu extends React.Component {
 
     for (let i = 0; i < collectionsToParse.length; i++) {
       if (collectionsToParse[i].selected) {
-        this._importRoiCollection(collectionsToParse[i]);
+        await this._importRoiCollection(collectionsToParse[i]);
       }
     }
   }
@@ -286,6 +288,10 @@ export default class XNATContourImportMenu extends React.Component {
 
       Promise.all(roiCollectionPromises).then(promisesJSON => {
         promisesJSON.forEach(roiCollectionInfo => {
+          if (!roiCollectionInfo) {
+            return;
+          }
+
           const data_fields = roiCollectionInfo.items[0].data_fields;
 
           const referencedScan = getReferencedScan(roiCollectionInfo);
@@ -338,7 +344,13 @@ export default class XNATContourImportMenu extends React.Component {
    */
   _updateImportingText(roiCollectionLabel) {
     this.setState({
-      progressText: `${roiCollectionLabel} ${this._numCollectionsParsed}/${this._numCollectionsToParse}`,
+      // progressText: `${roiCollectionLabel} ${this._numCollectionsParsed}/${this._numCollectionsToParse}`,
+      progressText: [
+        `Collection: ${this._numCollectionsParsed + 1}/${
+          this._numCollectionsToParse
+        }`,
+        `${roiCollectionLabel}`,
+      ],
     });
   }
 
@@ -364,7 +376,7 @@ export default class XNATContourImportMenu extends React.Component {
     for (let i = 0; i < result.length; i++) {
       const fileType = result[i].collection;
       if (fileType === roiCollectionInfo.collectionType) {
-        this._getAndImportFile(result[i].URI, roiCollectionInfo);
+        await this._getAndImportFile(result[i].URI, roiCollectionInfo);
       }
     }
   }
@@ -393,13 +405,13 @@ export default class XNATContourImportMenu extends React.Component {
     switch (roiCollectionInfo.collectionType) {
       case 'AIM':
         this._updateImportingText(roiCollectionInfo.name);
-        const aimFile = await fetchXML(uri).promise;
+        const aimFile = await fetchXML(uri, this.updateProgress).promise;
 
         if (!aimFile) {
           break;
         }
 
-        roiImporter.importAIMfile(
+        await roiImporter.importAIMfile(
           aimFile,
           roiCollectionInfo.name,
           roiCollectionInfo.label
@@ -407,13 +419,13 @@ export default class XNATContourImportMenu extends React.Component {
         break;
       case 'RTSTRUCT':
         this._updateImportingText(roiCollectionInfo.name);
-        const rtStructFile = await fetchArrayBuffer(uri).promise;
-
+        const rtStructFile = await fetchArrayBuffer(uri, this.updateProgress)
+          .promise;
         if (!rtStructFile) {
           break;
         }
 
-        roiImporter.importRTStruct(
+        await roiImporter.importRTStruct(
           rtStructFile,
           roiCollectionInfo.name,
           roiCollectionInfo.label
@@ -443,7 +455,7 @@ export default class XNATContourImportMenu extends React.Component {
     if (this._numCollectionsParsed === this._numCollectionsToParse) {
       this.props.onImportComplete();
     } else {
-      this.updateProgress(0);
+      this.updateProgress('');
     }
   }
 
@@ -517,6 +529,21 @@ export default class XNATContourImportMenu extends React.Component {
       sessionSelected,
     } = this.state;
 
+    if (importing) {
+      return (
+        <div className="xnatPanel">
+          <div className="panelHeader">
+            <h3>Import contour-based ROI collections</h3>
+          </div>
+          <div className="roiCollectionBody limitHeight">
+            {progressText[0] && <h4>{progressText[0]}</h4>}
+            {progressText[1] && <h4>{progressText[1]}</h4>}
+            <h4>{importProgress}</h4>
+          </div>
+        </div>
+      );
+    }
+
     let hasCollections = false;
     for (let key of Object.keys(sessionRoiCollections)) {
       if (sessionRoiCollections[key].importList.length > 0) {
@@ -566,14 +593,7 @@ export default class XNATContourImportMenu extends React.Component {
     let importBody;
 
     if (importListReady) {
-      if (importing) {
-        importBody = (
-          <>
-            <h4>{progressText}</h4>
-            <h4>{`Loading Data: ${importProgress} %`}</h4>
-          </>
-        );
-      } else if (!hasCollections) {
+      if (!hasCollections) {
         importBody = <p>No data to import.</p>;
       } else if (importList.length === 0) {
         importBody = (
@@ -645,32 +665,32 @@ export default class XNATContourImportMenu extends React.Component {
                   ))}
               </tbody>
             </table>
+            <div className="roiCollectionFooter">
+              <button onClick={this.onImportButtonClick}>
+                <Icon name="xnat-import" />
+                Import selected
+              </button>
+            </div>
           </>
         );
       }
     } else {
-      importBody = <h1 style={{ textAlign: 'center' }}>...</h1>;
+      importBody = (
+        <div style={{ textAlign: 'center' }}>
+          <Loader />
+        </div>
+      );
     }
 
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
           <h3>Import contour-based ROI collections</h3>
-          {importing ? null : (
-            <button className="small" onClick={this.onCloseButtonClick}>
-              <Icon name="xnat-cancel" />
-            </button>
-          )}
+          <button className="small" onClick={this.onCloseButtonClick}>
+            <Icon name="xnat-cancel" />
+          </button>
         </div>
         <div className="roiCollectionBody limitHeight">{importBody}</div>
-        <div className="roiCollectionFooter">
-          {importing ? null : (
-            <button onClick={this.onImportButtonClick}>
-              <Icon name="xnat-import" />
-              Import selected
-            </button>
-          )}
-        </div>
       </div>
     );
   }

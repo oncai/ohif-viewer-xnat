@@ -21,7 +21,9 @@ import xnatBrushEraser from './icons/xnat-mask-brush-eraser.svg';
 import xnatUndo from './icons/xnat-undo.svg';
 import xnatRedo from './icons/xnat-redo.svg';
 
-export const XNATICONS = {
+import Loader from './Loader/Loader';
+
+const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
   'xnat-settings': xnatSettings,
@@ -44,3 +46,5 @@ export const XNATICONS = {
   'xnat-undo': xnatUndo,
   'xnat-redo': xnatRedo,
 };
+
+export { XNATICONS, Loader };
