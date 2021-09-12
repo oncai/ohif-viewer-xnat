@@ -6,9 +6,9 @@ import { redux } from '@ohif/core';
 import { TabFooter, useSnackbarContext } from '@ohif/ui';
 import { useTranslation } from 'react-i18next';
 
-const { actions } = redux;
-
 import './WindowLevelPreferences.styl';
+
+const { actions } = redux;
 
 function WindowLevelPreferences({ onClose }) {
   const dispatch = useDispatch();
@@ -25,7 +25,11 @@ function WindowLevelPreferences({ onClose }) {
   });
 
   const { t } = useTranslation('UserPreferencesModal');
-  const onResetPreferences = () => {};
+  const onResetPreferences = () => {
+    setState({
+      values: { ...windowLevelData },
+    });
+  };
   const hasErrors = false;
   const onSave = () => {
     dispatch(actions.setUserPreferences({ windowLevelData: state.values }));
@@ -41,16 +45,15 @@ function WindowLevelPreferences({ onClose }) {
   const snackbar = useSnackbarContext();
 
   const handleInputChange = event => {
-    const $target = event.target;
-    const { key, inputname } = $target.dataset;
-    const inputValue = $target.value;
+    const target = event.target;
+    const { key, inputname } = target.dataset;
+    const inputValue = target.value.trim();
 
-    if (!state.values[key] || !state.values[key][inputname]) {
+    if (!state.values[key] || !inputValue) {
       return;
     }
 
     setState(prevState => ({
-      ...prevState,
       values: {
         ...prevState.values,
         [key]: {
