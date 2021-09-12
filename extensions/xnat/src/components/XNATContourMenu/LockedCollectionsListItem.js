@@ -107,6 +107,8 @@ export default class LockedCollectionsListItem extends React.Component {
     const metadata = collection.metadata;
     const ROIContourArray = collection.ROIContourArray;
 
+    const expandStyle = expanded ? {} : { transform: 'rotate(90deg)' };
+
     return (
       <div className="collectionSection">
         <div className="header">
@@ -131,6 +133,7 @@ export default class LockedCollectionsListItem extends React.Component {
             <Icon
               name={`angle-double-${expanded ? 'down' : 'up'}`}
               className="icon"
+              style={expandStyle}
               width="20px"
               height="20px"
               onClick={() => {

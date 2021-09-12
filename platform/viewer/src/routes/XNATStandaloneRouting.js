@@ -177,6 +177,10 @@ class XNATStandaloneRouting extends Component {
           // Load up viewer.
           console.log(json);
 
+          if (!json || !json.ResultSet || !json.ResultSet.Result) {
+            return reject(new Error('Data cannot be accessed'));
+          }
+
           const experimentList = json.ResultSet.Result;
           const results = [];
 

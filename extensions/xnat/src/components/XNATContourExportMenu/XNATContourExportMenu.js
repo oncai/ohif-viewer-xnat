@@ -199,9 +199,9 @@ export default class XNATContourExportMenu extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.id === 'NOT_ACTIVE') {
-      return;
-    }
+    // if (this.props.id === 'NOT_ACTIVE') {
+    //   return;
+    // }
 
     const { SeriesInstanceUID } = this.props;
     const freehand3DModule = modules.freehand3D;

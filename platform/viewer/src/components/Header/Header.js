@@ -97,6 +97,8 @@ function Header(props) {
     setOptions(optionsValue);
   }, [setOptions, show, t, user, userManager]);
 
+  const version = window.config.version;
+
   return (
     <>
       {/*<div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>*/}
@@ -134,7 +136,7 @@ function Header(props) {
 
         <div className="header-menu">
           <span className="research-use">
-            {/*{t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}*/}
+            {version.dev && t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
             {/*{versionStr}*/}
           </span>
           <Dropdown

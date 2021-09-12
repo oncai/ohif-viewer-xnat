@@ -66,13 +66,13 @@ export default class AIMExporter {
         if (xhr.status === 200 || xhr.status === 201) {
           resolve();
         } else {
-          reject(xhr.responseText);
+          reject(xhr.responseText || xhr.statusText);
         }
       };
 
       xhr.onerror = () => {
         console.log(`Request returned, status: ${xhr.status}`);
-        reject(xhr.responseText);
+        reject(xhr.responseText || xhr.statusText);
       };
 
       xhr.open('PUT', url);

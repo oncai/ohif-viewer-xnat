@@ -99,6 +99,8 @@ export default class WorkingRoiCollectionList extends React.Component {
     const defaultStructureSetName =
       defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
 
+    const expandStyle = isExpanded ? {} : { transform: 'rotate(90deg)' };
+
     return (
       <React.Fragment>
         <div className="collectionSection">
@@ -129,6 +131,7 @@ export default class WorkingRoiCollectionList extends React.Component {
               <Icon
                 name={`angle-double-${isExpanded ? 'down' : 'up'}`}
                 className="icon"
+                style={expandStyle}
                 width="20px"
                 height="20px"
                 onClick={() => {

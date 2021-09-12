@@ -3,10 +3,21 @@ import React from 'react';
 import './ICRAboutContent.styl';
 
 export const ICRAboutContent = () => {
+  let versionStr = '';
+  const version = window.config.version;
+  if (version) {
+    versionStr = `v ${version.major}.${version.minor}.${version.patch}`;
+    if (version.dev) {
+      versionStr += `-${version.dev}`;
+    }
+    if (version.build) {
+      versionStr += ` build-${version.build}`;
+    }
+  }
 
   return (
     <div className="icr-about">
-      <h1>Integration of the OHIF viewer in XNAT - v 3.0</h1>
+      <h1>Integration of the OHIF viewer in XNAT - {versionStr}</h1>
       <h2>Acknowledgements</h2>
       <h3>
         <span>Core viewer platform:</span> the Open Health Imaging Foundation
