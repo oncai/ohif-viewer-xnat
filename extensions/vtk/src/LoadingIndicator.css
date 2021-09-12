@@ -15,3 +15,18 @@
   /* Necessary for click-through to vtkjs element below */
   pointer-events: none;
 }
+
+.title, .details {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.details {
+  line-height: 20px;
+  font-size: 14px;
+}

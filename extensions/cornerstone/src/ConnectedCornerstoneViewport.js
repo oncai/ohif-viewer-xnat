@@ -2,7 +2,11 @@ import CornerstoneViewport from 'react-cornerstone-viewport';
 import OHIF from '@ohif/core';
 import { connect } from 'react-redux';
 import throttle from 'lodash.throttle';
-import { setEnabledElement, setActiveViewportIndex, getActiveViewportIndex } from './state';
+import {
+  setEnabledElement,
+  setActiveViewportIndex,
+  getActiveViewportIndex,
+} from './state';
 
 const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
 const {
@@ -10,6 +14,22 @@ const {
   onRemoved,
   onModified,
 } = OHIF.measurements.MeasurementHandlers;
+
+const imageLoadField = event => {
+  const servicesManager = window.ohif.app.servicesManager;
+  const { UINotificationService } = servicesManager.services;
+
+  if (UINotificationService) {
+    const detail = event.detail || {};
+    const error = detail.error || {};
+    let message = error.message || 'Unknown error.';
+    UINotificationService.show({
+      title: 'Error displaying the current frame',
+      message: message,
+      type: 'error',
+    });
+  }
+};
 
 // TODO: Transition to enums for the action names so that we can ensure they stay up to date
 // everywhere they're used.
@@ -99,6 +119,13 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onMeasurementsChanged: (event, action) => {
       return MEASUREMENT_ACTION_MAP[action](event);
     },
+    eventListeners: [
+      {
+        target: 'element',
+        eventName: 'cornerstoneimageloadfailed',
+        handler: imageLoadField,
+      },
+    ],
   };
 };
 
