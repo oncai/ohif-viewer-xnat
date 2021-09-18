@@ -1,12 +1,13 @@
 import React from 'react';
 import Select from 'react-select';
 
-const DicomBrowserSelect = ({ value, formatOptionLabel, options }) => (
+const DicomBrowserSelect = ({ value, formatOptionLabel, options, onChange }) => (
   <Select
     value={value}
     formatOptionLabel={formatOptionLabel}
     styles={dicomBrowserSelectStyles}
     options={options}
+    onChange={onChange}
   />
 );
 

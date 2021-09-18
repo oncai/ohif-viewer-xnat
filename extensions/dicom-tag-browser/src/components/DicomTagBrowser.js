@@ -21,15 +21,10 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
   const [activeInstance, setActiveInstance] = useState(0);
   const [tags, setTags] = useState([]);
   const [meta, setMeta] = useState('');
-  const [instanceList, setInstanceList] = useState([]);
+  const [numInstances, setNumInstances] = useState(0);
   const [displaySetList, setDisplaySetList] = useState([]);
-  const [isImageStack, setIsImageStack] = useState(false);
 
   useEffect(() => {
-    const activeDisplaySet = displaySets.find(
-      ds => ds.displaySetInstanceUID === activeDisplaySetInstanceUID
-    );
-
     const newDisplaySetList = displaySets.map(displaySet => {
       const {
         displaySetInstanceUID,
@@ -41,57 +36,55 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
       } = displaySet;
 
       /* Map to display representation */
-      const dateStr = `${SeriesDate}:${SeriesTime}`.split('.')[0];
-      const date = moment(dateStr, 'YYYYMMDD:HHmmss');
+      const date = moment(SeriesDate, 'YYYYMMDD');
       const displayDate = date.format('ddd, MMM Do YYYY');
 
       return {
         value: displaySetInstanceUID,
         title: `${SeriesNumber} (${Modality}): ${SeriesDescription}`,
         description: displayDate,
-        onClick: () => {
-          setActiveDisplaySetInstanceUID(displaySetInstanceUID);
-          setActiveInstance(0);
-        },
+        // onClick: () => {
+        //   setActiveDisplaySetInstanceUID(displaySetInstanceUID);
+        //   setActiveInstance(0);
+        // },
       };
     });
+
+    setDisplaySetList(newDisplaySetList);
+  }, [displaySetInstanceUID, displaySets]);
+
+  useEffect(() => {
+    const activeDisplaySet = displaySets.find(
+      ds => ds.displaySetInstanceUID === activeDisplaySetInstanceUID
+    );
 
     let metadata;
     const isImageStack = activeDisplaySet instanceof ImageSet;
 
-    let selectedInstanceValue;
-    let instanceList;
+    let numInstances = 1;
 
     if (isImageStack) {
       const { images } = activeDisplaySet;
       const image = images[activeInstance];
 
-      instanceList = images.map((image, index) => {
-        const metadata = image.getData().metadata;
-
-        const { InstanceNumber } = metadata;
-
-        return {
-          value: index,
-          title: `Instance Number: ${InstanceNumber}`,
-          description: '',
-          onClick: () => {
-            setActiveInstance(index);
-          },
-        };
-      });
-
+      numInstances = images.length;
       metadata = image.getData().metadata;
+      const { url = '' } = image._instance;
+      const imageId = image._imageId || url;
+      if (imageId) {
+        const metadata2 = metadataProvider.get('instance', imageId);
+        if (!_.isEmpty(metadata2)) {
+          metadata = metadata2;
+        }
+      }
     } else {
       metadata = activeDisplaySet.metadata;
     }
 
     setTags(getSortedTags(metadata));
     setMeta(metadata);
-    setInstanceList(instanceList);
-    setDisplaySetList(newDisplaySetList);
-    setIsImageStack(isImageStack);
-  }, [activeDisplaySetInstanceUID, activeInstance]);
+    setNumInstances(numInstances);
+  }, [activeDisplaySetInstanceUID, activeInstance, displaySets]);
 
   const selectedDisplaySetValue = displaySetList.find(
     ds => ds.value === activeDisplaySetInstanceUID
@@ -99,16 +92,18 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
 
   let instanceSelectList = null;
 
-  if (isImageStack) {
+  if (numInstances > 1) {
     instanceSelectList = (
       <div className="dicom-tag-browser-instance-range">
         <Range
           showValue
           step={1}
-          min={1}
-          max={instanceList.length - 1}
+          min={0}
+          max={numInstances - 1}
           value={activeInstance}
-          valueRenderer={value => <p>Instance Number: {value}</p>}
+          valueRenderer={value => (
+            <p>Frame Number: {`${parseInt(value) + 1}`}</p>
+          )}
           onChange={({ target }) => {
             const instanceIndex = parseInt(target.value);
             setActiveInstance(instanceIndex);
@@ -124,10 +119,16 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
         value={selectedDisplaySetValue}
         formatOptionLabel={DicomBrowserSelectItem}
         options={displaySetList}
+        onChange={ds => {
+          if (ds.value !== activeDisplaySetInstanceUID) {
+            setActiveDisplaySetInstanceUID(ds.value);
+            setActiveInstance(0);
+          }
+        }}
       />
       {instanceSelectList}
       <div className="dicom-tag-browser-table-wrapper">
-        <DicomTagTable tags={tags} meta={meta}></DicomTagTable>
+        <DicomTagTable tags={tags} meta={meta} />
       </div>
     </div>
   );

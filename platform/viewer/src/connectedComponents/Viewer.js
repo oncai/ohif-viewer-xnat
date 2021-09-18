@@ -452,13 +452,13 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
             break;
         }
       });
-      inconsistencyWarnings.push('The datasets is not a reconstructable 3D volume. MPR mode is not available.');
+      inconsistencyWarnings.push('The dataset is not a reconstructable 3D volume. MPR mode is not available.');
     }
 
     if (displaySet.missingFrames &&
       (!displaySet.reconstructionIssues ||
         (displaySet.reconstructionIssues && !displaySet.reconstructionIssues.find(warn => warn === ReconstructionIssues.DATASET_4D)))) {
-          inconsistencyWarnings.push('The datasets is missing frames: ' + displaySet.missingFrames + '.');
+          inconsistencyWarnings.push('The dataset is missing frames: ' + displaySet.missingFrames + '.');
     }
   } else {
     const segMetadata = displaySet.metadata;
