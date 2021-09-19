@@ -319,7 +319,7 @@ export default class AIAAMenu extends React.Component {
       maskImage = await this._aiaaClient.runModel(parameters, updateStatusModal);
     }
 
-    if (maskImage === null || maskImage.data === null) {
+    if (!maskImage || !maskImage.data) {
       modal.close();
       showNotification(
         'Error in parsing the mask image',
