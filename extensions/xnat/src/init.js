@@ -1,4 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
+import initNIFTILoader from '../initNIFTILoader';
 
 import {
   PEPPERMINT_TOOL_NAMES,
@@ -71,6 +72,10 @@ const getDefaultConfiguration = () => {
  * @param {Object|Array} configuration.csToolsConfig
  */
 export default function init({ servicesManager, commandsManager, configuration = {} }) {
+  // Initiate cornerstoneNIFTIImageLoader
+  initNIFTILoader();
+
+  // Initiate tools
   const config = Object.assign({}, getDefaultConfiguration(), configuration);
   const segmentationModule = cornerstoneTools.getModule('segmentation');
 

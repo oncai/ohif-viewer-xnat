@@ -1337,6 +1337,15 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@cornerstonejs/nifti-image-loader@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@cornerstonejs/nifti-image-loader/-/nifti-image-loader-1.0.6.tgz#373b5c44488ef9dc0b9bdcf8467e81f3c9a3e348"
+  integrity sha512-P0Y4Rx2GpKI5IpzLdrcegpWOBFaxYBgOW02zzCMbiiGPesq+BGmbDLUHqeizh2gjd6OAvCOQp02GGNtmql7isg==
+  dependencies:
+    ndarray "^1.0.18"
+    nifti-reader-js "^0.5.4"
+    pako "^1.0.6"
+
 "@csstools/convert-colors@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
@@ -13268,7 +13277,7 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
-ndarray@^1.0.19:
+ndarray@^1.0.18, ndarray@^1.0.19:
   version "1.0.19"
   resolved "https://registry.yarnpkg.com/ndarray/-/ndarray-1.0.19.tgz#6785b5f5dfa58b83e31ae5b2a058cfd1ab3f694e"
   integrity sha512-B4JHA4vdyZU30ELBw3g7/p9bZupyew5a7tX1Y/gGeF2hafrPaQZhgrGQfsvgfYbgdFZjYwuEcnaobeM/WMW+HQ==
@@ -14149,7 +14158,7 @@ pako@^1.0.10, pako@~1.0.2, pako@~1.0.5:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
   integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
 
-pako@^1.0.11:
+pako@^1.0.11, pako@^1.0.6:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==

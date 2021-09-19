@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
+    "@cornerstonejs/nifti-image-loader": "^1.0.6",
     "dicom-parser": "^1.8.4",
     "nifti-reader-js": "^0.5.4",
     "react-select": "^3.0.8",
