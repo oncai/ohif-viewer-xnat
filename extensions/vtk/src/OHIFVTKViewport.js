@@ -90,6 +90,7 @@ class OHIFVTKViewport extends Component {
     studies,
     StudyInstanceUID,
     displaySetInstanceUID,
+    SOPClassUID,
     SOPInstanceUID,
     frameIndex
   ) {
@@ -218,11 +219,21 @@ class OHIFVTKViewport extends Component {
         labelmapDataObject.setSpacing(
           ...imageDataObject.vtkImageData.getSpacing()
         );
+        // Fix labelmap origin & direction: imageDataObject origin is flipped in getImageData()
+        const labelmapOrigin = imageDataObject.metaData0.imagePositionPatient;
         labelmapDataObject.setOrigin(
-          ...imageDataObject.vtkImageData.getOrigin()
+          // ...imageDataObject.vtkImageData.getOrigin()
+          ...labelmapOrigin
         );
+        const labelmapDirection = [
+          ...imageDataObject.vtkImageData.getDirection(),
+        ];
+        labelmapDirection[6] = -labelmapDirection[6];
+        labelmapDirection[7] = -labelmapDirection[7];
+        labelmapDirection[8] = -labelmapDirection[8];
         labelmapDataObject.setDirection(
-          ...imageDataObject.vtkImageData.getDirection()
+          // ...imageDataObject.vtkImageData.getDirection()
+          ...labelmapDirection
         );
 
         // Cache the labelmap volume.
@@ -351,9 +362,9 @@ class OHIFVTKViewport extends Component {
       studyTime: study.studyTime,
       studyDescription: study.studyDescription,
       patientName: study.patientName,
-      patientId: study.patientId,
-      seriesNumber: String(displaySet.seriesNumber),
-      seriesDescription: displaySet.seriesDescription,
+      patientId: study.PatientID,
+      seriesNumber: String(displaySet.SeriesNumber),
+      seriesDescription: displaySet.SeriesDescription,
     };
 
     try {
