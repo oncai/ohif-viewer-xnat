@@ -1,4 +1,14 @@
-**3.1.0 RC**
+**3.1.0 RC-2**
+
+- Refactored the Tag Browser extension: bug fixes and showing all elements (for loaded images).
+- Refactored a new class to read and align NIfTI segmentation data. Added support for cornerstonejs/nifti-image-loader.
+- Handle errors when loading images and show notification with error message.
+- Notify about ROI export export issues.
+- Added a progress indicator for importing contour collections.
+- Fixed a bug that prevented changing Window/Level preferences.
+- Fixed slice order in image sets to match imageIndex with instanceNumber.  
+
+**3.1.0 RC-1**
 
 - Upgraded to v4.9.20 of the mainstream OHIF Viewer ([@ohif/viewer@4.9.20](https://github.com/OHIF/Viewers/releases/tag/%40ohif%2Fviewer%404.9.20)).
 - Filter ROI collection import list based session label and scan number.
