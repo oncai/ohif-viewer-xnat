@@ -93,22 +93,29 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
   let instanceSelectList = null;
 
   if (numInstances > 1) {
+    const { InstanceNumber, SOPInstanceUID } = meta;
+    const rangeRenderValue = InstanceNumber
+      ? `Instance Number: ${InstanceNumber}`
+      : `SOP Instance UID: ${SOPInstanceUID}`;
     instanceSelectList = (
       <div className="dicom-tag-browser-instance-range">
         <Range
-          showValue
+          // showValue
           step={1}
           min={0}
           max={numInstances - 1}
           value={activeInstance}
-          valueRenderer={value => (
-            <p>Frame Number: {`${parseInt(value) + 1}`}</p>
-          )}
+          // valueRenderer={value => (
+          //   <p>Frame Number: {`${parseInt(value) + 1}`}</p>
+          // )}
           onChange={({ target }) => {
             const instanceIndex = parseInt(target.value);
             setActiveInstance(instanceIndex);
           }}
         />
+        <div>
+          <p>{`${rangeRenderValue}`}</p>
+        </div>
       </div>
     );
   }
