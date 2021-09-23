@@ -225,7 +225,15 @@ function getFormattedRowsFromTags(tags, meta) {
 }
 
 function getSortedTags(metadata) {
-  const tagList = getRows(metadata);
+  let tagList = getRows(metadata);
+
+  // DICOM File Meta Information
+  let fmiTags = [];
+  if (metadata._meta) {
+    fmiTags = getRows(metadata._meta);
+  }
+
+  tagList = [...fmiTags, ...tagList];
 
   // Sort top level tags, sequence groups are sorted when created.
   _sortTagList(tagList);

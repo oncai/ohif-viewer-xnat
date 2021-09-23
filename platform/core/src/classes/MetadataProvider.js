@@ -46,6 +46,7 @@ class MetadataProvider {
           // Exclude PixelData
           const dicomData = DicomMessage.readFile(arrayBuffer, {untilTag: '7FE00010', includeUntilTagValue: false});
           dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
+          dataset._meta = DicomMetaDictionary.naturalizeDataset(dicomData.meta);
         }
 
         if (dataset) {// Update instance data
