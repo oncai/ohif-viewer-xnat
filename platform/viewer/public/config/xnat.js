@@ -3,7 +3,7 @@ window.config = {
     major: 3,
     minor: 1,
     patch: 0,
-    dev: 'RC-2',
+    dev: 'RC-3',
     // build: 2
   },
   // default: '/'
