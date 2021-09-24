@@ -6,6 +6,7 @@ import getPixelSpacingInformation from '../utils/metadataProvider/getPixelSpacin
 import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
 import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
 import validNumber from '../utils/metadataProvider/validNumber';
+import unpackOverlay from '../utils/metadataProvider/unpackOverlay';
 
 const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
 
@@ -508,10 +509,14 @@ class MetadataProvider {
           }
 
           const OverlayDataTag = `${groupStr}3000`;
-          const OverlayData = instance[OverlayDataTag];
+          let OverlayData = instance[OverlayDataTag];
 
           if (!OverlayData) {
             continue;
+          }
+
+          if (OverlayData instanceof ArrayBuffer) {
+            OverlayData = instance[OverlayDataTag] = unpackOverlay(OverlayData);
           }
 
           const OverlayRowsTag = `${groupStr}0010`;
@@ -553,7 +558,7 @@ class MetadataProvider {
 
         let patientName;
         if (PatientName) {
-          if (PatientName.Alphabetic) {
+          if (PatientName.hasOwnProperty('Alphabetic')) {
             patientName = PatientName.Alphabetic;
           } else {
             patientName = PatientName;

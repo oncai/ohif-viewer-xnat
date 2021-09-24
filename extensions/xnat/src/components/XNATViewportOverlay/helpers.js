@@ -89,13 +89,13 @@ function getCompression(imageId) {
     lossyImageCompressionMethod,
   } = generalImageModule;
 
-  if (lossyImageCompression === '01' && lossyImageCompressionRatio !== '') {
+  if (lossyImageCompression === '01') {
     const compressionMethod = lossyImageCompressionMethod || 'Lossy: ';
-    const compressionRatio = formatNumberPrecision(
-      lossyImageCompressionRatio,
-      2
-    );
-    return compressionMethod + compressionRatio + ' : 1';
+    let compressionRatio = '?';
+    if (lossyImageCompressionRatio) {
+      compressionRatio = formatNumberPrecision(lossyImageCompressionRatio, 2);
+    }
+    return `${compressionMethod} ${compressionRatio} : 1`;
   }
 
   return 'Lossless / Uncompressed';

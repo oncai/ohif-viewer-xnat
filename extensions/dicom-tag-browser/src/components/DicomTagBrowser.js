@@ -261,7 +261,7 @@ function getRows(metadata, depth = 0) {
   for (let i = 0; i < keywords.length; i++) {
     let keyword = keywords[i];
 
-    if (keyword === '_vrMap') {
+    if (keyword === '_vrMap' || keyword === '_meta') {
       continue;
     }
 
@@ -321,6 +321,10 @@ function getRows(metadata, depth = 0) {
             value = `Bulk Data URI`; //: ${value.BulkDataURI}`;
           } else if (value.Alphabetic) {
             value = value.Alphabetic;
+          } else if (value instanceof ArrayBuffer) {
+            value = ' ';
+          } else if (ArrayBuffer.isView(value)) {
+            value = ' ';
           } else {
             console.warn(`Unrecognised Value: ${value} for ${keyword}:`);
             console.warn(value);
