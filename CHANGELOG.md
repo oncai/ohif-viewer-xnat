@@ -1,3 +1,9 @@
+**3.1.0 RC-3**
+
+- Replaced frame number with instance number in the tag browser.
+- Added DICOM File Meta Information to the Tag Browser.
+- Fixed overlays not displaying issue.
+
 **3.1.0 RC-2**
 
 - Refactored the Tag Browser extension: bug fixes and showing all elements (for loaded images).
