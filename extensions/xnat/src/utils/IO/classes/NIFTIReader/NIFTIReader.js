@@ -97,13 +97,12 @@ export default class NIFTIReader {
       }
 
       const sliceLength = maskImageSize.width * maskImageSize.height;
+      const bytesPerVoxel = headers[0].header.numBitsPerVoxel / 8;
       const maskBufferLength =
-        sliceLength *
-        maskImageSize.numberOfFrames *
-        headers[0].dataType.samplesPerPixel;
+        sliceLength * maskImageSize.numberOfFrames * bytesPerVoxel;
       maskImage = new ArrayBuffer(maskBufferLength);
 
-      insertFunction(maskImage, bufferArrays, headers, validOrientations);
+      insertFunction(maskImage, bufferArrays, headers, validOrientations, bytesPerVoxel);
     } catch (e) {
       console.log(e);
     }
@@ -271,7 +270,8 @@ const insertPixelDataPlanar = (
   maskImage,
   niftiBufferArrays,
   niftiMetadataArray,
-  validOrientations
+  validOrientations,
+  bytesPerVoxel
 ) => {
   const {
     imageOrientationPatient: sharedIOP,
@@ -283,7 +283,7 @@ const insertPixelDataPlanar = (
 
   const typedArray = dataType.TypedArrayConstructor;
   const sliceLength = Columns * Rows;
-  const maskBufferLength2D = sliceLength * dataType.samplesPerPixel;
+  const maskBufferLength2D = sliceLength * bytesPerVoxel;
 
   for (let i = 0; i < numberOfFrames; i++) {
     // const iopI = niftiMetadataArray[i].imageOrientationPatient || sharedIOP;

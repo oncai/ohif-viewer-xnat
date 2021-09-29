@@ -79,7 +79,8 @@ class XnatSessionRoiCollections {
           const collection = roiCollections[referencedSeriesInstanceUid];
           if (collectionType === 'RTSTRUCT' || collectionType === 'AIM') {
             collection.RTS.push(parsedCollectionJSON);
-          } else if (collectionType === 'SEG' || collectionType === 'NIFTI') {
+          } else if (collectionType === 'SEG') {
+            //|| collectionType === 'NIFTI'
             collection.SEG.push(parsedCollectionJSON);
           }
         }
