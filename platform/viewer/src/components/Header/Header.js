@@ -9,21 +9,12 @@ import { UserPreferences } from './../UserPreferences';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
 //
-import { ICRHelpContent, ICRAboutContent } from '@xnat-ohif/extension-xnat';
+import xnat, {
+  ICRHelpContent,
+  ICRAboutContent,
+} from '@xnat-ohif/extension-xnat';
 
-function OptionsElement(props) {
-  return (
-    <div style={{ display: 'flex' }}>
-      <Icon
-        name="xnat-settings"
-        width="18px"
-        height="18px"
-        // style={{ margin: '0 5 0 0' }}
-      />
-      <span style={{ marginLeft: 2 }}>Settings</span>
-    </div>
-  );
-}
+const { version } = xnat;
 
 function Header(props) {
   const {
@@ -97,7 +88,7 @@ function Header(props) {
     setOptions(optionsValue);
   }, [setOptions, show, t, user, userManager]);
 
-  const version = window.config.version;
+  const isDevVersion = version.match('BETA|RC|ALPHA|SNAPSHOT');
 
   return (
     <>
@@ -136,11 +127,10 @@ function Header(props) {
 
         <div className="header-menu">
           <span className="research-use">
-            {version.dev && t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
+            {isDevVersion && t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
             {/*{versionStr}*/}
           </span>
           <Dropdown
-            // titleElement={<OptionsElement />}
             title={t('Options')}
             list={options}
             align="right"

@@ -2,8 +2,11 @@ import { Icon } from '@ohif/ui';
 import React from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 import { userManagement } from '@xnat-ohif/extension-xnat';
+import xnat from '@xnat-ohif/extension-xnat';
 
 import './OHIFLogo.css';
+
+const { version } = xnat;
 
 // const KeepAliveTimeout = 1000 * 60 * 0.5;
 let timeSinceLastApi = 0;
@@ -31,9 +34,7 @@ function OHIFLogo() {
   };
 
   const handleOnIdle = event => {
-    console.log('user is idle', event);
     console.log('last active', getLastActiveTime());
-    console.log('##### Logged out!');
     userManagement.logUserOut();
   };
 
@@ -54,18 +55,6 @@ function OHIFLogo() {
     debounce: 500,
   });
 
-  let versionStr = '';
-  const version = window.config.version;
-  if (version) {
-    versionStr = `v${version.major}.${version.minor}.${version.patch}`;
-    if (version.dev) {
-      versionStr += `-${version.dev}`;
-    }
-    if (version.build) {
-      versionStr += ` build-${version.build}`;
-    }
-  }
-
   return (
     <a
       target="_blank"
@@ -78,7 +67,7 @@ function OHIFLogo() {
       <div className="header-logo-text">
         OHIF-XNAT Viewer{' '}
         <span style={{ color: '#91b9cd', fontSize: 13 }}>
-          |{` ${versionStr}`}
+          |{` ${version}`}
         </span>
       </div>
     </a>

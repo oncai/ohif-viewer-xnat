@@ -3,12 +3,14 @@ import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
 import stackSynchronizer from './utils/StackSynchronizer/StackSynchronizer';
+import { version } from '../package.json';
 
 export default {
   /**
    * Only required property. Should be a unique value across all extensions.
    */
   id: 'xnat',
+  version: version.toUpperCase(),
 
   /**
    *
