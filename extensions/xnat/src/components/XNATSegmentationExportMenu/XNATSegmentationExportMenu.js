@@ -8,6 +8,7 @@ import SegmentationExportListItem from './SegmentationExportListItem.js';
 import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
+import showNotification from '../common/showNotification';
 
 import '../XNATRoiPanel.styl';
 
@@ -63,6 +64,8 @@ export default class XNATSegmentationExportMenu extends React.Component {
     const seriesInfo = getSeriesInfoForImageId(viewportData);
     const element = getElementForFirstImageId(firstImageId);
 
+    const xnat_label = `${label}_S${seriesInfo.SeriesNumber}`;
+
     // DICOM-SEG
     const dicomSegWriter = new DICOMSEGWriter(seriesInfo);
     const DICOMSegPromise = dicomSegWriter.write(roiCollectionName, element);
@@ -71,7 +74,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
       const dicomSegExporter = new DICOMSEGExporter(
         segBlob,
         seriesInfo.seriesInstanceUid,
-        label,
+        xnat_label,
         roiCollectionName
       );
 
@@ -84,11 +87,13 @@ export default class XNATSegmentationExportMenu extends React.Component {
           // i.e. not a fresh Mask collection.)
 
           segmentationModule.setters.importMetadata(firstImageId, {
-            label: label,
+            label: xnat_label,
             name: roiCollectionName,
             type: 'SEG',
             modified: false,
           });
+
+          showNotification('Mask collection exported successfully', 'success');
 
           this.props.onExportComplete();
         })
@@ -96,7 +101,10 @@ export default class XNATSegmentationExportMenu extends React.Component {
           console.log(error);
           // TODO -> Work on backup mechanism, disabled for now.
           //localBackup.saveBackUpForActiveSeries();
-          // displayExportFailedDialog(seriesInstanceUid);
+
+          const message = error.message || 'Unknown error';
+          showNotification(message, 'error', 'Error exporting mask collection');
+
           this.props.onExportCancel();
         });
     });
@@ -137,6 +145,11 @@ export default class XNATSegmentationExportMenu extends React.Component {
     const element = getElementForFirstImageId(firstImageId);
     const { labelmaps3D, activeLabelmapIndex } =
       segmentationModule.getters.labelmaps3D(element);
+
+    if (!labelmaps3D) {
+      return;
+    }
+
     const labelmap3D = labelmaps3D[activeLabelmapIndex];
 
     if (!firstImageId || !labelmap3D) {

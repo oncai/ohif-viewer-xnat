@@ -2,9 +2,13 @@ import React from 'react';
 import XNATSessionLabel from './XNATSessionLabel.js';
 import fetchJSON from '../../utils/IO/fetchJSON.js';
 import SessionRouter from './helpers/SessionRouter.js';
-import navigateConfirmationContent from './helpers/navigateConfirmationContent.js';
+// import navigateConfirmationContent from './helpers/navigateConfirmationContent.js';
 //import { getUnsavedRegions } from 'meteor/icr:peppermint-tools';
 import sessionMap from '../../utils/sessionMap';
+import {
+  queryXnatSessionRoiCollections,
+  queryXnatRoiCollection,
+} from '../../utils/IO/queryXnatRois';
 //import awaitConfirmationDialog from '../../../lib/dialogUtils/awaitConfirmationDialog.js';
 
 import { Icon } from '@ohif/ui';
@@ -117,9 +121,11 @@ export default class XNATSession extends React.Component {
    * @returns {null}
    */
   _fetchROICollectionInfo() {
-    const cancelablePromise = fetchJSON(
-      `data/archive/projects/${this.props.projectId}/subjects/${this.props.subjectId}/experiments/${this.props.ID}/assessors?format=json`
-    );
+    const cancelablePromise = queryXnatSessionRoiCollections({
+      projectId: this.props.projectId,
+      subjectId: this.props.subjectId,
+      experimentId: this.props.ID,
+    });
 
     this._cancelablePromises.push(cancelablePromise);
 
@@ -157,8 +163,13 @@ export default class XNATSession extends React.Component {
 
     for (let i = 0; i < assessors.length; i++) {
       if (assessors[i].xsiType === 'icr:roiCollectionData') {
-        const cancelablePromise = fetchJSON(
-          `data/archive/projects/${this.props.projectId}/subjects/${this.props.subjectId}/experiments/${this.props.ID}/assessors/${assessors[i].ID}?format=json`
+        const cancelablePromise = queryXnatRoiCollection(
+          {
+            projectId: this.props.projectId,
+            subjectId: this.props.subjectId,
+            experimentId: this.props.ID,
+          },
+          assessors[i].ID
         );
 
         this._cancelablePromises.push(cancelablePromise);

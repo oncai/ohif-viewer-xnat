@@ -9,21 +9,12 @@ import { UserPreferences } from './../UserPreferences';
 import OHIFLogo from '../OHIFLogo/OHIFLogo.js';
 import './Header.css';
 //
-import { ICRHelpContent, ICRAboutContent } from '@xnat-ohif/extension-xnat';
+import xnat, {
+  ICRHelpContent,
+  ICRAboutContent,
+} from '@xnat-ohif/extension-xnat';
 
-function OptionsElement(props) {
-  return (
-    <div style={{ display: 'flex' }}>
-      <Icon
-        name="xnat-settings"
-        width="18px"
-        height="18px"
-        // style={{ margin: '0 5 0 0' }}
-      />
-      <span style={{ marginLeft: 2 }}>Settings</span>
-    </div>
-  );
-}
+const { version } = xnat;
 
 function Header(props) {
   const {
@@ -40,6 +31,9 @@ function Header(props) {
 
   const [options, setOptions] = useState([]);
   const hasLink = linkText && linkPath;
+
+  const xnatPath =
+    window.location.origin + window.location.pathname.split('VIEWER')[0];
 
   useEffect(() => {
     const optionsValue = [
@@ -94,6 +88,8 @@ function Header(props) {
     setOptions(optionsValue);
   }, [setOptions, show, t, user, userManager]);
 
+  const isDevVersion = version.match('BETA|RC|ALPHA|SNAPSHOT');
+
   return (
     <>
       {/*<div className="notification-bar">{t('INVESTIGATIONAL USE ONLY')}</div>*/}
@@ -112,6 +108,10 @@ function Header(props) {
 
           {children}
 
+          <a href={xnatPath} className="header-btn header-studyListLinkSection">
+            Back to XNAT
+          </a>
+
           {hasLink && (
             <Link
               className="header-btn header-studyListLinkSection"
@@ -127,16 +127,12 @@ function Header(props) {
 
         <div className="header-menu">
           <span className="research-use">
-            {/*{t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}*/}
+            {`${
+              isDevVersion ? 'DEV - RELEASE | ' : ''
+            }INVESTIGATIONAL USE ONLY`}
             {/*{versionStr}*/}
           </span>
-          <Dropdown
-            // titleElement={<OptionsElement />}
-            title={t('Options')}
-            list={options}
-            align="right"
-          />
-          {/*<Dropdown title={t('Options')} list={options} align="right" />*/}
+          <Dropdown title={t('Options')} list={options} align="right" />
         </div>
       </div>
     </>

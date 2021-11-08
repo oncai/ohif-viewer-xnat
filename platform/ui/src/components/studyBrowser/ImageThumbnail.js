@@ -2,7 +2,8 @@
 import './ImageThumbnail.styl';
 
 import { utils } from '@ohif/core';
-import React, { useState, useEffect, createRef } from 'react';
+import React, { useState, useEffect, createRef, useCallback } from 'react';
+import classNames from 'classnames';
 
 import PropTypes from 'prop-types';
 import ViewportErrorIndicator from '../../viewer/ViewportErrorIndicator';
@@ -15,6 +16,7 @@ import ViewportLoadingIndicator from '../../viewer/ViewportLoadingIndicator';
 //import cornerstone from 'cornerstone-core';
 function ImageThumbnail(props) {
   const {
+    active,
     width,
     height,
     imageSrc,
@@ -25,6 +27,7 @@ function ImageThumbnail(props) {
 
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [details, setDetails] = useState('');
   const [image, setImage] = useState({});
   const canvasRef = createRef();
 
@@ -32,7 +35,7 @@ function ImageThumbnail(props) {
   let cancelablePromise;
 
   if (propsError || error) {
-    loadingOrError = <ViewportErrorIndicator />;
+    loadingOrError = <ViewportErrorIndicator details={details} />;
   } else if (isLoading) {
     loadingOrError = <ViewportLoadingIndicator />;
   }
@@ -43,7 +46,7 @@ function ImageThumbnail(props) {
     return imageId && !imageSrc;
   };
 
-  const fetchImagePromise = () => {
+  const fetchImagePromise = useCallback(() => {
     if (!cancelablePromise) {
       return;
     }
@@ -57,23 +60,26 @@ function ImageThumbnail(props) {
         if (error.isCanceled) return;
         setLoading(false);
         setError(true);
+        if (error && error.error && error.error.message) {
+          setDetails(error.error.message);
+        }
         throw new Error(error);
       });
-  };
+  }, [cancelablePromise]);
 
-  const setImagePromise = () => {
+  const setImagePromise = useCallback(() => {
     if (shouldRenderToCanvas()) {
       cancelablePromise = utils.makeCancelable(
         cornerstone.loadAndCacheImage(imageId)
       );
     }
-  };
+  }, [imageId]);
 
-  const purgeCancelablePromise = () => {
+  const purgeCancelablePromise = useCallback(() => {
     if (cancelablePromise) {
       cancelablePromise.cancel();
     }
-  };
+  }, [cancelablePromise]);
 
   useEffect(() => {
     return () => {
@@ -94,22 +100,28 @@ function ImageThumbnail(props) {
       setImagePromise();
       fetchImagePromise();
     }
-  }, [fetchImagePromise, image.imageId, imageId, purgeCancelablePromise, setImagePromise]);
+  }, [
+    fetchImagePromise,
+    image.imageId,
+    imageId,
+    purgeCancelablePromise,
+    setImagePromise,
+  ]);
 
   return (
-    <div className="ImageThumbnail">
+    <div className={classNames('ImageThumbnail', { active: active })}>
       <div className="image-thumbnail-canvas">
         {shouldRenderToCanvas() ? (
           <canvas ref={canvasRef} width={width} height={height} />
         ) : (
-            <img
-              className="static-image"
-              src={imageSrc}
-              //width={this.props.width}
-              height={height}
-              alt={''}
-            />
-          )}
+          <img
+            className="static-image"
+            src={imageSrc}
+            //width={this.props.width}
+            height={height}
+            alt={''}
+          />
+        )}
       </div>
       {loadingOrError}
       {showStackLoadingProgressBar && (
@@ -126,6 +138,7 @@ function ImageThumbnail(props) {
 }
 
 ImageThumbnail.propTypes = {
+  active: PropTypes.bool,
   imageSrc: PropTypes.string,
   imageId: PropTypes.string,
   error: PropTypes.bool,
@@ -135,6 +148,7 @@ ImageThumbnail.propTypes = {
 };
 
 ImageThumbnail.defaultProps = {
+  active: false,
   error: false,
   stackPercentComplete: 0,
   width: 217,

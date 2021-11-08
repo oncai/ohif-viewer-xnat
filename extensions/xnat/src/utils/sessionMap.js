@@ -100,7 +100,7 @@ const sessionMap = {
     }
 
     const session = _map.sessions.find(
-      sessionI => sessionI.seriesInstanceUid === seriesInstanceUid
+      sessionI => sessionI.experimentId === experimentId
     );
 
     if (!property) {
@@ -171,13 +171,24 @@ const sessionMap = {
   },
 
   /**
-   * Returns the experimentId if in a single session view.
+   * Returns the experimentId.
    *
    * @returns {string}
    */
-  getExperiment: () => {
-    if (_map.sessions.length === 1) {
-      return _map.sessions[0].experimentId;
+  getExperimentID: (SeriesInstanceUID = undefined) => {
+    if (SeriesInstanceUID === undefined) {
+      // Return the experimentId if in a single session view.
+      if (_map.sessions.length === 1) {
+        return _map.sessions[0].experimentId;
+      }
+    } else {
+      // Look for the scan with the matching instance UID
+      const scan = _map.scans.find(
+        s => s.seriesInstanceUid === SeriesInstanceUID
+      );
+      if (scan !== undefined) {
+        return scan.experimentId;
+      }
     }
   },
 

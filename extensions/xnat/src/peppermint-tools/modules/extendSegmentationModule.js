@@ -7,8 +7,9 @@ export default function extendSegmentationModule(segmentationModule, config) {
   configuration.strayRemove = config.strayRemove;
   configuration.strayRemoveRange = config.strayRemoveRange;
   configuration.gates = config.gates;
-  configuration.activeGate = config.gates[0].name;
+  configuration.activeGate = config.activeGate || config.gates[0].name;
   configuration.maxRadius = config.maxRadius;
+  configuration.customGateSeparation = config.customGateSeparation;
 
   getters.activeGateRange = () => {
     const activeGate = configuration.activeGate;

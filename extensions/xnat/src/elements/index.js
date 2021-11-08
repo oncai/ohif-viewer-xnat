@@ -17,8 +17,13 @@ import xnatCancel from './icons/xnat-cancel.svg';
 import xnatImport from './icons/xnat-import.svg';
 import xnatExport from './icons/xnat-export.svg';
 import xnatHelp from './icons/xnat-help.svg';
+import xnatBrushEraser from './icons/xnat-mask-brush-eraser.svg';
+import xnatUndo from './icons/xnat-undo.svg';
+import xnatRedo from './icons/xnat-redo.svg';
 
-export const XNATICONS = {
+import Loader from './Loader/Loader';
+
+const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
   'xnat-settings': xnatSettings,
@@ -37,4 +42,9 @@ export const XNATICONS = {
   'xnat-import': xnatImport,
   'xnat-export': xnatExport,
   'xnat-help': xnatHelp,
+  'xnat-brush-eraser': xnatBrushEraser,
+  'xnat-undo': xnatUndo,
+  'xnat-redo': xnatRedo,
 };
+
+export { XNATICONS, Loader };

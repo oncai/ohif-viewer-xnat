@@ -28,16 +28,19 @@ export default class DICOMSEGExporter {
     const csrfTokenParameter = `XNAT_CSRF=${csrfToken}`;
     const { xnatRootUrl } = sessionMap;
     let putFailed = false;
+    let message = '';
 
     const putSegUrl =
       `${xnatRootUrl}xapi/roi/projects/${this._projectID}` +
       `/sessions/${this._experimentID}/collections/${this._label}?type=SEG&overwrite=false&${csrfTokenParameter}`;
     await this._PUT_uploadSeg(putSegUrl, this._payload).catch(error => {
       putFailed = true;
+      message = error;
       console.log(error);
     });
+
     if (putFailed) {
-      throw Error('PUT failed, check logs above.');
+      throw Error(message);
     }
 
     console.log('PUT succesful');
@@ -62,13 +65,13 @@ export default class DICOMSEGExporter {
         if (xhr.status === 200 || xhr.status === 201) {
           resolve();
         } else {
-          reject(xhr.responseText);
+          reject(xhr.responseText || xhr.statusText);
         }
       };
 
       xhr.onerror = () => {
         console.log(`Request returned, status: ${xhr.status}`);
-        reject(xhr.responseText);
+        reject(xhr.responseText || xhr.statusText);
       };
 
       xhr.open('PUT', url);

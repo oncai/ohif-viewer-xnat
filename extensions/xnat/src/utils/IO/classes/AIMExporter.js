@@ -29,16 +29,18 @@ export default class AIMExporter {
     const { xnatRootUrl } = sessionMap;
 
     let putFailed = false;
+    let message = '';
 
     const putUrl = `${xnatRootUrl}xapi/roi/projects/${this._projectID}/sessions/${this._experimentID}/collections/${this._label}?type=AIM&overwrite=false&${csrfTokenParameter}`;
 
     await this._PUTAIM(putUrl).catch(error => {
       putFailed = true;
+      message = error;
       console.log(error);
     });
 
     if (putFailed) {
-      throw Error('PUT failed, check logs above.');
+      throw Error(message);
     }
 
     console.log('PUT succesful');
@@ -64,13 +66,13 @@ export default class AIMExporter {
         if (xhr.status === 200 || xhr.status === 201) {
           resolve();
         } else {
-          reject(xhr.responseText);
+          reject(xhr.responseText || xhr.statusText);
         }
       };
 
       xhr.onerror = () => {
         console.log(`Request returned, status: ${xhr.status}`);
-        reject(xhr.responseText);
+        reject(xhr.responseText || xhr.statusText);
       };
 
       xhr.open('PUT', url);

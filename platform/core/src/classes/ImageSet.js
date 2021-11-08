@@ -101,7 +101,7 @@ class ImageSet {
     });
 
     distanceImagePairs.sort(function(a, b) {
-      return b.distance - a.distance;
+      return a.distance - b.distance;
     });
 
     const sortedImages = distanceImagePairs.map(a => a.image);

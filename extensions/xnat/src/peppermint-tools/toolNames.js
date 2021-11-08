@@ -9,6 +9,7 @@ const TOOL_NAMES = {
   XNAT_FREEHAND_SCISSORS_TOOL: 'XNATFreehandScissorsTool',
   XNAT_CIRCLE_SCISSORS_TOOL: 'XNATCircleScissorsTool',
   XNAT_RECTANGLE_SCISSORS_TOOL: 'XNATRectangleScissorsTool',
+  XNAT_CORRECTION_SCISSORS_TOOL: 'XNATCorrectionScissorsTool',
 };
 
 export default TOOL_NAMES;

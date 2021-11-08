@@ -1,7 +1,7 @@
 import makeCancelable from '../makeCancelable';
 import sessionMap from '../sessionMap';
 
-export default function fetchXML(route) {
+export default function fetchXML(route, updateProgress) {
   const { xnatRootUrl } = sessionMap;
 
   return makeCancelable(
@@ -25,6 +25,13 @@ export default function fetchXML(route) {
         console.log(`Request returned, status: ${xhr.status}`);
         reject(xhr.responseText);
       };
+
+      if (updateProgress) {
+        xhr.onprogress = evt => {
+          const percentComplete = Math.floor((evt.loaded / evt.total) * 100);
+          updateProgress(`Downloading File: ${percentComplete}%`);
+        };
+      }
 
       xhr.open('GET', url);
       xhr.responseType = 'document';

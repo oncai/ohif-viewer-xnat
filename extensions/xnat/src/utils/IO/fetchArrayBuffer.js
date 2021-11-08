@@ -1,7 +1,7 @@
 import makeCancelable from '../makeCancelable';
 import sessionMap from '../sessionMap';
 
-export default function fetchArrayBuffer(route) {
+export default function fetchArrayBuffer(route, updateProgress) {
   const { xnatRootUrl } = sessionMap;
 
   return makeCancelable(
@@ -24,6 +24,13 @@ export default function fetchArrayBuffer(route) {
         console.log(`Request returned, status: ${xhr.status}`);
         reject(xhr.responseText);
       };
+
+      if (updateProgress) {
+        xhr.onprogress = async evt => {
+          const percentComplete = Math.floor((evt.loaded / evt.total) * 100);
+          updateProgress(`Downloading File: ${percentComplete}%`);
+        };
+      }
 
       xhr.open('GET', url);
       xhr.responseType = 'arraybuffer';

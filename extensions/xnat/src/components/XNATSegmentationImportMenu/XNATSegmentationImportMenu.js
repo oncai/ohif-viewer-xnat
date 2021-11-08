@@ -4,8 +4,10 @@ import fetchJSON from '../../utils/IO/fetchJSON.js';
 import fetchArrayBuffer from '../../utils/IO/fetchArrayBuffer.js';
 import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
+import getReferencedScan from '../../utils/getReferencedScan';
 import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
+import { Loader } from '../../elements';
 
 import '../XNATRoiPanel.styl';
 
@@ -47,11 +49,29 @@ export default class XNATSegmentationImportMenu extends React.Component {
   constructor(props = {}) {
     super(props);
 
+    this._sessions = sessionMap.getSession();
+    this._subjectId = sessionMap.getSubject();
+    this._projectId = sessionMap.getProject();
+
+    const sessionSelected = sessionMap.getScan(
+      props.viewportData.SeriesInstanceUID,
+      'experimentId'
+    );
+    const sessionRoiCollections = {};
+    for (let i = 0; i < this._sessions.length; i++) {
+      const experimentId = this._sessions[i].experimentId;
+      sessionRoiCollections[experimentId] = {
+        experimentLabeL: this._sessions[i].experimentLabeL,
+        importList: [],
+        scanSelected: 'All',
+        segmentationSelected: '',
+      };
+    }
+
     this.state = {
-      scanSelected: 0,
-      segmentationSelected: 0,
+      sessionRoiCollections,
+      sessionSelected,
       importListReady: false,
-      importList: [],
       importing: false,
       progressText: '',
       importProgress: 0,
@@ -72,6 +92,11 @@ export default class XNATSegmentationImportMenu extends React.Component {
     this._updateImportingText = this._updateImportingText.bind(this);
 
     this.updateProgress = this.updateProgress.bind(this);
+    this.onSessionSelectedChange = this.onSessionSelectedChange.bind(this);
+  }
+
+  onSessionSelectedChange(evt) {
+    this.setState({ sessionSelected: evt.target.value });
   }
 
   updateProgress(percent) {
@@ -85,9 +110,11 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @returns {null}
    */
   onSelectedScanChange(evt) {
-    const val = evt.target.value;
+    const { sessionRoiCollections, sessionSelected } = this.state;
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    currentCollection.scanSelected = evt.target.value;
 
-    this.setState({ scanSelected: val });
+    this.setState({ sessionRoiCollections });
   }
 
   /**
@@ -107,8 +134,13 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @param  {number} index The index of the radio button.
    * @returns {null}
    */
-  onChangeRadio(evt, index) {
-    this.setState({ segmentationSelected: index });
+  onChangeRadio(evt, id) {
+    const { sessionRoiCollections, sessionSelected } = this.state;
+    const currentCollection = sessionRoiCollections[sessionSelected];
+
+    currentCollection.segmentationSelected = id;
+
+    this.setState({ sessionRoiCollections });
   }
 
   /**
@@ -117,11 +149,27 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @returns {null}
    */
   async onImportButtonClick() {
-    const { importList, scanSelected, segmentationSelected } = this.state;
-    const scan = importList[scanSelected];
+    const { sessionRoiCollections, sessionSelected } = this.state;
+
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+    const scanSelected = currentCollection.scanSelected;
+    const segmentationSelected = currentCollection.segmentationSelected;
+
+    const segmentationIndex = importList.findIndex(
+      item =>
+        item.id === segmentationSelected &&
+        (item.referencedSeriesNumber == scanSelected || scanSelected === 'All')
+    );
+
+    if (segmentationIndex < 0) {
+      return;
+    }
+
+    const segmentation = importList[segmentationIndex];
 
     const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
-      scan.referencedSeriesInstanceUid
+      segmentation.referencedSeriesInstanceUid
     );
 
     if (this._hasExistingMaskData(firstImageId)) {
@@ -136,7 +184,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
     this._updateImportingText('');
     this.setState({ importing: true });
 
-    this._importRoiCollection(scan.segmentations[segmentationSelected], scan);
+    this._importRoiCollection(segmentation);
   }
 
   /**
@@ -188,23 +236,16 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @returns {type}  description
    */
   componentDidMount() {
-    if (this.props.id === 'NOT_ACTIVE') {
-      this.setState({ importListReady: true });
-
-      return;
-    }
-
     const { viewportData } = this.props;
+    const { sessionRoiCollections, sessionSelected } = this.state;
 
-    const sessions = sessionMap.getSession();
-
-    this._subjectId = sessionMap.getSubject();
-    this._projectId = sessionMap.getProject();
+    const activeSeriesInstanceUid = viewportData.SeriesInstanceUID;
+    const activeSessionRoiCollection = sessionRoiCollections[sessionSelected];
 
     const promises = [];
 
-    for (let i = 0; i < sessions.length; i++) {
-      const experimentId = sessions[i].experimentId;
+    for (let i = 0; i < this._sessions.length; i++) {
+      const experimentId = this._sessions[i].experimentId;
 
       const cancelablePromise = fetchJSON(
         `data/archive/projects/${this._projectId}/subjects/${this._subjectId}/experiments/${experimentId}/assessors?format=json`
@@ -250,60 +291,50 @@ export default class XNATSegmentationImportMenu extends React.Component {
         return;
       }
 
-      const importList = [];
-
       Promise.all(roiCollectionPromises).then(promisesJSON => {
         promisesJSON.forEach(roiCollectionInfo => {
+          if (!roiCollectionInfo) {
+            return;
+          }
+
           const data_fields = roiCollectionInfo.items[0].data_fields;
 
-          const referencedScan = this._getReferencedScan(roiCollectionInfo);
+          const referencedScan = getReferencedScan(roiCollectionInfo);
 
           if (
             referencedScan &&
             this._collectionEligibleForImport(roiCollectionInfo)
           ) {
-            let referencedSeriesNumberList = importList.find(
-              element =>
-                element.referencedSeriesNumber ===
-                  referencedScan.seriesNumber &&
-                element.experimentLabel === referencedScan.experimentLabel
-            );
-
-            if (!referencedSeriesNumberList) {
-              importList.push({
-                index: importList.length,
-                referencedSeriesNumber: referencedScan.seriesNumber,
-                referencedSeriesInstanceUid: referencedScan.seriesInstanceUid,
-                experimentLabel: referencedScan.experimentLabel,
-                experimentId: referencedScan.experimentId,
-                segmentations: [],
-              });
-
-              referencedSeriesNumberList = importList[importList.length - 1];
-            }
-
-            referencedSeriesNumberList.segmentations.push({
+            const sessionRoiCollection =
+              sessionRoiCollections[data_fields.imageSession_ID];
+            sessionRoiCollection.importList.push({
+              id: data_fields.ID || data_fields.id,
               collectionType: data_fields.collectionType,
               label: data_fields.label,
+              experimentId: data_fields.imageSession_ID,
+              experimentLabel: referencedScan.experimentLabel,
+              referencedSeriesInstanceUid: referencedScan.seriesInstanceUid,
+              referencedSeriesNumber: referencedScan.seriesNumber,
               name: data_fields.name,
               date: data_fields.date,
               time: data_fields.time,
-              getFilesUri: `/data/archive/experiments/${data_fields.imageSession_ID}/assessors/${data_fields.ID}/files?format=json`,
+              getFilesUri: `data/archive/experiments/${data_fields.imageSession_ID}/assessors/${data_fields.ID}/files?format=json`,
             });
           }
         });
 
-        const activeSeriesInstanceUid = viewportData.seriesInstanceUid;
-
-        const scanSelected = importList.findIndex(
-          scan => scan.referencedSeriesInstanceUid === activeSeriesInstanceUid
+        const matchingSegment = activeSessionRoiCollection.importList.find(
+          element =>
+            element.referencedSeriesInstanceUid === activeSeriesInstanceUid
         );
+        if (matchingSegment) {
+          activeSessionRoiCollection.scanSelected =
+            matchingSegment.referencedSeriesNumber;
+        }
 
         this.setState({
-          importList,
+          sessionRoiCollections,
           importListReady: true,
-          scanSelected: scanSelected !== -1 ? scanSelected : 0,
-          segmentationSelected: 0,
         });
       });
     });
@@ -325,14 +356,13 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * async _importRoiCollection - Imports a segmentation.
    *
    * @param  {Object} segmentation The segmentation JSON catalog fetched from XNAT.
-   * @param  {Object} scan         The scan to import onto.
    * @returns {null}
    */
-  async _importRoiCollection(segmentation, scan) {
+  async _importRoiCollection(segmentation) {
     // The URIs fetched have an additional /, so remove it.
-    const getFilesUri = segmentation.getFilesUri.slice(1);
+    // const getFilesUri = segmentation.getFilesUri.slice(1);
 
-    const roiList = await fetchJSON(getFilesUri).promise;
+    const roiList = await fetchJSON(segmentation.getFilesUri).promise;
     const result = roiList.ResultSet.Result;
 
     // Reduce count if no associated file is found (nothing to import, badly deleted roiCollection).
@@ -347,7 +377,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
     for (let i = 0; i < result.length; i++) {
       const fileType = result[i].collection;
       if (fileType === segmentation.collectionType) {
-        this._getAndImportFile(result[i].URI, segmentation, scan);
+        this._getAndImportFile(result[i].URI, segmentation);
       }
     }
   }
@@ -359,14 +389,13 @@ export default class XNATSegmentationImportMenu extends React.Component {
    * @param  {string} uri             The REST URI of the file.
    * @param  {object} segmentation    An object describing the roiCollection to
    *                                  import.
-   * @param  {object} scan            The scan to import onto.
    * @returns {null}
    */
-  async _getAndImportFile(uri, segmentation, scan) {
+  async _getAndImportFile(uri, segmentation) {
     // The URIs fetched have an additional /, so remove it.
     uri = uri.slice(1);
 
-    const seriesInstanceUid = scan.referencedSeriesInstanceUid;
+    const seriesInstanceUid = segmentation.referencedSeriesInstanceUid;
     const maskImporter = new MaskImporter(
       seriesInstanceUid,
       this.updateProgress
@@ -440,46 +469,61 @@ export default class XNATSegmentationImportMenu extends React.Component {
     return true;
   }
 
-  /**
-   * _getReferencedScan - If the collectionInfoJSON contains a scan from the sessionMap,
-   * return that scan object from the sessionMap.
-   *
-   * @param  {Object} collectionInfoJSON The collection info fetched from XNAT.
-   * @returns {Object|null}
-   */
-  _getReferencedScan(collectionInfoJSON) {
-    const item = collectionInfoJSON.items[0];
-    const children = item.children;
-
-    // Check the collection references this seriesInstanceUid.
-    for (let i = 0; i < children.length; i++) {
-      if (children[i].field === 'references/seriesUID') {
-        const referencedSeriesInstanceUidList = children[i].items;
-
-        for (let j = 0; j < referencedSeriesInstanceUidList.length; j++) {
-          const seriesInstanceUid =
-            referencedSeriesInstanceUidList[j].data_fields.seriesUID;
-
-          const scan = sessionMap.getScan(seriesInstanceUid);
-
-          if (scan) {
-            return scan;
-          }
-        }
-      }
-    }
-  }
-
   render() {
     const {
-      scanSelected,
-      segmentationSelected,
-      importList,
       importListReady,
       importing,
       progressText,
       importProgress,
+      sessionRoiCollections,
+      sessionSelected,
     } = this.state;
+
+    let hasCollections = false;
+    for (let key of Object.keys(sessionRoiCollections)) {
+      if (sessionRoiCollections[key].importList.length > 0) {
+        hasCollections = true;
+        break;
+      }
+    }
+
+    const currentCollection = sessionRoiCollections[sessionSelected];
+    const importList = currentCollection.importList;
+    const scanSelected = currentCollection.scanSelected;
+    const segmentationSelected = currentCollection.segmentationSelected;
+
+    const sessionSelector = (
+      <div className="importSessionList">
+        <h5>Session</h5>
+        <select
+          // className="form-themed form-control"
+          onChange={this.onSessionSelectedChange}
+          value={sessionSelected}
+        >
+          {Object.keys(sessionRoiCollections).map(key => {
+            const session = sessionRoiCollections[key];
+            return (
+              <option
+                key={key}
+                value={key}
+                disabled={session.importList.length === 0}
+              >{`${session.experimentLabeL}`}</option>
+            );
+          })}
+        </select>
+      </div>
+    );
+
+    let referencedSeriesNumberList = ['All'];
+    importList.forEach(roiCollection => {
+      if (
+        !referencedSeriesNumberList.includes(
+          roiCollection.referencedSeriesNumber
+        )
+      ) {
+        referencedSeriesNumberList.push(roiCollection.referencedSeriesNumber);
+      }
+    });
 
     let importBody;
 
@@ -491,61 +535,80 @@ export default class XNATSegmentationImportMenu extends React.Component {
             <h4>{`Loading Data: ${importProgress} %`}</h4>
           </>
         );
-      } else if (importList.length === 0) {
+      } else if (!hasCollections) {
         importBody = <p>No data to import.</p>;
+      } else if (importList.length === 0) {
+        importBody = (
+          <>
+            {sessionSelector}
+            <p>Session has no mask-based ROI collections.</p>
+          </>
+        );
       } else {
         importBody = (
           <>
-            <select
-              // className="form-themed form-control"
-              style={{ width: '100%', height: 30, marginBottom: 10 }}
-              onChange={this.onSelectedScanChange}
-              value={scanSelected}
-            >
-              {importList.map(scan => (
-                <option
-                  key={scan.referencedSeriesInstanceUid}
-                  value={scan.index}
-                >{`${scan.experimentLabel} - ${scan.referencedSeriesNumber}`}</option>
-              ))}
-            </select>
-
-            <table className="collectionTable">
+            {sessionSelector}
+            <table className="collectionTable" style={{ tableLayout: 'fixed' }}>
               <thead>
                 <tr>
                   <th width="5%" className="centered-cell" />
-                  <th width="75%">Name</th>
+                  <th width="45%">Name</th>
                   <th width="20%">Timestamp</th>
+                  <th width="30%">
+                    Referenced Scan #
+                    <select
+                      onChange={this.onSelectedScanChange}
+                      value={scanSelected}
+                      style={{ display: 'block', width: '100%' }}
+                    >
+                      {referencedSeriesNumberList.map(seriesNumber => (
+                        <option key={seriesNumber} value={seriesNumber}>
+                          {`${seriesNumber}`}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {importList[scanSelected].segmentations.map(
-                  (roiCollection, index) => (
+                {importList
+                  .filter(
+                    roiCollection =>
+                      scanSelected === 'All' ||
+                      roiCollection.referencedSeriesNumber == scanSelected
+                  )
+                  .map(roiCollection => (
                     <tr key={roiCollection.label}>
                       <td className="centered-cell">
                         <input
-                          // className="mask-import-list-item-check"
+                          className="checkboxInCell"
                           type="radio"
                           name="sync"
-                          onChange={evt => this.onChangeRadio(evt, index)}
-                          checked={
-                            segmentationSelected === index ? true : false
+                          onChange={evt =>
+                            this.onChangeRadio(evt, roiCollection.id)
                           }
-                          value={segmentationSelected === index ? true : false}
+                          checked={segmentationSelected === roiCollection.id}
+                          value={segmentationSelected === roiCollection.id}
                         />
                       </td>
                       <td>{roiCollection.name}</td>
                       <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
+                      <td className="centered-cell">
+                        {`${roiCollection.referencedSeriesNumber}`}
+                      </td>
                     </tr>
-                  )
-                )}
+                  ))}
               </tbody>
             </table>
           </>
         );
       }
     } else {
-      importBody = <h1 style={{ textAlign: 'center' }}>...</h1>;
+      importBody = (
+        <div style={{ textAlign: 'center' }}>
+          <Loader />
+        </div>
+      );
     }
 
     return (

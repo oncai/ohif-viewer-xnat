@@ -14,6 +14,12 @@ class Range extends Component {
     this.setState({ value: event.target.value });
   };
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.value !== this.props.value) {
+      this.setState({ value: this.props.value });
+    }
+  }
+
   render() {
     return (
       <>
@@ -28,7 +34,13 @@ class Range extends Component {
           className="range"
         />
         {this.props.showPercentage && <span>{`${this.state.value}%`}</span>}
-        {this.props.showValue && <span>{this.state.value}</span>}
+        {this.props.showValue && (
+          <span>
+            {this.props.valueRenderer
+              ? this.props.valueRenderer(this.state.value)
+              : this.state.value}
+          </span>
+        )}
       </>
     );
   }
@@ -40,6 +52,7 @@ Range.propTypes = {
   max: PropTypes.number.isRequired,
   step: PropTypes.number,
   id: PropTypes.string,
+  valueRenderer: PropTypes.func,
   onChange: PropTypes.func,
   showPercentage: PropTypes.bool,
   showValue: PropTypes.bool,

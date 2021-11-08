@@ -139,12 +139,15 @@ export default class AIAAMenu extends React.Component {
     }
 
     if (toolType === AIAA_MODEL_TYPES.DEEPGROW) {
-      segmentPoints.fg = segmentPoints.fg.filter(p => {
-        return p[2] === z;
-      });
-      segmentPoints.bg = segmentPoints.bg.filter(p => {
-        return p[2] === z;
-      });
+      const deepgrowModel = this._aiaaClient.currentModel;
+      if (!deepgrowModel.is3D) {
+        segmentPoints.fg = segmentPoints.fg.filter(p => {
+          return p[2] === z;
+        });
+        segmentPoints.bg = segmentPoints.bg.filter(p => {
+          return p[2] === z;
+        });
+      }
     }
 
     this.onRunModel(segmentPoints);
@@ -316,7 +319,7 @@ export default class AIAAMenu extends React.Component {
       maskImage = await this._aiaaClient.runModel(parameters, updateStatusModal);
     }
 
-    if (maskImage === null || maskImage.data === null) {
+    if (!maskImage || !maskImage.data) {
       modal.close();
       showNotification(
         'Error in parsing the mask image',
@@ -437,7 +440,10 @@ export default class AIAAMenu extends React.Component {
       segmentationModule.setters.updateSegmentsOnLabelmap2D(labelmap);
     };
 
-    if (this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.DEEPGROW) {
+    const isDeepgrow =
+      this._aiaaClient.currentTool.type === AIAA_MODEL_TYPES.DEEPGROW;
+
+    if (isDeepgrow && !this._aiaaClient.currentModel.is3D) {
       let sliceIndex;
       if (segmentPoints.fg.length > 0) {
         sliceIndex = segmentPoints.fg[0][2];
@@ -447,7 +453,7 @@ export default class AIAAMenu extends React.Component {
       updateSlice(sliceIndex, true);
     } else {
       for (let s = 0; s < size.numberOfFrames; s++) {
-        updateSlice(s);
+        updateSlice(s, isDeepgrow);
       }
     }
 

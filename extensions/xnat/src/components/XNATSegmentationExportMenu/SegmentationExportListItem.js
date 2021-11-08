@@ -6,7 +6,7 @@ const segmentationModule = cornerstoneTools.getModule('segmentation');
 
 import '../XNATRoiPanel.styl';
 
-export default class MaskExportListItem extends React.Component {
+export default class SegmentationExportListItem extends React.Component {
   constructor(props = {}) {
     super(props);
 
@@ -52,8 +52,10 @@ export default class MaskExportListItem extends React.Component {
           <ColoredCircle color={this._getColor(segIndex)} />{' '}
           {metadata.SegmentLabel}
         </td>
-        <td>{metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning}</td>
-        <td>{type}</td>
+        <td className="centered-cell">
+          {metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning}
+        </td>
+        <td className="centered-cell">{type}</td>
       </tr>
     );
   }

@@ -72,7 +72,7 @@ class OHIFVTKViewport extends Component {
   };
 
   static defaultProps = {
-    onScroll: () => { },
+    onScroll: () => {},
   };
 
   static id = 'OHIFVTKViewport';
@@ -90,6 +90,7 @@ class OHIFVTKViewport extends Component {
     studies,
     StudyInstanceUID,
     displaySetInstanceUID,
+    SOPClassUID,
     SOPInstanceUID,
     frameIndex
   ) {
@@ -138,6 +139,8 @@ class OHIFVTKViewport extends Component {
     SOPInstanceUID,
     frameIndex
   ) => {
+    const { UINotificationService } = this.props.servicesManager.services;
+
     const stack = OHIFVTKViewport.getCornerstoneStack(
       studies,
       StudyInstanceUID,
@@ -159,11 +162,14 @@ class OHIFVTKViewport extends Component {
       const { activeLabelmapIndex } = brushStackState;
       const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
 
-      if (brushStackState.labelmaps3D.length > 1 && this.props.viewportIndex === 0) {
-        const { UINotificationService } = this.props.servicesManager.services;
+      if (
+        brushStackState.labelmaps3D.length > 1 &&
+        this.props.viewportIndex === 0
+      ) {
         UINotificationService.show({
           title: 'Overlapping Segmentation Found',
-          message: 'Overlapping segmentations cannot be displayed when in MPR mode',
+          message:
+            'Overlapping segmentations cannot be displayed when in MPR mode',
           type: 'info',
         });
       }
@@ -213,11 +219,21 @@ class OHIFVTKViewport extends Component {
         labelmapDataObject.setSpacing(
           ...imageDataObject.vtkImageData.getSpacing()
         );
+        // Fix labelmap origin & direction: imageDataObject origin is flipped in getImageData()
+        const labelmapOrigin = imageDataObject.metaData0.imagePositionPatient;
         labelmapDataObject.setOrigin(
-          ...imageDataObject.vtkImageData.getOrigin()
+          // ...imageDataObject.vtkImageData.getOrigin()
+          ...labelmapOrigin
         );
+        const labelmapDirection = [
+          ...imageDataObject.vtkImageData.getDirection(),
+        ];
+        labelmapDirection[6] = -labelmapDirection[6];
+        labelmapDirection[7] = -labelmapDirection[7];
+        labelmapDirection[8] = -labelmapDirection[8];
         labelmapDataObject.setDirection(
-          ...imageDataObject.vtkImageData.getDirection()
+          // ...imageDataObject.vtkImageData.getDirection()
+          ...labelmapDirection
         );
 
         // Cache the labelmap volume.
@@ -304,7 +320,11 @@ class OHIFVTKViewport extends Component {
     const spacing = vtkImageData.getSpacing();
     // Set the sample distance to half the mean length of one side. This is where the divide by 6 comes from.
     // https://github.com/Kitware/VTK/blob/6b559c65bb90614fb02eb6d1b9e3f0fca3fe4b0b/Rendering/VolumeOpenGL2/vtkSmartVolumeMapper.cxx#L344
-    const sampleDistance = (spacing[0] + spacing[1] + spacing[2]) / 6;
+    // const sampleDistance = (spacing[0] + spacing[1] + spacing[2]) / 6;
+    const sampleDistance =
+      (parseFloat(spacing[0]) +
+        parseFloat(spacing[1]) +
+        parseFloat(spacing[2])) / 6;
 
     volumeMapper.setSampleDistance(sampleDistance);
 
@@ -342,57 +362,87 @@ class OHIFVTKViewport extends Component {
       studyTime: study.studyTime,
       studyDescription: study.studyDescription,
       patientName: study.patientName,
-      patientId: study.patientId,
-      seriesNumber: String(displaySet.seriesNumber),
-      seriesDescription: displaySet.seriesDescription,
+      patientId: study.PatientID,
+      seriesNumber: String(displaySet.SeriesNumber),
+      seriesDescription: displaySet.SeriesDescription,
     };
 
-    const {
-      imageDataObject,
-      labelmapDataObject,
-      labelmapColorLUT,
-    } = this.getViewportData(
-      studies,
-      StudyInstanceUID,
-      displaySetInstanceUID,
-      SOPInstanceUID,
-      frameIndex
-    );
+    try {
+      const {
+        imageDataObject,
+        labelmapDataObject,
+        labelmapColorLUT,
+      } = this.getViewportData(
+        studies,
+        StudyInstanceUID,
+        displaySetInstanceUID,
+        SOPInstanceUID,
+        frameIndex
+      );
 
-    this.imageDataObject = imageDataObject;
+      this.imageDataObject = imageDataObject;
 
-    /* TODO: Not currently used until we have drawing tools in vtkjs.
-    if (!labelmap) {
-      labelmap = createLabelMapImageData(data);
-    } */
+      /* TODO: Not currently used until we have drawing tools in vtkjs.
+      if (!labelmap) {
+        labelmap = createLabelMapImageData(data);
+      } */
 
-    const volumeActor = this.getOrCreateVolume(
-      imageDataObject,
-      displaySetInstanceUID
-    );
+      const volumeActor = this.getOrCreateVolume(
+        imageDataObject,
+        displaySetInstanceUID
+      );
 
-    this.setState(
-      {
-        percentComplete: 0,
-        dataDetails,
-      },
-      () => {
-        this.loadProgressively(imageDataObject);
+      this.setState(
+        {
+          percentComplete: 0,
+          dataDetails,
+        },
+        () => {
+          this.loadProgressively(imageDataObject);
 
-        // TODO: There must be a better way to do this.
-        // We do this so that if all the data is available the react-vtkjs-viewport
-        // Will render _something_ before the volumes are set and the volume
-        // Construction that happens in react-vtkjs-viewport locks up the CPU.
-        setTimeout(() => {
-          this.setState({
-            volumes: [volumeActor],
-            paintFilterLabelMapImageData: labelmapDataObject,
-            paintFilterBackgroundImageData: imageDataObject.vtkImageData,
-            labelmapColorLUT,
-          });
-        }, 200);
+          // TODO: There must be a better way to do this.
+          // We do this so that if all the data is available the react-vtkjs-viewport
+          // Will render _something_ before the volumes are set and the volume
+          // Construction that happens in react-vtkjs-viewport locks up the CPU.
+          setTimeout(() => {
+            this.setState({
+              volumes: [volumeActor],
+              paintFilterLabelMapImageData: labelmapDataObject,
+              paintFilterBackgroundImageData: imageDataObject.vtkImageData,
+              labelmapColorLUT,
+            });
+          }, 200);
+        }
+      );
+    } catch (error) {
+      const errorTitle = 'Failed to load 2D MPR';
+      console.error(errorTitle, error);
+      const {
+        UINotificationService,
+        LoggerService,
+      } = this.props.servicesManager.services;
+      if (this.props.viewportIndex === 0) {
+        const message = error.message.includes('buffer')
+          ? 'Dataset is too big to display in MPR'
+          : error.message;
+        LoggerService.error({ error, message });
+        UINotificationService.show({
+          title: errorTitle,
+          message,
+          type: 'error',
+          autoClose: false,
+          action: {
+            label: 'Exit 2D MPR',
+            onClick: ({ close }) => {
+              // context: 'ACTIVE_VIEWPORT::VTK',
+              close();
+              this.props.commandsManager.runCommand('setCornerstoneLayout');
+            },
+          },
+        });
       }
-    );
+      this.setState({ isLoaded: true });
+    }
   }
 
   componentDidMount() {
@@ -438,11 +488,15 @@ class OHIFVTKViewport extends Component {
     };
 
     const onPixelDataInsertedErrorCallback = error => {
-      const { UINotificationService } = this.props.servicesManager.services;
+      const {
+        UINotificationService,
+        LoggerService,
+      } = this.props.servicesManager.services;
 
       if (!this.hasError) {
         if (this.props.viewportIndex === 0) {
           // Only show the notification from one viewport 1 in MPR2D.
+          LoggerService.error({ error, message: error.message });
           UINotificationService.show({
             title: 'MPR Load Error',
             message: error.message,

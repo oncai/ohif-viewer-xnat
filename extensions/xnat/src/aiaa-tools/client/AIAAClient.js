@@ -8,6 +8,8 @@ import readNifti from '../utils/readNifti.js';
 import showNotification from '../../components/common/showNotification';
 import { saveFile, readFile } from '../../utils/xnatDev.js';
 import testModelList from './testModelList.js';
+import AIAA_MODEL_TYPES from '../modelTypes';
+import NIFTIReader from '../../utils/IO/classes/NIFTIReader/NIFTIReader';
 
 const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
@@ -47,6 +49,23 @@ export default class AIAAClient {
     this.isConnected = true;
     this.models = response.data;
 
+    this.models.forEach(model => {
+      if (model.type === AIAA_MODEL_TYPES.DEEPGROW) {
+        model.is3D = false;
+        if (!model.deepgrow) {
+          const index3D = model.description.toLowerCase().indexOf('3d');
+          if (index3D >= 0) {
+            model.is3D = true;
+          }
+        } else {
+          const index3D = model.deepgrow.toLowerCase().indexOf('3d');
+          if (index3D >= 0) {
+            model.is3D = true;
+          }
+        }
+      }
+    });
+
     return true;
   }
 
@@ -70,8 +89,18 @@ export default class AIAAClient {
     let fgPoints = [];
     let bgPoints = [];
     if (!_.isEmpty(segmentPoints)) {
-      fgPoints = segmentPoints.fg;
-      bgPoints = segmentPoints.bg;
+      if (USE_NIFTI) {
+        const maxZ = imageIds.length - 1;
+        for (let p of segmentPoints.fg) {
+          fgPoints.push([p[0], p[1], maxZ - p[2]]);
+        }
+        for (let p of segmentPoints.bg) {
+          bgPoints.push([p[0], p[1], maxZ - p[2]]);
+        }
+      } else {
+        fgPoints = segmentPoints.fg;
+        bgPoints = segmentPoints.bg;
+      }
     }
     const runParams = prepareRunParameters({
       model: this.currentModel,
@@ -99,7 +128,10 @@ export default class AIAAClient {
       //   { type: 'application/octet-stream' });
       // saveFile(imageBlob, 'mask_image');
       if (USE_NIFTI) {
-        const { image, maskImageSize } = await readNifti(response.data);
+        // const { image, maskImageSize } = await readNifti(response.data);
+        // return { data: image, size: maskImageSize };
+        const niftiReader = new NIFTIReader(imageIds);
+        const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(response.data);
         return { data: image, size: maskImageSize };
       } else {
         const { image, maskImageSize } = readNrrd(response.data);
@@ -129,7 +161,10 @@ export default class AIAAClient {
     }
 
     if (USE_NIFTI) {
-      const { image, maskImageSize } = await readNifti(buffer);
+      // const { image, maskImageSize } = await readNifti(buffer);
+      // return { data: image, size: maskImageSize };
+      const niftiReader = new NIFTIReader(imageIds);
+      const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(buffer);
       return { data: image, size: maskImageSize };
     } else {
       const { image, maskImageSize } = readNrrd(buffer);

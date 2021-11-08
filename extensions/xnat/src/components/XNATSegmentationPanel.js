@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import MenuIOButtons from './common/MenuIOButtons.js';
 //import SegmentationMenuDeleteConfirmation from './SegmentationMenuDeleteConfirmation.js';
 import SegmentationMenuListBody from './XNATSegmentationMenu/SegmentationMenuListBody.js';
-import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuListHeader.js';
-import BrushSettings from './XNATSegmentationMenu/BrushSettings.js';
+// import SegmentationMenuListHeader from './XNATSegmentationMenu/SegmentationMenuListHeader.js';
+import SegmentationToolMenu from './XNATSegmentationMenu/SegmentationToolMenu.js';
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { segmentInputCallback } from './XNATSegmentationMenu/utils/segmentationMetadataIO.js';
 import onIOCancel from './common/helpers/onIOCancel.js';
-import { generateSegmentationMetadata, PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
+import { generateSegmentationMetadata } from '../peppermint-tools';
 import XNATSegmentationExportMenu from './XNATSegmentationExportMenu/XNATSegmentationExportMenu';
 import XNATSegmentationImportMenu from './XNATSegmentationImportMenu/XNATSegmentationImportMenu';
 import XNATSegmentationSettings from './XNATSegmentationSettings/XNATSegmentationSettings';
@@ -20,10 +20,6 @@ import MaskRoiPropertyModal from './XNATSegmentationMenu/MaskRoiPropertyModal.js
 import showModal from './common/showModal.js';
 
 import './XNATRoiPanel.styl';
-
-/* AIAA */
-import { AIAA_TOOL_NAMES } from '../aiaa-tools'
-import { ConnectedAIAAMenu } from './AIAAMenu';
 
 const refreshViewports = () => {
   cornerstoneTools.store.state.enabledElements.forEach(element => {
@@ -59,6 +55,7 @@ const updateSegmentationConfiguration = (configuration, newConfiguration) => {
   configuration.outlineWidth = newConfiguration.outlineWidth;
   configuration.fillAlphaInactive = newConfiguration.fillAlphaInactive;
   configuration.outlineAlphaInactive = newConfiguration.outlineAlphaInactive;
+  configuration.radius = newConfiguration.radius;
   refreshViewports();
 };
 
@@ -75,6 +72,7 @@ export default class XNATSegmentationPanel extends React.Component {
     activeIndex: PropTypes.any,
     activeTool: PropTypes.string,
     showColorSelectModal: PropTypes.func.isRequired,
+    onSegmentItemClick: PropTypes.func,
   };
 
   static defaultProps = {
@@ -84,6 +82,7 @@ export default class XNATSegmentationPanel extends React.Component {
     activeIndex: undefined,
     activeTool: '',
     showColorSelectModal: undefined,
+    onSegmentItemClick: undefined,
   };
 
   constructor(props = {}) {
@@ -101,6 +100,7 @@ export default class XNATSegmentationPanel extends React.Component {
     this.cornerstoneEventListenerHandler = this.cornerstoneEventListenerHandler.bind(
       this
     );
+    this.onMaskClick = this.onMaskClick.bind(this);
 
     const { viewports, activeIndex } = props;
     const firstImageId = _getFirstImageId(viewports[activeIndex]);
@@ -337,8 +337,9 @@ export default class XNATSegmentationPanel extends React.Component {
     const onUpdateProperty = this.onUpdateProperty;
     showModal(
       MaskRoiPropertyModal,
-      {metadata, segmentIndex, onUpdateProperty},
-      metadata.segmentLabel);
+      { metadata, segmentIndex, onUpdateProperty },
+      metadata.segmentLabel
+    );
   }
 
   /**
@@ -347,8 +348,38 @@ export default class XNATSegmentationPanel extends React.Component {
   onUpdateProperty(data) {
     const { firstImageId } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
-    segmentInputCallback({...data, element});
+    segmentInputCallback({ ...data, element });
     this.refreshSegmentList(firstImageId);
+  }
+
+  /**
+   * onMaskClick - Jumps to the middle slice of a segment
+   *
+   * @param segmentIndex
+   */
+  onMaskClick(segmentIndex, frameIndex) {
+    const { activeIndex, onSegmentItemClick } = this.props;
+
+    const enabledElements = cornerstone.getEnabledElements();
+    const element = enabledElements[activeIndex].element;
+
+    const toolState = getToolState(element, 'stack');
+
+    if (!toolState) {
+      return;
+    }
+
+    const imageIds = toolState.data[0].imageIds;
+    const imageId = imageIds[frameIndex];
+    const SOPInstanceUID = cornerstone.metaData.get('SOPInstanceUID', imageId);
+    const StudyInstanceUID = cornerstone.metaData.get('StudyInstanceUID', imageId);
+
+    onSegmentItemClick({
+      StudyInstanceUID,
+      SOPInstanceUID,
+      frameIndex,
+      activeViewportIndex: activeIndex,
+    });
   }
 
   /**
@@ -356,30 +387,34 @@ export default class XNATSegmentationPanel extends React.Component {
    *
    * @returns {null}
    */
-  onDeleteClick(segment) {
+  onDeleteClick(segmentIndex) {
+    //ToDo: use confirmDeleteOnDeleteClick
     const { firstImageId, activeSegmentIndex, labelmap3D } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
 
     // Delete segment AIAA points
     if ('aiaa' in cornerstoneTools.store.modules) {
       const aiaaModule = cornerstoneTools.store.modules.aiaa;
-      const segmentUid = labelmap3D.metadata[activeSegmentIndex].uid;
+      const segmentUid = labelmap3D.metadata[segmentIndex].uid;
       aiaaModule.setters.removeAllPointsForSegment(segmentUid);
     }
 
-    segmentationModule.setters.deleteSegment(element, activeSegmentIndex);
+    segmentationModule.setters.deleteSegment(element, segmentIndex);
 
     const segments = this.constructor._segments(firstImageId);
 
-    let segmentIndex = 0;
-    if (segments.length > 0) {
-      segmentIndex = segments[segments.length - 1].index;
+    let newSegmentIndex = activeSegmentIndex;
+    if (segmentIndex === activeSegmentIndex) {
+      newSegmentIndex = 1;
+      if (segments.length > 0) {
+        newSegmentIndex = segments[segments.length - 1].index;
+      }
+      labelmap3D.activeSegmentIndex = newSegmentIndex;
     }
-    labelmap3D.activeSegmentIndex = segmentIndex;
 
     this.setState({
       segments,
-      activeSegmentIndex: segmentIndex,
+      activeSegmentIndex: newSegmentIndex,
     });
   }
 
@@ -484,8 +519,8 @@ export default class XNATSegmentationPanel extends React.Component {
       : XNATSegmentationExportMenu;
 
     const addSegmentButton = isFractional ? null : (
-      <button onClick={() => this.onNewSegment()}>
-        <Icon name="xnat-tree-plus" /> Add
+      <button style={{ fontSize: 12 }} onClick={() => this.onNewSegment()}>
+        <Icon name="xnat-tree-plus" /> Mask ROI
       </button>
     );
 
@@ -531,7 +566,9 @@ export default class XNATSegmentationPanel extends React.Component {
                 name="cog"
                 width="20px"
                 height="20px"
-                onClick={() => this.setState({ showSegmentationSettings: true })}
+                onClick={() =>
+                  this.setState({ showSegmentationSettings: true })
+                }
               />
             </div>
             <MenuIOButtons
@@ -546,58 +583,58 @@ export default class XNATSegmentationPanel extends React.Component {
               <h4> {importMetadata.name} </h4>
               <div>
                 {addSegmentButton}
-                <button onClick={this.onDeleteClick}>
-                  {/*//ToDo: onDeleteClick={this.confirmDeleteOnDeleteClick}*/}
-                  <Icon name="trash" /> Remove
-                </button>
               </div>
             </div>
             {/*<SegmentationMenuListHeader importMetadata={importMetadata} />*/}
-            <table className="collectionTable">
-              <thead>
-                <tr>
-                  <th width="5%" className="centered-cell">
-                    #
-                  </th>
-                  <th width="85%" className="left-aligned-cell">
-                    Label
-                    <span
-                      style={{ color: 'var(--text-secondary-color)' }}
-                    > - Type </span>
-                  </th>
-                  <th width="5%" className="centered-cell" />
-                  <th width="5%" className="centered-cell" />
-                </tr>
-              </thead>
-              <tbody>
-                <SegmentationMenuListBody
-                  segments={segments}
-                  activeSegmentIndex={activeSegmentIndex}
-                  onSegmentChange={this.onSegmentChange}
-                  onEditClick={this.onEditClick}
-                  firstImageId={firstImageId}
-                  labelmap3D={labelmap3D}
-                  showColorSelectModal={showColorSelectModal}
-                />
-              </tbody>
-            </table>
+            <div className="collectionSection">
+              <table className="collectionTable">
+                <thead>
+                  <tr>
+                    <th width="5%" className="centered-cell">
+                      #
+                    </th>
+                    <th width="75%" className="left-aligned-cell">
+                      Label
+                      <span style={{ color: 'var(--text-secondary-color)' }}>
+                        {' '}
+                        / Type{' '}
+                      </span>
+                    </th>
+                    <th width="5%" className="centered-cell">
+                      <abbr title="Number of slices">N</abbr>
+                    </th>
+                    <th width="5%" className="centered-cell" />
+                    <th width="5%" className="centered-cell" />
+                    <th width="5%" className="centered-cell" />
+                  </tr>
+                </thead>
+                <tbody>
+                  <SegmentationMenuListBody
+                    segments={segments}
+                    activeSegmentIndex={activeSegmentIndex}
+                    onSegmentChange={this.onSegmentChange}
+                    onEditClick={this.onEditClick}
+                    firstImageId={firstImageId}
+                    labelmap3D={labelmap3D}
+                    showColorSelectModal={showColorSelectModal}
+                    onDeleteClick={this.onDeleteClick}
+                    onMaskClick={this.onMaskClick}
+                  />
+                </tbody>
+              </table>
+            </div>
           </div>
-          {
-            (this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL ||
-              this.props.activeTool === PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL)
-            &&
-            <BrushSettings/>
-          }
-          {this.props.activeTool === AIAA_TOOL_NAMES.AIAA_PROB_TOOL &&
-            <ConnectedAIAAMenu
-              studies={this.props.studies}
-              viewports={this.props.viewports}
-              activeIndex={this.props.activeIndex}
-              firstImageId={firstImageId}
-              segmentsData={{ segments, activeSegmentIndex }}
-              onNewSegment={this.onNewSegment}
-            />
-          }
+          <SegmentationToolMenu
+            activeTool={this.props.activeTool}
+            toolData={{
+              studies: this.props.studies,
+              viewports: this.props.viewports,
+              activeIndex: this.props.activeIndex,
+              firstImageId: firstImageId,
+              segmentsData: { segments, activeSegmentIndex },
+              onNewSegment: this.onNewSegment,
+            }}
+          />
         </div>
       );
     }

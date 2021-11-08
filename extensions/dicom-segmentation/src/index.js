@@ -1,15 +1,16 @@
 import React from 'react';
-
 import init from './init.js';
 import toolbarModule from './toolbarModule.js';
 import getSopClassHandlerModule from './getOHIFDicomSegSopClassHandler.js';
 import SegmentationPanel from './components/SegmentationPanel/SegmentationPanel.js';
+import { version } from '../package.json';
 
 export default {
   /**
    * Only required property. Should be a unique value across all extensions.
    */
   id: 'com.ohif.dicom-segmentation',
+  version,
 
   /**
    *
@@ -24,12 +25,13 @@ export default {
     return toolbarModule;
   },
   getPanelModule({ commandsManager, api, servicesManager }) {
-    const { UINotificationService } = servicesManager.services;
+    const { UINotificationService, LoggerService } = servicesManager.services;
 
     const ExtendedSegmentationPanel = props => {
       const { activeContexts } = api.hooks.useAppContext();
 
       const onDisplaySetLoadFailureHandler = error => {
+        LoggerService.error({ error, message: error.message });
         UINotificationService.show({
           title: 'DICOM Segmentation Loader',
           message: error.message,

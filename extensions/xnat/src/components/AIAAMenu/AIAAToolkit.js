@@ -106,7 +106,7 @@ export default class AIAAToolkit extends React.Component {
           {currentTool.type === AIAA_MODEL_TYPES.SEGMENTATION &&
             <button
               style={{ marginLeft: 5 }}
-              onClick={this.props.onRunModel}
+              onClick={() => this.props.onRunModel()}
             >
               Run
             </button>

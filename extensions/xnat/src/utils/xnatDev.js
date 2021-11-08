@@ -23,7 +23,7 @@ function _isLoggedIn() {
     };
 
     xhr.open('GET', url);
-    xhr.ontimeout = 5000;
+    xhr.timeout = 5000;
     xhr.send();
   });
 }
@@ -104,7 +104,7 @@ function _xnatAuthenticate(csrfToken) {
       'Authorization',
       'Basic ' + btoa(`${XNAT_USERNAME}:${XNAT_PASSWORD}`)
     );
-    xhr.ontimeout = 5000;
+    xhr.timeout = 5000;
     xhr.send();
   });
 }

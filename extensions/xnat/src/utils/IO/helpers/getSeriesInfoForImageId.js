@@ -20,6 +20,7 @@ export default function getSeriesInfoForImageId(viewportData) {
     images,
     SeriesDate,
     SeriesTime,
+    SeriesNumber,
   } = displaySet;
 
   const firstImage = images[0];
@@ -44,6 +45,7 @@ export default function getSeriesInfoForImageId(viewportData) {
   const seriesInfo = {
     studyInstanceUid,
     seriesInstanceUid,
+    SeriesNumber,
     modality,
     startDate: SeriesDate,//seriesDate,
     startTime: SeriesTime,//seriesTime,

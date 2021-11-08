@@ -6,9 +6,61 @@ import onKeyDownEvent from './utils/onKeyDownEvent';
 import KEY_COMMANDS from './utils/keyCommands';
 import queryAiaaSettings from './utils/IO/queryAiaaSettings';
 
+const refreshCornerstoneViewports = () => {
+  cornerstone.getEnabledElements().forEach(enabledElement => {
+    if (enabledElement.image) {
+      cornerstone.updateImage(enabledElement.element);
+    }
+  });
+};
+
+const getEnabledElement = (activeIndex) => {
+  const enabledElements = cornerstone.getEnabledElements();
+  return enabledElements[activeIndex].element;
+};
+
 // "actions" doesn't really mean anything
-// these are basically ambigous sets of implementation(s)
-const actions = {};
+// these are basically ambiguous sets of implementation(s)
+const actions = {
+  brushUndoRedo: ({ viewports, operation }) => {
+    const enabledElement = getEnabledElement(viewports.activeViewportIndex);
+    if (!enabledElement) {
+      return;
+    }
+
+    const segmentationModule = csTools.getModule('segmentation');
+
+    const activeLabelmapIndex = segmentationModule.getters.activeLabelmapIndex(
+      enabledElement
+    );
+    if (activeLabelmapIndex === undefined) {
+      return;
+    }
+
+    let imageIdIndices = [];
+    const { undo, redo, labelmaps2D } = segmentationModule.getters.labelmap3D(enabledElement);
+    if (operation === 'undo' && undo.length) {
+      undo[undo.length - 1].forEach(item =>
+        imageIdIndices.push(item.imageIdIndex)
+      );
+      segmentationModule.setters.undo(enabledElement);
+    } else if (operation === 'redo' && redo.length) {
+      redo[redo.length - 1].forEach(item =>
+        imageIdIndices.push(item.imageIdIndex)
+      );
+      segmentationModule.setters.redo(enabledElement);
+    }
+
+    // Update segments on Labelmap2D
+    imageIdIndices.forEach(imageIndex => {
+      segmentationModule.setters.updateSegmentsOnLabelmap2D(
+        labelmaps2D[imageIndex]
+      );
+    });
+
+    refreshCornerstoneViewports();
+  },
+};
 
 const definitions = {
   xnatSetRootUrl: {
@@ -22,7 +74,7 @@ const definitions = {
     commandFn: ({ view }) => {
       sessionMap.setView(view);
 
-      console.log(sessionMap);
+      // console.log(sessionMap);
     },
     storeContexts: [],
     options: { view: null },
@@ -31,10 +83,17 @@ const definitions = {
     commandFn: ({ json, sessionVariables }) => {
       sessionMap.setSession(json, sessionVariables);
 
-      console.log(sessionMap);
+      // console.log(sessionMap);
     },
     storeContexts: [],
     options: { json: null, sessionVariables: null },
+  },
+  xnatGetExperimentID: {
+    commandFn: ({ SeriesInstanceUID }) => {
+      return sessionMap.getExperimentID(SeriesInstanceUID);
+    },
+    storeContexts: [],
+    options: { SeriesInstanceUID: null },
   },
   xnatCheckAndSetPermissions: {
     commandFn: checkAndSetPermissions,
@@ -55,9 +114,7 @@ const definitions = {
       }
 
       csTools.removeToolState(element, toolType, tool);
-      cornerstone.getEnabledElements().forEach(enabledElement => {
-        cornerstone.updateImage(enabledElement.element);
-      });
+      refreshCornerstoneViewports();
     },
     storeContexts: [],
     options: { element: null, toolType: null, tool: null },
@@ -95,6 +152,16 @@ const definitions = {
     commandFn: queryAiaaSettings,
     storeContexts: [],
     options: { projectId: null },
+  },
+  xnatBrushUndo: {
+    commandFn: actions.brushUndoRedo,
+    storeContexts: ['viewports'],
+    options: { operation: 'undo' },
+  },
+  xnatBrushRedo: {
+    commandFn: actions.brushUndoRedo,
+    storeContexts: ['viewports'],
+    options: { operation: 'redo' },
   },
 };
 

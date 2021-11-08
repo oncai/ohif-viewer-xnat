@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import WorkingCollectionListItem from './WorkingCollectionListItem.js';
+import csTools from 'cornerstone-tools';
+import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
+import WorkingCollectionListItem from './WorkingCollectionListItem.js';
 
 import '../XNATRoiPanel.styl';
-import csTools from 'cornerstone-tools';
 
 const modules = csTools.store.modules;
 
@@ -39,9 +40,42 @@ export default class WorkingRoiCollectionList extends React.Component {
   constructor(props = {}) {
     super(props);
 
+    let collectionVisible = true;
+    const structureSet = modules.freehand3D.getters.structureSet(
+      props.SeriesInstanceUID,
+      'DEFAULT'
+    );
+    if (structureSet && structureSet.metadata) {
+      collectionVisible = structureSet.metadate.visible;
+    }
+
     this.state = {
       isExpanded: true,
+      collectionVisible,
     };
+
+    this.onCollectionShowHideClick = this.onCollectionShowHideClick.bind(this);
+  }
+
+  /**
+   * onCollectionShowHideClick - Toggles the visibility of the collections ROI Contours.
+   *
+   * @returns {null}
+   */
+  onCollectionShowHideClick() {
+    const { SeriesInstanceUID } = this.props;
+    const { collectionVisible } = this.state;
+    const structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      'DEFAULT'
+    );
+
+    structureSet.visible = !collectionVisible;
+    this.setState({ collectionVisible: !collectionVisible });
+
+    cornerstone.getEnabledElements().forEach(enabledElement => {
+      cornerstone.updateImage(enabledElement.element);
+    });
   }
 
   render() {
@@ -56,9 +90,7 @@ export default class WorkingRoiCollectionList extends React.Component {
       onRoiCollectionNameChange,
     } = this.props;
 
-    const {
-      isExpanded
-    } = this.state;
+    const { isExpanded, collectionVisible } = this.state;
 
     // default structurset
     const defaultStructureSet = modules.freehand3D.getters.structureSet(
@@ -66,6 +98,8 @@ export default class WorkingRoiCollectionList extends React.Component {
     );
     const defaultStructureSetName =
       defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
+
+    const expandStyle = isExpanded ? {} : { transform: 'rotate(90deg)' };
 
     return (
       <React.Fragment>
@@ -88,8 +122,16 @@ export default class WorkingRoiCollectionList extends React.Component {
                 <Icon name="xnat-tree-plus" /> Contour ROI
               </button>
               <Icon
+                name={collectionVisible ? "eye" : "eye-closed"}
+                className="icon"
+                width="20px"
+                height="20px"
+                onClick={this.onCollectionShowHideClick}
+              />
+              <Icon
                 name={`angle-double-${isExpanded ? 'down' : 'up'}`}
                 className="icon"
+                style={expandStyle}
                 width="20px"
                 height="20px"
                 onClick={() => {
@@ -99,7 +141,7 @@ export default class WorkingRoiCollectionList extends React.Component {
             </div>
           </div>
 
-          {isExpanded &&
+          {isExpanded && (
             <div>
               <table className="collectionTable">
                 <thead>
@@ -111,29 +153,30 @@ export default class WorkingRoiCollectionList extends React.Component {
                       ROI Name
                     </th>
                     <th width="10%" className="centered-cell">
-                      N
+                      <abbr title="Number of contours">N</abbr>
                     </th>
                     <th width="10%" className="centered-cell" />
                     <th width="10%" className="centered-cell" />
                   </tr>
                 </thead>
                 <tbody>
-                  {SeriesInstanceUID && workingCollection.map(roiContour => (
-                    <WorkingCollectionListItem
-                      key={roiContour.metadata.uid}
-                      roiContourIndex={roiContour.index}
-                      metadata={roiContour.metadata}
-                      activeROIContourIndex={activeROIContourIndex}
-                      onRoiChange={onRoiChange}
-                      onRoiRemove={onRoiRemove}
-                      SeriesInstanceUID={SeriesInstanceUID}
-                      onClick={onContourClick}
-                    />
-                  ))}
+                  {SeriesInstanceUID &&
+                    workingCollection.map(roiContour => (
+                      <WorkingCollectionListItem
+                        key={roiContour.metadata.uid}
+                        roiContourIndex={roiContour.index}
+                        metadata={roiContour.metadata}
+                        activeROIContourIndex={activeROIContourIndex}
+                        onRoiChange={onRoiChange}
+                        onRoiRemove={onRoiRemove}
+                        SeriesInstanceUID={SeriesInstanceUID}
+                        onClick={onContourClick}
+                      />
+                    ))}
                 </tbody>
               </table>
             </div>
-          }
+          )}
         </div>
       </React.Fragment>
     );

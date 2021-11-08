@@ -177,6 +177,10 @@ class XNATStandaloneRouting extends Component {
           // Load up viewer.
           console.log(json);
 
+          if (!json || !json.ResultSet || !json.ResultSet.Result) {
+            return reject(new Error('Data cannot be accessed'));
+          }
+
           const experimentList = json.ResultSet.Result;
           const results = [];
 
@@ -347,7 +351,7 @@ const _mapStudiesToNewFormat = studies => {
     study.displaySets =
       study.displaySets ||
       studyMetadata.createDisplaySets(sopClassHandlerModules);
-    studyMetadata.setDisplaySets(study.displaySets);
+    // studyMetadata.setDisplaySets(study.displaySets);
 
     studyMetadataManager.add(studyMetadata);
     uniqueStudyUIDs.add(study.StudyInstanceUID);
@@ -386,10 +390,6 @@ function _getJson(url) {
 
 function getRootUrl() {
   let rootPlusPort = window.location.origin;
-
-  if (window.port) {
-    rootPlusPort += `:${window.port}`;
-  }
 
   const pathLessViewer = window.location.pathname.split('VIEWER')[0];
 
@@ -438,14 +438,22 @@ async function updateMetaDataProvider(studies) {
         series.instances.map(async instance => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
-          naturalizedDicom.StudyDescription = study.StudyDescription;
+          naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
+          // naturalizedDicom.StudyDescription = study.StudyDescription;
           naturalizedDicom.SeriesNumber = series.SeriesNumber;
-          //ToDo: do we need PaletteColorLookupTableData & OverlayData?
+          naturalizedDicom.SeriesDescription = series.SeriesDescription;
+          if (!naturalizedDicom.PlanarConfiguration) {
+            naturalizedDicom.PlanarConfiguration = 0;
+          }
+          // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
+          // ToDo: OverlayData?
 
           // Add instance to metadata provider.
-          await metadataProvider.addInstance(naturalizedDicom);
+          await metadataProvider.addInstance(naturalizedDicom, {imageId});
 
           // Add imageId specific mapping to this data as the URL isn't necessarliy WADO-URI.
+          // I.e. here the imageId is added w/o frame number for multi-frame images
+          // Also added in StackManager => createAndAddStack for WADO-URI
           metadataProvider.addImageIdToUIDs(imageId, {
             StudyInstanceUID,
             SeriesInstanceUID,

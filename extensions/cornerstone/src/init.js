@@ -45,7 +45,7 @@ export default function init({ servicesManager, configuration }) {
   // Add OHIF provider with a low priority so it is handled last
   cornerstone.metaData.addProvider(
     metadataProvider.get.bind(metadataProvider),
-    -1
+    999
   );
 
   // ~~

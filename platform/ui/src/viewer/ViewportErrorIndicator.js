@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 export function ViewportErrorIndicator(props) {
+  const details = props.details || 'An error has occurred.';
   return (
     <div
       className="loadingIndicator"
@@ -14,11 +15,12 @@ export function ViewportErrorIndicator(props) {
         margin: 'auto',
         textAlign: 'center',
         pointerEvents: 'none',
+        color: 'var(--active-color)',
       }}
     >
-      <p>Error</p>
-      <p className="description">An error has occurred.</p>
-      <p className="details">{props.details}</p>
+      <p className="title">Error</p>
+      {/*<p className="description">An error has occurred.</p>*/}
+      <p className="details">{details}</p>
     </div>
   );
 }

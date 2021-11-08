@@ -1,4 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
+import initNIFTILoader from '../initNIFTILoader';
 
 import {
   PEPPERMINT_TOOL_NAMES,
@@ -13,47 +14,57 @@ import {
   XNATFreehandScissorsTool,
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
+  XNATCorrectionScissorsTool
 } from './peppermint-tools';
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
-import {
-  AIAAProbeTool,
-  AIAAModule,
-} from './aiaa-tools';
+import { AIAAProbeTool, AIAAModule } from './aiaa-tools';
 
-const { store, register, addTool, CorrectionScissorsTool } = cornerstoneTools;
-
-const defaultConfig = {
-  maxRadius: 64,
-  holeFill: 2,
-  holeFillRange: [0, 20],
-  strayRemove: 5,
-  strayRemoveRange: [0, 99],
-  interpolate: true,
-  showFreehandStats: false,
-  gates: [
-    {
-      // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4309522/
-      name: 'adipose',
-      range: [-190, -30],
-    },
-    {
-      // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4309522/
-      name: 'muscle',
-      range: [-29, 150],
-    },
-    {
-      name: "bone",
-      range: [150, 2000]
-    },
-    {
-      name: 'custom',
-      range: [0, 100],
-    },
-  ],
-};
-
+const { store, register, addTool } = cornerstoneTools;
 const { modules } = store;
+
+const getDefaultConfiguration = () => {
+  const gateSettings = JSON.parse(
+    localStorage.getItem('xnat-gate-settings') || '{}'
+  );
+  if (gateSettings.customGate === undefined) {
+    gateSettings.customGate = {};
+  }
+
+  const defaultConfig = {
+    maxRadius: 64,
+    holeFill: 2,
+    holeFillRange: [0, 20],
+    strayRemove: 5,
+    strayRemoveRange: [0, 99],
+    interpolate: true,
+    showFreehandStats: false,
+    gates: [
+      {
+        // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4309522/
+        name: 'adipose',
+        range: [-190, -30],
+      },
+      {
+        // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4309522/
+        name: 'muscle',
+        range: [-29, 150],
+      },
+      {
+        name: "bone",
+        range: [150, 2000]
+      },
+      {
+        name: 'custom',
+        range: gateSettings.customGate.range || [0, 100],
+      },
+    ],
+    activeGate: gateSettings.activeGate,
+    customGateSeparation: gateSettings.customGate.separation || 10,
+  };
+
+  return defaultConfig;
+};
 
 /**
  *
@@ -61,7 +72,11 @@ const { modules } = store;
  * @param {Object|Array} configuration.csToolsConfig
  */
 export default function init({ servicesManager, commandsManager, configuration = {} }) {
-  const config = Object.assign({}, defaultConfig, configuration);
+  // Initiate cornerstoneNIFTIImageLoader
+  initNIFTILoader();
+
+  // Initiate tools
+  const config = Object.assign({}, getDefaultConfiguration(), configuration);
   const segmentationModule = cornerstoneTools.getModule('segmentation');
 
   // add custom setters & getters to the CSTools segmentation module
@@ -77,6 +92,15 @@ export default function init({ servicesManager, commandsManager, configuration =
   // register the AIAA module
   register('module', 'aiaa', AIAAModule);
 
+  // add other segmentation tools directly from cornerstoneTools
+  const { BrushTool } = cornerstoneTools;
+  cornerstoneTools.addTool(BrushTool, {
+    name: 'BrushEraser',
+    configuration: {
+      alwaysEraseOnClick: true,
+    },
+  });
+
   const tools = [
     Brush3DTool,
     Brush3DHUGatedTool,
@@ -90,6 +114,7 @@ export default function init({ servicesManager, commandsManager, configuration =
     XNATFreehandScissorsTool,
     XNATCircleScissorsTool,
     XNATRectangleScissorsTool,
+    XNATCorrectionScissorsTool,
   ];
 
   tools.forEach(addTool);

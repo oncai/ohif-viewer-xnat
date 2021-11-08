@@ -4,6 +4,7 @@ import { Polygon, PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
 import AIMReader from './AIMReader.js';
 import RTStructReader from './RTStructReader.js';
 import { utils } from '@ohif/core';
+import allowStateUpdate from '../../awaitStateUpdate';
 
 const { studyMetadataManager } = utils;
 
@@ -26,6 +27,7 @@ export default class RoiImporter {
 
     this._freehand3DStore = modules.freehand3D;
     this.updateProgressCallback = updateProgressCallback;
+    this._percentComplete = 0;
   }
 
   /**
@@ -37,15 +39,17 @@ export default class RoiImporter {
    * @param  {string} roiCollectionLabel The label of the ROICollection.
    * @returns {null}
    */
-  importAIMfile(aimDoc, roiCollectionName, roiCollectionLabel) {
-    const aimReader = new AIMReader(
+  async importAIMfile(aimDoc, roiCollectionName, roiCollectionLabel) {
+    const aimReader = new AIMReader();
+    await aimReader.init(
       aimDoc,
       this._seriesInstanceUid,
       roiCollectionName,
-      roiCollectionLabel
+      roiCollectionLabel,
+      this.updateProgressCallback
     );
 
-    this._addPolygonsToToolStateManager(aimReader.polygons, 'AIM');
+    await this._addPolygonsToToolStateManager(aimReader.polygons, 'AIM');
   }
 
   /**
@@ -57,14 +61,16 @@ export default class RoiImporter {
    * @param  {string} roiCollectionLabel The label of the ROICollection.
    * @returns {null}
    */
-  importRTStruct(rtStructArrayBuffer, roiCollectionName, roiCollectionLabel) {
-    const rtStructReader = new RTStructReader(
+  async importRTStruct(rtStructArrayBuffer, roiCollectionName, roiCollectionLabel) {
+    const rtStructReader = new RTStructReader();
+    await rtStructReader.init(
       rtStructArrayBuffer,
       this._seriesInstanceUid,
       roiCollectionName,
-      roiCollectionLabel
+      roiCollectionLabel,
+      this.updateProgressCallback
     );
-    this._addPolygonsToToolStateManager(rtStructReader.polygons, 'RTSTRUCT');
+    await this._addPolygonsToToolStateManager(rtStructReader.polygons, 'RTSTRUCT');
   }
 
   /**
@@ -75,10 +81,11 @@ export default class RoiImporter {
    * @param  {string} importType The source file type (used for scaling).
    * @returns {null}
    */
-  _addPolygonsToToolStateManager(polygons, importType) {
+  async _addPolygonsToToolStateManager(polygons, importType) {
     const toolStateManager = globalToolStateManager.saveToolState();
 
     const numpPolygons = polygons.length;
+    this._percentComplete = 0;
 
     for (let i = 0; i < polygons.length; i++) {
       const polygon = polygons[i];
@@ -94,9 +101,12 @@ export default class RoiImporter {
         importType
       );
 
-      this.updateProgressCallback(
-        Math.floor(((i + 1) * 100) / numpPolygons)
-      );
+      const percentComplete = Math.floor(((i + 1) * 100) / numpPolygons);
+      if (percentComplete !== this._percentComplete) {
+        this.updateProgressCallback(`Updating Tool State: ${percentComplete}%`);
+        this._percentComplete = percentComplete;
+        await allowStateUpdate();
+      }
     }
 
     this._refreshToolStateManager(toolStateManager);
@@ -146,7 +156,7 @@ export default class RoiImporter {
       freehandToolData.push(data);
     }
 
-    console.log(toolStateManager);
+    // console.log(toolStateManager);
   }
 
   /**

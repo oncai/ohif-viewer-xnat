@@ -4,7 +4,6 @@ import { PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 import KEY_COMMANDS from './keyCommands';
 import refreshViewport from './refreshViewport';
 
-
 export default function onKeyDownEvent(keyCommand) {
   if (keyCommand === KEY_COMMANDS.FREEHANDROI_CANCEL_DRAWING
     || keyCommand === KEY_COMMANDS.FREEHANDROI_COMPLETE_DRAWING) {

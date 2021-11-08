@@ -1,16 +1,10 @@
 window.config = {
-  version: {
-    major: 3,
-    minor: 0,
-    patch: 1,
-    dev: '',
-    // build: 2
-  },
   // default: '/'
   routerBasename: '/',
   extensions: [],
   showStudyList: false,
   filterQueryParam: false,
+  disableServersCache: false,
   servers: {
     dicomWeb: [
       {

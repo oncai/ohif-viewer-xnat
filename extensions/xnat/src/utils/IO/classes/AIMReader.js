@@ -1,5 +1,6 @@
 import cornerstoneTools from 'cornerstone-tools';
 import { Polygon } from '../../../peppermint-tools';
+import allowStateUpdate from '../../awaitStateUpdate';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -8,13 +9,16 @@ const modules = cornerstoneTools.store.modules;
  *                    polygons for use in Cornerstone.
  */
 export default class AIMReader {
-  constructor(
+  async init(
     xmlDocument,
     seriesInstanceUidToImport,
     roiCollectionName,
-    roiCollectionLabel
+    roiCollectionLabel,
+    updateProgressCallback
   ) {
     this._doc = xmlDocument;
+    this._updateProgressCallback = updateProgressCallback;
+    this._percentComplete = 0;
 
     try {
       this._checkXML();
@@ -29,7 +33,7 @@ export default class AIMReader {
     this._sopInstancesInSeries = this._getSopInstancesInSeries();
     this._roiCollectionName = roiCollectionName;
     this._roiCollectionLabel = roiCollectionLabel;
-    this._extractAnnotations();
+    await this._extractAnnotations();
   }
 
   /**
@@ -136,11 +140,26 @@ export default class AIMReader {
    *
    * @returns {null}
    */
-  _extractAnnotations() {
+  async _extractAnnotations() {
     const annotations = this._doc.getElementsByTagName('ImageAnnotation');
 
+    this._percentComplete = 0;
+    let numAllContours = 0;
+    const numContours = [];
     for (let i = 0; i < annotations.length; i++) {
-      this._extractPolygons(annotations[i]);
+      const markupEntitys = annotations[i].getElementsByTagName('MarkupEntity');
+      numContours.push(markupEntitys.length);
+      numAllContours += markupEntitys.length;
+    }
+
+    let extractedNumContours = 0;
+    for (let i = 0; i < annotations.length; i++) {
+      await this._extractPolygons(
+        annotations[i],
+        extractedNumContours,
+        numAllContours
+      );
+      extractedNumContours += numContours[i];
     }
   }
 
@@ -150,13 +169,21 @@ export default class AIMReader {
    * @param  {HTMLElement} annotation An AIM ImageAnnotation.
    * @returns {null}
    */
-  _extractPolygons(annotation) {
+  async _extractPolygons(annotation, extractedNumContours, numAllContours) {
     const children = annotation.children;
-    const ROIContourUid = this._createNewVolumeAndGetUid(children);
+    const { ROIContourUid, name } = this._createNewVolumeAndGetUid(children);
     const markupEntitys = annotation.getElementsByTagName('MarkupEntity');
 
     for (let i = 0; i < markupEntitys.length; i++) {
       this._addMarkupEntityIfPolygon(markupEntitys[i], ROIContourUid);
+      const percentComplete = Math.floor(
+        ((extractedNumContours + i + 1) * 100) / numAllContours
+      );
+      if (percentComplete !== this._percentComplete) {
+        this._updateProgressCallback(`Reading Buffer: ${percentComplete}%`);
+        this._percentComplete = percentComplete;
+        await allowStateUpdate();
+      }
     }
   }
 
@@ -268,7 +295,7 @@ export default class AIMReader {
         console.log(
           'No name or comment for imageAnnotation, using default name "Untitled Lession"'
         );
-        name = 'Untitled Lession';
+        name = 'Untitled ROI';
       }
     }
 
@@ -298,7 +325,7 @@ export default class AIMReader {
       }
     );
 
-    return ROIContourUid;
+    return { ROIContourUid, name };
   }
 
   get polygons() {

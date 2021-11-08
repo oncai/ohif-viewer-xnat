@@ -35,16 +35,18 @@ const PanelModule = (servicesManager, commandsManager) => {
     }
   };
 
-  const contourItemClickHandler = contourData => {
-    commandsManager.runCommand('jumpToImage', contourData);
+  const roiItemClickHandler = data => {
+    commandsManager.runCommand('jumpToImage', data);
   };
 
   const ExtendedXNATContourPanel = props => {
-    return <XNATContourPanel
-      {...props}
-      onContourItemClick={contourItemClickHandler}
-      UIModalService={UIModalService}
-    />;
+    return (
+      <XNATContourPanel
+        {...props}
+        onContourItemClick={roiItemClickHandler}
+        UIModalService={UIModalService}
+      />
+    );
   };
 
   const ExtendedXNATSegmentationPanel = props => {
@@ -52,6 +54,7 @@ const PanelModule = (servicesManager, commandsManager) => {
       <XNATSegmentationPanel
         {...props}
         showColorSelectModal={showColorSelectModal}
+        onSegmentItemClick={roiItemClickHandler}
       />
     );
   };

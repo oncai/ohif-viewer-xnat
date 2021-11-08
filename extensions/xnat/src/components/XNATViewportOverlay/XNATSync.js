@@ -2,7 +2,7 @@ import React from 'react';
 import cornerstone from 'cornerstone-core';
 import stackSynchronizer from '../../utils/StackSynchronizer/StackSynchronizer';
 
-import './XNATViewportOverlay.styl';
+import './XNATViewportOverlay.css';
 
 
 class XNATSync extends React.PureComponent {
