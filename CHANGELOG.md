@@ -1,3 +1,7 @@
+**3.1.0**
+
+- Fixed buffer size for reading NIfTI segmentation data.
+
 **3.1.0 RC-3**
 
 - Replaced frame number with instance number in the tag browser.
