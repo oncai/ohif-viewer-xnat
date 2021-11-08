@@ -74,7 +74,7 @@ const definitions = {
     commandFn: ({ view }) => {
       sessionMap.setView(view);
 
-      console.log(sessionMap);
+      // console.log(sessionMap);
     },
     storeContexts: [],
     options: { view: null },
@@ -83,7 +83,7 @@ const definitions = {
     commandFn: ({ json, sessionVariables }) => {
       sessionMap.setSession(json, sessionVariables);
 
-      console.log(sessionMap);
+      // console.log(sessionMap);
     },
     storeContexts: [],
     options: { json: null, sessionVariables: null },

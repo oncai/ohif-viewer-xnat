@@ -127,15 +127,12 @@ function Header(props) {
 
         <div className="header-menu">
           <span className="research-use">
-            {isDevVersion && t('DEV-RELEASE | INVESTIGATIONAL USE ONLY')}
+            {`${
+              isDevVersion ? 'DEV - RELEASE | ' : ''
+            }INVESTIGATIONAL USE ONLY`}
             {/*{versionStr}*/}
           </span>
-          <Dropdown
-            title={t('Options')}
-            list={options}
-            align="right"
-          />
-          {/*<Dropdown title={t('Options')} list={options} align="right" />*/}
+          <Dropdown title={t('Options')} list={options} align="right" />
         </div>
       </div>
     </>
