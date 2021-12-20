@@ -1,4 +1,5 @@
 import throttle from 'lodash.throttle';
+import { cloneDeep } from 'lodash';
 import {
   vtkInteractorStyleMPRWindowLevel,
   vtkInteractorStyleRotatableMPRCrosshairs,
@@ -11,6 +12,15 @@ import setMPRLayout from './utils/setMPRLayout.js';
 import setViewportToVTK from './utils/setViewportToVTK.js';
 import Constants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
 import OHIFVTKViewport from './OHIFVTKViewport';
+import setOrientationMarker, {
+  readHumanMarker,
+  ORIENTATION_MARKER_TYPE,
+} from './utils/setOrientationMarker';
+import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import getVOIFromCornerstoneViewport from './utils/getVOIFromCornerstoneViewport';
+import vtkPiecewiseFunction from 'vtk.js/Sources/Common/DataModel/PiecewiseFunction';
+import { volumeCache, volumeLoadedData } from './utils/viewportDataCache';
+import { VALUE_RANGE } from './utils/constants';
 
 const { BlendMode } = Constants;
 
@@ -67,23 +77,49 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
     renderWindow.render();
   }
 
-  function getVOIFromCornerstoneViewport() {
-    const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
-    const cornerstoneElement = cornerstone.getEnabledElement(dom);
+  function resetVolumeProperties(modality) {
+    const volumeActor = apis[0].volumes[0];
 
-    if (cornerstoneElement) {
-      const imageId = cornerstoneElement.image.imageId;
+    const preset = vtkColorMaps.getPresetByName('Grayscale');
+    const cfun = volumeActor.getProperty().getRGBTransferFunction(0);
+    cfun.applyColorMap(preset);
 
-      const Modality = cornerstone.metaData.get('Modality', imageId);
+    if (modality === 'PT') {
+      const pt = VALUE_RANGE.PT;
+      cfun.setMappingRange(pt[0], pt[1]);
+    }
 
-      if (Modality !== 'PT') {
-        const { windowWidth, windowCenter } = cornerstoneElement.viewport.voi;
+    const ofun = vtkPiecewiseFunction.newInstance();
+    ofun.addPoint(0, 1.0);
+    ofun.addPoint(1024, 1.0);
+    volumeActor.getProperty().setScalarOpacity(0, ofun);
 
-        return {
-          windowWidth,
-          windowCenter,
-        };
-      }
+    volumeActor.setVisibility(true);
+  }
+
+  function updateVolumeColorAndOpacity(
+    displaySetInstanceUID,
+    colormap,
+    userRange,
+    opacity
+  ) {
+    const cachedVolume = volumeCache.get(displaySetInstanceUID);
+    if (cachedVolume) {
+      const preset = vtkColorMaps.getPresetByName(colormap);
+      const cfun = cachedVolume.getProperty().getRGBTransferFunction(0);
+      cfun.applyColorMap(preset);
+      cfun.setMappingRange(userRange.lower, userRange.upper);
+
+      const ofun = vtkPiecewiseFunction.newInstance();
+      ofun.addPoint(userRange.lower, opacity[0]);
+      ofun.addPoint(userRange.middle, opacity[1]);
+      ofun.addPoint(userRange.upper, opacity[2]);
+
+      cachedVolume.getProperty().setScalarOpacity(0, ofun);
+
+      apis.forEach(api => {
+        api.updateImage();
+      });
     }
   }
 
@@ -118,6 +154,47 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
   };
 
   const actions = {
+    getColormaps: () => {
+      const colormapList = vtkColorMaps.rgbPresetNames.map((name, index) => ({
+        id: name,
+        name,
+      }));
+      return {
+        colormapList: colormapList,
+        defaultColormap: 'hsv',
+      };
+    },
+    getVolumeLoadedData: ({ displaySetInstanceUID }) => {
+      if (volumeLoadedData.has(displaySetInstanceUID)) {
+        return cloneDeep(volumeLoadedData.get(displaySetInstanceUID));
+      }
+    },
+    updateVolumeColorAndOpacityRange: ({
+      displaySetInstanceUID,
+      colormap,
+      userRange,
+      opacity,
+    }) => {
+      updateVolumeColorAndOpacity(
+        displaySetInstanceUID,
+        colormap,
+        userRange,
+        opacity
+      );
+      const volumeData = volumeLoadedData.get(displaySetInstanceUID);
+      if (volumeData) {
+        const { rangeInfo } = volumeData;
+        rangeInfo.user = { ...userRange };
+        rangeInfo.opacity = [...opacity];
+        return cloneDeep(volumeData);
+      }
+      return {};
+    },
+    updateVtkApi: () => {
+      apis.forEach(api => {
+        api.updateImage();
+      });
+    },
     getVtkApis: ({ index }) => {
       return apis[index];
     },
@@ -287,6 +364,9 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
 
         api.setInteractorStyle({
           istyle,
+          callbacks: {
+            onModified: api.orientationWidget.updateMarkerOrientation,
+          },
           configuration: {
             apis,
             apiIndex,
@@ -418,12 +498,17 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         },
       ];
 
+      let orientationMarkerType = ORIENTATION_MARKER_TYPE.CUBE;
       try {
         apis = await setMPRLayout(displaySet, viewportProps, 1, 3);
+        if (await readHumanMarker()) {
+          orientationMarkerType = ORIENTATION_MARKER_TYPE.HUMAN;
+        }
       } catch (error) {
         throw new Error(error);
       }
 
+      resetVolumeProperties(displaySet.Modality);
       if (cornerstoneVOI) {
         setVOI(cornerstoneVOI);
       }
@@ -438,8 +523,13 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         const uid = api.uid;
         const istyle = vtkInteractorStyleRotatableMPRCrosshairs.newInstance();
 
+        setOrientationMarker(api, orientationMarkerType);
+
         api.setInteractorStyle({
           istyle,
+          callbacks: {
+            onModified: api.orientationWidget.updateMarkerOrientation,
+          },
           configuration: { apis, apiIndex, uid },
         });
 
@@ -585,6 +675,19 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
     getVtkApiForViewportIndex: {
       commandFn: actions.getVtkApis,
       context: 'VIEWER',
+    },
+    //// Image Fusion
+    getColormaps: {
+      commandFn: actions.getColormaps,
+    },
+    getVolumeLoadedData: {
+      commandFn: actions.getVolumeLoadedData,
+    },
+    updateVolumeColorAndOpacityRange: {
+      commandFn: actions.updateVolumeColorAndOpacityRange,
+    },
+    updateVtkApi: {
+      commandFn: actions.updateVtkApi,
     },
   };
 

@@ -1,5 +1,6 @@
 import SlabThicknessToolbarComponent from './toolbarComponents/SlabThicknessToolbarComponent';
 import VTKMPRToolbarButton from './toolbarComponents/VTKMPRToolbarButton';
+import { ImageFusionButton } from '@xnat-ohif/extension-xnat';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -128,8 +129,16 @@ const definitions = [
     ],
   },
   {
+    id: 'imageComposition',
+    label: 'Fusion',
+    icon: 'xnat-image-composition',
+    //
+    CustomComponent: ImageFusionButton,
+    // context: 'VIEWER',
+  },
+  {
     id: '2DMPR',
-    label: '2D MPR',
+    label: '3D MPR',
     icon: 'cube',
     //
     CustomComponent: VTKMPRToolbarButton,

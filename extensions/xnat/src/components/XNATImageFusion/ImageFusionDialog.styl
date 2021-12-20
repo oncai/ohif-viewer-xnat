@@ -1,0 +1,203 @@
+.ImageFusionDialogContainer
+  display: flex
+  flex-direction: row
+  justify-content: center
+  align-items: center
+  background: var(--ui-gray-darkest)
+  color: var(--text-secondary-color)
+  //filter: drop-shadow(0 0 3px var(--ui-gray-darkest))
+  border: none
+  border-radius: 8px
+  width: inherit
+  overflow: hidden
+
+.ImageFusionDialog
+  display: flex
+  flex-direction: column
+  padding: 1em
+
+  .row
+    margin: 15px 0
+    display: flex
+    flex-direction: row
+    //justify-content: center
+    align-items: center
+    //height: 20px
+
+    &:first-of-type
+      margin-top: 0
+    &:last-of-type
+      margin-bottom: 0
+
+    .group
+      display: flex
+      flex-direction: row
+      align-items: center
+      margin-left: 10px
+
+      &:first-of-type
+        margin-left: 0
+
+      svg
+        margin-right: 5px
+        user-select: none
+        pointer-events: none
+
+  .verticalLine
+    margin: 0 5px
+    &:after
+      content: ''
+      border-right: 2px solid var(--ui-border-color)
+
+  h5
+    font-size: 15px
+    font-weight: 500
+    text-align: center
+    margin: 0 0 15px 0
+    color: var(--active-color)
+    display: inline
+
+  .closeButton
+    cursor: pointer
+    margin: -8px 0 0 0
+    padding: 0
+    background-color: transparent
+    border: none
+    color: var(--text-secondary-color)
+    font-size: 20px
+    font-weight: lighter
+
+    &:hover, &:active, &.active
+      background-color: transparent
+
+  select
+    background-color: transparent
+    border: none
+    padding: 0 0 0 0
+    color: white
+    outline: none
+    //width: 100%
+    max-width: 150px
+
+    option, optgroup
+      background-color: var(--ui-gray)
+      color: white
+    optgroup
+      color: var(--text-secondary-color)
+
+  button
+    border: 0
+    border-radius: 4px
+    margin: 0 5px
+    padding: 0 12px
+    font-weight: normal
+    background-color: var(--active-color)
+    color: var(--text-primary-color)
+
+    &:active, &.active, &:hover
+      background-color: var(--text-secondary-color)
+
+    &.jump
+      animation: 1.5s jump ease infinite alternate
+
+  .rangeContainer
+    width: 100%
+    display: flex
+    align-items: center
+    padding: 0
+    color: var(--text-primary-color)
+    font-size: 12px
+
+    .labelGroup
+      display: flex
+      flex-direction: column
+      align-items: center
+      min-width: 30px
+      user-select: none
+
+      label
+        //font-size: 12px
+        //line-height: 17px
+        font-weight: bold
+        color: var(--text-secondary-color)
+
+.isLoading
+  pointer-events: none
+  opacity: 0.5
+
+.dialogHandle
+  display: flex
+  justify-content: center
+  align-items: center
+  height: 48px
+  width: 38px
+  opacity: 0.5
+  color: var(--ui-gray-darkest)
+  background: var(--active-color)
+
+  svg
+    user-select: none
+    pointer-events: none
+
+//////////////////////////
+@keyframes jump
+  0%
+    //transform: scale(1)
+    box-shadow: 0 1px 2px rgba(0,0,0,.15)
+    background-color: var(--ui-state-error-text)
+
+  100%
+    //transform: scale(1.02)
+    box-shadow: 0 4px 20px rgba(0,0,0,.1)
+    background-color: var(--ui-state-error-border)
+
+//////////////////////////
+.rs-slider
+  margin: 0 5px
+  width: 150px
+  //max-width: 500px
+  height: 21px
+  -webkit-appearance: none
+
+  &.widthx2
+    width: 300px
+
+  .rs-thumb
+    outline: none
+    text-align: center
+    cursor: pointer !important
+    width: 11px
+    height: 21px
+    border-radius: 11px
+    background: var(--active-color)
+    border: 1px solid var(--ui-border-color-dark)
+
+    &.rs-thumb-0
+      background: #2B8A9A
+    &.rs-thumb-1
+      background: #D09838
+    &.rs-thumb-2
+      background: #E45527
+
+    .thumbValue
+      position: absolute
+      top: -15px
+
+  .rs-track
+    background-color: var(--ui-border-color-dark)
+    cursor: pointer !important
+    height: 2px
+    top: 9px
+
+  .rs-mark
+    width: 8px
+    height: 8px
+    border: 2px solid var(--ui-border-color-dark)
+    background-color: var(--active-color)
+    cursor: pointer
+    border-radius: 50%
+    vertical-align: middle
+    margin: 0 2px
+    //margin: 0 calc(25px - 6px)
+    bottom: calc(50% - 4px)
+

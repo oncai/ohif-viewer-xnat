@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { getImageData, loadImageData } from 'react-vtkjs-viewport';
+import { loadImageData, getImageData } from 'react-vtkjs-viewport';
+// import getImageData from './__forkedFromReactVtkjsViewport/lib/getImageData';
 import ConnectedVTKViewport from './ConnectedVTKViewport';
 import LoadingIndicator from './LoadingIndicator.js';
 import OHIF from '@ohif/core';
@@ -10,14 +11,22 @@ import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
 import vtkImageData from 'vtk.js/Sources/Common/DataModel/ImageData';
 import vtkVolume from 'vtk.js/Sources/Rendering/Core/Volume';
 import vtkVolumeMapper from 'vtk.js/Sources/Rendering/Core/VolumeMapper';
+import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
+import vtkPiecewiseFunction from 'vtk.js/Sources/Common/DataModel/PiecewiseFunction';
+import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import {
+  volumeCache,
+  labelmapCache,
+  volumeLoadedData,
+} from './utils/viewportDataCache';
+import { DEFAULT_FUSION_DATA } from '@xnat-ohif/extension-xnat';
+import { VALUE_RANGE } from './utils/constants';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
-const { StackManager } = OHIF.utils;
+const { StackManager, studyMetadataManager } = OHIF.utils;
 
 // TODO: Figure out where we plan to put this long term
-const volumeCache = {};
-const labelmapCache = {};
 
 /**
  * Create a labelmap image with the same dimensions as our background volume.
@@ -52,6 +61,8 @@ class OHIFVTKViewport extends Component {
     paintFilterBackgroundImageData: null,
     percentComplete: 0,
     isLoaded: false,
+    fusionPercentComplete: 0,
+    fusionIsLoaded: false,
   };
 
   static propTypes = {
@@ -63,6 +74,7 @@ class OHIFVTKViewport extends Component {
         sopClassUIDs: PropTypes.arrayOf(PropTypes.string),
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
+        imageFusionData: PropTypes.object,
       }),
     }),
     viewportIndex: PropTypes.number.isRequired,
@@ -151,6 +163,7 @@ class OHIFVTKViewport extends Component {
     );
 
     const imageDataObject = getImageData(stack.imageIds, displaySetInstanceUID);
+    imageDataObject.displaySetInstanceUID = displaySetInstanceUID;
     let labelmapDataObject;
     let labelmapColorLUT;
 
@@ -182,9 +195,8 @@ class OHIFVTKViewport extends Component {
 
       const vtkLabelmapID = `${firstImageId}_${activeLabelmapIndex}`;
 
-      if (labelmapCache[vtkLabelmapID]) {
-        labelmapDataObject = labelmapCache[vtkLabelmapID];
-      } else {
+      labelmapDataObject = labelmapCache.get(vtkLabelmapID);
+      if (!labelmapDataObject) {
         // TODO -> We need an imageId based getter in cornerstoneTools
         const labelmapBuffer = labelmap3D.buffer;
 
@@ -237,7 +249,7 @@ class OHIFVTKViewport extends Component {
         );
 
         // Cache the labelmap volume.
-        labelmapCache[vtkLabelmapID] = labelmapDataObject;
+        labelmapCache.set(vtkLabelmapID, labelmapDataObject);
       }
 
       // labelmapColorLUT = state.colorLutTables[labelmap3D.colorLUTIndex];
@@ -274,6 +286,39 @@ class OHIFVTKViewport extends Component {
     };
   };
 
+  getViewportFusionData = (studies, imageFusionData) => {
+    const { StudyInstanceUID, displaySetInstanceUID, onLoadedVolumeData } = imageFusionData;
+
+    const study = studyMetadataManager.get(StudyInstanceUID);
+    const displaySet = study.findDisplaySet(
+      displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
+    );
+
+    const { sopClassUIDs, SOPInstanceUID, frameIndex } = displaySet;
+    if (sopClassUIDs.length > 1) {
+      console.warn(
+        'More than one SOPClassUID in the same series is not yet supported.'
+      );
+    }
+    const SOPClassUID = sopClassUIDs[0] || undefined;
+
+    const stack = OHIFVTKViewport.getCornerstoneStack(
+      studies,
+      StudyInstanceUID,
+      displaySetInstanceUID,
+      SOPClassUID,
+      SOPInstanceUID,
+      frameIndex
+    );
+
+    const imageDataObject = getImageData(stack.imageIds, displaySetInstanceUID);
+    imageDataObject.displaySetInstanceUID = displaySetInstanceUID;
+    imageDataObject.onLoadedVolumeData = onLoadedVolumeData;
+    imageDataObject.imageFusionData = imageFusionData;
+
+    return imageDataObject;
+  };
+
   /**
    *
    *
@@ -288,34 +333,27 @@ class OHIFVTKViewport extends Component {
    * @memberof OHIFVTKViewport
    */
   getOrCreateVolume(imageDataObject, displaySetInstanceUID) {
-    if (volumeCache[displaySetInstanceUID]) {
-      return volumeCache[displaySetInstanceUID];
+    const { vtkImageData, imageMetaData0 } = imageDataObject;
+
+    const cachedVolume = volumeCache.get(displaySetInstanceUID);
+    if (cachedVolume) {
+      return cachedVolume;
     }
 
-    const { vtkImageData, imageMetaData0 } = imageDataObject;
     // TODO -> Should update react-vtkjs-viewport and react-cornerstone-viewports
     // internals to use naturalized DICOM JSON names.
-    const {
-      windowWidth: WindowWidth,
-      windowCenter: WindowCenter,
-      modality: Modality,
-    } = imageMetaData0;
 
-    const { lower, upper } = _getRangeFromWindowLevels(
-      WindowWidth,
-      WindowCenter,
-      Modality
-    );
     const volumeActor = vtkVolume.newInstance();
+
     const volumeMapper = vtkVolumeMapper.newInstance();
 
     volumeActor.setMapper(volumeMapper);
     volumeMapper.setInputData(vtkImageData);
 
-    volumeActor
-      .getProperty()
-      .getRGBTransferFunction(0)
-      .setRange(lower, upper);
+    const voiRange = _setVolumeColorRangeFromVOI(volumeActor, imageMetaData0);
+    imageDataObject.rangeInfo = {
+      voi: { ...voiRange },
+    };
 
     const spacing = vtkImageData.getSpacing();
     // Set the sample distance to half the mean length of one side. This is where the divide by 6 comes from.
@@ -332,12 +370,12 @@ class OHIFVTKViewport extends Component {
     // TODO: maybe we should auto adjust samples to 1000.
     volumeMapper.setMaximumSamplesPerRay(4000);
 
-    volumeCache[displaySetInstanceUID] = volumeActor;
+    volumeCache.set(displaySetInstanceUID, volumeActor);
 
     return volumeActor;
   }
 
-  setStateFromProps() {
+  setStateFromProps(prevImageFusionData) {
     const { studies, displaySet } = this.props.viewportData;
     const {
       StudyInstanceUID,
@@ -352,19 +390,38 @@ class OHIFVTKViewport extends Component {
         'More than one SOPClassUID in the same series is not yet supported.'
       );
     }
+    const SOPClassUID = sopClassUIDs[0] || undefined;
 
     const study = studies.find(
       study => study.StudyInstanceUID === StudyInstanceUID
     );
 
+    const groupDetailsInField = (field, extraFields = {}) => {
+      const fieldValue = field || '';
+      const { studyDescription, seriesNumber, seriesDescription} = extraFields;
+      return (
+        <>
+          {fieldValue}
+          <div>{studyDescription}</div>
+          <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
+          <div>{seriesDescription}</div>
+        </>
+      );
+    };
+
     const dataDetails = {
-      studyDate: study.studyDate,
-      studyTime: study.studyTime,
-      studyDescription: study.studyDescription,
-      patientName: study.patientName,
-      patientId: study.PatientID,
-      seriesNumber: String(displaySet.SeriesNumber),
-      seriesDescription: displaySet.SeriesDescription,
+      studyDate: undefined, //study.studyDate,
+      studyTime: undefined, //study.studyTime,
+      studyDescription: undefined, //study.StudyDescription,
+      patientName: study.PatientName,
+      // patientId: study.PatientID,
+      patientId: groupDetailsInField('', {
+        studyDescription: study.StudyDescription,
+        seriesNumber: String(displaySet.SeriesNumber),
+        seriesDescription: displaySet.SeriesDescription,
+      }),
+      seriesNumber: undefined, //String(displaySet.SeriesNumber),
+      seriesDescription: undefined, //displaySet.SeriesDescription,
     };
 
     try {
@@ -376,6 +433,7 @@ class OHIFVTKViewport extends Component {
         studies,
         StudyInstanceUID,
         displaySetInstanceUID,
+        SOPClassUID,
         SOPInstanceUID,
         frameIndex
       );
@@ -392,13 +450,63 @@ class OHIFVTKViewport extends Component {
         displaySetInstanceUID
       );
 
+      const volumeActors = [volumeActor];
+
+      // Image fusion pipeline
+      let imageFusionDataObject;
+      const imageFusionData = displaySet.imageFusionData || {
+        ...DEFAULT_FUSION_DATA,
+      };
+
+      let fusionIsLoaded = true;
+      if (imageFusionData.displaySetInstanceUID !== 'none') {
+        imageFusionDataObject = this.getViewportFusionData(
+          studies,
+          imageFusionData
+        );
+        const fusionVolumeActor = this.getOrCreateVolume(
+          imageFusionDataObject,
+          imageFusionData.displaySetInstanceUID
+        );
+        fusionVolumeActor.setVisibility(imageFusionData.visible);
+        volumeActors.push(fusionVolumeActor);
+        fusionIsLoaded = false;
+      }
+
+      if (prevImageFusionData) {
+        if (
+          imageFusionData.displaySetInstanceUID !==
+          prevImageFusionData.displaySetInstanceUID
+        ) {
+          const cachedVolume = volumeCache.get(
+            prevImageFusionData.displaySetInstanceUID
+          );
+          if (cachedVolume) {
+            cachedVolume.setVisibility(false);
+          }
+        }
+      }
+
       this.setState(
         {
           percentComplete: 0,
+          fusionPercentComplete: 0,
+          fusionIsLoaded,
           dataDetails,
         },
         () => {
-          this.loadProgressively(imageDataObject);
+          this.loadProgressively(
+            imageDataObject,
+            'percentComplete',
+            'isLoaded'
+          );
+          if (imageFusionDataObject) {
+            this.loadProgressively(
+              imageFusionDataObject,
+              'fusionPercentComplete',
+              'fusionIsLoaded'
+            );
+          }
 
           // TODO: There must be a better way to do this.
           // We do this so that if all the data is available the react-vtkjs-viewport
@@ -406,7 +514,7 @@ class OHIFVTKViewport extends Component {
           // Construction that happens in react-vtkjs-viewport locks up the CPU.
           setTimeout(() => {
             this.setState({
-              volumes: [volumeActor],
+              volumes: volumeActors,
               paintFilterLabelMapImageData: labelmapDataObject,
               paintFilterBackgroundImageData: imageDataObject.vtkImageData,
               labelmapColorLUT,
@@ -453,23 +561,37 @@ class OHIFVTKViewport extends Component {
     const { displaySet } = this.props.viewportData;
     const prevDisplaySet = prevProps.viewportData.displaySet;
 
+    const imageFusionData = displaySet.imageFusionData || {
+      ...DEFAULT_FUSION_DATA,
+    };
+
+    const prevImageFusionData = prevDisplaySet.imageFusionData || {
+      ...DEFAULT_FUSION_DATA,
+    };
+
     if (
       displaySet.displaySetInstanceUID !==
         prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
-      displaySet.frameIndex !== prevDisplaySet.frameIndex
+      displaySet.frameIndex !== prevDisplaySet.frameIndex ||
+      imageFusionData.displaySetInstanceUID !==
+        prevImageFusionData.displaySetInstanceUID
     ) {
-      this.setStateFromProps();
+      this.setStateFromProps(prevImageFusionData);
     }
   }
 
-  loadProgressively(imageDataObject) {
+  updateVtkViewportApi() {
+    this.props.commandsManager.runCommand('updateVtkApi');
+  }
+
+  loadProgressively(imageDataObject, percentCompleteTarget, isLoadedTarget) {
     loadImageData(imageDataObject);
 
-    const { isLoading, imageIds } = imageDataObject;
+    const { isLoading, imageIds, displaySetInstanceUID } = imageDataObject;
 
     if (!isLoading) {
-      this.setState({ isLoaded: true });
+      this.setState({ [isLoadedTarget]: true });
       return;
     }
 
@@ -480,10 +602,14 @@ class OHIFVTKViewport extends Component {
         (numberProcessed * 100) / NumberOfFrames
       );
 
-      if (percentComplete !== this.state.percentComplete) {
+      if (percentComplete !== this.state[percentCompleteTarget]) {
         this.setState({
-          percentComplete,
+          [percentCompleteTarget]: percentComplete,
         });
+        if (percentCompleteTarget === 'fusionPercentComplete') {
+          // Update the API
+          this.updateVtkViewportApi();
+        }
       }
     };
 
@@ -510,8 +636,32 @@ class OHIFVTKViewport extends Component {
     };
 
     const onAllPixelDataInsertedCallback = () => {
+      const {
+        vtkImageData,
+        rangeInfo,
+        onLoadedVolumeData,
+        imageFusionData,
+      } = imageDataObject;
+      if (!volumeLoadedData.has(displaySetInstanceUID)) {
+        _setRangeInfo(vtkImageData, rangeInfo);
+        volumeLoadedData.set(displaySetInstanceUID, { rangeInfo });
+        if (imageFusionData) {
+          _setColormapAndOpacity(
+            displaySetInstanceUID,
+            imageFusionData,
+            rangeInfo
+          );
+        }
+        if (onLoadedVolumeData && typeof onLoadedVolumeData === 'function') {
+          onLoadedVolumeData(displaySetInstanceUID);
+        }
+        // Update the API
+        setTimeout(() => {
+          this.updateVtkViewportApi();
+        }, 300);
+      }
       this.setState({
-        isLoaded: true,
+        [isLoadedTarget]: true,
       });
     };
 
@@ -545,6 +695,11 @@ class OHIFVTKViewport extends Component {
           {!this.state.isLoaded && (
             <LoadingIndicator percentComplete={this.state.percentComplete} />
           )}
+          {!this.state.fusionIsLoaded && (
+            <LoadingIndicator
+              percentComplete={this.state.fusionPercentComplete}
+            />
+          )}
           {this.state.volumes && (
             <ConnectedVTKViewport
               volumes={this.state.volumes}
@@ -571,10 +726,75 @@ class OHIFVTKViewport extends Component {
             />
           )}
         </div>
-        )}
         {childrenWithProps}
       </>
     );
+  }
+}
+
+function _setVolumeColorRangeFromVOI(volumeActor, imageMetaData0) {
+  const { windowWidth: width, windowCenter: center, modality } = imageMetaData0;
+
+  // Set color range
+  const levelsAreNumbers = !(isNaN(center) || isNaN(width));
+  const colorRange = { lower: 0, upper: 512 };
+  if (modality === 'PT') {
+    const pt = VALUE_RANGE.PT;
+    colorRange.lower = pt[0];
+    colorRange.upper = pt[1];
+  } else if (levelsAreNumbers) {
+    colorRange.lower = center - width / 2.0;
+    colorRange.upper = center + width / 2.0;
+  }
+
+  const preset = vtkColorMaps.getPresetByName('Grayscale');
+  const cfun = volumeActor.getProperty().getRGBTransferFunction(0);
+  cfun.applyColorMap(preset);
+  cfun.setMappingRange(colorRange.lower, colorRange.upper);
+
+  return colorRange;
+}
+
+function _setRangeInfo(vtkImageData, rangeInfo) {
+  const { voi } = rangeInfo;
+  const dataRange = vtkImageData.getPointData().getScalars().getRange();
+  const data = { lower: dataRange[0], upper: dataRange[1] };
+
+  if (voi.lower < data.lower) {
+    voi.lower = data.lower;
+  }
+  if (voi.upper > data.upper) {
+    voi.upper = data.upper;
+  }
+
+  voi.middle = (voi.upper - voi.lower) / 50;
+
+  rangeInfo.data = { ...data };
+  rangeInfo.user = { ...voi };
+  rangeInfo.opacity = [0.0, 0.9, 1.0];
+}
+
+function _setColormapAndOpacity(
+  displaySetInstanceUID,
+  imageFusionData,
+  rangeInfo
+) {
+  const { voi, opacity } = rangeInfo;
+  const cachedVolume = volumeCache.get(displaySetInstanceUID);
+  if (cachedVolume) {
+    const colormap = imageFusionData.colormap || 'Grayscale';
+    const preset = vtkColorMaps.getPresetByName(colormap);
+    const cfun = cachedVolume.getProperty().getRGBTransferFunction(0);
+    cfun.applyColorMap(preset);
+    cfun.setMappingRange(voi.lower, voi.upper);
+
+    // Create scalar opacity function
+    const ofun = vtkPiecewiseFunction.newInstance();
+    ofun.addPoint(voi.lower, opacity[0]);
+    ofun.addPoint(voi.middle, opacity[1]);
+    ofun.addPoint(voi.upper, opacity[2]);
+
+    cachedVolume.getProperty().setScalarOpacity(0, ofun);
   }
 }
 
