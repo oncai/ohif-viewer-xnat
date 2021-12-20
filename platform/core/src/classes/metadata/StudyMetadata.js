@@ -832,6 +832,7 @@ const makeDisplaySet = (series, instances) => {
     frameRate: instance.getTagValue('FrameTime'),
     Modality: instance.getTagValue('Modality'),
     isMultiFrame: isMultiFrame(instance),
+    FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
   });
 
   // Sort the images in this series by instanceNumber

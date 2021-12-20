@@ -27,6 +27,7 @@ function createAndAddStack(stackMap, study, displaySet, stackUpdatedCallbacks) {
 
   displaySet.images.forEach((instance, imageIndex) => {
     const image = instance.getData();
+    // TODO: metaData object is not used
     const metaData = {
       instance: image, // in this context, instance will be the data of the InstanceMetadata object...
       series: displaySet, // TODO: Check this

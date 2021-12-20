@@ -1,6 +1,6 @@
 import React from 'react';
 import cornerstone from 'cornerstone-core';
-import stackSynchronizer from '../../utils/StackSynchronizer/StackSynchronizer';
+import { stackSynchronizer } from '../../utils/StackSynchronizer/StackSynchronizer';
 
 import './XNATViewportOverlay.css';
 
