@@ -42,7 +42,7 @@
     "@babel/runtime": "^7.5.5",
     "@cornerstonejs/nifti-image-loader": "^1.0.6",
     "axios": "^0.21.1",
-    "dicom-parser": "^1.8.4",
+    "dicom-parser": "^1.8.11",
     "loglevelnext": "^3.0.1",
     "ndarray": "^1.0.19",
     "nifti-reader-js": "^0.5.4",

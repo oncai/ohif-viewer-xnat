@@ -3114,6 +3114,11 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
+"@types/resize-observer-browser@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@types/resize-observer-browser/-/resize-observer-browser-0.1.6.tgz#d8e6c2f830e2650dc06fe74464472ff64b54a302"
+  integrity sha512-61IfTac0s9jvNtBCpyo86QeaN8qqpMGHdK0uGKCCIy2dt5/Yk84VduHIdWAcmkC5QvdkPL0p5eWYgUZtHKKUVg==
+
 "@types/resolve@0.0.8":
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/@types/resolve/-/resolve-0.0.8.tgz#f26074d238e02659e323ce1a13d041eee280e194"
@@ -5301,6 +5306,11 @@ classnames@2.2.6, classnames@^2.2.5, classnames@^2.2.6:
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
   integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
 
+classnames@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
+  integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
+
 clean-css@4.2.x, clean-css@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.1.tgz#2d411ef76b8569b6d0c84068dabe85b0aa5e5c17"
@@ -6648,6 +6658,11 @@ date-fns@^2.2.1:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.6.0.tgz#a5bc82e6a4c3995ae124b0ba1a71aec7b8cbd666"
   integrity sha512-F55YxqRdEfP/eYQmQjLN798v0AwLjmZ8nMBjdQvNwEE3N/zWVrlkkqT+9seBlPlsbkybG4JmWg3Ee3dIV9BcGQ==
 
+date-fns@^2.23.0:
+  version "2.27.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.27.0.tgz#e1ff3c3ddbbab8a2eaadbb6106be2929a5a2d92b"
+  integrity sha512-sj+J0Mo2p2X1e306MHq282WS4/A8Pz/95GIFcsPNMPMZVI3EUrAdSv90al1k+p74WGLCruMXk23bfEDZa71X9Q==
+
 date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
@@ -6984,17 +6999,7 @@ dicom-microscopy-viewer@^0.6.1:
     dicomweb-client "^0.5.2"
     ol "^5.3.0"
 
-dicom-parser@^1.8.3:
-  version "1.8.3"
-  resolved "https://registry.yarnpkg.com/dicom-parser/-/dicom-parser-1.8.3.tgz#6e4b862898112304db30143147562011c1ce6a4d"
-  integrity sha512-CMeUr+jea7Ml70N+/Z5Pd2MYtvLp6IU+TnvdLe6VRVKzZuTeYLYyuAQa9R+sFK4v4N39hig+hKHN+Wfi9sQ6GA==
-
-dicom-parser@^1.8.4:
-  version "1.8.7"
-  resolved "https://registry.yarnpkg.com/dicom-parser/-/dicom-parser-1.8.7.tgz#36df15f8b4250e56f164d8a50484c45e0a5668de"
-  integrity sha512-JRh6ciXii1JiDFxd3yUiteNZbOd4Ebmq9HBJlxEJ4Gd1CC5tMIs8zoztK69Ih0UeT96ixbmanb4M2mjaaYT8sg==
-
-dicom-parser@^1.8.9:
+dicom-parser@^1.8.11, dicom-parser@^1.8.9:
   version "1.8.11"
   resolved "https://registry.yarnpkg.com/dicom-parser/-/dicom-parser-1.8.11.tgz#ffd86289a6b85bb0047379084b57fcc1b28fe7f8"
   integrity sha512-KbxEDqv4Stynv5AxDh90+jY7MtPvI2uyOG62yD8zKu/pcZqoQYfPX44rB0ULjpxt6YIfXfajrs7B1L97RbjNsg==
@@ -12190,11 +12195,6 @@ locize-lastused@^1.1.0:
   resolved "https://registry.yarnpkg.com/locize-lastused/-/locize-lastused-1.1.0.tgz#f8fdb146faff2340ec8704115760cfb59e6dd8e3"
   integrity sha512-5vaBRMPRzmrS28JLDLUjozgws173OFaWgQKpPFtjVF9dp3AXD7SrVOyPaIVPhsd6F1fPlZAlL0TBLqz/hm6ClQ==
 
-lodash-es@^4.17.15:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.15.tgz#21bd96839354412f23d7a10340e5eac6ee455d78"
-  integrity sha512-rlrc3yU3+JNOpZ9zj5pQtxnx2THmvRykwL4Xlxoa8I9lHBlVbbyPhgyPMioxVZ4NqyxaVVtaJnzsyOidQIhyyQ==
-
 lodash._reinterpolate@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
@@ -15736,11 +15736,6 @@ quickselect@^1.0.1:
   resolved "https://registry.yarnpkg.com/quickselect/-/quickselect-1.1.1.tgz#852e412ce418f237ad5b660d70cffac647ae94c2"
   integrity sha512-qN0Gqdw4c4KGPsBOQafj6yj/PA6c/L63f6CaZ/DCF/xF4Esu3jVmKLUDYxghFx8Kb/O7y9tI7x2RjTSXwdK1iQ==
 
-raf-schd@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/raf-schd/-/raf-schd-4.0.2.tgz#bd44c708188f2e84c810bf55fcea9231bcaed8a0"
-  integrity sha512-VhlMZmGy6A6hrkJWHLNTGl5gtgMUm+xfGza6wbwnE914yeQ5Ybm18vgM734RZhMgfw4tacUrWseGZlpUrrakEQ==
-
 raf@^3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/raf/-/raf-3.4.1.tgz#0742e99a4a6552f445d73e3ee0328af0ff1ede39"
@@ -15836,16 +15831,16 @@ react-color@2.18.1:
     reactcss "^1.2.0"
     tinycolor2 "^1.4.1"
 
-react-cornerstone-viewport@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/react-cornerstone-viewport/-/react-cornerstone-viewport-4.1.0.tgz#e07d7c4cca3295c31161824326b7062d997b2ef3"
-  integrity sha512-KSNsIdkXUer3fG23hk2WkW4JfGt8duddLmanjVEDbA5+uHgjyUyhKYJJe1RstYAgZ/OItRe4tkOyZ9b+WOskpA==
+react-cornerstone-viewport@^4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/react-cornerstone-viewport/-/react-cornerstone-viewport-4.1.4.tgz#699761855fe15a47787ff2c2b40df8f9dfec6bb6"
+  integrity sha512-saM9+Nax7wVTZdZV778U04keg86iYXtvc4TPCBIZqyF+t8vsgi9Fw740Ib9zHSMAOQsBuye0PGoZzZ1HUin2Fw==
   dependencies:
-    classnames "^2.2.6"
-    date-fns "^2.2.1"
+    classnames "^2.3.1"
+    date-fns "^2.23.0"
     lodash.debounce "^4.0.8"
     prop-types "^15.7.2"
-    react-resize-detector "^4.2.1"
+    react-resize-detector "^6.7.6"
 
 react-dates@21.2.1:
   version "21.2.1"
@@ -16201,15 +16196,14 @@ react-redux@^7.1.0:
     prop-types "^15.7.2"
     react-is "^16.9.0"
 
-react-resize-detector@^4.2.0, react-resize-detector@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/react-resize-detector/-/react-resize-detector-4.2.1.tgz#8982b74c3e1cf949afaa3c41050458c87b033982"
-  integrity sha512-ZfPMBPxXi0o3xox42MIEtz84tPSVMW9GgwLHYvjVXlFM+OkNzbeEtpVSV+mSTJmk4Znwomolzt35zHN9LNBQMQ==
+react-resize-detector@^6.7.6:
+  version "6.7.6"
+  resolved "https://registry.yarnpkg.com/react-resize-detector/-/react-resize-detector-6.7.6.tgz#4416994e5ead7eba76606e3a248a1dfca49b67a3"
+  integrity sha512-/6RZlul1yePSoYJxWxmmgjO320moeLC/khrwpEVIL+D2EjLKhqOwzFv+H8laMbImVj7Zu4FlMa0oA7au3/ChjQ==
   dependencies:
-    lodash "^4.17.15"
-    lodash-es "^4.17.15"
-    prop-types "^15.7.2"
-    raf-schd "^4.0.2"
+    "@types/resize-observer-browser" "^0.1.6"
+    lodash.debounce "^4.0.8"
+    lodash.throttle "^4.1.1"
     resize-observer-polyfill "^1.5.1"
 
 react-router-dom@^5.0.1:
