@@ -30,7 +30,7 @@
   "peerDependencies": {
     "@ohif/core": "^0.50.0",
     "@ohif/ui": "^0.50.0",
-    "cornerstone-core": "^2.2.8",
+    "cornerstone-core": "^2.6.0",
     "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git",
     "dcmjs": "0.18.8",
     "moment": "^2.24.0",

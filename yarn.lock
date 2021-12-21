@@ -1247,33 +1247,12 @@
     pirates "^4.0.0"
     source-map-support "^0.5.9"
 
-"@babel/runtime@7.1.2":
-  version "7.1.2"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.1.2.tgz#81c89935f4647706fc54541145e6b4ecfef4b8e3"
-  integrity sha512-Y3SCjmhSupzFB6wcv1KmmFucH6gDVnI30WjOcicV10ju0cZjak3Jcs67YLIXBrmZYw1xCrVeJPbycFwrqNyxpg==
-  dependencies:
-    regenerator-runtime "^0.12.0"
-
-"@babel/runtime@7.6.0":
-  version "7.6.0"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.6.0.tgz#4fc1d642a9fd0299754e8b5de62c631cf5568205"
-  integrity sha512-89eSBLJsxNxOERC0Op4vd+0Bqm6wRMqMbFtV3i0/fbaWw/mJ8Q3eBvgX0G4SyrOOLCtbu98HspF8o09MRT+KzQ==
-  dependencies:
-    regenerator-runtime "^0.13.2"
-
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.2.0", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.0", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.5":
+"@babel/runtime@7.1.2", "@babel/runtime@7.5.5", "@babel/runtime@7.6.0", "@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.2.0", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.0", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.0", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.6":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.5.5.tgz#74fba56d35efbeca444091c7850ccd494fd2f132"
   integrity sha512-28QvEGyQyNkB0/m2B4FU7IEZGK2NUrcMtT6BZEFALTguLk+AUT6ofsHtPk5QyjAdUkpMJ+/Em+quwz4HOt30AQ==
   dependencies:
     regenerator-runtime "^0.13.2"
-
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.6.0", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.6":
-  version "7.16.5"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.16.5.tgz#7f3e34bf8bdbbadf03fbb7b1ea0d929569c9487a"
-  integrity sha512-TXWihFIS3Pyv5hzR7j6ihmeLkZfrXGxAr5UfSl8CHf+6q/wpiYDkUau0czckpYG8QmnCIuPpdLtuA9VmuGGyMA==
-  dependencies:
-    regenerator-runtime "^0.13.4"
 
 "@babel/template@^7.0.0", "@babel/template@^7.1.0", "@babel/template@^7.4.0", "@babel/template@^7.4.4", "@babel/template@^7.6.0":
   version "7.6.0"
@@ -1357,6 +1336,21 @@
   dependencies:
     exec-sh "^0.3.2"
     minimist "^1.2.0"
+
+"@cornerstonejs/codec-charls@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@cornerstonejs/codec-charls/-/codec-charls-0.1.1.tgz#e55d4aa908732d0cc902888b7f3856c5a996df7f"
+  integrity sha512-Y250DGVzmownJ7WgpHxNqWvfTnv4/malaKm/tWm0xE1FxhQE8iErMWFpKxpNDk3MdfXO4/98piVsUwmJMiWoDQ==
+
+"@cornerstonejs/codec-libjpeg-turbo-8bit@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@cornerstonejs/codec-libjpeg-turbo-8bit/-/codec-libjpeg-turbo-8bit-0.0.7.tgz#2ea9b575eed19e6e7e3701b7a50a4ae0ffbef0c4"
+  integrity sha512-qgm6BuVAy5mNP8SJ+A6+VbmPnqgj8jPvJrw4HbUoAzndmf9/VHjTYwawn3kmZWya5ErFAsXQ6c0U0noB1LKAiA==
+
+"@cornerstonejs/codec-openjpeg@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@cornerstonejs/codec-openjpeg/-/codec-openjpeg-0.1.0.tgz#5bca10ae2980ff681ebcdace2074a0adaf12ad86"
+  integrity sha512-9mwseBidYPQ1rGPcUU8JriQnzUi5Bgtontqca7gw47uzxC4Zamoc1Kuho5LUpbS1LSnOLePOkDrg/LCYhJIq8g==
 
 "@cornerstonejs/nifti-image-loader@^1.0.6":
   version "1.0.6"
@@ -6051,10 +6045,10 @@ core-util-is@1.0.2, core-util-is@~1.0.0:
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
   integrity sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
 
-cornerstone-core@^2.2.8:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/cornerstone-core/-/cornerstone-core-2.3.0.tgz#b16430b0dc3883c795fbbd5f64d0f6357f91c889"
-  integrity sha512-1LiCfRIlQvR1j8OhF7/3pvvQvvnTYZUywEkuoEo5K5mMrlKdrQMS75uW1uXb/nXShQDJyyjtTCQSVGgv2yHA+w==
+cornerstone-core@^2.6.0:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/cornerstone-core/-/cornerstone-core-2.6.1.tgz#f9a29a49057f286e8c969c7020e979d567449d42"
+  integrity sha512-LAXjXwNnK2W65ZxpE7phVLjbijkYUrAQIGv5xqKjK8+dmIGlBxqvPHnyGwEqVDyKOWVrpXP6ymUPwrGGRwzgMg==
 
 cornerstone-math@0.1.7:
   version "0.1.7"
@@ -6074,13 +6068,16 @@ cornerstone-math@^0.1.8:
     cornerstone-math "0.1.7"
     dcmjs "0.16.3"
 
-cornerstone-wado-image-loader@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/cornerstone-wado-image-loader/-/cornerstone-wado-image-loader-3.1.0.tgz#6007470be896678636da3188f194f5e66ed07858"
-  integrity sha512-n2yadbwK7rCHqJyh5AUmYVPUY5m7boKpheK60sXV41Z0eSZLin9Ja+P9yeAvkg0VGV+/zaBZGPUGY3YyjdWBgg==
+cornerstone-wado-image-loader@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/cornerstone-wado-image-loader/-/cornerstone-wado-image-loader-4.1.0.tgz#a85c206eb23e188181ed3f1dcf3ec715e65efcb4"
+  integrity sha512-QRoMqBE5xEc1Jttg3eH6RB4jFY2aIEjd9rcbvJszefl0isow+JwcLv2kh1xkSvqGfHGozcz+F4mrORyTNNLuFQ==
   dependencies:
-    dicom-parser "^1.8.3"
-    pako "^1.0.10"
+    "@cornerstonejs/codec-charls" "^0.1.1"
+    "@cornerstonejs/codec-libjpeg-turbo-8bit" "^0.0.7"
+    "@cornerstonejs/codec-openjpeg" "^0.1.0"
+    dicom-parser "^1.8.9"
+    pako "^2.0.4"
 
 cors@^2.8.4:
   version "2.8.5"
@@ -6996,6 +6993,11 @@ dicom-parser@^1.8.4:
   version "1.8.7"
   resolved "https://registry.yarnpkg.com/dicom-parser/-/dicom-parser-1.8.7.tgz#36df15f8b4250e56f164d8a50484c45e0a5668de"
   integrity sha512-JRh6ciXii1JiDFxd3yUiteNZbOd4Ebmq9HBJlxEJ4Gd1CC5tMIs8zoztK69Ih0UeT96ixbmanb4M2mjaaYT8sg==
+
+dicom-parser@^1.8.9:
+  version "1.8.11"
+  resolved "https://registry.yarnpkg.com/dicom-parser/-/dicom-parser-1.8.11.tgz#ffd86289a6b85bb0047379084b57fcc1b28fe7f8"
+  integrity sha512-KbxEDqv4Stynv5AxDh90+jY7MtPvI2uyOG62yD8zKu/pcZqoQYfPX44rB0ULjpxt6YIfXfajrs7B1L97RbjNsg==
 
 dicomweb-client@^0.5.2:
   version "0.5.2"
@@ -14174,15 +14176,20 @@ pako@1.0.6:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.6.tgz#0101211baa70c4bca4a0f63f2206e97b7dfaf258"
   integrity sha512-lQe48YPsMJAig+yngZ87Lus+NF+3mtu7DVOBu6b/gHO1YpKwIj5AWjZ/TOS7i46HD/UixzWb1zeWDZfGZ3iYcg==
 
-pako@^1.0.10, pako@~1.0.2, pako@~1.0.5:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
-  integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
-
 pako@^1.0.11, pako@^1.0.6:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
+
+pako@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-2.0.4.tgz#6cebc4bbb0b6c73b0d5b8d7e8476e2b2fbea576d"
+  integrity sha512-v8tweI900AUkZN6heMU/4Uy4cXRc2AYNRggVmTR+dEncawDJgCdLMximOVA2p4qO57WMynangsfGRb5WD6L1Bg==
+
+pako@~1.0.2, pako@~1.0.5:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
+  integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
 
 parallel-transform@^1.1.0:
   version "1.2.0"
@@ -16306,10 +16313,10 @@ react-transition-group@^4.1.1:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react-vtkjs-viewport@^0.14.2:
-  version "0.14.2"
-  resolved "https://registry.yarnpkg.com/react-vtkjs-viewport/-/react-vtkjs-viewport-0.14.2.tgz#8b3363e4fc0b2084e72d59b3bb6246c27b08b6a4"
-  integrity sha512-sIUU2Om0O4mby9tubjeVRPCNDGSKh2OM7tgpd+wxxjvAqOGRIab51jL+mZTP4ijTMRzZ8Gvl6c4ywOuXnH4RJA==
+react-vtkjs-viewport@^0.14.4:
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/react-vtkjs-viewport/-/react-vtkjs-viewport-0.14.4.tgz#8cc5a49738fff3fee75ead61c98307bc24710151"
+  integrity sha512-WKU87iqH6AQ1R8zp1hUXU4hsGwfbkkoUhzSCjbBGZ9Di0ELYNx/xY9DtdmgsKOU5Y5Arp5+VQW/ziFsq2KTcTA==
   dependencies:
     date-fns "^2.2.1"
     gl-matrix "^3.1.0"
@@ -16678,11 +16685,6 @@ regenerator-runtime@^0.11.0, regenerator-runtime@^0.11.1:
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
-
-regenerator-runtime@^0.12.0:
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.12.1.tgz#fa1a71544764c036f8c49b13a08b2594c9f8a0de"
-  integrity sha512-odxIc1/vDlo4iZcfXqRYFj0vpXFNoGdKMAUieAlFYO6m/nl5e9KR/beGf41z4a1FI+aQgtjhuaSlDxQ0hmkrHg==
 
 regenerator-runtime@^0.13.1, regenerator-runtime@^0.13.2, regenerator-runtime@^0.13.4:
   version "0.13.5"

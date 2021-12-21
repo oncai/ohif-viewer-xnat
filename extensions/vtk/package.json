@@ -32,9 +32,9 @@
     "@ohif/core": "^0.50.0",
     "@ohif/i18n": "^0.50.0",
     "@ohif/ui": "^0.50.0",
-    "cornerstone-core": "^2.2.8",
+    "cornerstone-core": "^2.6.0",
     "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git",
-    "cornerstone-wado-image-loader": "^3.1.0",
+    "cornerstone-wado-image-loader": "^4.1.0",
     "dcmjs": "0.18.8",
     "dicom-parser": "^1.8.3",
     "i18next": "^17.0.3",
@@ -51,13 +51,13 @@
     "@babel/runtime": "^7.5.5",
     "@xnat-ohif/extension-xnat": "^3.2.0-SNAPSHOT",
     "lodash.throttle": "^4.1.1",
-    "react-vtkjs-viewport": "^0.14.2"
+    "react-vtkjs-viewport": "^0.14.4"
   },
   "devDependencies": {
     "@ohif/core": "^2.13.13",
     "@ohif/ui": "^1.9.2",
     "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git",
-    "cornerstone-wado-image-loader": "^3.1.0",
+    "cornerstone-wado-image-loader": "^4.1.0",
     "dicom-parser": "^1.8.3",
     "gh-pages": "^2.0.1",
     "i18next": "^17.0.3",
