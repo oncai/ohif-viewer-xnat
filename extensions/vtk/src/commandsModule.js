@@ -466,6 +466,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
       });
     },
     mpr2d: async ({ viewports }) => {
+      document.querySelector(`.ViewerMain`).style.pointerEvents = 'none';
       // TODO push a lot of this backdoor logic lower down to the library level.
       const displaySet =
         viewports.viewportSpecificData[viewports.activeViewportIndex];
@@ -506,6 +507,8 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         }
       } catch (error) {
         throw new Error(error);
+      } finally {
+        document.querySelector(`.ViewerMain`).style.pointerEvents = '';
       }
 
       resetVolumeProperties(displaySet.Modality);
