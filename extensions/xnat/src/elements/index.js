@@ -27,6 +27,8 @@ import xnatContrastRange from './icons/xnat-contrast-range.svg';
 
 import Loader from './Loader/Loader';
 
+import { sliderUtils, ReactSlider } from './rangeSliders';
+
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
@@ -55,4 +57,4 @@ const XNATICONS = {
   'xnat-contrast-range': xnatContrastRange,
 };
 
-export { XNATICONS, Loader };
+export { XNATICONS, Loader, sliderUtils, ReactSlider };

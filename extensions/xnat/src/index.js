@@ -35,7 +35,7 @@ export { isLoggedIn, xnatAuthenticate } from './utils/xnatDev';
 
 export { userManagement } from './utils/userManagement.js';
 
-export { XNATICONS } from './elements';
+export { XNATICONS, sliderUtils, ReactSlider } from './elements';
 
 export { ICRHelpContent } from './components/HelpContent/ICRHelpContent';
 
@@ -46,8 +46,3 @@ export { XNATViewportOverlay } from './components/XNATViewportOverlay/XNATViewpo
 export { ICRAboutContent } from './components/AboutContent/ICRAboutContent';
 
 export { stackSynchronizer } from './utils/StackSynchronizer/StackSynchronizer';
-
-export {
-  ImageFusionButton,
-  DEFAULT_FUSION_DATA,
-} from './components/XNATImageFusion';

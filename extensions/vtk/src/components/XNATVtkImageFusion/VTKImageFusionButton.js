@@ -1,11 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import OHIF from '@ohif/core';
 import { ToolbarButton } from '@ohif/ui';
-import ConnectedImageFusionDialog from './ConnectedImageFusionDialog';
+import ConnectedVTKImageFusionDialog from './ConnectedVTKImageFusionDialog';
+import volumeProperties from '../../utils/volumeProperties';
 
-const DIALOG_ID = 'COMPOSITE_IMAGE_DIALOG_ID';
+const { setViewportSpecificData } = OHIF.redux.actions;
+const DIALOG_ID = 'VTK_COMPOSITE_IMAGE_DIALOG_ID';
 
-class ImageFusionButton extends PureComponent {
+class VTKImageFusionButton extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -19,28 +22,30 @@ class ImageFusionButton extends PureComponent {
   componentWillUnmount() {
     const { UIDialogService } = this.props.servicesManager.services;
     UIDialogService.dismiss({ id: DIALOG_ID });
+
+    // Empty vtkImageFusionData in store
+    const action = setViewportSpecificData(0, {
+      vtkImageFusionData: undefined,
+    });
+    window.store.dispatch(action);
   }
 
   toggleActive() {
-    const { isVTK, commandsManager, servicesManager, PiecewiseWidget } = this.props;
+    const { commandsManager, servicesManager } = this.props;
     const { UIDialogService, UINotificationService } = servicesManager.services;
 
     const { isActive } = this.state;
 
-    if (isVTK && !isActive) {
+    if (!isActive) {
       // Wait until the background image is fully loaded
       const viewports = window.store.getState().viewports;
       const displaySetInstanceUID =
         viewports.viewportSpecificData[0].displaySetInstanceUID;
-      if (
-        !commandsManager.runCommand('getVolumeProperties', {
-          displaySetInstanceUID,
-        })
-      ) {
+      if (!volumeProperties.getProperties(displaySetInstanceUID)) {
         if (UINotificationService) {
           UINotificationService.show({
             title: 'Image Fusion',
-            message: 'Please wait until the background image is fully loaded.',
+            message: 'Please wait until the image is fully loaded.',
             type: 'info',
           });
         }
@@ -51,20 +56,16 @@ class ImageFusionButton extends PureComponent {
     if (isActive) {
       UIDialogService.dismiss({ id: DIALOG_ID });
     } else {
-      const colormaps = commandsManager.runCommand('getColormaps');
       const spacing = 20;
       const { x, y } = document
         .querySelector(`.ViewerMain`)
         .getBoundingClientRect();
       UIDialogService.create({
         id: DIALOG_ID,
-        content: ConnectedImageFusionDialog,
+        content: ConnectedVTKImageFusionDialog,
         contentProps: {
           onClose: this.toggleActive,
-          isVTK: isVTK,
-          colormaps: colormaps,
           commandsManager: commandsManager,
-          PiecewiseWidget: PiecewiseWidget,
         },
         defaultPosition: {
           x: x + spacing || 0,
@@ -95,20 +96,18 @@ class ImageFusionButton extends PureComponent {
   }
 }
 
-ImageFusionButton.propTypes = {
+VTKImageFusionButton.propTypes = {
   parentContext: PropTypes.object.isRequired,
   toolbarClickCallback: PropTypes.func.isRequired,
   button: PropTypes.object.isRequired,
   activeButtons: PropTypes.array.isRequired,
   isActive: PropTypes.bool,
-  isVTK: PropTypes.bool,
   servicesManager: PropTypes.object,
   commandsManager: PropTypes.object,
-  PiecewiseWidget: PropTypes.elementType,
 };
 
-ImageFusionButton.defaultProps = {
+VTKImageFusionButton.defaultProps = {
   isVTK: false,
 };
 
-export default ImageFusionButton;
+export default VTKImageFusionButton;

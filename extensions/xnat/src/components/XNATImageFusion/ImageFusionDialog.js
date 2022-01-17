@@ -2,14 +2,14 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 import OHIF from '@ohif/core';
-import { commandsManager } from '@ohif/viewer/src/App';
 import { Icon } from '@ohif/ui';
 import { isEqual, isEmpty } from 'lodash';
 import {
-  CSOpacityRange,
+  LayerOpacityRange,
   VTKIntensityRange,
+  VTKWindowLevelRange,
   VTKOpacityRange,
-} from './SliderRangeElements';
+} from '../../elements/rangeSliders';
 
 import './ImageFusionDialog.styl';
 
@@ -57,12 +57,13 @@ class ImageFusionDialog extends PureComponent {
       ...DEFAULT_FUSION_DATA,
       colormap: this.contextColormaps.defaultColormap,
       isLoading: false,
-      rangeInfo: {},
+      vtkProperties: {},
       requiresApply: false,
     };
 
     this.onApplyFusion = this.onApplyFusion.bind(this);
     this.onActiveScanChange = this.onActiveScanChange.bind(this);
+    this.onToggleVisibility = this.onToggleVisibility.bind(this);
     this.onColormapChanged = this.onColormapChanged.bind(this);
     this.onOpacityChanged = this.onOpacityChanged.bind(this);
     this.onIntensityRangeChanged = this.onIntensityRangeChanged.bind(this);
@@ -83,13 +84,13 @@ class ImageFusionDialog extends PureComponent {
     const newState = { layerList: updatedLayerList, ..._imageFusionData };
 
     if (isVTK) {
-      const volumeData = commandsManager.runCommand('getVolumeLoadedData', {
-        displaySetInstanceUID: _imageFusionData.displaySetInstanceUID,
-      });
-      if (!volumeData) {
-        newState.rangeInfo = {};
+      const vtkProperties = this.getVolumeProperties(
+        _imageFusionData.displaySetInstanceUID
+      );
+      if (!vtkProperties) {
+        newState.vtkProperties = {};
       } else {
-        newState.rangeInfo = volumeData.rangeInfo;
+        newState.vtkProperties = vtkProperties;
       }
     }
 
@@ -123,6 +124,18 @@ class ImageFusionDialog extends PureComponent {
     }
   }
 
+  getVolumeProperties(displaySetInstanceUID) {
+    const { commandsManager } = this.props;
+    const userProperties = commandsManager.runCommand('getVolumeProperties', {
+      displaySetInstanceUID,
+      options: { source: 'user' },
+    });
+
+    if (userProperties) {
+      return userProperties.fg;
+    }
+  }
+
   updateStore(updatedImageFusionData) {
     const { activeViewportIndex, setViewportFusionData } = this.props;
 
@@ -134,12 +147,17 @@ class ImageFusionDialog extends PureComponent {
       visible,
     } = this.state;
 
+    const isVisible =
+      updatedImageFusionData.visible !== undefined
+        ? updatedImageFusionData.visible
+        : visible;
+
     const imageFusionData = {
       displaySetInstanceUID:
         updatedImageFusionData.displaySetInstanceUID || displaySetInstanceUID,
       opacity: updatedImageFusionData.opacity || opacity,
       colormap: updatedImageFusionData.colormap || colormap,
-      visible: updatedImageFusionData.visible || visible,
+      visible: isVisible,
       StudyInstanceUID,
       onLoadedVolumeData: updatedImageFusionData.onLoadedVolumeData,
     };
@@ -184,10 +202,8 @@ class ImageFusionDialog extends PureComponent {
   }
 
   onLoadedVolumeData(displaySetInstanceUID) {
-    const volumeData = commandsManager.runCommand('getVolumeLoadedData', {
-      displaySetInstanceUID,
-    });
-    this.setState({ isLoading: false, rangeInfo: volumeData.rangeInfo });
+    const vtkProperties = this.getVolumeProperties(displaySetInstanceUID);
+    this.setState({ isLoading: false, vtkProperties: vtkProperties });
   }
 
   onActiveScanChange(evt) {
@@ -203,14 +219,11 @@ class ImageFusionDialog extends PureComponent {
     };
 
     if (isVTK) {
-      // Get range information
-      const volumeData = commandsManager.runCommand('getVolumeLoadedData', {
-        displaySetInstanceUID,
-      });
-      if (!volumeData) {
-        newState.rangeInfo = {};
+      const vtkProperties = this.getVolumeProperties(displaySetInstanceUID);
+      if (!vtkProperties) {
+        newState.vtkProperties = {};
       } else {
-        newState.rangeInfo = volumeData.rangeInfo;
+        newState.vtkProperties = vtkProperties;
       }
     }
 
@@ -222,7 +235,7 @@ class ImageFusionDialog extends PureComponent {
     const { displaySetInstanceUID, StudyInstanceUID } = this.state;
 
     const newState = {
-      rangeInfo: {},
+      vtkProperties: {},
       requiresApply: false,
     };
 
@@ -245,14 +258,12 @@ class ImageFusionDialog extends PureComponent {
 
         if (isVTK) {
           // Has the volume loaded before?
-          const volumeData = commandsManager.runCommand('getVolumeLoadedData', {
-            displaySetInstanceUID,
-          });
-          if (!volumeData) {
+          const vtkProperties = this.getVolumeProperties(displaySetInstanceUID);
+          if (!vtkProperties) {
             onLoadedVolumeData = this.onLoadedVolumeData;
             newState.isLoading = true;
           } else {
-            newState.rangeInfo = volumeData.rangeInfo;
+            newState.vtkProperties = vtkProperties;
           }
         }
       }
@@ -263,14 +274,32 @@ class ImageFusionDialog extends PureComponent {
     }
   }
 
+  onToggleVisibility() {
+    const { isVTK } = this.props;
+    const { displaySetInstanceUID, visible } = this.state;
+
+    const isVisible = !visible;
+
+    if (isVTK) {
+      const { commandsManager } = this.props;
+      commandsManager.runCommand('updateVolumeVisibility', {
+        displaySetInstanceUID,
+        isVisible,
+      });
+    }
+
+    this.updateStore({ visible: isVisible });
+  }
+
   onColormapChanged(evt) {
     const { isVTK } = this.props;
-    const { displaySetInstanceUID, rangeInfo } = this.state;
+    const { displaySetInstanceUID, vtkProperties } = this.state;
 
     const colormap = evt.target.value;
 
     if (isVTK) {
-      const { user, opacity } = rangeInfo;
+      const { user, opacity } = vtkProperties;
+      const { commandsManager } = this.props;
       commandsManager.runCommand('updateVolumeColorAndOpacityRange', {
         displaySetInstanceUID,
         colormap,
@@ -288,52 +317,50 @@ class ImageFusionDialog extends PureComponent {
     this.updateStore({ opacity: opacity });
   }
 
-  onIntensityRangeChanged(valueArray) {
+  onIntensityRangeChanged(valueRange) {
     const { isVTK } = this.props;
-    const { displaySetInstanceUID, colormap, rangeInfo } = this.state;
+    const { displaySetInstanceUID, colormap, vtkProperties } = this.state;
 
     if (isVTK) {
-      const volumeData = commandsManager.runCommand(
+      const { commandsManager } = this.props;
+      const vtkProperties = commandsManager.runCommand(
         'updateVolumeColorAndOpacityRange',
         {
           displaySetInstanceUID,
           colormap,
-          userRange: {
-            lower: valueArray[0],
-            middle: valueArray[1],
-            upper: valueArray[2],
-          },
-          opacity: rangeInfo.opacity,
+          userRange: { ...vtkProperties.user, ...valueRange },
+          opacity: vtkProperties.opacity,
         }
       );
-      const newRangeInfo = volumeData.rangeInfo || {};
+      const newRangeInfo = vtkProperties.vtkProperties || {};
 
-      this.setState({ rangeInfo: newRangeInfo });
+      this.setState({ vtkProperties: newRangeInfo });
     }
   }
 
   onOpacityRangeChanged(valueArray) {
     const { isVTK } = this.props;
-    const { displaySetInstanceUID, colormap, rangeInfo } = this.state;
+    const { displaySetInstanceUID, colormap, vtkProperties } = this.state;
 
     if (isVTK) {
-      const volumeData = commandsManager.runCommand(
+      const { commandsManager } = this.props;
+      const vtkProperties = commandsManager.runCommand(
         'updateVolumeColorAndOpacityRange',
         {
           displaySetInstanceUID,
           colormap,
-          userRange: rangeInfo.user,
+          userRange: vtkProperties.user,
           opacity: valueArray,
         }
       );
-      const newRangeInfo = volumeData.rangeInfo || {};
+      const newRangeInfo = vtkProperties.vtkProperties || {};
 
-      this.setState({ rangeInfo: newRangeInfo });
+      this.setState({ vtkProperties: newRangeInfo });
     }
   }
 
   render() {
-    const { onClose, isVTK } = this.props;
+    const { onClose, isVTK, PiecewiseWidget } = this.props;
     const {
       layerList,
       displaySetInstanceUID,
@@ -342,7 +369,7 @@ class ImageFusionDialog extends PureComponent {
       colormap,
       visible,
       isLoading,
-      rangeInfo,
+      vtkProperties,
       requiresApply,
     } = this.state;
 
@@ -401,14 +428,11 @@ class ImageFusionDialog extends PureComponent {
 
     return (
       <div className={className}>
-        {/*<div className="dialogHandle">*/}
-        {/*  <Icon name="xnat-image-composition" width="26px" height="26px" />*/}
-        {/*</div>*/}
         <div className="ImageFusionDialog">
           <div className="row">
             {scanList}
             <button
-              className={`${requiresApply ? 'jump' : undefined}`}
+              className={`${requiresApply ? 'jump' : ''}`}
               onClick={this.onApplyFusion}
             >
               Apply
@@ -424,10 +448,19 @@ class ImageFusionDialog extends PureComponent {
                 ))}
               </select>
             </div>
+            <div className="group">
+              <Icon
+                name={visible ? 'eye' : 'eye-closed'}
+                className="visibility"
+                width="22px"
+                height="22px"
+                onClick={event => this.onToggleVisibility()}
+              />
+            </div>
             {!isVTK && (
               <div className="group">
                 <Icon name="xnat-opacity" width="22px" height="22px" />
-                <CSOpacityRange
+                <LayerOpacityRange
                   opacity={opacity}
                   onOpacityChanged={this.onOpacityChanged}
                 />
@@ -435,29 +468,25 @@ class ImageFusionDialog extends PureComponent {
             )}
           </div>
 
-          {isVTK && !isEmpty(rangeInfo) && (
-            <>
-              <div className="row">
-                <div className="group">
-                  <Icon name="xnat-contrast-range" width="22px" height="22px" />
-                  <VTKIntensityRange
-                    rangeInfo={rangeInfo}
-                    onIntensityRangeChanged={this.onIntensityRangeChanged}
-                    modality={modality}
-                  />
-                </div>
+          {isVTK && !isEmpty(vtkProperties) && (
+            <div className="row">
+              <div className="group">
+                <Icon name="xnat-contrast-range" width="22px" height="22px" />
+                <VTKWindowLevelRange
+                  rangeInfo={{
+                    voiRange: vtkProperties.voiRange,
+                    dataRange: vtkProperties.dataRange,
+                  }}
+                  onIntensityRangeChanged={this.onIntensityRangeChanged}
+                  modality={modality}
+                />
               </div>
-              <div className="row" style={{ marginBottom: 15 }}>
-                <div className="group">
-                  <Icon name="xnat-opacity" width="22px" height="22px" />
-                  <VTKOpacityRange
-                    rangeInfo={rangeInfo}
-                    onOpacityRangeChanged={this.onOpacityRangeChanged}
-                  />
-                </div>
-              </div>
-            </>
+            </div>
           )}
+
+          {/*{isVTK && !isEmpty(vtkProperties) && (*/}
+          {/*  <PiecewiseWidget displaySetInstanceUID={displaySetInstanceUID} />*/}
+          {/*)}*/}
         </div>
       </div>
     );
@@ -471,6 +500,8 @@ ImageFusionDialog.propTypes = {
   colormaps: PropTypes.object.isRequired,
   activeViewportIndex: PropTypes.number.isRequired,
   setViewportFusionData: PropTypes.func.isRequired,
+  commandsManager: PropTypes.object,
+  PiecewiseWidget: PropTypes.elementType,
 };
 
 export default ImageFusionDialog;

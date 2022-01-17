@@ -1,4 +1,4 @@
-.ImageFusionDialogContainer
+.VtkImageFusionDialogContainer
   display: flex
   flex-direction: row
   justify-content: center
@@ -11,30 +11,33 @@
   width: inherit
   overflow: hidden
 
-  .ImageFusionDialog
+  .VtkImageFusionDialog
     display: flex
     flex-direction: column
     padding: 1em
+    //width: 450px
 
-    .pwgWidget
-      //margin: 0 0 10px 0
+    .header
+      margin: -1em -1em 1em -1em
+      padding: 5px 10px
       display: flex
-      flex-direction: row
+      justify-content: space-between
       align-items: center
-      //border: 2px solid var(--default-color)
+      color: var(--ui-gray-darkest)
+      background: var(--active-color)
+      opacity: 0.5
+
+      svg
+        user-select: none
+        pointer-events: none
 
     .row
-      margin: 15px 0
+      margin: 0
       display: flex
       flex-direction: row
-      //justify-content: center
+      justify-content: space-between
       align-items: center
       //height: 20px
-
-      &:first-of-type
-        margin-top: 0
-      &:last-of-type
-        margin-bottom: 0
 
       .group
         display: flex
@@ -55,6 +58,9 @@
             pointer-events: auto
             cursor: pointer
 
+          &.invisible
+            color: orangered
+
   .verticalLine
     margin: 0 5px
     &:after
@@ -71,13 +77,13 @@
 
   .closeButton
     cursor: pointer
-    margin: -8px 0 0 0
+    //margin: -8px 0 0 0
     padding: 0
     background-color: transparent
     border: none
-    color: var(--text-secondary-color)
+    color: var(--ui-gray-darkest)
     font-size: 20px
-    font-weight: lighter
+    font-weight: normal
 
     &:hover, &:active, &.active
       background-color: transparent

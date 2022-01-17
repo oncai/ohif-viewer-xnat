@@ -178,6 +178,7 @@ const DialogProvider = ({ children, service }) => {
               'INPUT',
               'SPAN',
               'LABEL',
+              'CANVAS',
             ];
             if (BLACKLIST.includes(target.tagName.toUpperCase())) {
               return false;

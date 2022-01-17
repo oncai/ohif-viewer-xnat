@@ -31,8 +31,8 @@ const vtkExtension = {
     );
     return withCommandsManager(ExtendedVTKViewport, commandsManager);
   },
-  getToolbarModule() {
-    return toolbarModule;
+  getToolbarModule({ commandsManager, servicesManager }) {
+    return toolbarModule({ commandsManager, servicesManager });
   },
   getCommandsModule({ commandsManager, servicesManager }) {
     return commandsModule({ commandsManager, servicesManager });

@@ -1,6 +1,6 @@
+/* eslint-disable no-console */
 import React, { Component } from 'react';
 import { loadImageData, getImageData } from 'react-vtkjs-viewport';
-// import getImageData from './__forkedFromReactVtkjsViewport/lib/getImageData';
 import ConnectedVTKViewport from './ConnectedVTKViewport';
 import LoadingIndicator from './LoadingIndicator.js';
 import OHIF from '@ohif/core';
@@ -11,16 +11,9 @@ import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
 import vtkImageData from 'vtk.js/Sources/Common/DataModel/ImageData';
 import vtkVolume from 'vtk.js/Sources/Rendering/Core/Volume';
 import vtkVolumeMapper from 'vtk.js/Sources/Rendering/Core/VolumeMapper';
-import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
-import vtkPiecewiseFunction from 'vtk.js/Sources/Common/DataModel/PiecewiseFunction';
-import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
-import {
-  volumeCache,
-  labelmapCache,
-  volumeLoadedData,
-} from './utils/viewportDataCache';
-import { DEFAULT_FUSION_DATA } from '@xnat-ohif/extension-xnat';
-import { VALUE_RANGE } from './utils/constants';
+import { volumeCache, labelmapCache } from './utils/viewportDataCache';
+import { DEFAULT_MODALITY_RANGE } from './utils/constants';
+import volumeProperties from './utils/volumeProperties';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -74,13 +67,14 @@ class OHIFVTKViewport extends Component {
         sopClassUIDs: PropTypes.arrayOf(PropTypes.string),
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
-        imageFusionData: PropTypes.object,
+        vtkImageFusionData: PropTypes.object,
       }),
     }),
     viewportIndex: PropTypes.number.isRequired,
     children: PropTypes.node,
     onScroll: PropTypes.func,
     servicesManager: PropTypes.object.isRequired,
+    commandsManager: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -286,8 +280,12 @@ class OHIFVTKViewport extends Component {
     };
   };
 
-  getViewportFusionData = (studies, imageFusionData) => {
-    const { StudyInstanceUID, displaySetInstanceUID, onLoadedVolumeData } = imageFusionData;
+  getViewportFusionData = (studies, vtkImageFusionData) => {
+    const {
+      StudyInstanceUID,
+      displaySetInstanceUID,
+      onLoadedFusionData,
+    } = vtkImageFusionData;
 
     const study = studyMetadataManager.get(StudyInstanceUID);
     const displaySet = study.findDisplaySet(
@@ -313,8 +311,7 @@ class OHIFVTKViewport extends Component {
 
     const imageDataObject = getImageData(stack.imageIds, displaySetInstanceUID);
     imageDataObject.displaySetInstanceUID = displaySetInstanceUID;
-    imageDataObject.onLoadedVolumeData = onLoadedVolumeData;
-    imageDataObject.imageFusionData = imageFusionData;
+    imageDataObject.onLoadedFusionData = onLoadedFusionData;
 
     return imageDataObject;
   };
@@ -343,6 +340,12 @@ class OHIFVTKViewport extends Component {
     // TODO -> Should update react-vtkjs-viewport and react-cornerstone-viewports
     // internals to use naturalized DICOM JSON names.
 
+    const {
+      windowWidth: width,
+      windowCenter: center,
+      modality,
+    } = imageMetaData0;
+
     const volumeActor = vtkVolume.newInstance();
 
     const volumeMapper = vtkVolumeMapper.newInstance();
@@ -350,10 +353,8 @@ class OHIFVTKViewport extends Component {
     volumeActor.setMapper(volumeMapper);
     volumeMapper.setInputData(vtkImageData);
 
-    const voiRange = _setVolumeColorRangeFromVOI(volumeActor, imageMetaData0);
-    imageDataObject.rangeInfo = {
-      voi: { ...voiRange },
-    };
+    const voi = _getRangeFromWindowLevels(width, center, modality);
+    const voiRange = [voi.lower, voi.upper];
 
     const spacing = vtkImageData.getSpacing();
     // Set the sample distance to half the mean length of one side. This is where the divide by 6 comes from.
@@ -362,6 +363,7 @@ class OHIFVTKViewport extends Component {
     const sampleDistance =
       (parseFloat(spacing[0]) +
         parseFloat(spacing[1]) +
+        // eslint-disable-next-line prettier/prettier
         parseFloat(spacing[2])) / 6;
 
     volumeMapper.setSampleDistance(sampleDistance);
@@ -372,10 +374,17 @@ class OHIFVTKViewport extends Component {
 
     volumeCache.set(displaySetInstanceUID, volumeActor);
 
+    volumeProperties.registerVolume(
+      displaySetInstanceUID,
+      volumeActor,
+      voiRange
+    );
+    volumeProperties.setColorAndOpacityUsingVoi(volumeActor, voiRange);
+
     return volumeActor;
   }
 
-  setStateFromProps(prevImageFusionData) {
+  setStateFromProps() {
     const { studies, displaySet } = this.props.viewportData;
     const {
       StudyInstanceUID,
@@ -396,33 +405,7 @@ class OHIFVTKViewport extends Component {
       study => study.StudyInstanceUID === StudyInstanceUID
     );
 
-    const groupDetailsInField = (field, extraFields = {}) => {
-      const fieldValue = field || '';
-      const { studyDescription, seriesNumber, seriesDescription} = extraFields;
-      return (
-        <>
-          {fieldValue}
-          <div>{studyDescription}</div>
-          <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
-          <div>{seriesDescription}</div>
-        </>
-      );
-    };
-
-    const dataDetails = {
-      studyDate: undefined, //study.studyDate,
-      studyTime: undefined, //study.studyTime,
-      studyDescription: undefined, //study.StudyDescription,
-      patientName: study.PatientName,
-      // patientId: study.PatientID,
-      patientId: groupDetailsInField('', {
-        studyDescription: study.StudyDescription,
-        seriesNumber: String(displaySet.SeriesNumber),
-        seriesDescription: displaySet.SeriesDescription,
-      }),
-      seriesNumber: undefined, //String(displaySet.SeriesNumber),
-      seriesDescription: undefined, //displaySet.SeriesDescription,
-    };
+    const dataDetails = this.getDataDetails(study, displaySet);
 
     try {
       const {
@@ -437,6 +420,7 @@ class OHIFVTKViewport extends Component {
         SOPInstanceUID,
         frameIndex
       );
+      imageDataObject.isFusionVolume = false;
 
       this.imageDataObject = imageDataObject;
 
@@ -454,37 +438,27 @@ class OHIFVTKViewport extends Component {
 
       // Image fusion pipeline
       let imageFusionDataObject;
-      const imageFusionData = displaySet.imageFusionData || {
-        ...DEFAULT_FUSION_DATA,
-      };
+      const vtkImageFusionData = displaySet.vtkImageFusionData;
+      const fusionDisplaySetInstanceUID = vtkImageFusionData
+        ? vtkImageFusionData.displaySetInstanceUID
+        : 'none';
 
       let fusionIsLoaded = true;
-      if (imageFusionData.displaySetInstanceUID !== 'none') {
+      if (fusionDisplaySetInstanceUID !== 'none') {
         imageFusionDataObject = this.getViewportFusionData(
           studies,
-          imageFusionData
+          vtkImageFusionData
         );
+        imageFusionDataObject.isFusionVolume = true;
         const fusionVolumeActor = this.getOrCreateVolume(
           imageFusionDataObject,
-          imageFusionData.displaySetInstanceUID
+          vtkImageFusionData.displaySetInstanceUID
         );
-        fusionVolumeActor.setVisibility(imageFusionData.visible);
+        fusionVolumeActor
+          .getMapper()
+          .setBlendMode(volumeActor.getMapper().getBlendMode());
         volumeActors.push(fusionVolumeActor);
         fusionIsLoaded = false;
-      }
-
-      if (prevImageFusionData) {
-        if (
-          imageFusionData.displaySetInstanceUID !==
-          prevImageFusionData.displaySetInstanceUID
-        ) {
-          const cachedVolume = volumeCache.get(
-            prevImageFusionData.displaySetInstanceUID
-          );
-          if (cachedVolume) {
-            cachedVolume.setVisibility(false);
-          }
-        }
       }
 
       this.setState(
@@ -561,37 +535,52 @@ class OHIFVTKViewport extends Component {
     const { displaySet } = this.props.viewportData;
     const prevDisplaySet = prevProps.viewportData.displaySet;
 
-    const imageFusionData = displaySet.imageFusionData || {
-      ...DEFAULT_FUSION_DATA,
-    };
-
-    const prevImageFusionData = prevDisplaySet.imageFusionData || {
-      ...DEFAULT_FUSION_DATA,
-    };
+    const vtkImageFusionData = displaySet.vtkImageFusionData;
+    const fusionDisplaySetInstanceUID = vtkImageFusionData
+      ? vtkImageFusionData.displaySetInstanceUID
+      : 'none';
+    const prevVtkImageFusionData = prevDisplaySet.vtkImageFusionData;
+    const prevFusionDisplaySetInstanceUID = prevVtkImageFusionData
+      ? prevVtkImageFusionData.displaySetInstanceUID
+      : 'none';
 
     if (
       displaySet.displaySetInstanceUID !==
         prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
       displaySet.frameIndex !== prevDisplaySet.frameIndex ||
-      imageFusionData.displaySetInstanceUID !==
-        prevImageFusionData.displaySetInstanceUID
+      fusionDisplaySetInstanceUID !== prevFusionDisplaySetInstanceUID
     ) {
-      this.setStateFromProps(prevImageFusionData);
+      this.setStateFromProps();
     }
   }
 
   updateVtkViewportApi() {
-    this.props.commandsManager.runCommand('updateVtkApi');
+    this.props.commandsManager.runCommand('updateVtkApi', {
+      viewportIndex: this.props.viewportIndex,
+    });
   }
 
   loadProgressively(imageDataObject, percentCompleteTarget, isLoadedTarget) {
     loadImageData(imageDataObject);
 
-    const { isLoading, imageIds, displaySetInstanceUID } = imageDataObject;
+    const {
+      isLoading,
+      imageIds,
+      displaySetInstanceUID,
+      onLoadedFusionData,
+      isFusionVolume,
+    } = imageDataObject;
 
     if (!isLoading) {
       this.setState({ [isLoadedTarget]: true });
+      volumeProperties.applyUserPropertiesToVolume(
+        displaySetInstanceUID,
+        isFusionVolume
+      );
+      if (onLoadedFusionData && typeof onLoadedFusionData === 'function') {
+        onLoadedFusionData(displaySetInstanceUID);
+      }
       return;
     }
 
@@ -636,30 +625,20 @@ class OHIFVTKViewport extends Component {
     };
 
     const onAllPixelDataInsertedCallback = () => {
-      const {
-        vtkImageData,
-        rangeInfo,
-        onLoadedVolumeData,
-        imageFusionData,
-      } = imageDataObject;
-      if (!volumeLoadedData.has(displaySetInstanceUID)) {
-        _setRangeInfo(vtkImageData, rangeInfo);
-        volumeLoadedData.set(displaySetInstanceUID, { rangeInfo });
-        if (imageFusionData) {
-          _setColormapAndOpacity(
-            displaySetInstanceUID,
-            imageFusionData,
-            rangeInfo
-          );
+      if (!volumeProperties.isInitialized(displaySetInstanceUID)) {
+        volumeProperties.initVolume(displaySetInstanceUID);
+        volumeProperties.applyUserPropertiesToVolume(
+          displaySetInstanceUID,
+          isFusionVolume
+        );
+        if (onLoadedFusionData && typeof onLoadedFusionData === 'function') {
+          onLoadedFusionData(displaySetInstanceUID);
         }
-        if (onLoadedVolumeData && typeof onLoadedVolumeData === 'function') {
-          onLoadedVolumeData(displaySetInstanceUID);
-        }
-        // Update the API
-        setTimeout(() => {
-          this.updateVtkViewportApi();
-        }, 300);
       }
+      // Update the API
+      setTimeout(() => {
+        this.updateVtkViewportApi();
+      }, 300);
       this.setState({
         [isLoadedTarget]: true,
       });
@@ -668,6 +647,38 @@ class OHIFVTKViewport extends Component {
     imageDataObject.onPixelDataInserted(onPixelDataInsertedCallback);
     imageDataObject.onAllPixelDataInserted(onAllPixelDataInsertedCallback);
     imageDataObject.onPixelDataInsertedError(onPixelDataInsertedErrorCallback);
+  }
+
+  getDataDetails(study, displaySet) {
+    const groupDetailsInField = (field, extraFields = {}) => {
+      const fieldValue = field || '';
+      const { studyDescription, seriesNumber, seriesDescription } = extraFields;
+      return (
+        <>
+          {fieldValue}
+          <div>{studyDescription}</div>
+          <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
+          <div>{seriesDescription}</div>
+        </>
+      );
+    };
+
+    const dataDetails = {
+      studyDate: undefined, //study.studyDate,
+      studyTime: undefined, //study.studyTime,
+      studyDescription: undefined, //study.StudyDescription,
+      patientName: study.PatientName,
+      // patientId: study.PatientID,
+      patientId: groupDetailsInField('', {
+        studyDescription: study.StudyDescription,
+        seriesNumber: String(displaySet.SeriesNumber),
+        seriesDescription: displaySet.SeriesDescription,
+      }),
+      seriesNumber: undefined, //String(displaySet.SeriesNumber),
+      seriesDescription: undefined, //displaySet.SeriesDescription,
+    };
+
+    return dataDetails;
   }
 
   render() {
@@ -732,72 +743,6 @@ class OHIFVTKViewport extends Component {
   }
 }
 
-function _setVolumeColorRangeFromVOI(volumeActor, imageMetaData0) {
-  const { windowWidth: width, windowCenter: center, modality } = imageMetaData0;
-
-  // Set color range
-  const levelsAreNumbers = !(isNaN(center) || isNaN(width));
-  const colorRange = { lower: 0, upper: 512 };
-  if (modality === 'PT') {
-    const pt = VALUE_RANGE.PT;
-    colorRange.lower = pt[0];
-    colorRange.upper = pt[1];
-  } else if (levelsAreNumbers) {
-    colorRange.lower = center - width / 2.0;
-    colorRange.upper = center + width / 2.0;
-  }
-
-  const preset = vtkColorMaps.getPresetByName('Grayscale');
-  const cfun = volumeActor.getProperty().getRGBTransferFunction(0);
-  cfun.applyColorMap(preset);
-  cfun.setMappingRange(colorRange.lower, colorRange.upper);
-
-  return colorRange;
-}
-
-function _setRangeInfo(vtkImageData, rangeInfo) {
-  const { voi } = rangeInfo;
-  const dataRange = vtkImageData.getPointData().getScalars().getRange();
-  const data = { lower: dataRange[0], upper: dataRange[1] };
-
-  if (voi.lower < data.lower) {
-    voi.lower = data.lower;
-  }
-  if (voi.upper > data.upper) {
-    voi.upper = data.upper;
-  }
-
-  voi.middle = (voi.upper - voi.lower) / 50;
-
-  rangeInfo.data = { ...data };
-  rangeInfo.user = { ...voi };
-  rangeInfo.opacity = [0.0, 0.9, 1.0];
-}
-
-function _setColormapAndOpacity(
-  displaySetInstanceUID,
-  imageFusionData,
-  rangeInfo
-) {
-  const { voi, opacity } = rangeInfo;
-  const cachedVolume = volumeCache.get(displaySetInstanceUID);
-  if (cachedVolume) {
-    const colormap = imageFusionData.colormap || 'Grayscale';
-    const preset = vtkColorMaps.getPresetByName(colormap);
-    const cfun = cachedVolume.getProperty().getRGBTransferFunction(0);
-    cfun.applyColorMap(preset);
-    cfun.setMappingRange(voi.lower, voi.upper);
-
-    // Create scalar opacity function
-    const ofun = vtkPiecewiseFunction.newInstance();
-    ofun.addPoint(voi.lower, opacity[0]);
-    ofun.addPoint(voi.middle, opacity[1]);
-    ofun.addPoint(voi.upper, opacity[2]);
-
-    cachedVolume.getProperty().setScalarOpacity(0, ofun);
-  }
-}
-
 /**
  * Takes window levels and converts them to a range (lower/upper)
  * for use with VTK RGBTransferFunction
@@ -811,7 +756,8 @@ function _setColormapAndOpacity(
 function _getRangeFromWindowLevels(width, center, Modality = undefined) {
   // For PET just set the range to 0-5 SUV
   if (Modality === 'PT') {
-    return { lower: 0, upper: 5 };
+    const pt = DEFAULT_MODALITY_RANGE.PT;
+    return { lower: pt[0], upper: pt[1] };
   }
 
   const levelsAreNotNumbers = isNaN(center) || isNaN(width);

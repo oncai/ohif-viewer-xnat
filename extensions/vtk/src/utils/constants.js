@@ -1,5 +1,5 @@
-const VALUE_RANGE = {
+const DEFAULT_MODALITY_RANGE = {
   PT: [0, 5],
 };
 
-export { VALUE_RANGE };
+export { DEFAULT_MODALITY_RANGE };
