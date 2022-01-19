@@ -34,7 +34,14 @@ const { getToolState } = cornerstoneTools;
 
 const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
   try {
-    const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
+    const studies = studyMetadataManager.all();
+    const studyMetadata = studies.find(
+      study =>
+        study.getStudyInstanceUID() === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
+    );
     const displaySet = studyMetadata.findDisplaySet(
       displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
     );
@@ -358,7 +365,7 @@ export default class XNATSegmentationPanel extends React.Component {
    * @param segmentIndex
    */
   onMaskClick(segmentIndex, frameIndex) {
-    const { activeIndex, onSegmentItemClick } = this.props;
+    const { activeIndex, onSegmentItemClick, viewports } = this.props;
 
     const enabledElements = cornerstone.getEnabledElements();
     const element = enabledElements[activeIndex].element;
@@ -379,6 +386,7 @@ export default class XNATSegmentationPanel extends React.Component {
       SOPInstanceUID,
       frameIndex,
       activeViewportIndex: activeIndex,
+      displaySetInstanceUID: viewports[activeIndex].displaySetInstanceUID,
     });
   }
 

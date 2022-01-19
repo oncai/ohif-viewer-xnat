@@ -321,7 +321,7 @@ export default class XNATContourPanel extends React.Component {
   }
 
   onContourClick(roiContourUid) {
-    const { activeIndex, onContourItemClick } = this.props;
+    const { activeIndex, onContourItemClick, viewports } = this.props;
     const { SeriesInstanceUID } = this.state;
 
     const enabledElements = cornerstone.getEnabledElements();
@@ -347,7 +347,8 @@ export default class XNATContourPanel extends React.Component {
       StudyInstanceUID,
       SOPInstanceUID,
       frameIndex,
-      activeViewportIndex: activeIndex
+      activeViewportIndex: activeIndex,
+      displaySetInstanceUID: viewports[activeIndex].displaySetInstanceUID,
     });
   }
 

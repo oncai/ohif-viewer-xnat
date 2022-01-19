@@ -62,8 +62,14 @@ class MetadataProvider {
 
     let metaLoadedFromImage = false;
 
-    if (imageId in cornerstone.imageCache.imageCache) {
-      const imageCache = cornerstone.imageCache.imageCache[imageId];
+    const imageId0 = `${imageId}?frame=0`;
+    const imageIdInCache =
+      imageId in cornerstone.imageCache.imageCache ||
+      imageId0 in cornerstone.imageCache.imageCache;
+
+    if (imageIdInCache) {
+      const imageCache = cornerstone.imageCache.imageCache[imageId] ||
+        cornerstone.imageCache.imageCache[imageId0];
 
       if (imageCache.loaded) {
         const arrayBuffer = imageCache.image.data.byteArray.buffer;

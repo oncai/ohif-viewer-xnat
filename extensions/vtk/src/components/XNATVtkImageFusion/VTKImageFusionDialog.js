@@ -19,8 +19,14 @@ const _getModality = ({ StudyInstanceUID, displaySetInstanceUID }) => {
   if (!StudyInstanceUID || displaySetInstanceUID === 'none') {
     return;
   }
-
-  const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
+  const studies = studyMetadataManager.all();
+  const studyMetadata = studies.find(
+    study =>
+      study.getStudyInstanceUID() === StudyInstanceUID &&
+      study.displaySets.some(
+        ds => ds.displaySetInstanceUID === displaySetInstanceUID
+      )
+  );
   const displaySet = studyMetadata.findDisplaySet(
     displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
   );
@@ -145,15 +151,24 @@ class VTKImageFusionDialog extends PureComponent {
   getLayerList(validOverlayDisplaySets) {
     const { layerList } = this.state;
 
+    const studies = studyMetadataManager.all();
+
     const updatedLayerList = layerList.slice(0, 1);
     Object.keys(validOverlayDisplaySets).forEach(key => {
-      const study = studyMetadataManager.get(key);
+      const studyKey = key.split('_')[0];
+      const validDisplayInstanceUIDs = validOverlayDisplaySets[key];
+      const study = studies.find(
+        study =>
+          study.getStudyInstanceUID() === studyKey &&
+          study.displaySets.some(
+            ds => ds.displaySetInstanceUID === validDisplayInstanceUIDs[0]
+          )
+      );
       const {
         StudyInstanceUID,
         StudyDescription,
         displaySets,
       } = study.getData();
-      const validDisplayInstanceUIDs = validOverlayDisplaySets[key];
       const validDisplaySets = displaySets.filter(ds =>
         validDisplayInstanceUIDs.includes(ds.displaySetInstanceUID)
       );
@@ -226,7 +241,14 @@ class VTKImageFusionDialog extends PureComponent {
       let onLoadedFusionData;
       if (displaySetInstanceUID !== 'none') {
         // Make sure the first image is loaded
-        const study = studyMetadataManager.get(StudyInstanceUID);
+        const studies = studyMetadataManager.all();
+        const study = studies.find(
+          study =>
+            study.getStudyInstanceUID() === StudyInstanceUID &&
+            study.displaySets.some(
+              ds => ds.displaySetInstanceUID === displaySetInstanceUID
+            )
+        );
 
         const displaySet = study.displaySets.find(set => {
           return set.displaySetInstanceUID === displaySetInstanceUID;

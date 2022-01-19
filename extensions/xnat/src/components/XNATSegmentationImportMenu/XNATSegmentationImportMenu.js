@@ -30,6 +30,7 @@ const _getFirstImageIdFromSeriesInstanceUid = seriesInstanceUid => {
     }
   }
 
+  // ToDo: should we remove this? It is handled in the for loop above.
   const studyMetadata = studyMetadataManager.get(studyInstanceUid);
   const displaySet = studyMetadata.findDisplaySet(
     displaySet => displaySet.SeriesInstanceUID === seriesInstanceUid

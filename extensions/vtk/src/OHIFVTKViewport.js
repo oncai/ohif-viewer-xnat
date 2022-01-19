@@ -102,7 +102,11 @@ class OHIFVTKViewport extends Component {
   ) {
     // Create shortcut to displaySet
     const study = studies.find(
-      study => study.StudyInstanceUID === StudyInstanceUID
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
     );
 
     const displaySet = study.displaySets.find(set => {
@@ -287,10 +291,19 @@ class OHIFVTKViewport extends Component {
       onLoadedFusionData,
     } = vtkImageFusionData;
 
-    const study = studyMetadataManager.get(StudyInstanceUID);
-    const displaySet = study.findDisplaySet(
+    const study = studies.find(
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
+    );
+    const displaySet = study.displaySets.find(
       displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
     );
+    // const displaySet = study.displaySets.find(set => {
+    //   return set.displaySetInstanceUID === displaySetInstanceUID;
+    // });
 
     const { sopClassUIDs, SOPInstanceUID, frameIndex } = displaySet;
     if (sopClassUIDs.length > 1) {
@@ -402,7 +415,11 @@ class OHIFVTKViewport extends Component {
     const SOPClassUID = sopClassUIDs[0] || undefined;
 
     const study = studies.find(
-      study => study.StudyInstanceUID === StudyInstanceUID
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
     );
 
     const dataDetails = this.getDataDetails(study, displaySet);

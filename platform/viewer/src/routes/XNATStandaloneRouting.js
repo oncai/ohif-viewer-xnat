@@ -482,8 +482,9 @@ function setValidOverlaySeries(studies) {
           }
         }
         if (sameStudyOverlays.length) {
+          // Handle duplicate StudyInstanceUID by adding study index
           displaySet.validOverlayDisplaySets[
-            displaySet.StudyInstanceUID
+            `${displaySet.StudyInstanceUID}_${studyIndex}`
           ] = sameStudyOverlays;
         }
 
@@ -501,7 +502,7 @@ function setValidOverlaySeries(studies) {
             });
             if (otherStudyOverlays.length) {
               displaySet.validOverlayDisplaySets[
-                studies[i].StudyInstanceUID
+                `${studies[i].StudyInstanceUID}_${i}`
               ] = otherStudyOverlays;
             }
           }

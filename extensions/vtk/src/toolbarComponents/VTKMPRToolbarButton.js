@@ -20,7 +20,11 @@ const _isDisplaySetReconstructable = (viewportSpecificData = {}, activeViewportI
   const studies = studyMetadataManager.all();
 
   const study = studies.find(
-    study => study.studyInstanceUID === StudyInstanceUID
+    study =>
+      study.getStudyInstanceUID() === StudyInstanceUID &&
+      study.displaySets.some(
+        ds => ds.displaySetInstanceUID === displaySetInstanceUID
+      )
   );
 
   if (!study) {

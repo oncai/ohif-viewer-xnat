@@ -70,7 +70,11 @@ class OHIFCornerstoneViewport extends Component {
 
     // Create shortcut to displaySet
     const study = studies.find(
-      study => study.StudyInstanceUID === StudyInstanceUID
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
     );
 
     if (!study) {
@@ -230,6 +234,7 @@ class OHIFCornerstoneViewport extends Component {
           SOPInstanceUID: sopInstanceUid,
           frameIndex: currentImageIdIndex,
           activeViewportIndex: viewportIndex,
+          displaySetInstanceUID: displaySet.displaySetInstanceUID,
         });
       }
     };
