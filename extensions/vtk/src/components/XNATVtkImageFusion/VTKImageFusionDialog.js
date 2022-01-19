@@ -13,8 +13,6 @@ import './VTKImageFusionDialog.styl';
 
 const { studyMetadataManager, StackManager } = OHIF.utils;
 
-const appliedImageFusionData = new Map();
-
 const _getModality = ({ StudyInstanceUID, displaySetInstanceUID }) => {
   if (!StudyInstanceUID || displaySetInstanceUID === 'none') {
     return;
@@ -203,19 +201,18 @@ class VTKImageFusionDialog extends PureComponent {
     const displaySetInstanceUID = target.value;
     const StudyInstanceUID = target.selectedOptions[0].dataset.studyuid;
 
-    if (appliedImageFusionData.has(displaySetInstanceUID)) {
+    const isInitialized = volumeProperties.isInitialized(displaySetInstanceUID);
+    if (isInitialized) {
       this.setState({ displaySetInstanceUID, StudyInstanceUID }, () =>
         this.onApplyFusion()
       );
       return;
     }
 
-    const requiresApply = !appliedImageFusionData.has(displaySetInstanceUID);
-
     const newState = {
       displaySetInstanceUID,
       StudyInstanceUID,
-      requiresApply: requiresApply,
+      requiresApply: !isInitialized,
     };
 
     const vtkProperties = this.getVolumeProperties(displaySetInstanceUID);
@@ -236,7 +233,6 @@ class VTKImageFusionDialog extends PureComponent {
       requiresApply: false,
     };
 
-    // if (!appliedImageFusionData.has(displaySetInstanceUID))
     {
       let onLoadedFusionData;
       if (displaySetInstanceUID !== 'none') {
@@ -269,10 +265,6 @@ class VTKImageFusionDialog extends PureComponent {
         } else {
           newState.vtkProperties = vtkProperties;
         }
-
-        appliedImageFusionData.set(displaySetInstanceUID, {
-          StudyInstanceUID,
-        });
       }
 
       this.setState(newState);
