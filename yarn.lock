@@ -5023,15 +5023,10 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30000989:
-  version "1.0.30001035"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001035.tgz#2bb53b8aa4716b2ed08e088d4dc816a5fe089a1e"
-  integrity sha512-C1ZxgkuA4/bUEdMbU5WrGY4+UhMFFiXrgNAfxiMIqWgFTWfv/xsZCS2xEHT2LMq7xAZfuAnu6mcqyDl0ZR6wLQ==
-
-caniuse-lite@^1.0.30001004:
-  version "1.0.30001004"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001004.tgz#d879b73981b255488316da946c39327d8c00a586"
-  integrity sha512-3nfOR4O8Wa2RWoYfJkMtwRVOsK96TQ+eq57wd0iKaEWl8dwG4hKZ/g0MVBfCvysFvMLi9fQGR/DvozMdkEPl3g==
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30000989, caniuse-lite@^1.0.30001004:
+  version "1.0.30001300"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001300.tgz"
+  integrity sha512-cVjiJHWGcNlJi8TZVKNMnvMid3Z3TTdDHmLDzlOdIiZq138Exvo0G+G0wTdVYolxKb4AYwC+38pxodiInVtJSA==
 
 capitalize@^2.0.0:
   version "2.0.0"
@@ -6065,10 +6060,10 @@ cornerstone-math@0.1.7:
   resolved "https://registry.yarnpkg.com/cornerstone-math/-/cornerstone-math-0.1.7.tgz#7c55536f02e7221b05fc49a4c780bb82c234ce39"
   integrity sha512-svsDSoqLNFM9niCV2AtV2DNmRkYztT1v80lVdbA5hkgdGdpWg5/h2On794zbqBK+aI3hNOHufERDsI4wdXGknA==
 
-cornerstone-math@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/cornerstone-math/-/cornerstone-math-0.1.8.tgz#68ab1f9e4fdcd7c5cb23a0d2eb4263f9f894f1c5"
-  integrity sha512-x7NEQHBtVG7j1yeyj/aRoKTpXv1Vh2/H9zNLMyqYJDtJkNng8C4Q8M3CgZ1qer0Yr7eVq2x+Ynmj6kfOm5jXKw==
+cornerstone-math@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/cornerstone-math/-/cornerstone-math-0.1.9.tgz#7ce5509e8b9f465b01f7c548470725e7569859fc"
+  integrity sha512-NxdooV73asEQgav1S+0e+a4K+W3CXJdLXyFkVN24qqCtmIpzZzwtw3F9KWPCekzSAJmbhtQ3HicOQj3d4vRtuw==
 
 "cornerstone-tools@https://bitbucket.org/icrimaginginformatics/cornerstonetools.git":
   version "4.0.1"
@@ -6683,10 +6678,10 @@ dcmjs@0.16.3:
     loglevelnext "^3.0.1"
     ndarray "^1.0.19"
 
-dcmjs@0.18.8:
-  version "0.18.8"
-  resolved "https://registry.yarnpkg.com/dcmjs/-/dcmjs-0.18.8.tgz#fc8e6af03ace9050da49f4108334aa3d0a3bdf3d"
-  integrity sha512-Z3nNEmzkWdpHQPgjozGqk8XcuhP/hXP1C64Wtg9V+VO9eEc8eNFJFJ6If62f1cuOh0FaRwHqxBT7OzhOAUpFTA==
+dcmjs@0.19.2:
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/dcmjs/-/dcmjs-0.19.2.tgz#f3ff81797b17cdb2663dc8212f8a3d7dfd145ae2"
+  integrity sha512-FXdKHnCoaONbgZFwxchpXUhLHOtSdIWGtG2A0UDS72FmptHDDXQH017j1e5aVm0Q5ee+42c+W+xWwBScmSyE7w==
   dependencies:
     "@babel/polyfill" "^7.8.3"
     "@babel/runtime" "^7.8.4"
