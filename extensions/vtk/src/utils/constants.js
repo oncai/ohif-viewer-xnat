@@ -1,0 +1,5 @@
+const DEFAULT_MODALITY_RANGE = {
+  PT: [0, 5],
+};
+
+export { DEFAULT_MODALITY_RANGE };

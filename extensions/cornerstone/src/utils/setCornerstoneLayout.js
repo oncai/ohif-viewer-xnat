@@ -8,6 +8,7 @@ const { setLayout } = redux.actions;
  * @return void
  */
 const setCornerstoneLayout = () => {
+  document.querySelector(`.ViewerMain`).style.pointerEvents = '';
   const layout = {
     numRows: 1,
     numColumns: 1,
@@ -17,6 +18,6 @@ const setCornerstoneLayout = () => {
   const action = setLayout(layout);
 
   window.store.dispatch(action);
-}
+};
 
 export default setCornerstoneLayout;

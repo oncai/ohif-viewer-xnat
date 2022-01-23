@@ -1,0 +1,88 @@
+.VtkImageFusionDialog
+  .rangeContainer
+    width: 100%
+    display: flex
+    align-items: center
+    padding: 0
+    color: var(--text-primary-color)
+    font-size: 12px
+    margin-top: 15px
+
+    .labelGroup
+      display: flex
+      flex-direction: column
+      align-items: center
+      min-width: 30px
+      user-select: none
+
+      label
+        font-weight: bold
+        color: var(--text-secondary-color)
+
+    .colorCanvas
+      margin: 0 5px
+
+  .rs-slider
+    margin: 0 5px
+    width: 150px
+    //max-width: 500px
+    height: 21px
+    -webkit-appearance: none
+
+    &.widthx2
+      width: 300px
+
+    .rs-thumb
+      outline: none
+      text-align: center
+      cursor: pointer !important
+      width: 11px
+      height: 21px
+      border-radius: 11px
+      background: var(--active-color)
+      border: 1px solid var(--ui-border-color-dark)
+
+      &.rs-thumb-0
+        background: #2B8A9A
+      &.rs-thumb-1
+        background: #2B8A9A
+      &.rs-thumb-2
+        background: #E45527
+
+      .thumbValue
+        position: absolute
+        top: -15px
+
+    .rs-track
+      background-color: var(--ui-border-color-dark)
+      cursor: pointer !important
+      height: 2px
+      top: 9px
+
+    .trackValue
+      position: absolute
+      left: 5px
+      top: -18px
+      color: var(--text-secondary-color)
+      text-shadow: 1px 0 0 var(--ui-border-color-dark)
+
+    .rs-track-wl
+      @extend .rs-track
+
+      &.rs-track-wl-1
+        height: 12px
+        top: 4px
+        cursor: grab !important
+
+    .rs-mark
+      width: 8px
+      height: 8px
+      border: 2px solid var(--ui-border-color-dark)
+      background-color: var(--active-color)
+      cursor: pointer
+      border-radius: 50%
+      vertical-align: middle
+      margin: 0 2px
+      //margin: 0 calc(25px - 6px)
+      bottom: calc(50% - 4px)
+

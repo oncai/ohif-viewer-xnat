@@ -2,7 +2,6 @@ import init from './init.js';
 import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
-import stackSynchronizer from './utils/StackSynchronizer/StackSynchronizer';
 import { version } from '../package.json';
 
 export default {
@@ -27,32 +26,23 @@ export default {
   getCommandsModule({ servicesManager }) {
     return commandsModule;
   },
-  getPanelModule({ servicesManager, commandsManager }) {
-    return panelModule(servicesManager, commandsManager);
+  getPanelModule({ commandsManager, api, servicesManager }) {
+    return panelModule(commandsManager, api, servicesManager);
   },
 };
 
-export {
-  isLoggedIn,
-  xnatAuthenticate,
-} from './utils/xnatDev';
+export { isLoggedIn, xnatAuthenticate } from './utils/xnatDev';
 
 export { userManagement } from './utils/userManagement.js';
 
-export { XNATICONS } from './elements';
+export { XNATICONS, sliderUtils, ReactSlider } from './elements';
 
 export { ICRHelpContent } from './components/HelpContent/ICRHelpContent';
 
 export { XNATStudyBrowser } from './components/XNATStudyBrowser/XNATStudyBrowser';
 
-export {
-  XNATViewportOverlay,
-} from './components/XNATViewportOverlay/XNATViewportOverlay';
+export { XNATViewportOverlay } from './components/XNATViewportOverlay/XNATViewportOverlay';
 
-export {
-  ICRAboutContent,
-} from './components/AboutContent/ICRAboutContent';
+export { ICRAboutContent } from './components/AboutContent/ICRAboutContent';
 
-export {
-  stackSynchronizer
-};
+export { stackSynchronizer } from './utils/StackSynchronizer/StackSynchronizer';

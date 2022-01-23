@@ -445,7 +445,7 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
           case ReconstructionIssues.IRREGULAR_SPACING:
             inconsistencyWarnings.push('The dataset frames have different pixel spacing.');
             break;
-          case ReconstructionIssues.MULTIFFRAMES:
+          case ReconstructionIssues.MULTIFRAMES:
             inconsistencyWarnings.push('The dataset is a multiframes.');
             break;
           default:

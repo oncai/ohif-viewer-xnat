@@ -277,8 +277,16 @@ const commandsModule = ({ servicesManager }) => {
       frameIndex,
       activeViewportIndex,
       refreshViewports = true,
+      displaySetInstanceUID,
     }) => {
-      const study = studyMetadataManager.get(StudyInstanceUID);
+      const studies = studyMetadataManager.all();
+      const study = studies.find(
+        study =>
+          study.getStudyInstanceUID() === StudyInstanceUID &&
+          study.displaySets.some(
+            ds => ds.displaySetInstanceUID === displaySetInstanceUID
+          )
+      );
 
       const displaySet = study.findDisplaySet(ds => {
         return (

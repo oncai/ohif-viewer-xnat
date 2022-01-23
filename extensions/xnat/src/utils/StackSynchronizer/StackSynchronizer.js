@@ -70,4 +70,4 @@ class StackSynchronizer {
 
 const stackSynchronizer = new StackSynchronizer();
 
-export default stackSynchronizer;
+export { stackSynchronizer };

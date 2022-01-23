@@ -163,6 +163,16 @@ const definitions = {
     storeContexts: ['viewports'],
     options: { operation: 'redo' },
   },
+  getColormaps: {
+    commandFn: () => {
+      return {
+        colormapList: [...cornerstone.colors.getColormapsList()],
+        defaultColormap: 'hotIron',
+      };
+    },
+    storeContexts: [],
+    options: {},
+  },
 };
 
 export default {

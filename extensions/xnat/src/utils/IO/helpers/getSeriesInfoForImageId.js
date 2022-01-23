@@ -4,7 +4,14 @@ import { utils } from '@ohif/core';
 const { studyMetadataManager } = utils;
 
 const _getDisplaySet = ({ StudyInstanceUID, displaySetInstanceUID }) => {
-  const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
+  const studies = studyMetadataManager.all();
+  const studyMetadata = studies.find(
+    study =>
+      study.getStudyInstanceUID() === StudyInstanceUID &&
+      study.displaySets.some(
+        ds => ds.displaySetInstanceUID === displaySetInstanceUID
+      )
+  );
   const displaySet = studyMetadata.findDisplaySet(
     displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
   );

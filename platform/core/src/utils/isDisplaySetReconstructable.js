@@ -28,7 +28,7 @@ function isDisplaySetReconstructable(instances) {
   }
 
   if (isMultiframe) {
-    return processMultiframe();
+    return processMultiframe(instances);
   } else {
     return processSingleframe(instances);
   }
@@ -40,8 +40,15 @@ function isDisplaySetReconstructable(instances) {
  * *
  * @returns {Object} value and reconstructionIssues.
  */
-function processMultiframe() {
-  const reconstructionIssues = [ReconstructionIssues.MULTIFRAMES];
+function processMultiframe(instances) {
+  const reconstructionIssues = [];
+  const metadata = instances[0].getData().metadata;
+  // enable for NM image
+  if (metadata.Modality === 'NM') {
+    return { value: true, reconstructionIssues };
+  }
+
+  reconstructionIssues.push(ReconstructionIssues.MULTIFRAMES);
   return { value: false, reconstructionIssues };
 }
 

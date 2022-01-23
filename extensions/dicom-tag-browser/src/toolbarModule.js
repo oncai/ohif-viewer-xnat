@@ -10,7 +10,7 @@ const definitions = [
     //
     type: TOOLBAR_BUTTON_TYPES.COMMAND,
     commandName: 'openDICOMTagViewer',
-    context: 'VIEWER',
+    context: 'ACTIVE_VIEWPORT::CORNERSTONE',
   },
 ];
 

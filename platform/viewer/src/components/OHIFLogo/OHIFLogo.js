@@ -66,9 +66,7 @@ function OHIFLogo() {
       <Icon name="xnat-icr-logo" className="header-logo-image-icr" />
       <div className="header-logo-text">
         OHIF-XNAT Viewer{' '}
-        <span style={{ color: '#91b9cd', fontSize: 13 }}>
-          |{` ${version}`}
-        </span>
+        <span style={{ color: '#91b9cd', fontSize: 12 }}>|{` ${version}`}</span>
       </div>
     </a>
   );

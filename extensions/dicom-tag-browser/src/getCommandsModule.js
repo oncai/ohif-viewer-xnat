@@ -16,7 +16,14 @@ export default function getCommandsModule(servicesManager) {
         displaySetInstanceUID,
       } = activeViewportSpecificData;
 
-      const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
+      const studies = studyMetadataManager.all();
+      const studyMetadata = studies.find(
+        study =>
+          study.getStudyInstanceUID() === StudyInstanceUID &&
+          study.displaySets.some(
+            ds => ds.displaySetInstanceUID === displaySetInstanceUID
+          )
+      );
       const displaySets = studyMetadata.getDisplaySets();
 
       const { UIModalService } = servicesManager.services;
