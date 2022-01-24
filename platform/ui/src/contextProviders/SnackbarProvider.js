@@ -38,7 +38,7 @@ const SnackbarProvider = ({ children, service }) => {
         return null;
       }
 
-      if (options.type === 'error') {
+      if (options.type === 'error' && options.error) {
         console.error(options.error);
       }
 

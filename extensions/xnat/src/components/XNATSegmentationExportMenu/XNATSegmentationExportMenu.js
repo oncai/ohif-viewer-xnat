@@ -107,6 +107,11 @@ export default class XNATSegmentationExportMenu extends React.Component {
 
           this.props.onExportCancel();
         });
+    }).catch(error => {
+      const message = error.message || 'Unknown error';
+      showNotification(message, 'error', 'Error exporting mask collection');
+
+      this.props.onExportCancel();
     });
   }
 

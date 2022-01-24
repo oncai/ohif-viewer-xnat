@@ -21,6 +21,8 @@ import showModal from './common/showModal.js';
 
 import './XNATRoiPanel.styl';
 
+const UNSUPPORTED_EXPORT_MODALITIES = ['MG'];
+
 const refreshViewports = () => {
   cornerstoneTools.store.state.enabledElements.forEach(element => {
     cornerstone.updateImage(element);
@@ -513,6 +515,7 @@ export default class XNATSegmentationPanel extends React.Component {
     } = this.state;
 
     const { viewports, activeIndex, showColorSelectModal } = this.props;
+    const { Modality } = viewports[activeIndex];
 
     let component;
     let isFractional = false;
@@ -521,10 +524,15 @@ export default class XNATSegmentationPanel extends React.Component {
       isFractional = labelmap3D.isFractional;
     }
 
-    // Note: For now disable export and adding of segments if the labelmap is fractional.
-    const ExportCallbackOrComponent = isFractional
-      ? null
-      : XNATSegmentationExportMenu;
+    let exportDisabledMessage;
+    if (isFractional) {
+      // Note: For now disable export and adding of segments if the labelmap is fractional.
+      exportDisabledMessage =
+        'Exporting fractional segmentation is not supported yet';
+    } else if (UNSUPPORTED_EXPORT_MODALITIES.includes(Modality)) {
+      exportDisabledMessage =
+        'Segmentation export is not supported for this modality';
+    }
 
     const addSegmentButton = isFractional ? null : (
       <button style={{ fontSize: 12 }} onClick={() => this.onNewSegment()}>
@@ -581,9 +589,10 @@ export default class XNATSegmentationPanel extends React.Component {
             </div>
             <MenuIOButtons
               ImportCallbackOrComponent={XNATSegmentationImportMenu}
-              ExportCallbackOrComponent={ExportCallbackOrComponent}
+              ExportCallbackOrComponent={XNATSegmentationExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
+              exportDisabledMessage={exportDisabledMessage}
             />
           </div>
           <div className="roiCollectionBody">

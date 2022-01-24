@@ -16,11 +16,20 @@ export default class MenuIOButtons extends React.Component {
       ExportCallbackOrComponent,
       onImportButtonClick,
       onExportButtonClick,
+      exportDisabledMessage,
     } = this.props;
 
     if (!ImportCallbackOrComponent && !ExportCallbackOrComponent) {
       return null;
     }
+
+    const exportButton = exportDisabledMessage ? (
+      <button title={exportDisabledMessage} disabled>
+        Export
+      </button>
+    ) : (
+      <button onClick={onExportButtonClick}>Export</button>
+    );
 
     return (
       <div>
@@ -28,7 +37,7 @@ export default class MenuIOButtons extends React.Component {
           <button onClick={onImportButtonClick}>Import</button>
         )}
         {ExportCallbackOrComponent && (
-          <button onClick={onExportButtonClick}>Export</button>
+          exportButton
         )}
       </div>
     );

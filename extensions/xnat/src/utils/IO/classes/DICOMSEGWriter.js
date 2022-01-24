@@ -23,7 +23,7 @@ export default class DICOMSEGWriter {
    * @returns {Promise} A promise that resolves to a Blob containing the DICOM SEG.
    */
   async write(name, element) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const stackToolState = cornerstoneTools.getToolState(element, 'stack');
       const imageIds = stackToolState.data[0].imageIds;
 
@@ -72,7 +72,8 @@ export default class DICOMSEGWriter {
           resolve(segBlob);
         })
         .catch(err => {
-          console.log(err);
+          // console.log(err);
+          reject(err);
         })
         .finally(() => {
           // labelmaps3D[0].labelmaps2D = orgLabelmaps2D;
