@@ -378,10 +378,11 @@ function generateToolState(
       }
       break;
     case 'Perpendicular':
-      // InsertFunction = insertPixelDataPerpendicular;
-      throw new Error(
-        'Segmentations orthogonal to the acquisition plane of the source data are not yet supported.'
-      );
+      insertFunction = insertPixelDataPerpendicular;
+      // throw new Error(
+      //   'Segmentations orthogonal to the acquisition plane of the source data are not yet supported.'
+      // );
+      break;
     case 'Oblique':
       throw new Error(
         'Segmentations oblique to the acquisition plane of the source data are not yet supported.'
@@ -662,11 +663,13 @@ function checkIfPerpendicular(iop1, iop2, tolerance) {
     iop1[3] * iop2[3] + iop1[4] * iop2[4] + iop1[5] * iop2[5]
   );
 
-  return (
-    (absDotColumnCosines < tolerance ||
-      Math.abs(absDotColumnCosines - 1) < tolerance) &&
-    (absDotRowCosines < tolerance || Math.abs(absDotRowCosines - 1) < tolerance)
-  );
+  // return (
+  //   (absDotColumnCosines < tolerance ||
+  //     Math.abs(absDotColumnCosines - 1) < tolerance) &&
+  //   (absDotRowCosines < tolerance || Math.abs(absDotRowCosines - 1) < tolerance)
+  // );
+
+  return absDotColumnCosines < tolerance && absDotRowCosines < tolerance;
 }
 
 /**
@@ -832,6 +835,9 @@ function getValidOrientations(iop) {
   orientations[6] = rotateDirectionCosinesInPlane(iop, Math.PI);
   orientations[7] = rotateDirectionCosinesInPlane(iop, 1.5 * Math.PI);
 
+  // Flip H & V
+  orientations[8] = flipIOP.h(flipIOP.v(iop));
+
   return orientations;
 }
 
@@ -860,7 +866,7 @@ function alignPixelDataWithSourceData(
   } else if (compareIOP(iop, orientations[2], tolerance)) {
     // Flipped horizontally.
 
-    // Unfo flip
+    // Undo flip
     return flipMatrix2D.h(pixelData2D);
   } else if (compareIOP(iop, orientations[3], tolerance)) {
     // Rotated 90 degrees
@@ -886,6 +892,11 @@ function alignPixelDataWithSourceData(
 
     // Rotate back.
     return rotateMatrix902D(rotateMatrix902D(rotateMatrix902D(pixelData2D)));
+  } else if (compareIOP(iop, orientations[8], tolerance)) {
+    // Flipped vertically and horizontally.
+
+    // Undo flips
+    return flipMatrix2D.h(flipMatrix2D.v(pixelData2D));
   }
 }
 
@@ -945,6 +956,175 @@ const getSegmentIndex = (multiframe, frame) => {
 
 function insertPixelDataPerpendicular(
   segmentsOnFrame,
+  segmentsOnFrameArray,
+  labelmapBufferArray,
+  pixelData,
+  multiframe,
+  imageIds,
+  validOrientations,
+  metadataProvider,
+  tolerance,
+  isFractional = false,
+  probabilityMapBuffer
+) {
+  pixelData.reverse();
+
+  const {
+    SharedFunctionalGroupsSequence,
+    PerFrameFunctionalGroupsSequence,
+    Rows,
+    Columns,
+  } = multiframe;
+
+  const sharedImageOrientationPatient = SharedFunctionalGroupsSequence.PlaneOrientationSequence
+    ? SharedFunctionalGroupsSequence.PlaneOrientationSequence
+        .ImageOrientationPatient
+    : undefined;
+  const sliceLength = Columns * Rows;
+
+  for (
+    let i = 0, groupsLen = PerFrameFunctionalGroupsSequence.length;
+    i < groupsLen;
+    ++i
+  ) {
+    const PerFrameFunctionalGroups = PerFrameFunctionalGroupsSequence[i];
+
+    const ImageOrientationPatientI =
+      sharedImageOrientationPatient ||
+      PerFrameFunctionalGroups.PlaneOrientationSequence.ImageOrientationPatient;
+
+    const pixelDataI2D = ndarray(
+      new Uint8Array(pixelData.buffer, i * sliceLength, sliceLength),
+      [Rows, Columns]
+    );
+
+    // const alignedPixelDataI = alignPixelDataWithSourceData(
+    //   pixelDataI2D,
+    //   ImageOrientationPatientI,
+    //   validOrientations,
+    //   tolerance
+    // );
+    const alignedPixelDataI = pixelDataI2D;
+
+    if (!alignedPixelDataI) {
+      throw new Error(
+        'Individual SEG frames are out of plane with respect to the first SEG frame. ' +
+          'This is not yet supported. Aborting segmentation loading.'
+      );
+    }
+
+    const segmentIndex = getSegmentIndex(multiframe, i);
+
+    if (segmentIndex === undefined) {
+      throw new Error(
+        'Could not retrieve the segment index. Aborting segmentation loading.'
+      );
+    }
+
+    let imageId;
+    let SourceImageSequence;
+
+    if (multiframe.SourceImageSequence) {
+      SourceImageSequence = multiframe.SourceImageSequence[i];
+    } else {
+      SourceImageSequence =
+        PerFrameFunctionalGroups.DerivationImageSequence.SourceImageSequence;
+    }
+
+    if (!SourceImageSequence) {
+      throw new Error(
+        'Source Image Sequence information missing: individual SEG frames are out of plane. ' +
+          'This is not yet supported. Aborting segmentation loading.'
+      );
+    }
+
+    imageId = getImageIdOfSourceImage(
+      SourceImageSequence,
+      imageIds,
+      metadataProvider
+    );
+
+    if (!imageId) {
+      // Image not present in stack, can't import this frame.
+      continue;
+    }
+
+    const imagePlaneModule = metadataProvider.get('imagePlaneModule', imageId);
+
+    if (
+      Rows !== imagePlaneModule.rows ||
+      Columns !== imagePlaneModule.columns
+    ) {
+      throw new Error(
+        'Individual SEG frames have different geometry dimensions (Rows and Columns) ' +
+          'respect to the source image reference frame. This is not yet supported. ' +
+          'Aborting segmentation loading. '
+      );
+    }
+
+    const imageIdIndex = imageIds.findIndex(element => element === imageId);
+    const byteOffset = sliceLength * 2 * imageIdIndex; // 2 bytes/pixel
+
+    const labelmap2DView = new Uint16Array(
+      labelmapBufferArray[0],
+      byteOffset,
+      sliceLength
+    );
+
+    const probabilityMap2DView = isFractional
+      ? new Uint8Array(
+          probabilityMapBuffer,
+          sliceLength * imageIdIndex,
+          sliceLength
+        )
+      : null;
+
+    const data = alignedPixelDataI.data;
+
+    if (isFractional) {
+      // Fill in probability map aswell. Better to duplicate the loop then call if inside every voxel
+      for (let j = 0, len = alignedPixelDataI.data.length; j < len; ++j) {
+        if (data[j]) {
+          for (let x = j; x < len; ++x) {
+            if (data[x]) {
+              labelmap2DView[x] = segmentIndex;
+              probabilityMap2DView[x] = data[x];
+            }
+          }
+
+          if (!segmentsOnFrame[imageIdIndex]) {
+            segmentsOnFrame[imageIdIndex] = [];
+          }
+
+          segmentsOnFrame[imageIdIndex].push(segmentIndex);
+
+          break;
+        }
+      }
+    } else {
+      for (let j = 0, len = alignedPixelDataI.data.length; j < len; ++j) {
+        if (data[j]) {
+          for (let x = j; x < len; ++x) {
+            if (data[x]) {
+              labelmap2DView[x] = segmentIndex;
+            }
+          }
+
+          if (!segmentsOnFrame[imageIdIndex]) {
+            segmentsOnFrame[imageIdIndex] = [];
+          }
+
+          segmentsOnFrame[imageIdIndex].push(segmentIndex);
+
+          break;
+        }
+      }
+    }
+  }
+}
+
+function insertPixelDataPerpendicular_v0(
+  segmentsOnFrame,
   labelmapBuffer,
   pixelData,
   multiframe,
@@ -985,18 +1165,18 @@ function insertPixelDataPerpendicular(
   const rowCosines = Array.isArray(firstImagePlaneModule.rowCosines)
     ? [...firstImagePlaneModule.rowCosines]
     : [
-        firstImagePlaneModule.rowCosines.x,
-        firstImagePlaneModule.rowCosines.y,
-        firstImagePlaneModule.rowCosines.z,
-      ];
+      firstImagePlaneModule.rowCosines.x,
+      firstImagePlaneModule.rowCosines.y,
+      firstImagePlaneModule.rowCosines.z,
+    ];
 
   const columnCosines = Array.isArray(firstImagePlaneModule.columnCosines)
     ? [...firstImagePlaneModule.columnCosines]
     : [
-        firstImagePlaneModule.columnCosines.x,
-        firstImagePlaneModule.columnCosines.y,
-        firstImagePlaneModule.columnCosines.z,
-      ];
+      firstImagePlaneModule.columnCosines.x,
+      firstImagePlaneModule.columnCosines.y,
+      firstImagePlaneModule.columnCosines.z,
+    ];
 
   const { pixelSpacing } = firstImagePlaneModule;
 
