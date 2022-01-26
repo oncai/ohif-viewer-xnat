@@ -8,10 +8,7 @@ import ConnectedViewer from '../connectedComponents/ConnectedViewer';
 import ConnectedViewerRetrieveStudyData from '../connectedComponents/ConnectedViewerRetrieveStudyData';
 import NotFound from '../routes/NotFound';
 
-import {
-  isLoggedIn,
-  xnatAuthenticate,
-} from '@xnat-ohif/extension-xnat';
+import { isLoggedIn, xnatAuthenticate } from '@xnat-ohif/extension-xnat';
 
 const { log, metadata, utils } = OHIF;
 const { studyMetadataManager } = utils;
@@ -45,6 +42,9 @@ class XNATStandaloneRouting extends Component {
       commandsManager.runCommand('xnatCheckAndSetAiaaSettings', {
         projectId: projectId,
       });
+
+      // Query user information
+      getUserInformation(rootUrl);
 
       if (!projectId || !subjectId) {
         //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
@@ -387,6 +387,43 @@ function _getJson(url) {
     xhr.responseType = 'json';
     xhr.send();
   });
+}
+
+async function getUserInformation(rootUrl) {
+  const userInfo = {
+    loginName: '',
+    name: '',
+  };
+  window.ohif.userInfo = userInfo;
+
+  const promise = new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = () => {
+      resolve(xhr);
+    };
+    xhr.onerror = () => {
+      reject(xhr.responseText);
+    };
+    xhr.open('GET', `${rootUrl}/xapi/users/username`);
+    xhr.send();
+  });
+
+  promise
+    .then(result => {
+      const { response } = result;
+      userInfo.loginName = response;
+
+      return _getJson(`${rootUrl}/xapi/users/profile/${response}`);
+    })
+    .then(result => {
+      const { firstName, lastName } = result;
+      if (firstName && lastName) {
+        userInfo.name = `${lastName}, ${firstName}`;
+      }
+    })
+    .catch(error => {
+      console.warn('Could not retrieve user information from XNAT');
+    });
 }
 
 function getRootUrl() {

@@ -64,7 +64,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
     const seriesInfo = getSeriesInfoForImageId(viewportData);
     const element = getElementForFirstImageId(firstImageId);
 
-    const xnat_label = `${label}_S${seriesInfo.SeriesNumber}`;
+    const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
 
     // DICOM-SEG
     const dicomSegWriter = new DICOMSEGWriter(seriesInfo);
