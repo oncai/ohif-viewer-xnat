@@ -126,6 +126,12 @@ const cubeOrientationMarker = api => {
   renderWindow.render();
 };
 
+/*
+ * The human polydata file was taken from:
+ * https://github.com/Slicer/Slicer/blob/master/Base/Logic/Resources/OrientationMarkers/Human.vtp
+ * Thanks to the Slicer community for providing it.
+ *
+ */
 const readHumanMarker = async () => {
   let success = false;
   const modelUrl = `${process.env.PUBLIC_URL}assets/markers/human.vtp`;

@@ -141,10 +141,10 @@ function HotkeysPreferences({ onClose }) {
             {splitedHotkeys.map((hotkeys, index) => {
               return (
                 <div className="hotkeyColumn" key={index}>
-                  <div className="hotkeyHeader">
-                    <div className="headerItemText text-right">Function</div>
-                    <div className="headerItemText text-center">Shortcut</div>
-                  </div>
+                  {/*<div className="hotkeyHeader">*/}
+                    {/*<div className="headerItemText text-right">Function</div>*/}
+                    {/*<div className="headerItemText text-center">Shortcut</div>*/}
+                  {/*</div>*/}
                   {hotkeys.map(hotkey => {
                     const commandName = hotkey[0];
                     const hotkeyDefinition = hotkey[1];
