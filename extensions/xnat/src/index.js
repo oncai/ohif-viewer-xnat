@@ -39,10 +39,19 @@ export { XNATICONS, sliderUtils, ReactSlider } from './elements';
 
 export { ICRHelpContent } from './components/HelpContent/ICRHelpContent';
 
-export { XNATStudyBrowser } from './components/XNATStudyBrowser/XNATStudyBrowser';
+export {
+  XNATStudyBrowser,
+} from './components/XNATStudyBrowser/XNATStudyBrowser';
 
-export { XNATViewportOverlay } from './components/XNATViewportOverlay/XNATViewportOverlay';
+export {
+  XNATViewportOverlay,
+} from './components/XNATViewportOverlay/XNATViewportOverlay';
 
 export { ICRAboutContent } from './components/AboutContent/ICRAboutContent';
 
-export { stackSynchronizer } from './utils/StackSynchronizer/StackSynchronizer';
+export {
+  stackSynchronizer,
+  updateImageSynchronizer,
+} from './utils/synchronizers';
+
+export { referenceLines } from './utils/CSReferenceLines/referenceLines';

@@ -5,8 +5,9 @@ import OHIF from '@ohif/core';
 import contextMenuHandler from './utils/contextMenuHandler';
 
 import setCornerstoneLayout from './utils/setCornerstoneLayout.js';
-import { getEnabledElement } from './state';
+import { getEnabledElement, getActiveViewportIndex } from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
+import { referenceLines } from '@xnat-ohif/extension-xnat';
 const scroll = cornerstoneTools.import('util/scroll');
 
 const { studyMetadataManager } = OHIF.utils;
@@ -440,6 +441,14 @@ const commandsModule = ({ servicesManager }) => {
       commandFn: actions.cancelTask,
       storeContexts: [],
       options: {},
+    },
+    toggleReferenceLines: {
+      commandFn: ({ evt }) => {
+        referenceLines.enabled = !referenceLines.enabled;
+        referenceLines.display(getActiveViewportIndex());
+      },
+      storeContexts: [],
+      options: { evt: null },
     },
   };
 
