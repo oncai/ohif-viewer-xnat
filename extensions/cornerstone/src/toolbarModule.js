@@ -1,3 +1,5 @@
+import { updateImageSynchronizer } from '@xnat-ohif/extension-xnat';
+
 // TODO: A way to add Icons that don't already exist?
 // - Register them and add
 // - Include SVG Source/Inline?
@@ -163,6 +165,18 @@ const definitions = [
     label: 'Tools',
     icon: 'ellipse-circle',
     buttons: [
+      {
+        id: 'Crosshairs',
+        label: 'Crosshairs',
+        icon: 'crosshairs',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: {
+          toolName: 'Crosshairs',
+          synchronizationContext: updateImageSynchronizer,
+        },
+      },
       {
         id: 'Magnify',
         label: 'Magnify',

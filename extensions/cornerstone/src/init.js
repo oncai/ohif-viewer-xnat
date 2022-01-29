@@ -164,8 +164,9 @@ export default function init({ servicesManager, configuration }) {
   csTools.setToolActive('ZoomTouchPinch', {});
   csTools.setToolEnabled('Overlay', {});
 
-  // Reference Lines Tool
+  // Reference Lines and Crosshairs Tools
   csTools.addTool(csTools.ReferenceLinesTool);
+  csTools.addTool(csTools.CrosshairsTool);
 
   // initiate context menu handler
   contextMenuHandler.init();

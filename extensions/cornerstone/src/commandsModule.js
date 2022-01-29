@@ -82,11 +82,16 @@ const commandsModule = ({ servicesManager }) => {
     },
     // TODO: this is receiving `evt` from `ToolbarRow`. We could use it to have
     //       better mouseButtonMask sets.
-    setToolActive: ({ toolName }) => {
+    setToolActive: options => {
+      const { toolName, evt, ...rest } = options;
+      const toolOptions = {
+        ...rest,
+        mouseButtonMask: 1,
+      };
       if (!toolName) {
         console.warn('No toolname provided to setToolActive command');
       }
-      cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
+      cornerstoneTools.setToolActive(toolName, toolOptions);
     },
     clearAnnotations: ({ viewports }) => {
       const element = getEnabledElement(viewports.activeViewportIndex);
