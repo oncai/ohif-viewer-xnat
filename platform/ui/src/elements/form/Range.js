@@ -31,7 +31,7 @@ class Range extends Component {
           step={this.props.step || 1}
           onChange={this.handleChange}
           id={this.props.id}
-          className="range"
+          className="range mousetrap"
         />
         {this.props.showPercentage && <span>{`${this.state.value}%`}</span>}
         {this.props.showValue && (

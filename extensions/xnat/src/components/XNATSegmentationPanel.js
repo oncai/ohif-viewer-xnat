@@ -18,16 +18,11 @@ import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
 import MaskRoiPropertyModal from './XNATSegmentationMenu/MaskRoiPropertyModal.js';
 import showModal from './common/showModal.js';
+import refreshViewports from '../utils/refreshViewports';
 
 import './XNATRoiPanel.styl';
 
 const UNSUPPORTED_EXPORT_MODALITIES = ['MG'];
-
-const refreshViewports = () => {
-  cornerstoneTools.store.state.enabledElements.forEach(element => {
-    cornerstone.updateImage(element);
-  });
-};
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -52,20 +47,6 @@ const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
     console.error('Failed to retrieve firstImageId');
     return null;
   }
-};
-
-const updateSegmentationConfiguration = (configuration, newConfiguration) => {
-  configuration.renderFill = newConfiguration.renderFill;
-  configuration.renderOutline = newConfiguration.renderOutline;
-  configuration.shouldRenderInactiveLabelmaps =
-    newConfiguration.shouldRenderInactiveLabelmaps;
-  configuration.fillAlpha = newConfiguration.fillAlpha;
-  configuration.outlineAlpha = newConfiguration.outlineAlpha;
-  configuration.outlineWidth = newConfiguration.outlineWidth;
-  configuration.fillAlphaInactive = newConfiguration.fillAlphaInactive;
-  configuration.outlineAlphaInactive = newConfiguration.outlineAlphaInactive;
-  configuration.radius = newConfiguration.radius;
-  refreshViewports();
 };
 
 /**
@@ -541,14 +522,9 @@ export default class XNATSegmentationPanel extends React.Component {
     );
 
     if (showSegmentationSettings) {
-      const { configuration } = cornerstoneTools.getModule('segmentation');
       component = (
         <XNATSegmentationSettings
-          configuration={configuration}
           onBack={() => this.setState({ showSegmentationSettings: false })}
-          onChange={newConfiguration =>
-            updateSegmentationConfiguration(configuration, newConfiguration)
-          }
         />
       );
     } else if (importing) {

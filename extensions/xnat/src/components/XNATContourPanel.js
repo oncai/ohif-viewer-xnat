@@ -11,7 +11,7 @@ import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
-import refreshViewport from '../utils/refreshViewport';
+import refreshViewports from '../utils/refreshViewports';
 
 import { Icon } from '@ohif/ui';
 
@@ -164,8 +164,8 @@ export default class XNATContourPanel extends React.Component {
     const module = modules.freehand3D;
     module.configuration.lineWidth = newConfiguration.lineWidth;
     module.configuration.opacity = newConfiguration.opacity;
-    refreshViewport();
-  }
+    refreshViewports();
+  };
 
   /**
    * getRoiContourList - returns the workingCollection, lockedCollections
@@ -317,7 +317,7 @@ export default class XNATContourPanel extends React.Component {
       roiContourUid //workingCollection[activeROIContourIndex].metadata.uid
     );
     this.refreshRoiContourList(SeriesInstanceUID);
-    refreshViewport();
+    refreshViewports();
   }
 
   onContourClick(roiContourUid) {
@@ -638,7 +638,6 @@ export default class XNATContourPanel extends React.Component {
               </>
             )}
           </div>
-
         </div>
       );
     }

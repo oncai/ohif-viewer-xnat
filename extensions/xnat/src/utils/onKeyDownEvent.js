@@ -2,7 +2,9 @@ import { commandsManager } from '@ohif/viewer/src/App';
 import csTools from 'cornerstone-tools';
 import { PEPPERMINT_TOOL_NAMES } from '../peppermint-tools';
 import KEY_COMMANDS from './keyCommands';
-import refreshViewport from './refreshViewport';
+import refreshViewports from './refreshViewports';
+
+const triggerEvent = csTools.importInternal('util/triggerEvent');
 
 export default function onKeyDownEvent(keyCommand) {
   if (
@@ -35,6 +37,8 @@ export default function onKeyDownEvent(keyCommand) {
     }
     module.setters.radius(radius);
 
-    refreshViewport();
+    triggerEvent(document, 'brushtoolsizechange', {});
+
+    refreshViewports();
   }
 };
