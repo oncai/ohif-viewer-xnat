@@ -24,6 +24,28 @@ export class HotkeysManager {
 
     this._servicesManager = servicesManager;
     this._commandsManager = commandsManager;
+
+    // Register standard hotkeys
+    this.standardHotkeys = [
+      {
+        commandName: 'undo',
+        label: 'Undo',
+        keys: ['command+z', 'ctrl+z'],
+        keysLabel: '⌘/Ctrl + z',
+      },
+      {
+        commandName: 'redo',
+        label: 'Redo',
+        keys: ['command+shift+z', 'ctrl+shift+z'],
+        keysLabel: '⌘/Ctrl + Shift + z',
+      },
+    ];
+    this.standardHotkeys.forEach(item => hotkeys.bind(item.keys, evt => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this._commandsManager.runCommand(item.commandName, { evt });
+      })
+    );
   }
 
   /**
@@ -67,7 +89,7 @@ export class HotkeysManager {
         UINotificationService,
         LoggerService,
       } = this._servicesManager.services;
-      const message = 'Erro while setting hotkeys';
+      const message = 'Error while setting hotkeys';
       LoggerService.error({ error, message });
       UINotificationService.show({
         title: 'Hotkeys Manager',

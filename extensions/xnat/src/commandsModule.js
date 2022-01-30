@@ -155,12 +155,12 @@ const definitions = {
     storeContexts: [],
     options: { evt: null },
   },
-  xnatBrushUndo: {
+  undo: {
     commandFn: actions.brushUndoRedo,
     storeContexts: ['viewports'],
     options: { operation: 'undo' },
   },
-  xnatBrushRedo: {
+  redo: {
     commandFn: actions.brushUndoRedo,
     storeContexts: ['viewports'],
     options: { operation: 'redo' },
