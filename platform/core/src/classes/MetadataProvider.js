@@ -11,7 +11,8 @@ import getImagePlaneInformation from '../utils/metadataProvider/getImagePlaneInf
 
 const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
 
-const isXnatConfig = process.env.NODE_ENV === 'production' ||
+const isXnatConfig =
+  process.env.NODE_ENV === 'production' ||
   process.env.APP_CONFIG === 'config/xnat-dev.js';
 
 class MetadataProvider {
@@ -366,7 +367,22 @@ class MetadataProvider {
         // Fallback for DX images.
         // TODO: We should use the rest of the results of this function
         // to update the UI somehow
-        const { PixelSpacing } = getPixelSpacingInformation(instance);
+        let { PixelSpacing } = getPixelSpacingInformation(instance);
+
+        // Fallback for Secondary Capture Image IOD
+        if (instance.SOPClassUID === '1.2.840.10008.5.1.4.1.1.7') {
+          /*
+          if (!ImageOrientationPatient) {
+            ImageOrientationPatient = [0, 0, 0, 0, 0, 0];
+          }
+          if (!ImagePositionPatient) {
+            ImagePositionPatient = [0, 0, 0];
+          }
+          */
+          if (!PixelSpacing) {
+            PixelSpacing = instance.NominalScannedPixelSpacing || [1.0, 1.0];
+          }
+        }
 
         let rowPixelSpacing;
         let columnPixelSpacing;
@@ -508,6 +524,8 @@ class MetadataProvider {
           if (!OverlayData) {
             continue;
           }
+
+          if (Array.isArray(OverlayData)) OverlayData = OverlayData[0];
 
           if (OverlayData instanceof ArrayBuffer) {
             OverlayData = instance[OverlayDataTag] = unpackOverlay(OverlayData);
