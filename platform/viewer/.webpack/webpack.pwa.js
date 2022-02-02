@@ -42,15 +42,28 @@ module.exports = (env, argv) => {
       path: DIST_DIR,
       filename: isProdBuild ? '[name].bundle.[chunkhash].js' : '[name].js',
       publicPath: PUBLIC_URL, // Used by HtmlWebPackPlugin for asset prefix
+      devtoolModuleFilenameTemplate: function(info) {
+        if (isProdBuild) {
+          return `webpack:///${info.resourcePath}`;
+        } else {
+          return 'file:///' + encodeURI(info.absoluteResourcePath);
+        }
+      },
+    },
+    resolve: {
+      alias: {
+        // We use this alias and the CopyPlugin below to support using the dynamic-import version
+        // of WADO Image Loader, but only when building a PWA. When we build a package, we must use the
+        // bundled version of WADO Image Loader so we can produce a single file for the viewer.
+        // (Note: script-tag version of the viewer will no longer be supported in OHIF v3)
+        'cornerstone-wado-image-loader':
+          'cornerstone-wado-image-loader/dist/dynamic-import/cornerstoneWADOImageLoader.min.js',
+        // Fix itkModulesPath - https://github.com/InsightSoftwareConsortium/itk-js/issues/140
+        './itkConfig$': `${PUBLIC_DIR}/config/itkConfig.js`,
+      },
     },
     module: {
       rules: [...extractStyleChunksRule(isProdBuild)],
-    },
-    resolve: {
-      // Fix itkModulesPath - https://github.com/InsightSoftwareConsortium/itk-js/issues/140
-      alias: {
-        './itkConfig$': `${PUBLIC_DIR}/config/itkConfig.js`,
-      }
     },
     plugins: [
       // Uncomment to generate bundle analyzer
@@ -87,6 +100,11 @@ module.exports = (env, argv) => {
           from: `${ROOT_MODULES_DIR}/itk/ImageIOs`,
           to: `${DIST_DIR}/itk/ImageIOs`,
         },
+        {
+          from:
+            '../../../node_modules/cornerstone-wado-image-loader/dist/dynamic-import',
+          to: DIST_DIR,
+        },
       ]),
       // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin#webpack-4-standalone-installation
       new ExtractCssChunksPlugin({
@@ -111,6 +129,15 @@ module.exports = (env, argv) => {
         // maximumFileSizeToCacheInBytes: 4 * 1024 * 1024
       }),
     ],
+    optimization: {
+      splitChunks: {
+        // include all types of chunks
+        chunks: 'all',
+      },
+      //runtimeChunk: 'single',
+      minimize: isProdBuild,
+      sideEffects: true,
+    },
     // https://webpack.js.org/configuration/dev-server/
     devServer: {
       // gzip compression of everything served

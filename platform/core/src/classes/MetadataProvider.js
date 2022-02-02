@@ -525,7 +525,9 @@ class MetadataProvider {
             continue;
           }
 
-          if (Array.isArray(OverlayData)) OverlayData = OverlayData[0];
+          if (Array.isArray(OverlayData)) {
+            OverlayData = OverlayData[0];
+          }
 
           if (OverlayData instanceof ArrayBuffer) {
             OverlayData = instance[OverlayDataTag] = unpackOverlay(OverlayData);
