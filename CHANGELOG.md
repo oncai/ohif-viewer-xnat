@@ -1,3 +1,16 @@
+**3.2.0 RC-1**
+
+- Multi-volume image fusion in 3D MPR mode.
+- Improved support for DICOM Nuclear Medicine (NM) IOD.
+- Two new tools: reference lines and crosshairs.
+- Added orientation marker in MPR mode.
+- Improved mask import for co-planar and perpendicular segmentation data.
+- Added keyboard shortcuts for mask undo/redo.
+- Fixed duplicate StudyInstanceUID issue.
+- Refactored the mask settings menu for improved interaction.
+- Upgraded the image loader to use WebAssembly for data decoding.
+- Upgraded dependencies to recent applicable versions. 
+
 **3.1.0**
 
 - Fixed buffer size for reading NIfTI segmentation data.
