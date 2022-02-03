@@ -1,7 +1,7 @@
 {
-  "name": "OHIF Viewer",
+  "name": "XNAT OHIF Viewer",
   "short_name": "Viewer",
-  "description": "OHIF Viewer",
+  "description": "XNAT OHIF Viewer",
   "dir": "auto",
   "lang": "en-US",
   "orientation": "any",

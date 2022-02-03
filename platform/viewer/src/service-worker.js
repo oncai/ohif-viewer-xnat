@@ -64,6 +64,8 @@ self.addEventListener('message', event => {
     switch (event.data.type) {
       case 'SKIP_WAITING':
         // TODO: We'll eventually want this to be user prompted
+        // https://developers.google.com/web/tools/workbox/modules/workbox-sw#using_local_workbox_files_instead_of_cdn
+        //  - a best practice is to reference the various workbox.* namespaces outside of any event handlers or asynchronous functions
         // workbox.core.skipWaiting();
         // workbox.core.clientsClaim();
         // TODO: Global notification to indicate incoming reload
