@@ -280,6 +280,13 @@ class XNATStandaloneRouting extends Component {
       } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
       if (studies) {
+        // Set document title
+        let documentTitle = studies[0].PatientID || studies[0].PatientName;
+        documentTitle = documentTitle
+          ? `${documentTitle} | XNAT OHIF Viewer`
+          : 'XNAT OHIF Viewer';
+        document.title = documentTitle;
+
         // Remove series with no instances
         studies = studies.filter(study => {
           study.series = study.series.filter(series => {
@@ -404,7 +411,8 @@ async function getUserInformation(rootUrl) {
     xhr.onerror = () => {
       reject(xhr.responseText);
     };
-    xhr.open('GET', `${rootUrl}/xapi/users/username`);
+    xhr.open('GET', `${rootUrl}xapi/users/username`);
+    xhr.responseType = 'text';
     xhr.send();
   });
 
@@ -413,7 +421,7 @@ async function getUserInformation(rootUrl) {
       const { response } = result;
       userInfo.loginName = response;
 
-      return _getJson(`${rootUrl}/xapi/users/profile/${response}`);
+      return _getJson(`${rootUrl}xapi/users/profile/${response}`);
     })
     .then(result => {
       const { firstName, lastName } = result;
@@ -458,7 +466,6 @@ function reassignInstanceUrls(studies, rootUrl) {
       });
     });
   });
-
 }
 
 async function updateMetaDataProvider(studies) {
