@@ -66,6 +66,7 @@ class VTKImageFusionDialog extends PureComponent {
     this.onColormapChanged = this.onColormapChanged.bind(this);
     this.onOpacityChanged = this.onOpacityChanged.bind(this);
     this.onIntensityRangeChanged = this.onIntensityRangeChanged.bind(this);
+    this.onColormapRescaleChanged = this.onColormapRescaleChanged.bind(this);
     this.onLoadedFusionData = this.onLoadedFusionData.bind(this);
   }
 
@@ -320,27 +321,35 @@ class VTKImageFusionDialog extends PureComponent {
   }
 
   onIntensityRangeChanged(valueRange) {
-    const { displaySetInstanceUID, vtkProperties } = this.state;
-    const { opacity } = vtkProperties;
-    const newOpacity = cloneDeep(opacity);
-
-    newOpacity[1][0] = valueRange[0];
-    newOpacity[2][0] = valueRange[1];
-
-    // newOpacity[1][0] = valueRange[0] - Math.abs(valueRange[0] * 0.001);
-    // newOpacity[2][0] = valueRange[0];
-    // newOpacity[3][0] = valueRange[1];
+    const { displaySetInstanceUID } = this.state;
 
     volumeProperties.updateUserProperties(displaySetInstanceUID, {
       fg: {
         voiRange: [...valueRange],
-        opacity: newOpacity,
-        // color: [...valueRange],
       },
     });
     volumeProperties.applyUserPropertiesToVolume(displaySetInstanceUID, true);
     this.updateVtkViewportApi();
-    const newVtkProperties = this.getVolumeProperties(displaySetInstanceUID) || {};
+    const newVtkProperties =
+      this.getVolumeProperties(displaySetInstanceUID) || {};
+    this.setState({ vtkProperties: newVtkProperties });
+  }
+
+  onColormapRescaleChanged(evt) {
+    const value = evt.target.value;
+    const rescaleColormap = value === '1';
+
+    const { displaySetInstanceUID } = this.state;
+
+    volumeProperties.updateUserProperties(displaySetInstanceUID, {
+      fg: {
+        rescaleColormap: rescaleColormap,
+      },
+    });
+    volumeProperties.applyUserPropertiesToVolume(displaySetInstanceUID, true);
+    this.updateVtkViewportApi();
+    const newVtkProperties =
+      this.getVolumeProperties(displaySetInstanceUID) || {};
     this.setState({ vtkProperties: newVtkProperties });
   }
 
@@ -431,20 +440,20 @@ class VTKImageFusionDialog extends PureComponent {
 
             {!isEmpty(vtkProperties) && (
               <>
-                <div className="verticalLine" />
-                <div className="group">
-                  <Icon name="xnat-colormap" width="18px" height="18px" />
-                  <select
-                    value={vtkProperties.colormap}
-                    onChange={this.onColormapChanged}
-                  >
-                    {this.colormapList.map(color => (
-                      <option key={color.id} value={color.id}>
-                        {color.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/*<div className="verticalLine" />*/}
+                {/*<div className="group">*/}
+                {/*  <Icon name="xnat-colormap" width="18px" height="18px" />*/}
+                {/*  <select*/}
+                {/*    value={vtkProperties.colormap}*/}
+                {/*    onChange={this.onColormapChanged}*/}
+                {/*  >*/}
+                {/*    {this.colormapList.map(color => (*/}
+                {/*      <option key={color.id} value={color.id}>*/}
+                {/*        {color.name}*/}
+                {/*      </option>*/}
+                {/*    ))}*/}
+                {/*  </select>*/}
+                {/*</div>*/}
                 <div className="group">
                   <Icon
                     name={vtkProperties.visible ? 'eye' : 'eye-closed'}
@@ -461,6 +470,33 @@ class VTKImageFusionDialog extends PureComponent {
 
           {!isEmpty(vtkProperties) && (
             <>
+              <div
+                className="row"
+                style={{ maxWidth: 360, marginTop: 10, marginBottom: 5 }}
+              >
+                <div className="group">
+                  <Icon name="xnat-colormap" width="18px" height="18px" />
+                  <select
+                    value={vtkProperties.colormap}
+                    onChange={this.onColormapChanged}
+                  >
+                    {this.colormapList.map(color => (
+                      <option key={color.id} value={color.id}>
+                        {color.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="group">
+                  <select
+                    value={vtkProperties.rescaleColormap ? '1' : '0'}
+                    onChange={this.onColormapRescaleChanged}
+                  >
+                    <option value="1">Rescale Colormap</option>
+                    <option value="0">Use Full Data Range</option>
+                  </select>
+                </div>
+              </div>
               <div className="row">
                 <div className="group" style={{ alignItems: 'flex-end' }}>
                   <Icon name="xnat-contrast-range" width="22px" height="22px" />

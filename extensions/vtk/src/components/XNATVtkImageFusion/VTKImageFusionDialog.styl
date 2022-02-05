@@ -54,12 +54,23 @@
           pointer-events: none
 
           &.visibility
+            width: 30px
             margin-right: 0
+            padding: 0 4px
+            border-radius: 5px
             pointer-events: auto
             cursor: pointer
+            color: var(--ui-gray-darkest)
+            background-color: var(--text-secondary-color)
+
+            &:hover
+              background-color: var(--default-color)
+              border: none
 
           &.invisible
             color: orangered
+            background-color: transparent
+            border: 1px solid orangered
 
   .verticalLine
     margin: 0 5px
@@ -90,12 +101,13 @@
 
   select
     background-color: transparent
-    border: none
+    border: 1px solid var(--ui-border-color)
+    border-radius: 5px
     padding: 0 0 0 0
     color: white
     outline: none
-    //width: 100%
-    max-width: 150px
+    width: 100%
+    max-width: 360px
 
     option, optgroup
       background-color: var(--ui-gray)
@@ -104,6 +116,7 @@
       color: var(--text-secondary-color)
 
   button
+    width: 140px
     border: 0
     border-radius: 4px
     margin: 0 5px

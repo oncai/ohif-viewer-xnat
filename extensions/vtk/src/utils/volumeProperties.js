@@ -34,6 +34,8 @@ class VolumeProperties {
       .getScalars()
       .getRange();
 
+    // Set voi to be within the actual data range
+    // - voi new values affect foreground/fused volumes only
     if (voi[0] < dataRange[0]) {
       voi[0] = dataRange[0];
     }
@@ -48,43 +50,46 @@ class VolumeProperties {
       dataRange[1] * (1 - interval),
     ];
 
-    if (Math.abs(voi[0] - dataRange[0]) < interval) {
+    // Move voi away from the data range edges
+    /*if (Math.abs(voi[0] - dataRange[0]) < interval) {
       voi[0] = middlePoints[0];
     }
     if (Math.abs(voi[1] - dataRange[1]) < interval) {
       voi[1] = middlePoints[1];
-    }
+    }*/
 
     const opacityBg = [[0, 1.0], [1024, 1.0]];
+
     const opacityFg = [];
     opacityFg.push([dataRange[0], 0.0]);
-    // opacityFg.push([voi[0] - Math.abs(voi[0] * 0.001), 0.0]);
     opacityFg.push([voi[0], 0.95]);
-    // opacityFg.push([voi[1], 0.95]);
     opacityFg.push([voi[1], 0.99]);
     opacityFg.push([dataRange[1], 1.0]);
 
+    const rescaleColormap = true;
+
     const defaults = {
-      // Background and foreground (fused) volume properties
+      // Background volume properties
       bg: {
-        voiRange: [...voiRange],
         dataRange: [...dataRange],
         //
-        color: [...voi],
+        voiRange: [...voi],
         colormap: vtkColorMaps.defaultBackgroundColormap,
         opacity: cloneDeep(opacityBg),
         globalOpacity: 1.0,
         visible: true,
+        rescaleColormap: true, // always true
       },
+      // Foreground (fused) volume properties
       fg: {
-        voiRange: [...voi],
         dataRange: [...dataRange],
         //
-        color: [...dataRange],
+        voiRange: rescaleColormap ? [...voi] : [...dataRange],
         colormap: vtkColorMaps.defaultForegroundColormap,
         opacity: cloneDeep(opacityFg),
         globalOpacity: 1.0,
         visible: true,
+        rescaleColormap: rescaleColormap,
       },
     };
 
@@ -153,6 +158,15 @@ class VolumeProperties {
       bg: newProperties.bg ? { ...bg, ...newProperties.bg } : { ...bg },
       fg: newProperties.fg ? { ...fg, ...newProperties.fg } : { ...fg },
     };
+
+    // Update opacity for foreground properties
+    if (newProperties.fg) {
+      const { opacity, voiRange, dataRange } = volumeData.properties.user.fg;
+      opacity[0][0] = dataRange[0];
+      opacity[1][0] = voiRange[0];
+      opacity[2][0] = voiRange[1];
+      opacity[3][0] = dataRange[1];
+    }
   }
 
   resetUserPropertiesToDefaults(displaySetInstanceUID, options = {}) {
@@ -169,12 +183,12 @@ class VolumeProperties {
     };
   }
 
-  setColorAndOpacityUsingVoi(volume, voiRange) {
+  setColorAndOpacityUsingVoi(volume, colorRange) {
     const colormap = 'Grayscale';
     const opacity = [[0, 1.0], [1024, 1.0]];
     const globalOpacity = 1.0;
 
-    _updateVolumeColor(volume, voiRange, colormap);
+    _updateVolumeColor(volume, colorRange, colormap);
     _updateVolumeOpacity(volume, opacity, globalOpacity);
   }
 
@@ -190,25 +204,28 @@ class VolumeProperties {
 
     const selector = isFg ? 'fg' : 'bg';
     const {
-      color,
+      dataRange,
+      voiRange,
       colormap,
       opacity,
       globalOpacity,
       visible,
+      rescaleColormap
     } = volumeData.properties.user[selector];
 
     volumeData.volume.setVisibility(visible);
 
-    _updateVolumeColor(volumeData.volume, color, colormap);
+    const colorRange = rescaleColormap ? voiRange : dataRange;
+    _updateVolumeColor(volumeData.volume, colorRange, colormap);
     _updateVolumeOpacity(volumeData.volume, opacity, globalOpacity);
   }
 }
 
-function _updateVolumeColor(volume, color, colormap) {
+function _updateVolumeColor(volume, colorRange, colormap) {
   const preset = vtkColorMaps.getPresetByName(colormap);
   const cfun = volume.getProperty().getRGBTransferFunction(0);
   cfun.applyColorMap(preset);
-  cfun.setMappingRange(...color);
+  cfun.setMappingRange(...colorRange);
   cfun.updateRange();
 }
 
