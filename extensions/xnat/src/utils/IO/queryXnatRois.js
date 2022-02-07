@@ -1,6 +1,8 @@
 import fetchJSON from './fetchJSON';
 import getReferencedScan from '../getReferencedScan';
 
+const _cachedExperimentRoiCollections = new Map();
+
 const queryXnatSessionRoiCollections = session => {
   const { projectId, subjectId, experimentId } = session;
 
@@ -38,11 +40,24 @@ const getCollectionInfo = collectionJSON => {
   }
 };
 
+const clearCachedExperimentRoiCollections = experimentId => {
+  // Invalidate cache for session.experimentId
+  _cachedExperimentRoiCollections.delete(experimentId);
+};
+
 class XnatSessionRoiCollections {
   constructor() {
     this._cancelablePromises = [];
   }
   async queryAll(session) {
+    const cachedRoiCollections = _cachedExperimentRoiCollections.get(
+      session.experimentId
+    );
+
+    if (cachedRoiCollections) {
+      return cachedRoiCollections;
+    }
+
     const roiCollections = {};
 
     const cancelablePromise = queryXnatSessionRoiCollections(session);
@@ -87,6 +102,8 @@ class XnatSessionRoiCollections {
       });
     }
 
+    _cachedExperimentRoiCollections.set(session.experimentId, roiCollections);
+
     return roiCollections;
   }
   cancel() {
@@ -101,5 +118,6 @@ class XnatSessionRoiCollections {
 export {
   queryXnatSessionRoiCollections,
   queryXnatRoiCollection,
+  clearCachedExperimentRoiCollections,
   XnatSessionRoiCollections as default,
 };

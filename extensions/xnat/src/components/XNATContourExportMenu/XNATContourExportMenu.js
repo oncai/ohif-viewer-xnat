@@ -10,6 +10,7 @@ import lockStructureSet from '../../utils/lockStructureSet';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import showNotification from '../common/showNotification';
+import { clearCachedExperimentRoiCollections } from '../../utils/IO/queryXnatRois';
 
 import '../XNATRoiPanel.styl';
 
@@ -126,6 +127,7 @@ export default class XNATContourExportMenu extends React.Component {
           xnat_label
         );
 
+        clearCachedExperimentRoiCollections(aimExporter.experimentID);
         showNotification('Contour collection exported successfully', 'success');
 
         this.props.onExportComplete();

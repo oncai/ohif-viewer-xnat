@@ -24,6 +24,7 @@ import xnatImageComposition from './icons/xnat-image-composition.svg';
 import xnatColormap from './icons/xnat-colormap.svg';
 import xnatOpacity from './icons/xnat-opacity.svg';
 import xnatContrastRange from './icons/xnat-contrast-range.svg';
+import xnatRefresh from './icons/xnat-refresh.svg';
 
 import Loader from './Loader/Loader';
 
@@ -55,6 +56,7 @@ const XNATICONS = {
   'xnat-colormap': xnatColormap,
   'xnat-opacity': xnatOpacity,
   'xnat-contrast-range': xnatContrastRange,
+  'xnat-refresh': xnatRefresh,
 };
 
 export { XNATICONS, Loader, sliderUtils, ReactSlider };

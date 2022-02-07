@@ -9,6 +9,7 @@ import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
 import showNotification from '../common/showNotification';
+import { clearCachedExperimentRoiCollections } from '../../utils/IO/queryXnatRois';
 
 import '../XNATRoiPanel.styl';
 
@@ -93,6 +94,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
             modified: false,
           });
 
+          clearCachedExperimentRoiCollections(dicomSegExporter.experimentID);
           showNotification('Mask collection exported successfully', 'success');
 
           this.props.onExportComplete();
