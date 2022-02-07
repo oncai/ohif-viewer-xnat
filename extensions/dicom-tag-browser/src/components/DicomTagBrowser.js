@@ -302,6 +302,20 @@ function getRows(metadata, depth = 0) {
       continue;
     }
 
+    // Private sequence
+    if (
+      !tagInfo &&
+      Array.isArray(value) &&
+      value[0] &&
+      typeof value[0] === 'object'
+    ) {
+      value = ' ';
+    }
+
+    if (Array.isArray(value) && value[0] && value[0] instanceof ArrayBuffer) {
+      value = ' ';
+    }
+
     if (Array.isArray(value)) {
       value = value.join('\\');
     }
