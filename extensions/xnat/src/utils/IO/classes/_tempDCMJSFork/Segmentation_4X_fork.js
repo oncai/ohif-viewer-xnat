@@ -15,6 +15,7 @@ import {
   decode,
 } from './copiedDCMJSInternals/utilities/compression/rleSingleSamplePerPixel';
 import cloneDeep from 'lodash.clonedeep';
+import { Normalizer } from './copiedDCMJSInternals/normalizers';
 
 const {
   BitArray,
@@ -23,7 +24,7 @@ const {
   datasetToBlob,
 } = dcmjs.data;
 
-const { Normalizer } = dcmjs.normalizers;
+// const { Normalizer } = dcmjs.normalizers;
 const SegmentationDerivation = dcmjs.derivations.Segmentation;
 
 const Segmentation = {
@@ -191,6 +192,10 @@ function fillSegmentation(segmentation, inputLabelmaps3D, userOptions = {}) {
   } else {
     // If no rleEncoding, at least bitpack the data.
     segmentation.bitPackPixelData();
+    // Set transfer syntax to Explicit VR Little Endian (EVLE)
+    segmentation.dataset._meta.TransferSyntaxUID.Value = [
+      '1.2.840.10008.1.2.1',
+    ];
   }
 
   const segBlob = datasetToBlob(segmentation.dataset);
@@ -232,6 +237,10 @@ function _createSegFromImages(images, isMultiframe, options) {
     const dicomData = DicomMessage.readFile(arrayBuffer);
     const dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
 
+    if (dataset.PixelData && Array.isArray(dataset.PixelData)) {
+      dataset.PixelData = dataset.PixelData[0];
+    }
+
     dataset._meta = DicomMetaDictionary.namifyDataset(dicomData.meta);
 
     datasets.push(dataset);
@@ -241,6 +250,10 @@ function _createSegFromImages(images, isMultiframe, options) {
       const arrayBuffer = image.data.byteArray.buffer;
       const dicomData = DicomMessage.readFile(arrayBuffer);
       const dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
+
+      if (dataset.PixelData && Array.isArray(dataset.PixelData)) {
+        dataset.PixelData = dataset.PixelData[0];
+      }
 
       dataset._meta = DicomMetaDictionary.namifyDataset(dicomData.meta);
       datasets.push(dataset);
@@ -1165,18 +1178,18 @@ function insertPixelDataPerpendicular_v0(
   const rowCosines = Array.isArray(firstImagePlaneModule.rowCosines)
     ? [...firstImagePlaneModule.rowCosines]
     : [
-      firstImagePlaneModule.rowCosines.x,
-      firstImagePlaneModule.rowCosines.y,
-      firstImagePlaneModule.rowCosines.z,
-    ];
+        firstImagePlaneModule.rowCosines.x,
+        firstImagePlaneModule.rowCosines.y,
+        firstImagePlaneModule.rowCosines.z,
+      ];
 
   const columnCosines = Array.isArray(firstImagePlaneModule.columnCosines)
     ? [...firstImagePlaneModule.columnCosines]
     : [
-      firstImagePlaneModule.columnCosines.x,
-      firstImagePlaneModule.columnCosines.y,
-      firstImagePlaneModule.columnCosines.z,
-    ];
+        firstImagePlaneModule.columnCosines.x,
+        firstImagePlaneModule.columnCosines.y,
+        firstImagePlaneModule.columnCosines.z,
+      ];
 
   const { pixelSpacing } = firstImagePlaneModule;
 

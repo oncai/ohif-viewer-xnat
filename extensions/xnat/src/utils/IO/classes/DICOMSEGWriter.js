@@ -2,6 +2,7 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import dcmjs from 'dcmjs';
 import getElementFromFirstImageId from '../../getElementFromFirstImageId';
+import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const globalToolStateManager =
@@ -63,7 +64,8 @@ export default class DICOMSEGWriter {
             ContentTime: time,
           };
 
-          const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
+          // const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
+          const segBlob = Segmentation_4X_fork.generateSegmentation(
             images,
             labelmaps3D,
             options
