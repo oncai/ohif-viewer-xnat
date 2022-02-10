@@ -9,18 +9,21 @@
 // from the root directory.
 // Since the workbox version may change with copyLibraries ensure that the
 // right version is used here and in `service-worker.js`
-import { Workbox } from './third_party/workbox/workbox-v5.1.4/workbox-window.prod.mjs';
+// Use js instead of mjs as the latter is not yet supported by Nginx
+import { Workbox } from './third_party/workbox/workbox-v5.1.4/workbox-window.dev.js';
 
 // Alternatively use the internet version by commenting out the above import and
 // replace with this line and do the corresponding change in service-worker.js
 // import { Workbox } from 'https://storage.googleapis.com/workbox-cdn/releases/5.0.0-beta.1/workbox-window.prod.mjs';
 
 var supportsServiceWorker = 'serviceWorker' in navigator;
-var isNotLocalDevelopment = true;
-  // ['localhost', '127'].indexOf(location.hostname) === -1;
+var isNotLocalDevelopment =
+  ['localhost', '127'].indexOf(location.hostname) === -1;
 
 if (supportsServiceWorker && isNotLocalDevelopment) {
-  const swFileLocation = (window.PUBLIC_URL || '') + 'sw.js';
+  // const swFileLocation = (window.PUBLIC_URL || '') + 'sw.js';
+  const swFileLocation =
+    window.location.origin + window.location.pathname + 'sw.js';
   const wb = new Workbox(swFileLocation);
 
   // Add an event listener to detect when the registered
