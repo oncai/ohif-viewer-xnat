@@ -135,6 +135,10 @@ export default class XNATSegmentationPanel extends React.Component {
         this.cornerstoneEventListenerHandler
       );
     });
+    document.addEventListener(
+      'finishedmaskimportusingmodalevent',
+      this.cornerstoneEventListenerHandler
+    );
   }
 
   removeEventListeners() {
@@ -144,6 +148,10 @@ export default class XNATSegmentationPanel extends React.Component {
         this.cornerstoneEventListenerHandler
       );
     });
+    document.removeEventListener(
+      'finishedmaskimportusingmodalevent',
+      this.cornerstoneEventListenerHandler
+    );
   }
 
   cornerstoneEventListenerHandler() {

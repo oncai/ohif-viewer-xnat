@@ -26,6 +26,7 @@ const getCollectionInfo = collectionJSON => {
   const referencedScan = getReferencedScan(collectionJSON);
   if (referencedScan) {
     return {
+      id: data_fields.ID || data_fields.id,
       collectionType: data_fields.collectionType,
       label: data_fields.label,
       experimentId: data_fields.imageSession_ID,

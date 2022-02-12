@@ -120,16 +120,14 @@ export default class SegmentationMenuListItem extends React.Component {
             }}
           />
         </td>
-        <td>
+        <td className="left-aligned-cell">
           <a
             style={{ cursor: 'pointer'}}
             onClick={() => {
               onEditClick(segmentIndex, metadata);
             }}
           >
-            <span
-              style={{ color: 'var(--text-primary-color)' }}
-            >
+            <span style={{ color: 'var(--text-primary-color)' }}>
               {segmentLabel}
             </span>
             <span

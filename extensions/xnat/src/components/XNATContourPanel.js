@@ -137,6 +137,10 @@ export default class XNATContourPanel extends React.Component {
         this.cornerstoneEventListenerHandler
       );
     });
+    document.addEventListener(
+      'finishedcontourimportusingmodalevent',
+      this.cornerstoneEventListenerHandler
+    );
   }
 
   cornerstoneEventListenerHandler() {
@@ -158,6 +162,10 @@ export default class XNATContourPanel extends React.Component {
         this.cornerstoneEventListenerHandler
       );
     });
+    document.removeEventListener(
+      'finishedcontourimportusingmodalevent',
+      this.cornerstoneEventListenerHandler
+    );
   }
 
   configurationChangeHandler = newConfiguration => {
