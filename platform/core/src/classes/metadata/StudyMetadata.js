@@ -854,7 +854,9 @@ const makeDisplaySet = (series, instances) => {
   );
 
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
-  imageSet.isReconstructable = displayReconstructableInfo.value;
+  imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
+  imageSet.numberOfImagesPerSubset =
+    displayReconstructableInfo.numberOfImagesPerSubset;
 
   let displaySpacingInfo = undefined;
   if (shallSort && imageSet.isReconstructable) {

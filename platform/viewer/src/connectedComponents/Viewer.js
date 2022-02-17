@@ -633,7 +633,9 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         // and better than what we have right now.
         altImageText = 'SEG';
       } else if (displaySet.images && displaySet.images.length) {
-        const imageIndex = Math.floor(displaySet.images.length / 2);
+        const numImages =
+          displaySet.numberOfImagesPerSubset || displaySet.images.length;
+        const imageIndex = Math.floor(numImages / 2);
         imageId = displaySet.images[imageIndex].getImageId();
       } else {
         altImageText = displaySet.Modality ? displaySet.Modality : 'UN';

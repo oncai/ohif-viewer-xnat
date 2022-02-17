@@ -19,12 +19,20 @@ function isDisplaySetReconstructable(instances) {
   const isMultiframe = firstInstance.NumberOfFrames > 1;
 
   if (!constructableModalities.includes(Modality)) {
-    return { value: false };
+    return {
+      isReconstructable: false,
+      reconstructionIssues: [],
+      numberOfImagesPerSubset: instances.length,
+    };
   }
 
   // Can't reconstruct if we only have one image.
   if (!isMultiframe && instances.length === 1) {
-    return { value: false };
+    return {
+      isReconstructable: false,
+      reconstructionIssues: [],
+      numberOfImagesPerSubset: instances.length,
+    };
   }
 
   if (isMultiframe) {
@@ -41,15 +49,20 @@ function isDisplaySetReconstructable(instances) {
  * @returns {Object} value and reconstructionIssues.
  */
 function processMultiframe(instances) {
-  const reconstructionIssues = [];
+  const value = {
+    isReconstructable: false,
+    reconstructionIssues: [],
+    numberOfImagesPerSubset: instances.length,
+  };
   const metadata = instances[0].getData().metadata;
   // enable for NM image
   if (metadata.Modality === 'NM') {
-    return { value: true, reconstructionIssues };
+    value.isReconstructable = true;
+  } else {
+    value.reconstructionIssues.push(ReconstructionIssues.MULTIFRAMES);
   }
 
-  reconstructionIssues.push(ReconstructionIssues.MULTIFRAMES);
-  return { value: false, reconstructionIssues };
+  return value;
 }
 
 /**
@@ -95,11 +108,17 @@ function processSingleframe(instances) {
   }
 
   // check if dataset is 4D
-  if (_isDataset4D(instances)) {
+  // numberOfImagesets = number of images for each set in 4D images
+  const { is4D, numberOfImagesPerSubset } = _isDataset4D(instances);
+  if (is4D) {
     reconstructionIssues.push(ReconstructionIssues.DATASET_4D);
   }
 
-  return { value: reconstructionIssues.length === 0 ? true : false, reconstructionIssues };
+  return {
+    isReconstructable: reconstructionIssues.length === 0 ? true : false,
+    reconstructionIssues,
+    numberOfImagesPerSubset,
+  };
 }
 
 /**
@@ -186,9 +205,11 @@ function isSpacingUniform(instances, datasetIs4D) {
  *
  * @param {Object[]} instances An array of `OHIFInstanceMetadata` objects.
  *
- * @returns {boolean} dataset4D value.
+ * @returns {{numberOfImagesPerSubset: number, is4D: boolean}} dataset4D value.
  */
- function _isDataset4D(instances) {
+function _isDataset4D(instances) {
+  let is4D = false;
+  let numberOfImagesPerSubset = instances.length;
   const n = instances.length;
   for (let ii = 0; ii < n; ++ii) {
     const instanceMetadataControl = instances[ii].getData().metadata;
@@ -211,13 +232,23 @@ function isSpacingUniform(instances, datasetIs4D) {
         continue;
       }
 
-      if (_isSameArray(instanceMetadataControl.ImagePositionPatient, instanceMetadata.ImagePositionPatient)) {
-        return true;
+      if (
+        _isSameArray(
+          instanceMetadataControl.ImagePositionPatient,
+          instanceMetadata.ImagePositionPatient
+        )
+      ) {
+        numberOfImagesPerSubset = jj;
+        is4D = true;
+        break;
       }
+    }
+    if (is4D) {
+      break;
     }
   }
 
-  return false;
+  return { is4D, numberOfImagesPerSubset };
 }
 
 function _isSameArray(iop1, iop2) {
@@ -279,4 +310,4 @@ function _getPerpendicularDistance(a, b) {
 
 const constructableModalities = ['MR', 'CT', 'PT', 'NM'];
 
-export {isDisplaySetReconstructable, isSpacingUniform};
+export { isDisplaySetReconstructable, isSpacingUniform };
