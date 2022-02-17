@@ -30,3 +30,18 @@ export {
   setActiveViewportIndex,
   getActiveViewportIndex,
 };
+
+/**
+ * Windowing state
+ */
+const windowingState = new Map();
+
+const setWindowing = (enabledElementUuid, type) => {
+  windowingState.set(enabledElementUuid, type);
+};
+
+const getWindowing = enabledElementUuid => {
+  return windowingState.get(enabledElementUuid);
+};
+
+export { setWindowing, getWindowing };

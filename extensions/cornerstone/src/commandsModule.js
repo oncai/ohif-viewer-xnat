@@ -5,7 +5,11 @@ import OHIF from '@ohif/core';
 import contextMenuHandler from './utils/contextMenuHandler';
 
 import setCornerstoneLayout from './utils/setCornerstoneLayout.js';
-import { getEnabledElement, getActiveViewportIndex } from './state';
+import {
+  getEnabledElement,
+  getActiveViewportIndex,
+  setWindowing,
+} from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
 import { referenceLines } from '@xnat-ohif/extension-xnat';
 const scroll = cornerstoneTools.import('util/scroll');
@@ -65,10 +69,12 @@ const commandsModule = ({ servicesManager }) => {
       }
     },
     resetViewport: ({ viewports }) => {
-      const enabledElement = getEnabledElement(viewports.activeViewportIndex);
+      const element = getEnabledElement(viewports.activeViewportIndex);
 
-      if (enabledElement) {
-        cornerstone.reset(enabledElement);
+      if (element) {
+        const enabledElement = cornerstone.getEnabledElement(element);
+        setWindowing(enabledElement.uuid, 'Default');
+        cornerstone.reset(element);
       }
     },
     invertViewport: ({ viewports }) => {
@@ -265,16 +271,19 @@ const commandsModule = ({ servicesManager }) => {
       setCornerstoneLayout();
     },
     setWindowLevel: ({ viewports, window, level }) => {
-      const enabledElement = getEnabledElement(viewports.activeViewportIndex);
+      const element = getEnabledElement(viewports.activeViewportIndex);
 
-      if (enabledElement) {
-        let viewport = cornerstone.getViewport(enabledElement);
+      if (element) {
+        const enabledElement = cornerstone.getEnabledElement(element);
+        setWindowing(enabledElement.uuid, 'Preset');
+
+        let viewport = cornerstone.getViewport(element);
 
         viewport.voi = {
           windowWidth: Number(window),
           windowCenter: Number(level),
         };
-        cornerstone.setViewport(enabledElement, viewport);
+        cornerstone.setViewport(element, viewport);
       }
     },
     jumpToImage: ({

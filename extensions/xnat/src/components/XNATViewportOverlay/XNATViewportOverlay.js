@@ -8,12 +8,12 @@ import {
   formatDICOMDate,
   formatDICOMTime,
   formatPN,
-  getCompression
+  getCompression,
 } from './helpers';
-import classNames from 'classnames';
-import { Icon } from '@ohif/ui/src/elements/Icon';
-import { Tooltip } from '@ohif/ui/src/components/tooltip';
-import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
+// import classNames from 'classnames';
+// import { Icon } from '@ohif/ui/src/elements/Icon';
+// import { Tooltip } from '@ohif/ui/src/components/tooltip';
+// import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
 import XNATSmooth from './XNATSmooth';
 import XNATSync from './XNATSync';
 
@@ -39,7 +39,8 @@ class XNATViewportOverlay extends React.PureComponent {
   };
 
   render() {
-    const { imageId, scale, windowWidth, windowCenter, inconsistencyWarnings } = this.props;
+    const { imageId, scale, windowWidth, windowCenter } = this.props;
+    // const { imageId, scale, windowWidth, windowCenter, inconsistencyWarnings } = this.props;
 
     if (!imageId) {
       return null;
@@ -78,6 +79,7 @@ class XNATViewportOverlay extends React.PureComponent {
 
     const { imageIndex, stackSize } = this.props;
 
+    /*
     const inconsistencyWarningsOn = inconsistencyWarnings && inconsistencyWarnings.length !== 0 ? true : false;
     const getWarningContent = (warningList) => {
       if (Array.isArray(warningList)) {
@@ -121,6 +123,7 @@ class XNATViewportOverlay extends React.PureComponent {
       </React.Fragment>
       );
     };
+    */
 
     const normal = (
       <React.Fragment>
@@ -141,9 +144,9 @@ class XNATViewportOverlay extends React.PureComponent {
           <div>{wwwc}</div>
           <div className="compressionIndicator">{compression}</div>
         </div>
-        <div className="bottom-left2 warning">
-          <div>{inconsistencyWarningsOn ? getWarningInfo(seriesNumber, inconsistencyWarnings) : ''}</div>
-        </div>
+        {/*<div className="bottom-left2 warning">*/}
+        {/*  <div>{inconsistencyWarningsOn ? getWarningInfo(seriesNumber, inconsistencyWarnings) : ''}</div>*/}
+        {/*</div>*/}
         <div className="bottom-left overlay-element">
           <div>{modality}</div>
           <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>

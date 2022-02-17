@@ -7,6 +7,8 @@ import {
   setEnabledElement,
   setActiveViewportIndex,
   getActiveViewportIndex,
+  setWindowing,
+  getWindowing,
 } from './state';
 import {
   referenceLines,
@@ -33,6 +35,33 @@ const imageLoadField = event => {
       message: message,
       type: 'error',
     });
+  }
+};
+
+const onNewImage = event => {
+  // Make sure to update the viewport with the correct voi values
+  const eventDetail = event.detail;
+  if (!eventDetail) {
+    return;
+  }
+
+  const { viewport, image, enabledElement, element } = eventDetail;
+  if (!viewport || !image || !enabledElement) {
+    return;
+  }
+
+  if (getWindowing(enabledElement.uuid) !== 'Default') {
+    return;
+  }
+
+  const voi = viewport.voi;
+  const { windowWidth, windowCenter } = image;
+
+  if (windowWidth !== voi.windowWidth || windowCenter !== voi.windowCenter) {
+    voi.windowWidth = windowWidth;
+    voi.windowCenter = windowCenter;
+    cornerstone.setViewport(element, viewport);
+    // cornerstone.updateImage(element);
   }
 };
 
@@ -114,6 +143,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onElementEnabled: event => {
       const enabledElement = event.detail.element;
       setEnabledElement(viewportIndex, enabledElement);
+      setWindowing(event.detail.uuid, 'Default');
       updateImageSynchronizer.add(enabledElement);
       setTimeout(() => {
         referenceLines.display(getActiveViewportIndex());
@@ -141,6 +171,11 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         handler: event => {
           updateImageSynchronizer.remove(event.detail.element);
         },
+      },
+      {
+        target: 'element',
+        eventName: cornerstone.EVENTS.NEW_IMAGE,
+        handler: onNewImage,
       },
     ],
   };

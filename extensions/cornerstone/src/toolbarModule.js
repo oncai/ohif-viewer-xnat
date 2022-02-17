@@ -62,7 +62,7 @@ const definitions = [
     //
     type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
     commandName: 'setToolActive',
-    commandOptions: { toolName: 'Wwwc' },
+    commandOptions: { toolName: 'CustomWwwc' },
   },
   {
     id: 'Pan',
@@ -193,7 +193,7 @@ const definitions = [
         //
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: 'WwwcRegion' },
+        commandOptions: { toolName: 'CustomWwwcRegion' },
       },
       {
         id: 'DragProbe',
