@@ -123,7 +123,7 @@ window.config = {
       keys: ['f'],
     },
     {
-      commandNamef: 'cancelTask',
+      commandName: 'cancelTask',
       label: 'Cancel Action',
       keys: ['esc'],
     },

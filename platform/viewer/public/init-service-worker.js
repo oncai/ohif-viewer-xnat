@@ -17,8 +17,8 @@ import { Workbox } from './third_party/workbox/workbox-v5.1.4/workbox-window.dev
 // import { Workbox } from 'https://storage.googleapis.com/workbox-cdn/releases/5.0.0-beta.1/workbox-window.prod.mjs';
 
 var supportsServiceWorker = 'serviceWorker' in navigator;
-var isNotLocalDevelopment =
-  ['localhost', '127'].indexOf(location.hostname) === -1;
+var isNotLocalDevelopment = false; // Deactivate service worker
+  // ['localhost', '127'].indexOf(location.hostname) === -1;
 
 if (supportsServiceWorker && isNotLocalDevelopment) {
   // const swFileLocation = (window.PUBLIC_URL || '') + 'sw.js';

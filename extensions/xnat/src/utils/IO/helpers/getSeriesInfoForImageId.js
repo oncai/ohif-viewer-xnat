@@ -40,6 +40,10 @@ export default function getSeriesInfoForImageId(viewportData) {
 
   const instance = cornerstone.metaData.get('instance', firstImageId);
 
+  const SoftwareVersions = Array.isArray(instance.SoftwareVersions)
+    ? instance.SoftwareVersions.join('\\')
+    : instance.SoftwareVersions;
+
   const seriesInfo = {
     studyInstanceUid: instance.StudyInstanceUID,
     seriesInstanceUid: instance.SeriesInstanceUID,
@@ -59,7 +63,7 @@ export default function getSeriesInfoForImageId(viewportData) {
     equipment: {
       manufacturerName: instance.Manufacturer || '',
       manufacturerModelName: instance.ManufacturerModelName || '',
-      softwareVersion: instance.SoftwareVersions || '',
+      softwareVersion: SoftwareVersions || '',
     },
   };
 
