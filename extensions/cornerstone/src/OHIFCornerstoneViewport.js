@@ -239,9 +239,15 @@ class OHIFCornerstoneViewport extends Component {
       }
     };
 
-    // const ViewportOverlay = props => {
-    //   return <XNATViewportOverlay {...props} inconsistencyWarnings={inconsistencyWarnings} />
-    // };
+    const ViewportOverlay = props => {
+      return (
+        <XNATViewportOverlay
+          {...props}
+          viewportIndex={viewportIndex}
+          // inconsistencyWarnings={inconsistencyWarnings}
+        />
+      );
+    };
 
     return (
       <>
@@ -251,7 +257,7 @@ class OHIFCornerstoneViewport extends Component {
           imageIdIndex={currentImageIdIndex}
           onNewImageDebounced={newImageHandler}
           onNewImageDebounceTime={300}
-          viewportOverlayComponent={XNATViewportOverlay}
+          viewportOverlayComponent={ViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}

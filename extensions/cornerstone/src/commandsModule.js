@@ -9,6 +9,7 @@ import {
   getEnabledElement,
   getActiveViewportIndex,
   setWindowing,
+  getWindowing,
 } from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
 import { referenceLines } from '@xnat-ohif/extension-xnat';
@@ -73,8 +74,14 @@ const commandsModule = ({ servicesManager }) => {
 
       if (element) {
         const enabledElement = cornerstone.getEnabledElement(element);
+        const pixelReplication = enabledElement.viewport.pixelReplication;
         setWindowing(enabledElement.uuid, 'Default');
         cornerstone.reset(element);
+        if (pixelReplication) {
+          const updatedEnabledElement = cornerstone.getEnabledElement(element);
+          updatedEnabledElement.viewport.pixelReplication = pixelReplication;
+          cornerstone.updateImage(element);
+        }
       }
     },
     invertViewport: ({ viewports }) => {
@@ -270,12 +277,12 @@ const commandsModule = ({ servicesManager }) => {
     setCornerstoneLayout: () => {
       setCornerstoneLayout();
     },
-    setWindowLevel: ({ viewports, window, level }) => {
+    setWindowLevel: ({ viewports, window, level, description }) => {
       const element = getEnabledElement(viewports.activeViewportIndex);
 
       if (element) {
         const enabledElement = cornerstone.getEnabledElement(element);
-        setWindowing(enabledElement.uuid, 'Preset');
+        setWindowing(enabledElement.uuid, `Preset / ${description}`);
 
         let viewport = cornerstone.getViewport(element);
 
@@ -463,6 +470,16 @@ const commandsModule = ({ servicesManager }) => {
       },
       storeContexts: [],
       options: { evt: null },
+    },
+    getWindowing: {
+      commandFn: ({ viewportIndex }) => {
+        const enabledElement = cornerstone.getEnabledElements()[viewportIndex];
+        if (enabledElement) {
+          return getWindowing(enabledElement.uuid);
+        }
+      },
+      storeContexts: [],
+      options: { viewportIndex: null },
     },
   };
 

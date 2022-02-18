@@ -18,7 +18,7 @@ const commandsModule = ({ commandsManager }) => {
     setWindowLevelPreset: ({ viewports, preset }) => {
       const state = store.getState();
       const { preferences = {} } = state;
-      const { window, level } =
+      const { window, level, description } =
         preferences.windowLevelData && preferences.windowLevelData[preset];
 
       if (window && level) {
@@ -26,6 +26,7 @@ const commandsModule = ({ commandsManager }) => {
           viewports,
           window,
           level,
+          description: description || '??',
         });
       }
     },

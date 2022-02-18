@@ -16,6 +16,7 @@ import {
 // import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
 import XNATSmooth from './XNATSmooth';
 import XNATSync from './XNATSync';
+import { commandsManager } from '@ohif/viewer/src/App';
 
 class XNATViewportOverlay extends React.PureComponent {
   static propTypes = {
@@ -31,7 +32,8 @@ class XNATViewportOverlay extends React.PureComponent {
     imageId: PropTypes.string.isRequired,
     imageIndex: PropTypes.number.isRequired,
     stackSize: PropTypes.number.isRequired,
-    inconsistencyWarnings: PropTypes.array.isRequired
+    inconsistencyWarnings: PropTypes.array,
+    viewportIndex: PropTypes.number,
   };
 
   static defaultProps = {
@@ -39,7 +41,13 @@ class XNATViewportOverlay extends React.PureComponent {
   };
 
   render() {
-    const { imageId, scale, windowWidth, windowCenter } = this.props;
+    const {
+      imageId,
+      scale,
+      windowWidth,
+      windowCenter,
+      viewportIndex,
+    } = this.props;
     // const { imageId, scale, windowWidth, windowCenter, inconsistencyWarnings } = this.props;
 
     if (!imageId) {
@@ -74,10 +82,15 @@ class XNATViewportOverlay extends React.PureComponent {
     const compression = getCompression(imageId);
     const wwwc = `W: ${
       windowWidth.toFixed ? windowWidth.toFixed(0) : windowWidth
-    } L: ${windowWidth.toFixed ? windowCenter.toFixed(0) : windowCenter}`;
+    } L: ${windowCenter.toFixed ? windowCenter.toFixed(0) : windowCenter}`;
     const imageDimensions = `${columns} x ${rows}`;
 
     const { imageIndex, stackSize } = this.props;
+
+    const windowing = commandsManager.runCommand('getWindowing', {
+      viewportIndex,
+    });
+    // const windowingDescription = `Windowing: ${wi}`;
 
     /*
     const inconsistencyWarningsOn = inconsistencyWarnings && inconsistencyWarnings.length !== 0 ? true : false;
@@ -136,12 +149,13 @@ class XNATViewportOverlay extends React.PureComponent {
           <div>
             {formatDICOMDate(studyDate)} {formatDICOMTime(studyTime)}
           </div>
-          <XNATSync />
-          <XNATSmooth />
+          <XNATSync viewportIndex={viewportIndex} />
+          <XNATSmooth viewportIndex={viewportIndex} />
         </div>
         <div className="bottom-right overlay-element">
           <div>Zoom: {zoomPercentage}%</div>
           <div>{wwwc}</div>
+          {windowing && <div>{`Windowing: ${windowing}`}</div>}
           <div className="compressionIndicator">{compression}</div>
         </div>
         {/*<div className="bottom-left2 warning">*/}
