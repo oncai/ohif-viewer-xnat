@@ -177,14 +177,16 @@ class VTKImageFusionDialog extends PureComponent {
         layers: [],
       };
       validDisplaySets.forEach(ds => {
-        studyLayerList.layers.push({
-          displaySetInstanceUID: ds.displaySetInstanceUID,
-          SeriesInstanceUID: ds.SeriesInstanceUID,
-          Modality: ds.Modality,
-          SeriesNumber: ds.SeriesNumber,
-          SeriesDescription: ds.SeriesDescription,
-          StudyInstanceUID: StudyInstanceUID,
-        });
+        if (ds.isReconstructable) {
+          studyLayerList.layers.push({
+            displaySetInstanceUID: ds.displaySetInstanceUID,
+            SeriesInstanceUID: ds.SeriesInstanceUID,
+            Modality: ds.Modality,
+            SeriesNumber: ds.SeriesNumber,
+            SeriesDescription: ds.SeriesDescription,
+            StudyInstanceUID: StudyInstanceUID,
+          });
+        }
       });
       updatedLayerList.push(studyLayerList);
     });

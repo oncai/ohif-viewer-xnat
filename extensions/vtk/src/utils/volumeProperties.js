@@ -4,11 +4,19 @@ import vtkColorMaps from './colorMaps/ColorMaps';
 const volumeDataMap = new Map();
 
 class VolumeProperties {
-  registerVolume(displaySetInstanceUID, volume, voiRange) {
+  registerVolume(
+    displaySetInstanceUID,
+    volume,
+    voiLut,
+    modality,
+    modalitySpecificScalingParameters
+  ) {
     volumeDataMap.set(displaySetInstanceUID, {
       volume,
       properties: {
-        voiRange: [...voiRange],
+        voiRange: [voiLut.lower, voiLut.upper],
+        modality,
+        modalitySpecificScalingParameters,
       },
     });
   }
@@ -43,6 +51,7 @@ class VolumeProperties {
       voi[1] = dataRange[1];
     }
 
+    /*
     // Middle points
     const interval = 1 / 50;
     const middlePoints = [
@@ -50,13 +59,14 @@ class VolumeProperties {
       dataRange[1] * (1 - interval),
     ];
 
-    // Move voi away from the data range edges
+    // Move voi awafrom the data range edges
     /*if (Math.abs(voi[0] - dataRange[0]) < interval) {
       voi[0] = middlePoints[0];
     }
     if (Math.abs(voi[1] - dataRange[1]) < interval) {
       voi[1] = middlePoints[1];
-    }*/
+    }
+    */
 
     const opacityBg = [[0, 1.0], [1024, 1.0]];
 
@@ -73,7 +83,7 @@ class VolumeProperties {
       bg: {
         dataRange: [...dataRange],
         //
-        voiRange: [...voi],
+        voiRange: [...voiRange],
         colormap: vtkColorMaps.defaultBackgroundColormap,
         opacity: cloneDeep(opacityBg),
         globalOpacity: 1.0,
@@ -94,8 +104,8 @@ class VolumeProperties {
     };
 
     volumeData.properties = {
+      ...volumeData.properties,
       initialized: true,
-      voiRange: voiRange,
       dataRange,
       defaults,
       user: cloneDeep(defaults),
@@ -195,6 +205,7 @@ class VolumeProperties {
   /**
    * @param displaySetInstanceUID
    * @param isFg: is foreground volume (fusion)
+   * @return voiRange
    */
   applyUserPropertiesToVolume(displaySetInstanceUID, isFg) {
     const volumeData = volumeDataMap.get(displaySetInstanceUID);
@@ -218,6 +229,8 @@ class VolumeProperties {
     const colorRange = rescaleColormap ? voiRange : dataRange;
     _updateVolumeColor(volumeData.volume, colorRange, colormap);
     _updateVolumeOpacity(volumeData.volume, opacity, globalOpacity);
+
+    return voiRange;
   }
 }
 

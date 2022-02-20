@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import React, { Component } from 'react';
-import { loadImageData, getImageData } from 'react-vtkjs-viewport';
+import { getImageData } from 'react-vtkjs-viewport';
+import { loadImageData } from './__forkedFromReactVtkjsViewport';
 import ConnectedVTKViewport from './ConnectedVTKViewport';
 import LoadingIndicator from './LoadingIndicator.js';
 import OHIF from '@ohif/core';
@@ -14,6 +15,7 @@ import vtkVolumeMapper from 'vtk.js/Sources/Rendering/Core/VolumeMapper';
 import { volumeCache, labelmapCache } from './utils/viewportDataCache';
 import { DEFAULT_MODALITY_RANGE } from './utils/constants';
 import volumeProperties from './utils/volumeProperties';
+import getModalityScalingParameters from './utils/getModalityScalingParameters';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -343,7 +345,7 @@ class OHIFVTKViewport extends Component {
    * @memberof OHIFVTKViewport
    */
   getOrCreateVolume(imageDataObject, displaySetInstanceUID) {
-    const { vtkImageData, imageMetaData0 } = imageDataObject;
+    const { vtkImageData, imageMetaData0, imageIds } = imageDataObject;
 
     const cachedVolume = volumeCache.get(displaySetInstanceUID);
     if (cachedVolume) {
@@ -353,11 +355,11 @@ class OHIFVTKViewport extends Component {
     // TODO -> Should update react-vtkjs-viewport and react-cornerstone-viewports
     // internals to use naturalized DICOM JSON names.
 
-    const {
-      windowWidth: width,
-      windowCenter: center,
-      modality,
-    } = imageMetaData0;
+    // Get VOI LUT for the middle image
+    const middleIndex = Math.floor(imageIds.length / 2);
+    const middleImageId = imageIds[middleIndex];
+
+    const { modality } = imageMetaData0;
 
     const volumeActor = vtkVolume.newInstance();
 
@@ -366,8 +368,36 @@ class OHIFVTKViewport extends Component {
     volumeActor.setMapper(volumeMapper);
     volumeMapper.setInputData(vtkImageData);
 
-    const voi = _getRangeFromWindowLevels(width, center, modality);
-    const voiRange = [voi.lower, voi.upper];
+    let modalitySpecificScalingParameters;
+    try {
+      modalitySpecificScalingParameters = getModalityScalingParameters(
+        imageIds[0],
+        modality
+      );
+    } catch (e) {
+      const errorMessage = (
+        <div>
+          {`Missing ${modality} scaling parameters: `}
+          <i>{`${e.message || e}.`}</i> <br />
+          <b>Using generic scaling instead.</b>
+        </div>
+      );
+      const { UINotificationService } = this.props.servicesManager.services;
+      UINotificationService.show({
+        title: 'Modality specific scaling',
+        message: errorMessage,
+        type: 'warning',
+        duration: 15000,
+      });
+    }
+
+    imageDataObject.modalitySpecificScalingParameters = modalitySpecificScalingParameters;
+
+    const voiLut = _getRangeFromWindowLevels(
+      middleImageId,
+      modality,
+      modalitySpecificScalingParameters
+    );
 
     const spacing = vtkImageData.getSpacing();
     // Set the sample distance to half the mean length of one side. This is where the divide by 6 comes from.
@@ -390,9 +420,14 @@ class OHIFVTKViewport extends Component {
     volumeProperties.registerVolume(
       displaySetInstanceUID,
       volumeActor,
-      voiRange
+      voiLut,
+      modality,
+      modalitySpecificScalingParameters
     );
-    volumeProperties.setColorAndOpacityUsingVoi(volumeActor, voiRange);
+    volumeProperties.setColorAndOpacityUsingVoi(volumeActor, [
+      voiLut.lower,
+      voiLut.upper,
+    ]);
 
     return volumeActor;
   }
@@ -765,28 +800,52 @@ class OHIFVTKViewport extends Component {
  * for use with VTK RGBTransferFunction
  *
  * @private
- * @param {number} [width] - the width of our window
- * @param {number} [center] - the center of our window
- * @param {string} [Modality] - 'PT', 'CT', etc.
- * @returns { lower, upper } - range
+ * @param imageId
+ * @param modality
+ * @param scalingParameters
+ * @returns {{lower: number, upper: number, windowWidth: *, windowCenter: *}} - range
  */
-function _getRangeFromWindowLevels(width, center, Modality = undefined) {
+function _getRangeFromWindowLevels(imageId, modality, scalingParameters) {
+  let lower = 0;
+  let upper = 512;
+
+  let { windowWidth, windowCenter } = cornerstone.metaData.get(
+    'voiLutModule',
+    imageId
+  );
+
+  if (Array.isArray(windowWidth)) {
+    windowWidth = windowWidth[0];
+  }
+
+  if (Array.isArray(windowCenter)) {
+    windowCenter = windowCenter[0];
+  }
+
+  const levelsAreNotNumbers = isNaN(windowCenter) || isNaN(windowWidth);
+
   // For PET just set the range to 0-5 SUV
-  if (Modality === 'PT') {
-    const pt = DEFAULT_MODALITY_RANGE.PT;
-    return { lower: pt[0], upper: pt[1] };
+  if (modality === 'PT') {
+    if (scalingParameters && !levelsAreNotNumbers) {
+      const { patientWeight, correctedDose } = scalingParameters;
+      windowCenter = (1000 * windowCenter * patientWeight) / correctedDose;
+      windowWidth = (1000 * windowWidth * patientWeight) / correctedDose;
+      lower = windowCenter - windowWidth / 2.0;
+      upper = windowCenter + windowWidth / 2.0;
+    } else if (!levelsAreNotNumbers) {
+      lower = windowCenter - windowWidth / 2.0;
+      upper = windowCenter + windowWidth / 2.0;
+    } else {
+      const pt = DEFAULT_MODALITY_RANGE.PT;
+      lower = pt[0];
+      upper = pt[1];
+    }
+  } else if (!levelsAreNotNumbers) {
+    lower = windowCenter - windowWidth / 2.0;
+    upper = windowCenter + windowWidth / 2.0;
   }
 
-  const levelsAreNotNumbers = isNaN(center) || isNaN(width);
-
-  if (levelsAreNotNumbers) {
-    return { lower: 0, upper: 512 };
-  }
-
-  return {
-    lower: center - width / 2.0,
-    upper: center + width / 2.0,
-  };
+  return { lower, upper };
 }
 
 export default OHIFVTKViewport;

@@ -28,6 +28,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
   let apis = {};
   let defaultVOI;
   let currentVolume;
+  let displaySetInstanceUID;
 
   async function _getActiveViewportVTKApi(viewports) {
     const {
@@ -75,16 +76,18 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
     renderWindow.render();
   }
 
-  function setVOI(voi) {
-    const { windowWidth, windowCenter } = voi;
-    const lower = windowCenter - windowWidth / 2.0;
-    const upper = windowCenter + windowWidth / 2.0;
+  function setVOI() {
+    let windowWidth = 1;
+    let windowCenter = 0;
+    const voiRange = volumeProperties.applyUserPropertiesToVolume(
+      displaySetInstanceUID,
+      false
+    );
 
-    const rgbTransferFunction = currentVolume
-      .getProperty()
-      .getRGBTransferFunction(0);
-
-    rgbTransferFunction.setRange(lower, upper);
+    if (voiRange) {
+      windowWidth = voiRange[1] - voiRange[0];
+      windowCenter = voiRange[0] + windowWidth / 2;
+    }
 
     apis.forEach(api => {
       api.updateVOI(windowWidth, windowCenter);
@@ -123,7 +126,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
       apis.forEach(api => api.resetOrientation());
 
       // Reset VOI
-      if (defaultVOI) setVOI(defaultVOI);
+      setVOI();
 
       // Reset the crosshairs
       apis[0].svgWidgets.rotatableCrosshairsWidget.resetCrosshairs(apis, 0);
@@ -411,11 +414,12 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         document.querySelector(`.ViewerMain`).style.pointerEvents = '';
       }
 
+      displaySetInstanceUID = displaySet.displaySetInstanceUID;
       currentVolume = volumeCache.get(displaySet.displaySetInstanceUID);
 
-      if (cornerstoneVOI) {
-        setVOI(cornerstoneVOI);
-      }
+      // if (cornerstoneVOI) {
+      //   setVOI(cornerstoneVOI);
+      // }
 
       // Add widgets and set default interactorStyle of each viewport.
       apis.forEach((api, apiIndex) => {
