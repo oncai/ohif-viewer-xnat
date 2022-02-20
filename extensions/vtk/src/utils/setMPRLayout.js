@@ -27,14 +27,17 @@ export default function setMPRLayout(
     }
 
     const apis = [];
+    window.vtkApis = [];
     viewports.forEach((viewport, index) => {
       apis[index] = null;
+      window.vtkApis[index] = null;
       const viewportProps = viewportPropsArray[index];
       viewports[index] = Object.assign({}, viewports[index], {
         vtk: {
           mode: 'mpr', // TODO: not used
           afterCreation: api => {
             apis[index] = api;
+            window.vtkApis[index] = api;
 
             if (apis.every(a => !!a)) {
               resolve(apis);

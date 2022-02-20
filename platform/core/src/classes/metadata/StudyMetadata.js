@@ -832,6 +832,7 @@ const makeDisplaySet = (series, instances) => {
     frameRate: instance.getTagValue('FrameTime'),
     Modality: instance.getTagValue('Modality'),
     isMultiFrame: isMultiFrame(instance),
+    FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
   });
 
   // Sort the images in this series by instanceNumber
@@ -853,7 +854,9 @@ const makeDisplaySet = (series, instances) => {
   );
 
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
-  imageSet.isReconstructable = displayReconstructableInfo.value;
+  imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
+  imageSet.numberOfImagesPerSubset =
+    displayReconstructableInfo.numberOfImagesPerSubset;
 
   let displaySpacingInfo = undefined;
   if (shallSort && imageSet.isReconstructable) {

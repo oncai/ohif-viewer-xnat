@@ -118,33 +118,28 @@ window.config = {
     },
     // ~ XNAT extension
     {
-      commandName: 'windowLevelPreset9',
-      label: 'W/L Preset 9',
-      keys: ['9'],
+      commandName: 'toggleReferenceLines',
+      label: 'Toggle Ref. Lines',
+      keys: ['f'],
     },
     {
       commandName: 'cancelTask',
-      label: 'Cancel',
+      label: 'Cancel Action',
       keys: ['esc'],
     },
     {
-      commandName: 'xnatCancelROIDrawing',
-      label: 'Cancel contour',
-      keys: ['c'],
-    },
-    {
       commandName: 'xnatCompleteROIDrawing',
-      label: 'Complete contour',
+      label: 'Complete Contour',
       keys: ['enter'],
     },
     {
       commandName: 'xnatIncreaseBrushSize',
-      label: 'Increase brush size',
+      label: 'Increase Brush Size',
       keys: [']'],
     },
     {
       commandName: 'xnatDecreaseBrushSize',
-      label: 'Decrease brush size',
+      label: 'Decrease Brush Size',
       keys: ['['],
     },
   ],

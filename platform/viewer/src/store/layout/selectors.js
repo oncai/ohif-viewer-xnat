@@ -21,6 +21,8 @@ export const getActiveContexts = createSelector(
     if (activeViewportPluginName) {
       const activeViewportExtension = `ACTIVE_VIEWPORT::${activeViewportPluginName.toUpperCase()}`;
       activeContexts.push(activeViewportExtension);
+      // Add XNAT extension to active contexts
+      activeContexts.push(`${activeViewportExtension}::XNAT`);
     }
 
     return activeContexts;

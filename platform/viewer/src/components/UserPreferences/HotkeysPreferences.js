@@ -57,15 +57,33 @@ const splitHotkeys = hotkeys => {
   const splitedHotkeys = [];
   const arrayHotkeys = Object.entries(hotkeys);
 
-  if (arrayHotkeys.length) {
-    const halfwayThrough = Math.ceil(arrayHotkeys.length / 2);
+  const { standardHotkeys } = hotkeysManager;
+  const length = arrayHotkeys.length + standardHotkeys.length;
+  if (length) {
+    const halfwayThrough = Math.ceil(length / 2);
     splitedHotkeys.push(arrayHotkeys.slice(0, halfwayThrough));
-    splitedHotkeys.push(
-      arrayHotkeys.slice(halfwayThrough, arrayHotkeys.length)
-    );
+    splitedHotkeys.push(arrayHotkeys.slice(halfwayThrough, length));
   }
 
   return splitedHotkeys;
+};
+
+const StandardHotkeys = () => {
+  const { standardHotkeys } = hotkeysManager;
+  return (
+    <>
+      {standardHotkeys.map((hotKey, index) => (
+        <div className="hotkeyRow" key={index}>
+          <div className="hotkeyLabel">{hotKey.label}</div>
+          <div className="wrapperHotkeyInput">
+            <div className="preferencesInput standardHotkey">
+              {hotKey.keysLabel}
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
 };
 
 /**
@@ -141,10 +159,10 @@ function HotkeysPreferences({ onClose }) {
             {splitedHotkeys.map((hotkeys, index) => {
               return (
                 <div className="hotkeyColumn" key={index}>
-                  <div className="hotkeyHeader">
-                    <div className="headerItemText text-right">Function</div>
-                    <div className="headerItemText text-center">Shortcut</div>
-                  </div>
+                  {/*<div className="hotkeyHeader">*/}
+                    {/*<div className="headerItemText text-right">Function</div>*/}
+                    {/*<div className="headerItemText text-center">Shortcut</div>*/}
+                  {/*</div>*/}
                   {hotkeys.map(hotkey => {
                     const commandName = hotkey[0];
                     const hotkeyDefinition = hotkey[1];
@@ -177,6 +195,7 @@ function HotkeysPreferences({ onClose }) {
                       </div>
                     );
                   })}
+                  {index === splitedHotkeys.length - 1 && <StandardHotkeys />}
                 </div>
               );
             })}

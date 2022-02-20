@@ -42,9 +42,13 @@ class ViewerMain extends Component {
   }
 
   findDisplaySet(studies, StudyInstanceUID, displaySetInstanceUID) {
-    const study = studies.find(study => {
-      return study.StudyInstanceUID === StudyInstanceUID;
-    });
+    const study = studies.find(
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
+    );
 
     if (!study) {
       return;

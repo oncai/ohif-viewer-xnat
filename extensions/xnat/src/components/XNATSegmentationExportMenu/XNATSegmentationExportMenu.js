@@ -9,6 +9,7 @@ import getElementForFirstImageId from '../../utils/getElementFromFirstImageId';
 import { Icon } from '@ohif/ui';
 import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
 import showNotification from '../common/showNotification';
+import { clearCachedExperimentRoiCollections } from '../../utils/IO/queryXnatRois';
 
 import '../XNATRoiPanel.styl';
 
@@ -64,7 +65,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
     const seriesInfo = getSeriesInfoForImageId(viewportData);
     const element = getElementForFirstImageId(firstImageId);
 
-    const xnat_label = `${label}_S${seriesInfo.SeriesNumber}`;
+    const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
 
     // DICOM-SEG
     const dicomSegWriter = new DICOMSEGWriter(seriesInfo);
@@ -93,6 +94,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
             modified: false,
           });
 
+          clearCachedExperimentRoiCollections(dicomSegExporter.experimentID);
           showNotification('Mask collection exported successfully', 'success');
 
           this.props.onExportComplete();
@@ -107,6 +109,11 @@ export default class XNATSegmentationExportMenu extends React.Component {
 
           this.props.onExportCancel();
         });
+    }).catch(error => {
+      const message = error.message || 'Unknown error';
+      showNotification(message, 'error', 'Error exporting mask collection');
+
+      this.props.onExportCancel();
     });
   }
 

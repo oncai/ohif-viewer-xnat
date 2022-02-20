@@ -1,3 +1,4 @@
+import cornerstone from 'cornerstone-core';
 import CornerstoneViewport from 'react-cornerstone-viewport';
 import OHIF from '@ohif/core';
 import { connect } from 'react-redux';
@@ -6,7 +7,13 @@ import {
   setEnabledElement,
   setActiveViewportIndex,
   getActiveViewportIndex,
+  setWindowing,
+  getWindowing,
 } from './state';
+import {
+  referenceLines,
+  updateImageSynchronizer,
+} from '@xnat-ohif/extension-xnat';
 
 const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
 const {
@@ -28,6 +35,33 @@ const imageLoadField = event => {
       message: message,
       type: 'error',
     });
+  }
+};
+
+const onNewImage = event => {
+  // Make sure to update the viewport with the correct voi values
+  const eventDetail = event.detail;
+  if (!eventDetail) {
+    return;
+  }
+
+  const { viewport, image, enabledElement, element } = eventDetail;
+  if (!viewport || !image || !enabledElement) {
+    return;
+  }
+
+  if (getWindowing(enabledElement.uuid) !== 'Default') {
+    return;
+  }
+
+  const voi = viewport.voi;
+  const { windowWidth, windowCenter } = image;
+
+  if (windowWidth !== voi.windowWidth || windowCenter !== voi.windowCenter) {
+    voi.windowWidth = windowWidth;
+    voi.windowCenter = windowCenter;
+    cornerstone.setViewport(element, viewport);
+    // cornerstone.updateImage(element);
   }
 };
 
@@ -92,6 +126,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       // Fire dispatch only when switching viewports
       if (viewportIndex !== getActiveViewportIndex()) {
         dispatch(setViewportActive(viewportIndex));
+        referenceLines.display(viewportIndex);
       }
     },
 
@@ -108,6 +143,11 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onElementEnabled: event => {
       const enabledElement = event.detail.element;
       setEnabledElement(viewportIndex, enabledElement);
+      setWindowing(event.detail.uuid, 'Default');
+      updateImageSynchronizer.add(enabledElement);
+      setTimeout(() => {
+        referenceLines.display(getActiveViewportIndex());
+      }, 500);
       dispatch(
         setViewportSpecificData(viewportIndex, {
           // TODO: Hack to make sure our plugin info is available from the outset
@@ -122,8 +162,20 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     eventListeners: [
       {
         target: 'element',
-        eventName: 'cornerstoneimageloadfailed',
+        eventName: cornerstone.EVENTS.IMAGE_LOAD_FAILED,
         handler: imageLoadField,
+      },
+      {
+        target: 'element',
+        eventName: cornerstone.EVENTS.ELEMENT_DISABLED,
+        handler: event => {
+          updateImageSynchronizer.remove(event.detail.element);
+        },
+      },
+      {
+        target: 'element',
+        eventName: cornerstone.EVENTS.NEW_IMAGE,
+        handler: onNewImage,
       },
     ],
   };

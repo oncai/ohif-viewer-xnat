@@ -1,7 +1,24 @@
 // https://developers.google.com/web/tools/workbox/guides/troubleshoot-and-debug
+
+//
+// Uncomment the 'Embedded version' and use the 'Internet version' if
+// the internet version is preferred. Make sure to use the correct
+// version though.
+//
+
+// Embedded version
+importScripts('./third_party/workbox/workbox-v5.1.4/workbox-sw.js');
+
+workbox.setConfig({
+  modulePathPrefix: './third_party/workbox/workbox-v5.1.4/',
+});
+
+// Internet version
+/*
 importScripts(
   'https://storage.googleapis.com/workbox-cdn/releases/5.0.0-beta.1/workbox-sw.js'
 );
+*/
 
 // Install newest
 // https://developers.google.com/web/tools/workbox/modules/workbox-core
@@ -47,6 +64,8 @@ self.addEventListener('message', event => {
     switch (event.data.type) {
       case 'SKIP_WAITING':
         // TODO: We'll eventually want this to be user prompted
+        // https://developers.google.com/web/tools/workbox/modules/workbox-sw#using_local_workbox_files_instead_of_cdn
+        //  - a best practice is to reference the various workbox.* namespaces outside of any event handlers or asynchronous functions
         // workbox.core.skipWaiting();
         // workbox.core.clientsClaim();
         // TODO: Global notification to indicate incoming reload

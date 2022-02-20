@@ -7,8 +7,13 @@ import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPal
 import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
 import validNumber from '../utils/metadataProvider/validNumber';
 import unpackOverlay from '../utils/metadataProvider/unpackOverlay';
+import getImagePlaneInformation from '../utils/metadataProvider/getImagePlaneInformation';
 
 const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
+
+const isXnatConfig =
+  process.env.NODE_ENV === 'production' ||
+  process.env.APP_CONFIG === 'config/xnat-dev.js';
 
 class MetadataProvider {
   constructor() {
@@ -29,6 +34,28 @@ class MetadataProvider {
     this.isMetadataLoadedFromImage = [];
   }
 
+  readDataset(arrayBuffer, imageId) {
+    let dataset;
+    if (arrayBuffer) {
+      const dicomData = DicomMessage.readFile(arrayBuffer, {
+        untilTag: '7FE00010',
+        includeUntilTagValue: false,
+      });
+      dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
+      dataset._meta = DicomMetaDictionary.naturalizeDataset(dicomData.meta);
+      this.isMetadataLoadedFromImage.push(imageId);
+    }
+    return dataset;
+  }
+
+  shouldFetchDataset(dicomJSONDataset) {
+    const hasPaletteColor =
+      dicomJSONDataset.PhotometricInterpretation === 'PALETTE COLOR';
+    // const isMultiFrame = dicomJSONDataset.NumberOfFrames > 1;
+    // const isModalityNM = dicomJSONDataset.Modality === 'NM';
+    return hasPaletteColor;
+  }
+
   loadMetadataFromImage(imageId) {
     if (this.isMetadataLoadedFromImage.includes(imageId)) {
       return true;
@@ -36,21 +63,23 @@ class MetadataProvider {
 
     let metaLoadedFromImage = false;
 
-    if (imageId in cornerstone.imageCache.imageCache) {
-      const imageCache = cornerstone.imageCache.imageCache[imageId];
+    const imageId0 = `${imageId}?frame=0`;
+    const imageIdInCache =
+      imageId in cornerstone.imageCache.imageCache ||
+      imageId0 in cornerstone.imageCache.imageCache;
+
+    if (imageIdInCache) {
+      const imageCache = cornerstone.imageCache.imageCache[imageId] ||
+        cornerstone.imageCache.imageCache[imageId0];
 
       if (imageCache.loaded) {
         const arrayBuffer = imageCache.image.data.byteArray.buffer;
-        this.isMetadataLoadedFromImage.push(imageId);
         let dataset;
         if (arrayBuffer) {
-          // Exclude PixelData
-          const dicomData = DicomMessage.readFile(arrayBuffer, {untilTag: '7FE00010', includeUntilTagValue: false});
-          dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
-          dataset._meta = DicomMetaDictionary.naturalizeDataset(dicomData.meta);
+          dataset = this.readDataset(arrayBuffer, imageId);
         }
-
-        if (dataset) {// Update instance data
+        if (dataset) {
+          // Update instance data
           const uids = this._getUIDsFromImageID(imageId);
           if (!uids) {
             return;
@@ -71,8 +100,8 @@ class MetadataProvider {
           if (!instance) {
             instance = {};
           }
-          instance = { ...instance, ...dataset };
-          series.instances.set(SOPInstanceUID, instance);
+          // instance = { ...instance, ...dataset };
+          series.instances.set(SOPInstanceUID, dataset);
 
           metaLoadedFromImage = true;
         }
@@ -82,23 +111,24 @@ class MetadataProvider {
     return metaLoadedFromImage;
   }
 
-  _paletteColorArrayBufferToLUT(paletteColorLookupTableData, lutDescriptor) {
-    const numLutEntries = lutDescriptor[0];
-    const bits = lutDescriptor[2];
-    const byteArray = bits === 16 ?
-      new Uint16Array(paletteColorLookupTableData) :
-      new Uint8Array(paletteColorLookupTableData);
-    const lut = [];
-
-    for (let i = 0; i < numLutEntries; i++) {
-      lut[i] = byteArray[i];
-    }
-
-    return lut;
-  }
-
-  async addInstance(dicomJSONDatasetOrP10ArrayBuffer, options = {}) {
+  async addInstance(_dicomJSONDatasetOrP10ArrayBuffer, options = {}) {
     let dicomJSONDataset;
+
+    let dicomJSONDatasetOrP10ArrayBuffer;
+    if (isXnatConfig) {
+      if (this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer)) {
+        const image = await cornerstone.loadAndCacheImage(options.imageId);
+        const arrayBuffer = image.data.byteArray.buffer;
+        dicomJSONDatasetOrP10ArrayBuffer = this.readDataset(
+          arrayBuffer,
+          options.imageId
+        );
+      } else {
+        dicomJSONDatasetOrP10ArrayBuffer = _dicomJSONDatasetOrP10ArrayBuffer;
+      }
+    } else {
+      dicomJSONDatasetOrP10ArrayBuffer = _dicomJSONDatasetOrP10ArrayBuffer;
+    }
 
     // If Arraybuffer, parse to DICOMJSON before naturalizing.
     if (dicomJSONDatasetOrP10ArrayBuffer instanceof ArrayBuffer) {
@@ -134,48 +164,7 @@ class MetadataProvider {
 
     Object.assign(instance, naturalizedDataset);
 
-    if (options.server !== undefined) {
-      await this._checkBulkDataAndInlineBinaries(instance, options.server);
-    } else {
-      if (instance.PhotometricInterpretation === 'PALETTE COLOR') {
-        const image = await cornerstone.loadAndCacheImage(options.imageId);
-        const arrayBuffer = image.data.byteArray.buffer;
-        this.isMetadataLoadedFromImage.push(options.imageId);
-        let dataset;
-        if (arrayBuffer) {
-          // Exclude PixelData
-          const dicomData = DicomMessage.readFile(arrayBuffer, {untilTag: '7FE00010', includeUntilTagValue: false});
-          dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
-        }
-        // const newInstance = {...instance, ...dataset};
-        const {
-          RedPaletteColorLookupTableDescriptor,
-          GreenPaletteColorLookupTableDescriptor,
-          BluePaletteColorLookupTableDescriptor,
-          RedPaletteColorLookupTableData,
-          GreenPaletteColorLookupTableData,
-          BluePaletteColorLookupTableData,
-        } = dataset;
-
-        dataset.RedPaletteColorLookupTableData =
-          this._paletteColorArrayBufferToLUT(
-            RedPaletteColorLookupTableData,
-            RedPaletteColorLookupTableDescriptor
-          );
-        dataset.GreenPaletteColorLookupTableData =
-          this._paletteColorArrayBufferToLUT(
-            GreenPaletteColorLookupTableData,
-            GreenPaletteColorLookupTableDescriptor
-          );
-        dataset.BluePaletteColorLookupTableData =
-          this._paletteColorArrayBufferToLUT(
-            BluePaletteColorLookupTableData,
-            BluePaletteColorLookupTableDescriptor
-          );
-
-        series.instances.set(SOPInstanceUID, dataset);
-      }
-    }
+    await this._checkBulkDataAndInlineBinaries(instance, options.server);
 
     return instance;
   }
@@ -260,11 +249,8 @@ class MetadataProvider {
   get(query, imageId, options = { fallback: false }) {
     let instance;
 
-    let metaLoadedFromImage = false;
-    if (
-      process.env.NODE_ENV === 'production' ||
-      process.env.APP_CONFIG === 'config/xnat-dev.js'
-    ) {
+    let frameIndex;
+    if (isXnatConfig) {
       if (query === WADO_IMAGE_LOADER_TAGS.VOI_LUT_MODULE) {
         // The XNAT Viewer plugin sets WL/WW to [80, 400] for missing values
         return;
@@ -274,28 +260,25 @@ class MetadataProvider {
       if (enableMetaPrefetch) {
         // Attempt to load metadata from instance
         let imageIdToUse = imageId;
-        const frameIndex = imageId.indexOf('frame=');
-        if (frameIndex > 0) {
-          imageIdToUse = imageId.substr(0, frameIndex - 1);
+        const qIndex = imageId.indexOf('?frame=');
+        if (qIndex > 0) {
+          imageIdToUse = imageId.substr(0, qIndex);
+          frameIndex = imageId.substr(qIndex + 7); //'?frame='.length;
         }
-        metaLoadedFromImage = this.loadMetadataFromImage(imageIdToUse);
-
-        if (metaLoadedFromImage) {
-          instance = this._getInstance(imageIdToUse);
-        }
+        this.loadMetadataFromImage(imageIdToUse);
       }
     }
 
-    if (!metaLoadedFromImage) {
-      // Standard OHIF implementation
-      instance = this._getInstance(imageId);
-    }
+    instance = this._getInstance(imageId);
 
     if (query === INSTANCE) {
       return instance;
     }
 
-    const meta = this.getTagFromInstance(query, instance, options);
+    const meta = this.getTagFromInstance(query, instance, {
+      ...options,
+      frameIndex,
+    });
 
     return meta;
 
@@ -327,12 +310,14 @@ class MetadataProvider {
     // Maybe its a legacy CornerstoneWADOImageLoader tag then:
     return this._getCornerstoneWADOImageLoaderTag(
       naturalizedTagOrWADOImageLoaderTag,
-      instance
+      instance,
+      options
     );
   }
 
-  _getCornerstoneWADOImageLoaderTag(wadoImageLoaderTag, instance) {
+  _getCornerstoneWADOImageLoaderTag(wadoImageLoaderTag, instance, options) {
     let metadata;
+    const { frameIndex } = options;
 
     switch (wadoImageLoaderTag) {
       case WADO_IMAGE_LOADER_TAGS.GENERAL_SERIES_MODULE:
@@ -367,12 +352,37 @@ class MetadataProvider {
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PLANE_MODULE:
-        const { ImageOrientationPatient } = instance;
+        let ImageOrientationPatient;
+        let ImagePositionPatient;
+
+        if (instance.Modality === 'NM') {
+          const planeinfo = getImagePlaneInformation(instance, frameIndex);
+          ImageOrientationPatient = planeinfo.ImageOrientationPatient;
+          ImagePositionPatient = planeinfo.ImagePositionPatient;
+        } else {
+          ImageOrientationPatient = instance.ImageOrientationPatient;
+          ImagePositionPatient = instance.ImagePositionPatient;
+        }
 
         // Fallback for DX images.
         // TODO: We should use the rest of the results of this function
         // to update the UI somehow
-        const { PixelSpacing } = getPixelSpacingInformation(instance);
+        let { PixelSpacing } = getPixelSpacingInformation(instance);
+
+        // Fallback for Secondary Capture Image IOD
+        if (instance.SOPClassUID === '1.2.840.10008.5.1.4.1.1.7') {
+          /*
+          if (!ImageOrientationPatient) {
+            ImageOrientationPatient = [0, 0, 0, 0, 0, 0];
+          }
+          if (!ImagePositionPatient) {
+            ImagePositionPatient = [0, 0, 0];
+          }
+          */
+          if (!PixelSpacing) {
+            PixelSpacing = instance.NominalScannedPixelSpacing || [1.0, 1.0];
+          }
+        }
 
         let rowPixelSpacing;
         let columnPixelSpacing;
@@ -397,7 +407,7 @@ class MetadataProvider {
           imageOrientationPatient: ImageOrientationPatient,
           rowCosines,
           columnCosines,
-          imagePositionPatient: instance.ImagePositionPatient,
+          imagePositionPatient: ImagePositionPatient,
           sliceThickness: instance.SliceThickness,
           sliceLocation: instance.SliceLocation,
           pixelSpacing: PixelSpacing,
@@ -513,6 +523,10 @@ class MetadataProvider {
 
           if (!OverlayData) {
             continue;
+          }
+
+          if (Array.isArray(OverlayData)) {
+            OverlayData = OverlayData[0];
           }
 
           if (OverlayData instanceof ArrayBuffer) {

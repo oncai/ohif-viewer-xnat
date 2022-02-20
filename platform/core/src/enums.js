@@ -5,7 +5,7 @@ const ReconstructionIssues = {
   VARYING_IMAGESORIENTATION: 'imagesorientationvarying',
   MISSING_FRAMES: 'missingframes',
   IRREGULAR_SPACING: 'irregularspacing',
-  MULTIFFRAMES: 'multiframe',
+  MULTIFRAMES: 'multiframe',
 };
 
 export {ReconstructionIssues};

@@ -70,7 +70,11 @@ class OHIFCornerstoneViewport extends Component {
 
     // Create shortcut to displaySet
     const study = studies.find(
-      study => study.StudyInstanceUID === StudyInstanceUID
+      study =>
+        study.StudyInstanceUID === StudyInstanceUID &&
+        study.displaySets.some(
+          ds => ds.displaySetInstanceUID === displaySetInstanceUID
+        )
     );
 
     if (!study) {
@@ -230,13 +234,20 @@ class OHIFCornerstoneViewport extends Component {
           SOPInstanceUID: sopInstanceUid,
           frameIndex: currentImageIdIndex,
           activeViewportIndex: viewportIndex,
+          displaySetInstanceUID: displaySet.displaySetInstanceUID,
         });
       }
     };
 
-    // const ViewportOverlay = props => {
-    //   return <XNATViewportOverlay {...props} inconsistencyWarnings={inconsistencyWarnings} />
-    // };
+    const ViewportOverlay = props => {
+      return (
+        <XNATViewportOverlay
+          {...props}
+          viewportIndex={viewportIndex}
+          // inconsistencyWarnings={inconsistencyWarnings}
+        />
+      );
+    };
 
     return (
       <>
@@ -246,7 +257,7 @@ class OHIFCornerstoneViewport extends Component {
           imageIdIndex={currentImageIdIndex}
           onNewImageDebounced={newImageHandler}
           onNewImageDebounceTime={300}
-          viewportOverlayComponent={XNATViewportOverlay}
+          viewportOverlayComponent={ViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}

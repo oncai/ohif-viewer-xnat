@@ -295,7 +295,7 @@ function _getExpandableButtonComponent(button, activeButtons) {
     if (!isEnabled && activeCommand === button.id) {
       activeCommand = undefined;
       // Update activeTool ins store
-      store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: 'Wwwc'});
+      store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: 'CustomWwwc'});
     }
 
     return isEnabled;

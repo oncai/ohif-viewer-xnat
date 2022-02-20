@@ -8,10 +8,7 @@ import ConnectedViewer from '../connectedComponents/ConnectedViewer';
 import ConnectedViewerRetrieveStudyData from '../connectedComponents/ConnectedViewerRetrieveStudyData';
 import NotFound from '../routes/NotFound';
 
-import {
-  isLoggedIn,
-  xnatAuthenticate,
-} from '@xnat-ohif/extension-xnat';
+import { isLoggedIn, xnatAuthenticate } from '@xnat-ohif/extension-xnat';
 
 const { log, metadata, utils } = OHIF;
 const { studyMetadataManager } = utils;
@@ -45,6 +42,9 @@ class XNATStandaloneRouting extends Component {
       commandsManager.runCommand('xnatCheckAndSetAiaaSettings', {
         projectId: projectId,
       });
+
+      // Query user information
+      getUserInformation(rootUrl);
 
       if (!projectId || !subjectId) {
         //return reject(new Error('No URL was specified. Use ?url=$yourURL'));
@@ -280,6 +280,13 @@ class XNATStandaloneRouting extends Component {
       } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
       if (studies) {
+        // Set document title
+        let documentTitle = studies[0].PatientID || studies[0].PatientName;
+        documentTitle = documentTitle
+          ? `${documentTitle} | XNAT OHIF Viewer`
+          : 'XNAT OHIF Viewer';
+        document.title = documentTitle;
+
         // Remove series with no instances
         studies = studies.filter(study => {
           study.series = study.series.filter(series => {
@@ -351,13 +358,14 @@ const _mapStudiesToNewFormat = studies => {
     study.displaySets =
       study.displaySets ||
       studyMetadata.createDisplaySets(sopClassHandlerModules);
-    // studyMetadata.setDisplaySets(study.displaySets);
 
     studyMetadataManager.add(studyMetadata);
     uniqueStudyUIDs.add(study.StudyInstanceUID);
 
     return study;
   });
+
+  setValidOverlaySeries(updatedStudies);
 
   return {
     studies: updatedStudies,
@@ -386,6 +394,44 @@ function _getJson(url) {
     xhr.responseType = 'json';
     xhr.send();
   });
+}
+
+async function getUserInformation(rootUrl) {
+  const userInfo = {
+    loginName: '',
+    name: '',
+  };
+  window.ohif.userInfo = userInfo;
+
+  const promise = new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = () => {
+      resolve(xhr);
+    };
+    xhr.onerror = () => {
+      reject(xhr.responseText);
+    };
+    xhr.open('GET', `${rootUrl}xapi/users/username`);
+    xhr.responseType = 'text';
+    xhr.send();
+  });
+
+  promise
+    .then(result => {
+      const { response } = result;
+      userInfo.loginName = response;
+
+      return _getJson(`${rootUrl}xapi/users/profile/${response}`);
+    })
+    .then(result => {
+      const { firstName, lastName } = result;
+      if (firstName && lastName) {
+        userInfo.name = `${lastName}, ${firstName}`;
+      }
+    })
+    .catch(error => {
+      console.warn('Could not retrieve user information from XNAT');
+    });
 }
 
 function getRootUrl() {
@@ -420,7 +466,6 @@ function reassignInstanceUrls(studies, rootUrl) {
       });
     });
   });
-
 }
 
 async function updateMetaDataProvider(studies) {
@@ -430,10 +475,8 @@ async function updateMetaDataProvider(studies) {
 
   for (let study of studies) {
     StudyInstanceUID = study.StudyInstanceUID;
-    // study.seriesMap = Object.create(null);
     for (let series of study.series) {
       SeriesInstanceUID = series.SeriesInstanceUID;
-      // study.seriesMap[SeriesInstanceUID] = series;
       await Promise.all(
         series.instances.map(async instance => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
@@ -446,12 +489,12 @@ async function updateMetaDataProvider(studies) {
             naturalizedDicom.PlanarConfiguration = 0;
           }
           // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
-          // ToDo: OverlayData?
+          // OverlayData is loaded conditionally in metadataProvider.addInstance
 
           // Add instance to metadata provider.
-          await metadataProvider.addInstance(naturalizedDicom, {imageId});
+          await metadataProvider.addInstance(naturalizedDicom, { imageId });
 
-          // Add imageId specific mapping to this data as the URL isn't necessarliy WADO-URI.
+          // Add imageId specific mapping to this data as the URL isn't necessarily WADO-URI.
           // I.e. here the imageId is added w/o frame number for multi-frame images
           // Also added in StackManager => createAndAddStack for WADO-URI
           metadataProvider.addImageIdToUIDs(imageId, {
@@ -463,4 +506,52 @@ async function updateMetaDataProvider(studies) {
       );
     }
   }
+}
+
+function setValidOverlaySeries(studies) {
+  const backgroundModalities = ['MR', 'CT'];
+  const overlayModalities = ['PT', 'NM'];
+  studies.forEach((study, studyIndex, studies) => {
+    study.displaySets.forEach((displaySet, displaySetIndex, displaySets) => {
+      displaySet.validOverlayDisplaySets = {};
+      if (backgroundModalities.includes(displaySet.Modality)) {
+        // Add series within this study
+        // ToDo: use reliable checks (IOP & IPP)
+        const sameStudyOverlays = [];
+        for (let i = 0; i < displaySets.length; i++) {
+          if (i !== displaySetIndex) {
+            if (overlayModalities.includes(displaySets[i].Modality)) {
+              sameStudyOverlays.push(displaySets[i].displaySetInstanceUID);
+            }
+          }
+        }
+        if (sameStudyOverlays.length) {
+          // Handle duplicate StudyInstanceUID by adding study index
+          displaySet.validOverlayDisplaySets[
+            `${displaySet.StudyInstanceUID}_${studyIndex}`
+          ] = sameStudyOverlays;
+        }
+
+        // Use FrameOfReferenceUID to match in other studies
+        for (let i = 0; i < studies.length; i++) {
+          if (i !== studyIndex) {
+            const otherStudyOverlays = [];
+            studies[i].displaySets.forEach(ds => {
+              if (
+                displaySet.FrameOfReferenceUID === ds.FrameOfReferenceUID &&
+                overlayModalities.includes(ds.Modality)
+              ) {
+                otherStudyOverlays.push(ds.displaySetInstanceUID);
+              }
+            });
+            if (otherStudyOverlays.length) {
+              displaySet.validOverlayDisplaySets[
+                `${studies[i].StudyInstanceUID}_${i}`
+              ] = otherStudyOverlays;
+            }
+          }
+        }
+      }
+    });
+  });
 }

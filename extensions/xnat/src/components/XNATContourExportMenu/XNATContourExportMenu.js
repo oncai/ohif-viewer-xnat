@@ -10,6 +10,7 @@ import lockStructureSet from '../../utils/lockStructureSet';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import showNotification from '../common/showNotification';
+import { clearCachedExperimentRoiCollections } from '../../utils/IO/queryXnatRois';
 
 import '../XNATRoiPanel.styl';
 
@@ -105,7 +106,7 @@ export default class XNATContourExportMenu extends React.Component {
     const roiContours = roiExtractor.extractROIContours(exportMask);
     const seriesInfo = getSeriesInfoForImageId(viewportData);
 
-    const xnat_label = `${label}_S${seriesInfo.SeriesNumber}`;
+    const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
 
     const aw = new AIMWriter(roiCollectionName, xnat_label, dateTime);
     aw.writeImageAnnotationCollection(roiContours, seriesInfo);
@@ -126,6 +127,7 @@ export default class XNATContourExportMenu extends React.Component {
           xnat_label
         );
 
+        clearCachedExperimentRoiCollections(aimExporter.experimentID);
         showNotification('Contour collection exported successfully', 'success');
 
         this.props.onExportComplete();

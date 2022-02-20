@@ -5,8 +5,14 @@ import OHIF from '@ohif/core';
 import contextMenuHandler from './utils/contextMenuHandler';
 
 import setCornerstoneLayout from './utils/setCornerstoneLayout.js';
-import { getEnabledElement } from './state';
+import {
+  getEnabledElement,
+  getActiveViewportIndex,
+  setWindowing,
+  getWindowing,
+} from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
+import { referenceLines } from '@xnat-ohif/extension-xnat';
 const scroll = cornerstoneTools.import('util/scroll');
 
 const { studyMetadataManager } = OHIF.utils;
@@ -64,10 +70,18 @@ const commandsModule = ({ servicesManager }) => {
       }
     },
     resetViewport: ({ viewports }) => {
-      const enabledElement = getEnabledElement(viewports.activeViewportIndex);
+      const element = getEnabledElement(viewports.activeViewportIndex);
 
-      if (enabledElement) {
-        cornerstone.reset(enabledElement);
+      if (element) {
+        const enabledElement = cornerstone.getEnabledElement(element);
+        const pixelReplication = enabledElement.viewport.pixelReplication;
+        setWindowing(enabledElement.uuid, 'Default');
+        cornerstone.reset(element);
+        if (pixelReplication) {
+          const updatedEnabledElement = cornerstone.getEnabledElement(element);
+          updatedEnabledElement.viewport.pixelReplication = pixelReplication;
+          cornerstone.updateImage(element);
+        }
       }
     },
     invertViewport: ({ viewports }) => {
@@ -81,11 +95,16 @@ const commandsModule = ({ servicesManager }) => {
     },
     // TODO: this is receiving `evt` from `ToolbarRow`. We could use it to have
     //       better mouseButtonMask sets.
-    setToolActive: ({ toolName }) => {
+    setToolActive: options => {
+      const { toolName, evt, ...rest } = options;
+      const toolOptions = {
+        ...rest,
+        mouseButtonMask: 1,
+      };
       if (!toolName) {
         console.warn('No toolname provided to setToolActive command');
       }
-      cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
+      cornerstoneTools.setToolActive(toolName, toolOptions);
     },
     clearAnnotations: ({ viewports }) => {
       const element = getEnabledElement(viewports.activeViewportIndex);
@@ -258,17 +277,20 @@ const commandsModule = ({ servicesManager }) => {
     setCornerstoneLayout: () => {
       setCornerstoneLayout();
     },
-    setWindowLevel: ({ viewports, window, level }) => {
-      const enabledElement = getEnabledElement(viewports.activeViewportIndex);
+    setWindowLevel: ({ viewports, window, level, description }) => {
+      const element = getEnabledElement(viewports.activeViewportIndex);
 
-      if (enabledElement) {
-        let viewport = cornerstone.getViewport(enabledElement);
+      if (element) {
+        const enabledElement = cornerstone.getEnabledElement(element);
+        setWindowing(enabledElement.uuid, `Preset / ${description}`);
+
+        let viewport = cornerstone.getViewport(element);
 
         viewport.voi = {
           windowWidth: Number(window),
           windowCenter: Number(level),
         };
-        cornerstone.setViewport(enabledElement, viewport);
+        cornerstone.setViewport(element, viewport);
       }
     },
     jumpToImage: ({
@@ -277,8 +299,16 @@ const commandsModule = ({ servicesManager }) => {
       frameIndex,
       activeViewportIndex,
       refreshViewports = true,
+      displaySetInstanceUID,
     }) => {
-      const study = studyMetadataManager.get(StudyInstanceUID);
+      const studies = studyMetadataManager.all();
+      const study = studies.find(
+        study =>
+          study.getStudyInstanceUID() === StudyInstanceUID &&
+          study.displaySets.some(
+            ds => ds.displaySetInstanceUID === displaySetInstanceUID
+          )
+      );
 
       const displaySet = study.findDisplaySet(ds => {
         return (
@@ -432,6 +462,24 @@ const commandsModule = ({ servicesManager }) => {
       commandFn: actions.cancelTask,
       storeContexts: [],
       options: {},
+    },
+    toggleReferenceLines: {
+      commandFn: ({ evt }) => {
+        referenceLines.enabled = !referenceLines.enabled;
+        referenceLines.display(getActiveViewportIndex());
+      },
+      storeContexts: [],
+      options: { evt: null },
+    },
+    getWindowing: {
+      commandFn: ({ viewportIndex }) => {
+        const enabledElement = cornerstone.getEnabledElements()[viewportIndex];
+        if (enabledElement) {
+          return getWindowing(enabledElement.uuid);
+        }
+      },
+      storeContexts: [],
+      options: { viewportIndex: null },
     },
   };
 

@@ -7,6 +7,8 @@ import initCornerstoneTools from './initCornerstoneTools.js';
 import measurementServiceMappingsFactory from './utils/measurementServiceMappings/measurementServiceMappingsFactory';
 
 import contextMenuHandler from './utils/contextMenuHandler';
+import CustomWwwcTool from './tools/CustomWwwcTool';
+import CustomWwwcRegionTool from './tools/CustomWwwcRegionTool';
 
 /**
  *
@@ -45,7 +47,7 @@ export default function init({ servicesManager, configuration }) {
   // Add OHIF provider with a low priority so it is handled last
   cornerstone.metaData.addProvider(
     metadataProvider.get.bind(metadataProvider),
-    999
+    9999
   );
 
   // ~~
@@ -72,8 +74,8 @@ export default function init({ servicesManager, configuration }) {
     other: [
       csTools.PanTool,
       csTools.ZoomTool,
-      csTools.WwwcTool,
-      csTools.WwwcRegionTool,
+      CustomWwwcTool, // csTools.WwwcTool,
+      CustomWwwcRegionTool, // csTools.WwwcRegionTool,
       csTools.MagnifyTool,
       csTools.StackScrollTool,
       csTools.StackScrollMouseWheelTool,
@@ -158,11 +160,15 @@ export default function init({ servicesManager, configuration }) {
 
   csTools.setToolActive('Pan', { mouseButtonMask: 4 });
   csTools.setToolActive('Zoom', { mouseButtonMask: 2 });
-  csTools.setToolActive('Wwwc', { mouseButtonMask: 1 });
+  csTools.setToolActive('CustomWwwc', { mouseButtonMask: 1 });
   csTools.setToolActive('StackScrollMouseWheel', {}); // TODO: Empty options should not be required
   csTools.setToolActive('PanMultiTouch', { pointers: 2 }); // TODO: Better error if no options
   csTools.setToolActive('ZoomTouchPinch', {});
   csTools.setToolEnabled('Overlay', {});
+
+  // Reference Lines and Crosshairs Tools
+  csTools.addTool(csTools.ReferenceLinesTool);
+  csTools.addTool(csTools.CrosshairsTool);
 
   // initiate context menu handler
   contextMenuHandler.init();

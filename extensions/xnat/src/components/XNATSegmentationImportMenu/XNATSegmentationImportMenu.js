@@ -5,45 +5,21 @@ import fetchArrayBuffer from '../../utils/IO/fetchArrayBuffer.js';
 import cornerstoneTools from 'cornerstone-tools';
 import sessionMap from '../../utils/sessionMap';
 import getReferencedScan from '../../utils/getReferencedScan';
-import { utils } from '@ohif/core';
 import { Icon } from '@ohif/ui';
 import { Loader } from '../../elements';
+import importMaskRoiCollection from '../../utils/IO/importMaskRoiCollection';
 
 import '../XNATRoiPanel.styl';
 
-const { studyMetadataManager } = utils;
-
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
-const _getFirstImageIdFromSeriesInstanceUid = seriesInstanceUid => {
-  const studies = studyMetadataManager.all();
-  for (let i = 0; i < studies.length; i++) {
-    const study = studies[i];
-    const displaySets = study.getDisplaySets();
-
-    for (let j = 0; j < displaySets.length; j++) {
-      const displaySet = displaySets[j];
-
-      if (displaySet.SeriesInstanceUID === seriesInstanceUid) {
-        return displaySet.images[0].getImageId();
-      }
-    }
-  }
-
-  const studyMetadata = studyMetadataManager.get(studyInstanceUid);
-  const displaySet = studyMetadata.findDisplaySet(
-    displaySet => displaySet.SeriesInstanceUID === seriesInstanceUid
-  );
-  return displaySet.images[0].getImageId();
-};
-
-const overwriteConfirmationContent = {
+/*const overwriteConfirmationContent = {
   title: `Warning`,
   body: `
     Loading in another Segmentation will overwrite existing segmentation data. Are you sure
     you want to do this?
   `,
-};
+};*/
 
 export default class XNATSegmentationImportMenu extends React.Component {
   constructor(props = {}) {
@@ -168,7 +144,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
 
     const segmentation = importList[segmentationIndex];
 
-    const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
+    /*const firstImageId = getFirstImageIdFromSeriesInstanceUid(
       segmentation.referencedSeriesInstanceUid
     );
 
@@ -179,12 +155,16 @@ export default class XNATSegmentationImportMenu extends React.Component {
       // if (!confirmed) {
       //   return;
       // }
-    }
+    }*/
 
     this._updateImportingText('');
     this.setState({ importing: true });
 
-    this._importRoiCollection(segmentation);
+    importMaskRoiCollection(segmentation, {
+      updateImportingText: this._updateImportingText,
+      onImportComplete: this.props.onImportComplete,
+      updateProgress: this.updateProgress,
+    });
   }
 
   /**
@@ -353,102 +333,6 @@ export default class XNATSegmentationImportMenu extends React.Component {
   }
 
   /**
-   * async _importRoiCollection - Imports a segmentation.
-   *
-   * @param  {Object} segmentation The segmentation JSON catalog fetched from XNAT.
-   * @returns {null}
-   */
-  async _importRoiCollection(segmentation) {
-    // The URIs fetched have an additional /, so remove it.
-    // const getFilesUri = segmentation.getFilesUri.slice(1);
-
-    const roiList = await fetchJSON(segmentation.getFilesUri).promise;
-    const result = roiList.ResultSet.Result;
-
-    // Reduce count if no associated file is found (nothing to import, badly deleted roiCollection).
-    if (result.length === 0) {
-      this.props.onImportCancel();
-
-      return;
-    }
-
-    // Retrieve each ROI from the list that has the same collectionType as the collection.
-    // In an ideal world this should always be 1, and any other resources -- if any -- are differently formated representations of the same data, but things happen.
-    for (let i = 0; i < result.length; i++) {
-      const fileType = result[i].collection;
-      if (fileType === segmentation.collectionType) {
-        this._getAndImportFile(result[i].URI, segmentation);
-      }
-    }
-  }
-
-  /**
-   * async _getAndImportFile - Imports the file from the REST url and loads it into
-   *                     cornerstoneTools toolData.
-   *
-   * @param  {string} uri             The REST URI of the file.
-   * @param  {object} segmentation    An object describing the roiCollection to
-   *                                  import.
-   * @returns {null}
-   */
-  async _getAndImportFile(uri, segmentation) {
-    // The URIs fetched have an additional /, so remove it.
-    uri = uri.slice(1);
-
-    const seriesInstanceUid = segmentation.referencedSeriesInstanceUid;
-    const maskImporter = new MaskImporter(
-      seriesInstanceUid,
-      this.updateProgress
-    );
-
-    const firstImageId = _getFirstImageIdFromSeriesInstanceUid(
-      seriesInstanceUid
-    );
-
-    switch (segmentation.collectionType) {
-      case 'SEG':
-        this._updateImportingText(segmentation.name);
-
-        // Store that we've imported a collection for this series.
-        segmentationModule.setters.importMetadata(firstImageId, {
-          label: segmentation.label,
-          type: 'SEG',
-          name: segmentation.name,
-          modified: false,
-        });
-
-        const segArrayBuffer = await fetchArrayBuffer(uri).promise;
-
-        await maskImporter.importDICOMSEG(segArrayBuffer);
-
-        this.props.onImportComplete();
-        break;
-
-      case 'NIFTI':
-        this._updateImportingText(segmentation.name);
-
-        // Store that we've imported a collection for this series.
-        segmentationModule.setters.importMetadata(firstImageId, {
-          label: segmentation.label,
-          type: 'NIFTI',
-          name: segmentation.name,
-          modified: false,
-        });
-
-        const niftiArrayBuffer = await fetchArrayBuffer(uri).promise;
-
-        maskImporter.importNIFTI(niftiArrayBuffer);
-        this.props.onImportComplete();
-        break;
-
-      default:
-        console.error(
-          `MaskImportListDialog._getAndImportFile not configured for filetype: ${fileType}.`
-        );
-    }
-  }
-
-  /**
    * _collectionEligibleForImport - Returns true if the roiCollection references
    * the active series, and hasn't already been imported.
    *
@@ -578,20 +462,24 @@ export default class XNATSegmentationImportMenu extends React.Component {
                       roiCollection.referencedSeriesNumber == scanSelected
                   )
                   .map(roiCollection => (
-                    <tr key={roiCollection.label}>
+                    <tr
+                      key={roiCollection.label}
+                      onClick={evt => this.onChangeRadio(evt, roiCollection.id)}
+                    >
                       <td className="centered-cell">
                         <input
                           className="checkboxInCell"
                           type="radio"
-                          name="sync"
                           onChange={evt =>
                             this.onChangeRadio(evt, roiCollection.id)
                           }
                           checked={segmentationSelected === roiCollection.id}
-                          value={segmentationSelected === roiCollection.id}
+                          value={roiCollection.id}
                         />
                       </td>
-                      <td>{roiCollection.name}</td>
+                      <td className="left-aligned-cell">
+                        {roiCollection.name}
+                      </td>
                       <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
                       <td className="centered-cell">
                         {`${roiCollection.referencedSeriesNumber}`}
@@ -624,10 +512,15 @@ export default class XNATSegmentationImportMenu extends React.Component {
         <div className="roiCollectionBody limitHeight">{importBody}</div>
         <div className="roiCollectionFooter">
           {importing ? null : (
-            <button onClick={this.onImportButtonClick}>
-              <Icon name="xnat-import" />
-              Import selected
-            </button>
+            <div>
+              <button onClick={this.onImportButtonClick}>
+                <Icon name="xnat-import" />
+                Import selected
+              </button>
+              <p className="warningMessage">
+                <Icon name="exclamation-triangle" /> Importing another mask-collection will overwrite existing data.
+              </p>
+            </div>
           )}
         </div>
       </div>

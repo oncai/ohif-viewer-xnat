@@ -66,6 +66,15 @@ class StackSynchronizer {
       handler
     );
   }
+
+  isSyncEnabled(element) {
+    if (!this.hasOwnProperty(this.sycStrategy)) {
+      return false;
+    }
+
+    const activeElements = this[this.sycStrategy].getSourceElements();
+    return activeElements.includes(element);
+  }
 }
 
 const stackSynchronizer = new StackSynchronizer();

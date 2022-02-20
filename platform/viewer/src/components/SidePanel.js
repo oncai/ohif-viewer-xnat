@@ -3,9 +3,15 @@ import './SidePanel.css';
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { useAppContext, CONTEXTS } from '../context/AppContext';
 
 const SidePanel = ({ from, isOpen, children, width }) => {
   const fromSideClass = from === 'right' ? 'from-right' : 'from-left';
+
+  // Hide side panels while using VTK
+  const { activeContexts } = useAppContext();
+  const isVTK = activeContexts.includes(CONTEXTS.VTK);
+  if (isVTK) return null;
 
   const styles = width
     ? {

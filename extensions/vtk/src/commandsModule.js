@@ -11,6 +11,13 @@ import setMPRLayout from './utils/setMPRLayout.js';
 import setViewportToVTK from './utils/setViewportToVTK.js';
 import Constants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
 import OHIFVTKViewport from './OHIFVTKViewport';
+import setOrientationMarker, {
+  readHumanMarker,
+  ORIENTATION_MARKER_TYPE,
+} from './utils/setOrientationMarker';
+import getVOIFromCornerstoneViewport from './utils/getVOIFromCornerstoneViewport';
+import volumeProperties from './utils/volumeProperties';
+import { volumeCache } from './utils/viewportDataCache';
 
 const { BlendMode } = Constants;
 
@@ -20,6 +27,8 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
   // TODO: Put this somewhere else
   let apis = {};
   let defaultVOI;
+  let currentVolume;
+  let displaySetInstanceUID;
 
   async function _getActiveViewportVTKApi(viewports) {
     const {
@@ -67,36 +76,18 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
     renderWindow.render();
   }
 
-  function getVOIFromCornerstoneViewport() {
-    const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
-    const cornerstoneElement = cornerstone.getEnabledElement(dom);
+  function setVOI() {
+    let windowWidth = 1;
+    let windowCenter = 0;
+    const voiRange = volumeProperties.applyUserPropertiesToVolume(
+      displaySetInstanceUID,
+      false
+    );
 
-    if (cornerstoneElement) {
-      const imageId = cornerstoneElement.image.imageId;
-
-      const Modality = cornerstone.metaData.get('Modality', imageId);
-
-      if (Modality !== 'PT') {
-        const { windowWidth, windowCenter } = cornerstoneElement.viewport.voi;
-
-        return {
-          windowWidth,
-          windowCenter,
-        };
-      }
+    if (voiRange) {
+      windowWidth = voiRange[1] - voiRange[0];
+      windowCenter = voiRange[0] + windowWidth / 2;
     }
-  }
-
-  function setVOI(voi) {
-    const { windowWidth, windowCenter } = voi;
-    const lower = windowCenter - windowWidth / 2.0;
-    const upper = windowCenter + windowWidth / 2.0;
-
-    const rgbTransferFunction = apis[0].volumes[0]
-      .getProperty()
-      .getRGBTransferFunction(0);
-
-    rgbTransferFunction.setRange(lower, upper);
 
     apis.forEach(api => {
       api.updateVOI(windowWidth, windowCenter);
@@ -118,6 +109,15 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
   };
 
   const actions = {
+    updateVtkApi: ({ viewportIndex }) => {
+      if (viewportIndex === undefined) {
+        apis.forEach(api => {
+          api.updateImage();
+        });
+      } else {
+        apis[viewportIndex].updateImage();
+      }
+    },
     getVtkApis: ({ index }) => {
       return apis[index];
     },
@@ -126,7 +126,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
       apis.forEach(api => api.resetOrientation());
 
       // Reset VOI
-      if (defaultVOI) setVOI(defaultVOI);
+      setVOI();
 
       // Reset the crosshairs
       apis[0].svgWidgets.rotatableCrosshairsWidget.resetCrosshairs(apis, 0);
@@ -287,6 +287,9 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
 
         api.setInteractorStyle({
           istyle,
+          callbacks: {
+            onModified: api.orientationWidget.updateMarkerOrientation,
+          },
           configuration: {
             apis,
             apiIndex,
@@ -348,44 +351,25 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         api.setSlabThickness(slabThickness);
       });
     },
-    setBlendModeToComposite: () => {
-      apis.forEach(api => {
-        const renderWindow = api.genericRenderWindow.getRenderWindow();
-        const istyle = renderWindow.getInteractor().getInteractorStyle();
-
-        const slabThickness = api.getSlabThickness();
-
-        const mapper = api.volumes[0].getMapper();
-        if (mapper.setBlendModeToComposite) {
-          mapper.setBlendModeToComposite();
-        }
-
-        if (istyle.setSlabThickness) {
-          istyle.setSlabThickness(slabThickness);
-        }
-        renderWindow.render();
-      });
-    },
-    setBlendModeToMaximumIntensity: () => {
-      apis.forEach(api => {
-        const renderWindow = api.genericRenderWindow.getRenderWindow();
-        const mapper = api.volumes[0].getMapper();
-        if (mapper.setBlendModeToMaximumIntensity) {
-          mapper.setBlendModeToMaximumIntensity();
-        }
-        renderWindow.render();
-      });
-    },
     setBlendMode: ({ blendMode }) => {
+      // Apply blend mode to all cached volumes
+      for (let volume of volumeCache.values()) {
+        const mapper = volume.getMapper();
+        if (mapper.setBlendMode) {
+          mapper.setBlendMode(blendMode);
+        }
+      }
+      // Update renderer
       apis.forEach(api => {
         const renderWindow = api.genericRenderWindow.getRenderWindow();
-
-        api.volumes[0].getMapper().setBlendMode(blendMode);
-
+        if (blendMode === BlendMode.COMPOSITE_BLEND) {
+          api.setSlabThickness(0.1);
+        }
         renderWindow.render();
       });
     },
     mpr2d: async ({ viewports }) => {
+      document.querySelector(`.ViewerMain`).style.pointerEvents = 'none';
       // TODO push a lot of this backdoor logic lower down to the library level.
       const displaySet =
         viewports.viewportSpecificData[viewports.activeViewportIndex];
@@ -418,15 +402,24 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         },
       ];
 
+      let orientationMarkerType = ORIENTATION_MARKER_TYPE.CUBE;
       try {
         apis = await setMPRLayout(displaySet, viewportProps, 1, 3);
+        if (await readHumanMarker()) {
+          orientationMarkerType = ORIENTATION_MARKER_TYPE.HUMAN;
+        }
       } catch (error) {
         throw new Error(error);
+      } finally {
+        document.querySelector(`.ViewerMain`).style.pointerEvents = '';
       }
 
-      if (cornerstoneVOI) {
-        setVOI(cornerstoneVOI);
-      }
+      displaySetInstanceUID = displaySet.displaySetInstanceUID;
+      currentVolume = volumeCache.get(displaySet.displaySetInstanceUID);
+
+      // if (cornerstoneVOI) {
+      //   setVOI(cornerstoneVOI);
+      // }
 
       // Add widgets and set default interactorStyle of each viewport.
       apis.forEach((api, apiIndex) => {
@@ -438,16 +431,19 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         const uid = api.uid;
         const istyle = vtkInteractorStyleRotatableMPRCrosshairs.newInstance();
 
+        setOrientationMarker(api, orientationMarkerType);
+
         api.setInteractorStyle({
           istyle,
+          callbacks: {
+            onModified: api.orientationWidget.updateMarkerOrientation,
+          },
           configuration: { apis, apiIndex, uid },
         });
 
         api.svgWidgets.rotatableCrosshairsWidget.setApiIndex(apiIndex);
         api.svgWidgets.rotatableCrosshairsWidget.setApis(apis);
       });
-
-      const firstApi = apis[0];
 
       // Initialise crosshairs
       apis[0].svgWidgets.rotatableCrosshairsWidget.resetCrosshairs(apis, 0);
@@ -467,7 +463,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
         const maxBufferLengthFloat32 =
           (maxTextureSizeInBytes * maxTextureSizeInBytes) / 4;
 
-        const dimensions = firstApi.volumes[0]
+        const dimensions = currentVolume
           .getMapper()
           .getInputData()
           .getDimensions();
@@ -544,11 +540,11 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
       options: {},
     },
     setBlendModeToComposite: {
-      commandFn: actions.setBlendModeToComposite,
+      commandFn: actions.setBlendMode,
       options: { blendMode: BlendMode.COMPOSITE_BLEND },
     },
     setBlendModeToMaximumIntensity: {
-      commandFn: actions.setBlendModeToMaximumIntensity,
+      commandFn: actions.setBlendMode,
       options: { blendMode: BlendMode.MAXIMUM_INTENSITY_BLEND },
     },
     setBlendModeToMinimumIntensity: {
@@ -585,6 +581,9 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
     getVtkApiForViewportIndex: {
       commandFn: actions.getVtkApis,
       context: 'VIEWER',
+    },
+    updateVtkApi: {
+      commandFn: actions.updateVtkApi,
     },
   };
 

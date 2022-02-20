@@ -445,7 +445,7 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
           case ReconstructionIssues.IRREGULAR_SPACING:
             inconsistencyWarnings.push('The dataset frames have different pixel spacing.');
             break;
-          case ReconstructionIssues.MULTIFFRAMES:
+          case ReconstructionIssues.MULTIFRAMES:
             inconsistencyWarnings.push('The dataset is a multiframes.');
             break;
           default:
@@ -633,7 +633,9 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         // and better than what we have right now.
         altImageText = 'SEG';
       } else if (displaySet.images && displaySet.images.length) {
-        const imageIndex = Math.floor(displaySet.images.length / 2);
+        const numImages =
+          displaySet.numberOfImagesPerSubset || displaySet.images.length;
+        const imageIndex = Math.floor(numImages / 2);
         imageId = displaySet.images[imageIndex].getImageId();
       } else {
         altImageText = displaySet.Modality ? displaySet.Modality : 'UN';

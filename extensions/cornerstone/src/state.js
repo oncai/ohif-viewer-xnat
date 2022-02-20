@@ -20,7 +20,7 @@ const getEnabledElement = viewportIndex => state.enabledElements[viewportIndex];
 
 const setActiveViewportIndex = viewportIndex => {
   state.activeViewportIndex = viewportIndex;
-}
+};
 
 const getActiveViewportIndex = () => state.activeViewportIndex;
 
@@ -28,5 +28,20 @@ export {
   setEnabledElement,
   getEnabledElement,
   setActiveViewportIndex,
-  getActiveViewportIndex
+  getActiveViewportIndex,
 };
+
+/**
+ * Windowing state
+ */
+const windowingState = new Map();
+
+const setWindowing = (enabledElementUuid, type) => {
+  windowingState.set(enabledElementUuid, type);
+};
+
+const getWindowing = enabledElementUuid => {
+  return windowingState.get(enabledElementUuid);
+};
+
+export { setWindowing, getWindowing };

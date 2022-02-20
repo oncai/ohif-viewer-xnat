@@ -1,3 +1,30 @@
+**3.2.0**
+
+- Set subject's ID/name as title in the browser tab.
+- Use rescaled colormap for image fusion in the 3D MPR mode.
+- Cache the ROI collection lists used in the study browser to reduce repeated API calls.
+- Fixed manifest and service worker issues when served from a subfolder.
+- Quick ROI imports via clicking on relevant icons in the study browser.
+- Fixed thumbnail re-rendering issue.
+- Fixed intensity scaling for images with variable window/level.
+- Display 4D image thumbnail based on the subset image index.
+- Added windowing info to the viewport overlay.
+- Refactored smooth and sync components for improved interaction.
+- Handle missing modality scaling parameters in the 3D MPR mode.
+
+**3.2.0 RC-1**
+
+- Multi-volume image fusion in 3D MPR mode.
+- Improved support for DICOM Nuclear Medicine (NM) IOD.
+- Two new tools: reference lines and crosshairs.
+- Added orientation marker in MPR mode.
+- Improved mask import for co-planar and perpendicular segmentation data.
+- Added keyboard shortcuts for mask undo/redo.
+- Fixed duplicate StudyInstanceUID issue.
+- Refactored the mask settings menu for improved interaction.
+- Upgraded the image loader to use WebAssembly for data decoding.
+- Upgraded dependencies to recent applicable versions. 
+
 **3.1.0**
 
 - Fixed buffer size for reading NIfTI segmentation data.

@@ -2,6 +2,7 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import dcmjs from 'dcmjs';
 import getElementFromFirstImageId from '../../getElementFromFirstImageId';
+import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 const globalToolStateManager =
@@ -23,7 +24,7 @@ export default class DICOMSEGWriter {
    * @returns {Promise} A promise that resolves to a Blob containing the DICOM SEG.
    */
   async write(name, element) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const stackToolState = cornerstoneTools.getToolState(element, 'stack');
       const imageIds = stackToolState.data[0].imageIds;
 
@@ -63,7 +64,8 @@ export default class DICOMSEGWriter {
             ContentTime: time,
           };
 
-          const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
+          // const segBlob = dcmjs.adapters.Cornerstone.Segmentation.generateSegmentation(
+          const segBlob = Segmentation_4X_fork.generateSegmentation(
             images,
             labelmaps3D,
             options
@@ -72,7 +74,8 @@ export default class DICOMSEGWriter {
           resolve(segBlob);
         })
         .catch(err => {
-          console.log(err);
+          // console.log(err);
+          reject(err);
         })
         .finally(() => {
           // labelmaps3D[0].labelmaps2D = orgLabelmaps2D;

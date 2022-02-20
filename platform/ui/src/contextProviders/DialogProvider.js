@@ -21,7 +21,7 @@ const DialogProvider = ({ children, service }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dialogs, setDialogs] = useState([]);
   const [lastDialogId, setLastDialogId] = useState(null);
-  const [lastDialogPosition, setLastDialogPosition] = useState(null);
+  const [lastDialogPosition, setLastDialogPosition] = useState({});
   const [centerPositions, setCenterPositions] = useState([]);
 
   useEffect(() => {
@@ -156,7 +156,7 @@ const DialogProvider = ({ children, service }) => {
       } = dialog;
 
       let position =
-        (preservePosition && lastDialogPosition) || defaultPosition;
+        (preservePosition && lastDialogPosition[id]) || defaultPosition;
       if (centralize) {
         position = centerPositions.find(position => position.id === id);
       }
@@ -178,6 +178,7 @@ const DialogProvider = ({ children, service }) => {
               'INPUT',
               'SPAN',
               'LABEL',
+              'CANVAS',
             ];
             if (BLACKLIST.includes(target.tagName.toUpperCase())) {
               return false;
@@ -238,8 +239,11 @@ const DialogProvider = ({ children, service }) => {
       .querySelector(`#draggableItem-${dialogId}`)
       .getBoundingClientRect();
     setLastDialogPosition({
-      x: draggableItemBounds.x,
-      y: draggableItemBounds.y,
+      ...lastDialogPosition,
+      [dialogId]: {
+        x: draggableItemBounds.x,
+        y: draggableItemBounds.y,
+      },
     });
   };
 

@@ -155,8 +155,8 @@ export default class WorkingRoiCollectionList extends React.Component {
                     <th width="10%" className="centered-cell">
                       <abbr title="Number of contours">N</abbr>
                     </th>
-                    <th width="10%" className="centered-cell" />
-                    <th width="10%" className="centered-cell" />
+                    <th width="10%" className="" />
+                    <th width="10%" className="" />
                   </tr>
                 </thead>
                 <tbody>

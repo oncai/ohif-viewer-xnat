@@ -137,14 +137,14 @@ export class CommandsManager {
       return;
     }
 
-    let foundCommand;
+    const foundCommands = [];
     contexts.forEach(context => {
       if (context[commandName]) {
-        foundCommand = context[commandName];
+        foundCommands.push(context[commandName]);
       }
     });
 
-    return foundCommand;
+    return foundCommands;
   }
 
   /**
@@ -155,33 +155,50 @@ export class CommandsManager {
    * @param {String} [contextName]
    */
   runCommand(commandName, options = {}, contextName) {
-    const definition = this.getCommand(commandName, contextName);
-    if (!definition) {
+    const definitions = this.getCommand(commandName, contextName);
+    const results = [];
+
+    if (!definitions.length) {
       log.warn(`Command "${commandName}" not found in current context`);
       return;
     }
 
-    const { commandFn, storeContexts = [] } = definition;
-    const definitionOptions = definition.options;
+    for (let i = 0; i < definitions.length; i++) {
+      const definition = definitions[i];
 
-    let commandParams = {};
-    const appState = this._getAppState();
-    storeContexts.forEach(context => {
-      commandParams[context] = appState[context];
-    });
+      const { commandFn, storeContexts = [] } = definition;
+      const definitionOptions = definition.options;
 
-    commandParams = Object.assign(
-      {},
-      commandParams, // Required store contexts
-      definitionOptions, // "Command configuration"
-      options // "Time of call" info
-    );
+      let commandParams = {};
+      const appState = this._getAppState();
+      storeContexts.forEach(context => {
+        commandParams[context] = appState[context];
+      });
 
-    if (typeof commandFn !== 'function') {
-      log.warn(`No commandFn was defined for command "${commandName}"`);
-      return;
-    } else {
-      return commandFn(commandParams);
+      commandParams = Object.assign(
+        {},
+        commandParams, // Required store contexts
+        definitionOptions, // "Command configuration"
+        options // "Time of call" info
+      );
+
+      if (typeof commandFn !== 'function') {
+        log.warn(`No commandFn was defined for command "${commandName}"`);
+      } else {
+        const result = commandFn(commandParams);
+        if (result) {
+          results.push(result);
+        }
+      }
+    }
+
+    if (results.length) {
+      if (results.length > 1) {
+        log.warn(
+          `Array of results are returned for command "${commandName}", please verify the command logic`
+        );
+      }
+      return results[0];
     }
   }
 }
