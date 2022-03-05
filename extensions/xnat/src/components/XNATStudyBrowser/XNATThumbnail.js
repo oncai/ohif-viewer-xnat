@@ -21,6 +21,8 @@ function ThumbnailFooter({
   hasWarnings,
   hasRois,
   imageId,
+  seriesNotation,
+  SOPInstanceUID,
 }) {
   const [inconsistencyWarnings, inconsistencyWarningsSet] = useState([]);
 
@@ -216,10 +218,40 @@ function ThumbnailFooter({
     );
   };
 
+  const displaySeriesNumber = seriesNotation ? (
+    <OverlayTrigger
+      placement="right"
+      overlay={
+        <Tooltip
+          placement="right"
+          className="in tooltip-warning"
+          id="tooltip-duplicate-number"
+        >
+          {/*<div className="warningTitle">Duplicate Series Numbers</div>*/}
+          <div className="warningContent" style={{ borderRadius: 7 }}>
+            Automatically generated for clarity; duplicate SeriesNumber values.
+          </div>
+        </Tooltip>
+      }
+    >
+      <div>
+        {SeriesNumber}
+        <b style={{ color: '#E29E4A' }}>{`-${seriesNotation}`}</b>
+      </div>
+    </OverlayTrigger>
+  ) : (
+    SeriesNumber
+  );
+
   return (
     <div className={classNames('series-details', { 'info-only': infoOnly })}>
       <div className="series-description">{SeriesDescription}</div>
-      {getSeriesInformation(SeriesNumber, InstanceNumber, numImageFrames, inconsistencyWarnings)}
+      {getSeriesInformation(
+        displaySeriesNumber,
+        InstanceNumber,
+        numImageFrames,
+        inconsistencyWarnings
+      )}
     </div>
   );
 }

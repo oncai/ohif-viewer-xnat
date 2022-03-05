@@ -365,6 +365,10 @@ const _mapStudiesToNewFormat = studies => {
     return study;
   });
 
+  checkDuplicateSeriesNumbers(updatedStudies);
+
+  updateXnatSessionMap(updatedStudies);
+
   setValidOverlaySeries(updatedStudies);
 
   return {
@@ -506,6 +510,57 @@ async function updateMetaDataProvider(studies) {
       );
     }
   }
+}
+
+function checkDuplicateSeriesNumbers(studies) {
+  const numberToCode = num => {
+    let code = '';
+    while (num >= 0) {
+      code = 'abcdefghijklmnopqrstuvwxyz'[num % 26] + code;
+      num = Math.floor(num / 26) - 1;
+    }
+    return code;
+  };
+
+  studies.forEach(study => {
+    const displaySets = study.displaySets;
+    for (let i = 0; i < displaySets.length; i++) {
+      const displaySetI = displaySets[i];
+      if (displaySetI.seriesNotation) {
+        continue;
+      }
+      let notationIndex = 0;
+      for (let j = i + 1; j < displaySets.length; j++) {
+        const displaySetJ = displaySets[j];
+        if (displaySetI.SeriesNumber === displaySetJ.SeriesNumber) {
+          if (!displaySetI.seriesNotation) {
+            displaySetI.seriesNotation = numberToCode(notationIndex++);
+          }
+          displaySetJ.seriesNotation = numberToCode(notationIndex++);
+        }
+      }
+    }
+  });
+}
+
+function updateXnatSessionMap(studies) {
+  const xnatScans = commandsManager.runCommand('xnatGetScan', {});
+
+  studies.forEach(study => {
+    study.displaySets.forEach(displaySet => {
+      const xnatScan = xnatScans.find(
+        scan => scan.seriesInstanceUid === displaySet.SeriesInstanceUID
+      );
+      if (xnatScan) {
+        xnatScan.displaySets.push({
+          // sopInstanceUids: displaySet.images.map(
+          //   image => image._data.metadata.SOPInstanceUID
+          // ),
+          seriesNotation: displaySet.seriesNotation,
+        });
+      }
+    });
+  });
 }
 
 function setValidOverlaySeries(studies) {

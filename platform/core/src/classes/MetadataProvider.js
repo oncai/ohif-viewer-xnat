@@ -356,7 +356,10 @@ class MetadataProvider {
         let ImagePositionPatient;
 
         if (instance.Modality === 'NM') {
-          const planeinfo = getImagePlaneInformation(instance, frameIndex);
+          const planeinfo = getImagePlaneInformation(
+            instance,
+            frameIndex ? frameIndex : 0
+          );
           ImageOrientationPatient = planeinfo.ImageOrientationPatient;
           ImagePositionPatient = planeinfo.ImagePositionPatient;
         } else {

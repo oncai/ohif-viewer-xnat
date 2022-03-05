@@ -79,6 +79,7 @@ const sessionMap = {
           seriesInstanceUid: seriesList[j].SeriesInstanceUID,
           seriesDescription: seriesList[j].SeriesDescription,
           seriesNumber: seriesList[j].SeriesNumber,
+          displaySets: [],
           ...metadata,
         });
       }

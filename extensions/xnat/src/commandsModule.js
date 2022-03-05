@@ -88,6 +88,14 @@ const definitions = {
     options: { json: null, sessionVariables: null },
     context: 'VIEWER',
   },
+  xnatGetScan: {
+    commandFn: ({ seriesInstanceUid }) => {
+      return sessionMap.getScan(seriesInstanceUid);
+    },
+    storeContexts: [],
+    options: { seriesInstanceUid: null },
+    context: 'VIEWER',
+  },
   xnatGetExperimentID: {
     commandFn: ({ SeriesInstanceUID }) => {
       return sessionMap.getExperimentID(SeriesInstanceUID);

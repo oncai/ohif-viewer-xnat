@@ -189,7 +189,7 @@ export class HotkeysManager {
     // Set definition & bind
     this.hotkeyDefinitions[commandName] = { keys, label };
     this._bindHotkeys(commandName, keys);
-    log.info(`Binding ${commandName} to ${keys}`);
+    // log.info(`Binding ${commandName} to ${keys}`);
   }
 
   /**

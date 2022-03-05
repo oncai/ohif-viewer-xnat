@@ -1,5 +1,5 @@
 import cornerstoneTools from 'cornerstone-tools';
-import initNIFTILoader from '../initNIFTILoader';
+import initNIFTILoader from './initNIFTILoader';
 
 import {
   PEPPERMINT_TOOL_NAMES,
@@ -14,7 +14,7 @@ import {
   XNATFreehandScissorsTool,
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
-  XNATCorrectionScissorsTool
+  XNATCorrectionScissorsTool,
 } from './peppermint-tools';
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
