@@ -287,6 +287,25 @@ export default class XNATContourImportMenu extends React.Component {
           const data_fields = roiCollectionInfo.items[0].data_fields;
 
           const referencedScan = getReferencedScan(roiCollectionInfo);
+          const referencedDisplaySets = referencedScan.displaySets;
+          let referencedSeriesNumber = referencedScan.seriesNumber;
+          const collectiveSeriesNotation = [];
+          referencedDisplaySets.forEach(
+            ds =>
+              ds.seriesNotation &&
+              collectiveSeriesNotation.push(ds.seriesNotation)
+          );
+          if (collectiveSeriesNotation.length > 0) {
+            // Found multiple display sets in a single scan
+            referencedSeriesNumber = `${referencedSeriesNumber}-`;
+            collectiveSeriesNotation.forEach(
+              n => (referencedSeriesNumber += `${n},`)
+            );
+            referencedSeriesNumber = referencedSeriesNumber.replace(
+              /,\s*$/,
+              ''
+            );
+          }
 
           if (
             referencedScan &&
@@ -302,7 +321,7 @@ export default class XNATContourImportMenu extends React.Component {
               experimentId: data_fields.imageSession_ID,
               experimentLabel: referencedScan.experimentLabel,
               referencedSeriesInstanceUid: referencedScan.seriesInstanceUid,
-              referencedSeriesNumber: referencedScan.seriesNumber,
+              referencedSeriesNumber: referencedSeriesNumber,
               name: data_fields.name,
               date: data_fields.date,
               time: data_fields.time,

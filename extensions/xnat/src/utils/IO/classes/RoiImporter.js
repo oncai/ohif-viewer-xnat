@@ -240,7 +240,11 @@ export default class RoiImporter {
         for (let k = 0; k < images.length; k++) {
           const image = images[k];
           const sopInstanceUID = image.getSOPInstanceUID();
-          const imageId = image.getData().url; //image.getImageId();
+          const { metadata } = image.getData();
+          let imageId = image.getImageId();
+          if (metadata.NumberOfFrames > 1 && !imageId.includes('frame=')) {
+            imageId = `${imageId}?frame=0`;
+          }
 
           sopInstanceUidToImageIdMap[sopInstanceUID] = imageId;
         }
