@@ -238,6 +238,7 @@ function _createSegFromImages(images, isMultiframe, options) {
     const dataset = DicomMetaDictionary.naturalizeDataset(dicomData.dict);
 
     if (dataset.PixelData && Array.isArray(dataset.PixelData)) {
+      // ToDo: fix this! multiframe PixelData is stored in an array of frames
       dataset.PixelData = dataset.PixelData[0];
     }
 
@@ -254,6 +255,10 @@ function _createSegFromImages(images, isMultiframe, options) {
       if (dataset.PixelData && Array.isArray(dataset.PixelData)) {
         dataset.PixelData = dataset.PixelData[0];
       }
+
+      // Use defaults for orientation and position if not available
+      dataset.ImageOrientationPatient = dataset.ImageOrientationPatient || [1, 0, 0, 0, 1, 0];
+      dataset.ImagePositionPatient = dataset.ImagePositionPatient || [0, 0, 0];
 
       dataset._meta = DicomMetaDictionary.namifyDataset(dicomData.meta);
       datasets.push(dataset);

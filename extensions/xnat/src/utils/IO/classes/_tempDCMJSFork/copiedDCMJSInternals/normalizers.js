@@ -49,6 +49,8 @@ class Normalizer {
             toUID.LegacyConvertedEnhancedMRImage
         ] = EnhancedMRImageNormalizer;
         sopClassUIDMap[toUID.EnhancedUSVolume] = EnhancedUSVolumeNormalizer;
+        sopClassUIDMap[toUID.USImage] = USImageNormalizer;
+        sopClassUIDMap[toUID.USMultiframeImage] = USMultiframeImageNormalizer;
         sopClassUIDMap[toUID.PETImage] = PETImageNormalizer;
         sopClassUIDMap[toUID.EnhancedPETImage] = PETImageNormalizer;
         sopClassUIDMap[
@@ -67,6 +69,7 @@ class Normalizer {
             toUID.EnhancedCTImage,
             toUID.LegacyConvertedEnhancedCTImage,
             toUID.EnhancedUSVolume,
+            toUID.USMultiframeImage,
             toUID.EnhancedPETImage,
             toUID.LegacyConvertedEnhancedPETImage,
             toUID.Segmentation,
@@ -189,11 +192,13 @@ class ImageNormalizer extends Normalizer {
         });
 
         // assign array buffers
-        if (ds.BitsAllocated !== 16) {
-            log.error(
-                "Only works with 16 bit data, not " +
-                    String(this.dataset.BitsAllocated)
-            );
+        if (ds.Modality !== 'US') {
+            if (ds.BitsAllocated !== 16) {
+                log.error(
+                  'Only works with 16 bit data, not ' +
+                  String(this.dataset.BitsAllocated),
+                );
+            }
         }
         if (referenceDataset._vrMap && !referenceDataset._vrMap.PixelData) {
             log.warn("No vr map given for pixel data, using OW");
@@ -229,14 +234,16 @@ class ImageNormalizer extends Normalizer {
             frame++;
         });
 
-        if (ds.NumberOfFrames < 2) {
-            // TODO
-            log.error(
-                "Cannot populate shared groups uniquely without multiple frames"
-            );
+        if (ds.Modality !== 'US') {
+            if (ds.NumberOfFrames < 2) {
+                // TODO
+                log.error(
+                  'Cannot populate shared groups uniquely without multiple frames',
+                );
+            }
         }
         let [distance0, dataset0] = distanceDatasetPairs[0];
-        let distance1 = distanceDatasetPairs[1][0];
+        let distance1 = distanceDatasetPairs[1] ? distanceDatasetPairs[1][0] : 1;
 
         //
         // make the functional groups
@@ -352,10 +359,11 @@ class ImageNormalizer extends Normalizer {
         };
         let frameNumber = 1;
         this.datasets.forEach(dataset => {
-            if (ds.NumberOfFrames === 1)
-                ds.PerFrameFunctionalGroupsSequence = [
-                    ds.PerFrameFunctionalGroupsSequence
-                ];
+            // ToDo: Why to assign PerFrameFunctionalGroupsSequence into array for 1 frame?
+            // if (ds.NumberOfFrames === 1)
+            //     ds.PerFrameFunctionalGroupsSequence = [
+            //         ds.PerFrameFunctionalGroupsSequence
+            //     ];
             ds.PerFrameFunctionalGroupsSequence[
                 frameNumber - 1
             ].FrameContentSequence = {
@@ -478,6 +486,22 @@ class EnhancedMRImageNormalizer extends ImageNormalizer {
 }
 
 class EnhancedUSVolumeNormalizer extends ImageNormalizer {
+    normalize() {
+        super.normalize();
+    }
+}
+
+class USImageNormalizer extends ImageNormalizer {
+    normalize() {
+        super.normalize();
+        // TODO: provide option at export to swap in LegacyConverted UID
+        let toUID = DicomMetaDictionary.sopClassUIDsByName;
+        //this.dataset.SOPClassUID = "LegacyConvertedEnhancedCTImage";
+        this.dataset.SOPClassUID = toUID.USMultiframeImage;
+    }
+}
+
+class USMultiframeImageNormalizer extends ImageNormalizer {
     normalize() {
         super.normalize();
     }

@@ -362,6 +362,9 @@ class MetadataProvider {
           );
           ImageOrientationPatient = planeinfo.ImageOrientationPatient;
           ImagePositionPatient = planeinfo.ImagePositionPatient;
+        } else if (instance.Modality === 'US') {
+          ImageOrientationPatient = instance.ImageOrientationPatient || [1, 0, 0, 0, 1, 0];
+          ImagePositionPatient = instance.ImagePositionPatient || [0, 0, 0];
         } else {
           ImageOrientationPatient = instance.ImageOrientationPatient;
           ImagePositionPatient = instance.ImagePositionPatient;
