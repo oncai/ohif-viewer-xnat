@@ -46,9 +46,12 @@ const getAndImportMaskFile = async (uri, segmentation, callbacks = {}) => {
         modified: false,
       });
 
-      const segArrayBuffer = await fetchArrayBuffer(uri).promise;
-
-      await maskImporter.importDICOMSEG(segArrayBuffer);
+      try {
+        const segArrayBuffer = await fetchArrayBuffer(uri).promise;
+        await maskImporter.importDICOMSEG(segArrayBuffer);
+      } catch (e) {
+        errorMessage = e.message || 'Unknown error';
+      }
 
       break;
 

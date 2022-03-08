@@ -71,7 +71,7 @@ export default class MaskImporter {
    * @returns {null}                     description
    */
   importDICOMSEG(dicomSegArrayBuffer) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const imageIds = this._imageIds;
       const imagePromises = [];
 
@@ -93,78 +93,82 @@ export default class MaskImporter {
       }
 
       Promise.all(imagePromises).then(() => {
-        const {
-          labelmapBuffer,
-          segMetadata,
-          probabilityMapBuffer,
-          isFractional,
-          segmentsOnFrame,
-        } = Segmentation_4X_fork.generateToolState(
-          imageIds,
-          dicomSegArrayBuffer,
-          cornerstone.metaData
-        );
-
-        const firstImageId = imageIds[0];
-
-        // Delete old labelmap
-        if (segmentationModule.state.series[firstImageId]) {
-          delete segmentationModule.state.series[firstImageId];
-        }
-
-        const metadata = segMetadata.data;
-        metadata.forEach(seg => {
-          if (seg !== undefined) {
-            seg.uid = generateUID();
-          }
-        });
-
-        if (isFractional) {
-          segmentationModule.setters.fractionalLabelmap3DByFirstImageId(
-            firstImageId,
+        try {
+          const {
             labelmapBuffer,
+            segMetadata,
             probabilityMapBuffer,
-            0,
-            metadata,
-            imageIds.length,
-            segmentsOnFrame
+            isFractional,
+            segmentsOnFrame,
+          } = Segmentation_4X_fork.generateToolState(
+            imageIds,
+            dicomSegArrayBuffer,
+            cornerstone.metaData
           );
 
-          // Set fractional labelmap rendering options
-          Object.assign(
-            segmentationModule.configuration,
-            fractionalLabelmapConfiguration
-          );
+          const firstImageId = imageIds[0];
 
-          const colorLUT = segmentationModule.state.colorLutTables[0];
-
-          // If the first is a color, set it to a colormap.
-          if (!Array.isArray(colorLUT[1][0][0])) {
-            colorLUT[1] = colorMaps[0].colormap;
-            colorLUT[1].ID = colorMaps[0].ID;
+          // Delete old labelmap
+          if (segmentationModule.state.series[firstImageId]) {
+            delete segmentationModule.state.series[firstImageId];
           }
-        } else {
-          segmentationModule.setters.labelmap3DByFirstImageId(
-            firstImageId,
-            labelmapBuffer,
-            0, // TODO -> Can define a color LUT based on colors in the SEG later.
-            metadata,
-            imageIds.length,
-            segmentsOnFrame
+
+          const metadata = segMetadata.data;
+          metadata.forEach(seg => {
+            if (seg !== undefined) {
+              seg.uid = generateUID();
+            }
+          });
+
+          if (isFractional) {
+            segmentationModule.setters.fractionalLabelmap3DByFirstImageId(
+              firstImageId,
+              labelmapBuffer,
+              probabilityMapBuffer,
+              0,
+              metadata,
+              imageIds.length,
+              segmentsOnFrame
+            );
+
+            // Set fractional labelmap rendering options
+            Object.assign(
+              segmentationModule.configuration,
+              fractionalLabelmapConfiguration
+            );
+
+            const colorLUT = segmentationModule.state.colorLutTables[0];
+
+            // If the first is a color, set it to a colormap.
+            if (!Array.isArray(colorLUT[1][0][0])) {
+              colorLUT[1] = colorMaps[0].colormap;
+              colorLUT[1].ID = colorMaps[0].ID;
+            }
+          } else {
+            segmentationModule.setters.labelmap3DByFirstImageId(
+              firstImageId,
+              labelmapBuffer,
+              0, // TODO -> Can define a color LUT based on colors in the SEG later.
+              metadata,
+              imageIds.length,
+              segmentsOnFrame
+            );
+
+            // Set labelmap rendering options
+            Object.assign(
+              segmentationModule.configuration,
+              labelmapConfiguration
+            );
+          }
+
+          cornerstoneTools.store.state.enabledElements.forEach(element =>
+            cornerstone.updateImage(element)
           );
 
-          // Set labelmap rendering options
-          Object.assign(
-            segmentationModule.configuration,
-            labelmapConfiguration
-          );
+          resolve();
+        } catch (e) {
+          reject(e);
         }
-
-        cornerstoneTools.store.state.enabledElements.forEach(element =>
-          cornerstone.updateImage(element)
-        );
-
-        resolve();
       });
     });
   }

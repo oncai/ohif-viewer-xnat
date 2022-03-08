@@ -187,6 +187,7 @@ class ImageNormalizer extends Normalizer {
             let distance = ImageNormalizer.vec3Dot(positionVector, scanAxis);
             distanceDatasetPairs.push([distance, dataset]);
         });
+        // Multiframe is stored in descending order
         distanceDatasetPairs.sort(function(a, b) {
             return b[0] - a[0];
         });
