@@ -137,6 +137,7 @@ export default class WorkingRoiCollectionList extends React.Component {
                 onClick={() => {
                   this.setState({ isExpanded: !isExpanded });
                 }}
+                title={isExpanded ? 'Collapse' : 'Expand'}
               />
             </div>
           </div>

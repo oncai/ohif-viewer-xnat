@@ -603,6 +603,7 @@ export default class XNATContourPanel extends React.Component {
                 width="20px"
                 height="20px"
                 onClick={() => this.setState({ showSettings: true })}
+                title="Contour ROI Settings"
               />
             </div>
             <MenuIOButtons
