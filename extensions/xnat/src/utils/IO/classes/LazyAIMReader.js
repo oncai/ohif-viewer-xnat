@@ -1,24 +1,29 @@
 import cornerstoneTools from 'cornerstone-tools';
 import { Polygon } from '../../../peppermint-tools';
 import allowStateUpdate from '../../awaitStateUpdate';
+import DATA_IMPORT_STATUS from '../../dataImportStatus';
 
 const modules = cornerstoneTools.store.modules;
+const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
+
+// ToDo: Manage memory manually rather relying on the JS garbage collector?
+// const _ROIContourMarkupEntities = new Map();
 
 /**
- * @class AIMReader - Parses AIM ImageAnnotationCollections and extracts the
- *                    polygons for use in Cornerstone.
+ * @class LazyAIMReader - Parses AIM ImageAnnotationCollections and adds
+ *                        callbacks to extract the polygons.
  */
-export default class AIMReader {
+export default class LazyAIMReader {
   async init(
     xmlDocument,
     seriesInstanceUidToImport,
     roiCollectionName,
     roiCollectionLabel,
-    updateProgressCallback
+    updateProgressCallback,
+    addPolygonsToToolStateManager
   ) {
     this._doc = xmlDocument;
     this._updateProgressCallback = updateProgressCallback;
-    this._percentComplete = 0;
 
     try {
       this._checkXML();
@@ -28,8 +33,13 @@ export default class AIMReader {
 
     this._freehand3DStore = modules.freehand3D;
 
+    this._fireContourExtractedEvent = (uid, percent) =>
+      triggerEvent(document, 'xnatcontourextracted', { uid, percent });
+    this._fireContourRoiExtractedEvent = uid =>
+      triggerEvent(document, 'xnatcontourroiextracted', { uid });
+    this._addPolygonsToToolStateCallback = addPolygonsToToolStateManager;
+
     this._seriesInstanceUidToImport = seriesInstanceUidToImport;
-    this._polygons = [];
     this._sopInstancesInSeries = this._getSopInstancesInSeries();
     this._roiCollectionName = roiCollectionName;
     this._roiCollectionLabel = roiCollectionLabel;
@@ -143,60 +153,90 @@ export default class AIMReader {
   async _extractAnnotations() {
     const annotations = this._doc.getElementsByTagName('ImageAnnotation');
 
-    this._percentComplete = 0;
-    let numAllContours = 0;
-    const allMarkupEntities = [];
-    for (let i = 0; i < annotations.length; i++) {
-      const markupEntities = annotations[i].getElementsByTagName('MarkupEntity');
-      allMarkupEntities.push(markupEntities);
-      numAllContours += markupEntities.length;
-    }
+    let percentComplete = 0;
+    this._updateProgressCallback(`Parsing AIM Data: ${percentComplete}%`);
+    await allowStateUpdate();
 
-    let extractedNumContours = 0;
     for (let i = 0; i < annotations.length; i++) {
-      await this._extractPolygons(
-        annotations[i],
-        allMarkupEntities[i],
-        extractedNumContours,
-        numAllContours
+      const markupEntities = annotations[i].getElementsByTagName(
+        'MarkupEntity'
       );
-      extractedNumContours += allMarkupEntities[i].length;
+
+      const loadFunc = async ROIContourUid => {
+        const roiContour = this._freehand3DStore.getters.ROIContour(
+          this._seriesInstanceUidToImport,
+          this._roiCollectionLabel,
+          ROIContourUid
+        );
+
+        roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTING;
+
+        const polygons = await this._extractPolygons(
+          ROIContourUid,
+          markupEntities,
+          roiContour
+        );
+
+        // Reset polygon count
+        roiContour.polygonCount = 0;
+
+        this._addPolygonsToToolStateCallback(
+          polygons,
+          'AIM',
+          this._freehand3DStore
+        );
+
+        roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTED;
+        this._fireContourRoiExtractedEvent(ROIContourUid);
+
+        delete roiContour.loadFunc;
+      };
+
+      const { ROIContourUid } = this._createNewVolumeAndGetUid(
+        annotations[i].children,
+        markupEntities.length,
+        loadFunc
+      );
+
+      percentComplete = Math.floor(((i + 1) * 100) / annotations.length);
+      this._updateProgressCallback(`Parsing AIM Data: ${percentComplete}%`);
+      await allowStateUpdate();
     }
   }
 
   /**
-   * _extractPolygons - Extracts each polygon from a particular annotation.
+   * _extractPolygons - Extracts polygons from markupEntities
    *
-   * @param  {HTMLElement} annotation An AIM ImageAnnotation.
+   * @param  ROIContourUid
    * @param markupEntities
-   * @param extractedNumContours
-   * @param numAllContours
-   * @returns {null}
+   * @param roiContour
+   * @returns {Array} polygons
    */
-  async _extractPolygons(
-    annotation,
-    markupEntities,
-    extractedNumContours,
-    numAllContours
-  ) {
-    const children = annotation.children;
-    const { ROIContourUid, name } = this._createNewVolumeAndGetUid(children);
+  async _extractPolygons(ROIContourUid, markupEntities, roiContour) {
+    const polygons = [];
+    const numPolygons = markupEntities.length;
+
+    let prevPercentComplete = 0;
 
     for (let i = 0; i < markupEntities.length; i++) {
       const markupEntity = markupEntities[i];
       // Add a MarkupEntity to the polygon list if type is TwoDimensionPolyline
       if (markupEntity.getAttribute('xsi:type') === 'TwoDimensionPolyline') {
-        this._addPolygon(markupEntity, ROIContourUid);
-      }
-      const percentComplete = Math.floor(
-        ((extractedNumContours + i + 1) * 100) / numAllContours
-      );
-      if (percentComplete !== this._percentComplete) {
-        this._updateProgressCallback(`Reading Buffer: ${percentComplete}%`);
-        this._percentComplete = percentComplete;
-        await allowStateUpdate();
+        const polygon = this._addPolygon(markupEntity, ROIContourUid);
+        if (polygon) {
+          polygons.push(polygon);
+        }
+        const percentComplete = Math.floor(((i + 1) * 100) / numPolygons);
+        if (percentComplete !== prevPercentComplete) {
+          prevPercentComplete = percentComplete;
+          roiContour.importPercent = percentComplete;
+          this._fireContourExtractedEvent(ROIContourUid, percentComplete);
+          await allowStateUpdate();
+        }
       }
     }
+
+    return polygons;
   }
 
   /**
@@ -257,7 +297,8 @@ export default class AIMReader {
       polygonUid,
       referencedFrameNumber
     );
-    this._polygons.push(polygon);
+
+    return polygon;
   }
 
   /**
@@ -265,9 +306,11 @@ export default class AIMReader {
    *
    * @param  {HTMLElement} childElementsOfAnnotation The child elements of an AIM
    *                                          ImageAnnotation.
+   * @param numPolygons
+   * @param loadFunc
    * @returns {string}  The ROIContourUid of the new contour.
    */
-  _createNewVolumeAndGetUid(childElementsOfAnnotation) {
+  _createNewVolumeAndGetUid(childElementsOfAnnotation, numPolygons, loadFunc) {
     const freehand3DStore = this._freehand3DStore;
     let name;
     let uid;
@@ -320,13 +363,12 @@ export default class AIMReader {
       name,
       {
         uid,
+        polygonCount: numPolygons,
+        importStatus: DATA_IMPORT_STATUS.NOT_IMPORTED,
+        loadFunc,
       }
     );
 
     return { ROIContourUid, name };
-  }
-
-  get polygons() {
-    return this._polygons;
   }
 }

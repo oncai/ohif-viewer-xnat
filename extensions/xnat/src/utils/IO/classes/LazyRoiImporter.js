@@ -1,9 +1,8 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import { PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
-import AIMReader from './AIMReader.js';
-import RTStructReader from './RTStructReader.js';
-import allowStateUpdate from '../../awaitStateUpdate';
+import LazyAIMReader from './LazyAIMReader';
+import LazyRTStructReader from './LazyRTStructReader';
 import getSopInstanceUidToImageIdMap from '../helpers/getSopInstanceUidToImageIdMap';
 import addPolygonToToolStateManager from '../helpers/addPolygonToToolStateManager';
 
@@ -16,16 +15,15 @@ const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 const { getToolForElement, setToolPassive } = cornerstoneTools;
 
 /**
- * @class RoiImporter - Imports contour-based ROI formats to
- * peppermintTools ROIContours.
+ * @class LazyRoiImporter - Imports contour-based ROI formats to
+ *            peppermintTools ROIContours in a lazy-loading mode.
  */
-export default class RoiImporter {
+export default class LazyRoiImporter {
   constructor(seriesInstanceUid, updateProgressCallback) {
+    this._useLazyLoading = true;
     this._seriesInstanceUid = seriesInstanceUid;
 
-    this._freehand3DStore = modules.freehand3D;
     this.updateProgressCallback = updateProgressCallback;
-    this._percentComplete = 0;
   }
 
   /**
@@ -38,16 +36,15 @@ export default class RoiImporter {
    * @returns {null}
    */
   async importAIMfile(aimDoc, roiCollectionName, roiCollectionLabel) {
-    const aimReader = new AIMReader();
+    const aimReader = new LazyAIMReader();
     await aimReader.init(
       aimDoc,
       this._seriesInstanceUid,
       roiCollectionName,
       roiCollectionLabel,
-      this.updateProgressCallback
+      this.updateProgressCallback,
+      LazyRoiImporter.addPolygonsToToolStateManager
     );
-
-    await this._addPolygonsToToolStateManager(aimReader.polygons, 'AIM');
   }
 
   /**
@@ -64,17 +61,14 @@ export default class RoiImporter {
     roiCollectionName,
     roiCollectionLabel
   ) {
-    const rtStructReader = new RTStructReader();
+    const rtStructReader = new LazyRTStructReader();
     await rtStructReader.init(
       rtStructArrayBuffer,
       this._seriesInstanceUid,
       roiCollectionName,
       roiCollectionLabel,
-      this.updateProgressCallback
-    );
-    await this._addPolygonsToToolStateManager(
-      rtStructReader.polygons,
-      'RTSTRUCT'
+      this.updateProgressCallback,
+      LazyRoiImporter.addPolygonsToToolStateManager
     );
   }
 
@@ -84,13 +78,11 @@ export default class RoiImporter {
    *
    * @param  {Polygon[]} polygons   The polygons to add to cornerstoneTools.
    * @param  {string} importType The source file type (used for scaling).
+   * @param {object} freehand3DStore
    * @returns {null}
    */
-  async _addPolygonsToToolStateManager(polygons, importType) {
+  static addPolygonsToToolStateManager(polygons, importType, freehand3DStore) {
     const toolStateManager = globalToolStateManager.saveToolState();
-
-    const numpPolygons = polygons.length;
-    this._percentComplete = 0;
 
     const sopInstanceUidToImageIdMap = getSopInstanceUidToImageIdMap();
 
@@ -105,19 +97,13 @@ export default class RoiImporter {
           toolStateManager,
           correspondingImageId,
           importType,
-          this._freehand3DStore
+          freehand3DStore
         );
-      }
-
-      const percentComplete = Math.floor(((i + 1) * 100) / numpPolygons);
-      if (percentComplete !== this._percentComplete) {
-        this.updateProgressCallback(`Updating Tool State: ${percentComplete}%`);
-        this._percentComplete = percentComplete;
-        await allowStateUpdate();
       }
     }
 
-    this._refreshToolStateManager(toolStateManager);
+    // this._refreshToolStateManager(toolStateManager);
+    LazyRoiImporter.refreshToolStateManager(toolStateManager);
   }
 
   /**
@@ -125,7 +111,7 @@ export default class RoiImporter {
    *
    * @param  {object} toolStateManager The toolStateManager
    */
-  _refreshToolStateManager(toolStateManager) {
+  static refreshToolStateManager(toolStateManager) {
     globalToolStateManager.restoreToolState(toolStateManager);
 
     cornerstone.getEnabledElements().forEach(enabledElement => {

@@ -3,6 +3,7 @@ import csTools from 'cornerstone-tools';
 import generateUID from '../utils/generateUID.js';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 import TOOL_NAMES from '../toolNames';
+import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -219,12 +220,19 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     );
   }
 
+  const importStatus = options.hasOwnProperty('importStatus')
+    ? options.importStatus
+    : DATA_IMPORT_STATUS.IMPORTED;
+
   const ROIContour = {
     uid: options.uid ? options.uid : generateUID(),
     name,
     color: options.color ? options.color : getNextColor(),
     polygonCount: options.polygonCount ? options.polygonCount : 0,
     visible: true,
+    importStatus,
+    importPercent: importStatus === DATA_IMPORT_STATUS.IMPORTED ? 100 : 0,
+    loadFunc: options.loadFunc,
   };
 
   structureSet.ROIContourCollection.push(ROIContour);

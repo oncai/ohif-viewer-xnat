@@ -4,6 +4,7 @@ import showNotification from '../../components/common/showNotification';
 import fetchXML from './fetchXML';
 import fetchArrayBuffer from './fetchArrayBuffer';
 import RoiImporter from './classes/RoiImporter';
+import LazyRoiImporter from './classes/LazyRoiImporter';
 
 const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
 
@@ -30,10 +31,19 @@ const getAndImportContourFile = async (
 
   const updateProgress = callbacks.updateProgress || noop;
 
-  const roiImporter = new RoiImporter(
-    roiCollectionInfo.referencedSeriesInstanceUid,
-    updateProgress
-  );
+  const lazyLoad = true;
+  let roiImporter;
+  if (lazyLoad) {
+    roiImporter = new LazyRoiImporter(
+      roiCollectionInfo.referencedSeriesInstanceUid,
+      updateProgress
+    );
+  } else {
+    roiImporter = new RoiImporter(
+      roiCollectionInfo.referencedSeriesInstanceUid,
+      updateProgress
+    );
+  }
 
   switch (roiCollectionInfo.collectionType) {
     case 'AIM':

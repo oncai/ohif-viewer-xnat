@@ -4,6 +4,8 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
+import ProgressColoredCircle from '../common/ProgressColoredCircle';
+import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 
 import '../XNATRoiPanel.styl';
 
@@ -34,17 +36,36 @@ export default class LockedCollectionsListItem extends React.Component {
     const { metadata, ROIContourArray } = props.collection;
     const collectionVisible = metadata.visible;
     const contourRoiVisible = [];
-    ROIContourArray.forEach(roi => contourRoiVisible.push(roi.metadata.visible));
+    const contourRoiImportStatus = {};
+    ROIContourArray.forEach(roi => {
+      contourRoiVisible.push(roi.metadata.visible);
+      contourRoiImportStatus[roi.metadata.uid] = roi.metadata.importStatus;
+    });
 
     this.state = {
       expanded: false,
       collectionVisible,
       contourRoiVisible,
+      contourRoiImportStatus,
     };
 
     this.onToggleVisibilityClick = this.onToggleVisibilityClick.bind(this);
     this.onCollectionShowHideClick = this.onCollectionShowHideClick.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
+    this.onLoadRoiClick = this.onLoadRoiClick.bind(this);
+    this.onLoadRoiComplete = this.onLoadRoiComplete.bind(this);
+
+    document.addEventListener(
+      'xnatcontourroiextracted',
+      this.onLoadRoiComplete
+    );
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener(
+      'xnatcontourroiextracted',
+      this.onLoadRoiComplete
+    );
   }
 
   /**
@@ -100,14 +121,98 @@ export default class LockedCollectionsListItem extends React.Component {
     });
   }
 
+  onLoadRoiClick(uid, loadFunc) {
+    const { contourRoiImportStatus } = this.state;
+    contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTING;
+    this.setState({ contourRoiImportStatus });
+    loadFunc(uid);
+  }
+
+  onLoadRoiComplete(evt) {
+    const uid = evt.detail.uid;
+    const { contourRoiImportStatus } = this.state;
+    if (Object.keys(contourRoiImportStatus).includes(uid)) {
+      contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTED;
+      this.setState({ contourRoiImportStatus });
+    }
+  }
+
   render() {
     const { collection, onUnlockClick, onClick } = this.props;
-    const { expanded, collectionVisible, contourRoiVisible } = this.state;
+    const {
+      expanded,
+      collectionVisible,
+      contourRoiVisible,
+      contourRoiImportStatus,
+    } = this.state;
 
     const metadata = collection.metadata;
     const ROIContourArray = collection.ROIContourArray;
 
     const expandStyle = expanded ? {} : { transform: 'rotate(90deg)' };
+
+    const listBody = ROIContourArray.map((contourRoi, index) => {
+      const {
+        uid,
+        color,
+        name,
+        polygonCount,
+        importPercent,
+        loadFunc,
+      } = contourRoi.metadata;
+      const importStatus = contourRoiImportStatus[uid];
+      const isLoaded = importStatus === DATA_IMPORT_STATUS.IMPORTED;
+
+      let indexComponent = <ColoredCircle color={color} />;
+      if (importStatus === DATA_IMPORT_STATUS.NOT_IMPORTED) {
+        indexComponent = (
+          <button
+            className="small"
+            onClick={() => this.onLoadRoiClick(uid, loadFunc)}
+            title="Load ROI"
+          >
+            <Icon
+              name="xnat-load-roi"
+              style={{ width: 18, height: 18, fill: color }}
+            />
+          </button>
+        );
+      } else if (importStatus === DATA_IMPORT_STATUS.IMPORTING) {
+        indexComponent = (
+          <ProgressColoredCircle
+            color={color}
+            uid={uid}
+            percent={importPercent}
+          />
+        );
+      }
+      return (
+        <tr key={uid}>
+          <td className="centered-cell">{indexComponent}</td>
+          <td className="left-aligned-cell">{name}</td>
+          <td className="centered-cell">
+            <button
+              className="small"
+              onClick={() => (polygonCount && isLoaded ? onClick(uid) : null)}
+              disabled={!isLoaded}
+              title={!isLoaded ? 'ROI not loaded' : ''}
+            >
+              {polygonCount}
+            </button>
+          </td>
+          <td>
+            <button
+              className="small"
+              onClick={() => (isLoaded ? this.onShowHideClick(index) : null)}
+              disabled={!isLoaded}
+              title={!isLoaded ? 'ROI not loaded' : ''}
+            >
+              <Icon name={contourRoiVisible[index] ? 'eye' : 'eye-closed'} />
+            </button>
+          </td>
+        </tr>
+      );
+    });
 
     return (
       <div className="collectionSection">
@@ -122,9 +227,10 @@ export default class LockedCollectionsListItem extends React.Component {
               onClick={() => {
                 onUnlockClick(metadata.uid);
               }}
+              title="Unlock ROI Collection"
             />
             <Icon
-              name={collectionVisible ? "eye" : "eye-closed"}
+              name={collectionVisible ? 'eye' : 'eye-closed'}
               className="icon"
               width="20px"
               height="20px"
@@ -160,36 +266,7 @@ export default class LockedCollectionsListItem extends React.Component {
                   <th width="10%" className="centered-cell" />
                 </tr>
               </thead>
-              <tbody>
-                {ROIContourArray.map((contourRoi, index) => (
-                  <tr key={contourRoi.metadata.uid}>
-                    <td className="centered-cell">
-                      <ColoredCircle color={contourRoi.metadata.color} />
-                    </td>
-                    <td className="left-aligned-cell">
-                      {contourRoi.metadata.name}
-                    </td>
-                    <td className="centered-cell">
-                      <a
-                        style={{ cursor: 'pointer', color: 'white' }}
-                        onClick={() => contourRoi.metadata.polygonCount ? onClick(contourRoi.metadata.uid) : null}
-                      >
-                        {contourRoi.metadata.polygonCount}
-                      </a>
-                    </td>
-                    <td>
-                      <button
-                        className="small"
-                        onClick={() => this.onShowHideClick(index)}
-                      >
-                        <Icon
-                          name={contourRoiVisible[index] ? 'eye' : 'eye-closed'}
-                        />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <tbody>{listBody}</tbody>
             </table>
           </>
         )}
