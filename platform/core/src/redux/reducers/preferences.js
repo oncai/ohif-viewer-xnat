@@ -24,6 +24,11 @@ const defaultState = {
         overlapSegments: false,
       },
     },
+    ContourROILazyLoading: {
+      id: 'ContourROILazyLoading',
+      name: 'Contour ROI Lazy Loading',
+      enabled: true,
+    },
   },
 };
 

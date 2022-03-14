@@ -31,9 +31,15 @@ const getAndImportContourFile = async (
 
   const updateProgress = callbacks.updateProgress || noop;
 
-  const lazyLoad = true;
+  // Get contour loading preferences
+  const preferences = window.store.getState().preferences;
+  const ContourROILazyLoading =
+    preferences.experimentalFeatures.ContourROILazyLoading;
+  const lazyLoadingEnabled =
+    !!ContourROILazyLoading && ContourROILazyLoading.enabled;
+
   let roiImporter;
-  if (lazyLoad) {
+  if (lazyLoadingEnabled) {
     roiImporter = new LazyRoiImporter(
       roiCollectionInfo.referencedSeriesInstanceUid,
       updateProgress
