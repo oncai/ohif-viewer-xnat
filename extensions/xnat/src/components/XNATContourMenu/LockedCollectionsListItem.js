@@ -42,11 +42,16 @@ export default class LockedCollectionsListItem extends React.Component {
       contourRoiImportStatus[roi.metadata.uid] = roi.metadata.importStatus;
     });
 
+    const someRoisNotLoaded = ROIContourArray.some(roi => {
+      return roi.metadata.importStatus === DATA_IMPORT_STATUS.NOT_IMPORTED;
+    });
+
     this.state = {
       expanded: false,
       collectionVisible,
       contourRoiVisible,
       contourRoiImportStatus,
+      someRoisNotLoaded,
     };
 
     this.onToggleVisibilityClick = this.onToggleVisibilityClick.bind(this);
@@ -54,6 +59,7 @@ export default class LockedCollectionsListItem extends React.Component {
     this.onShowHideClick = this.onShowHideClick.bind(this);
     this.onLoadRoiClick = this.onLoadRoiClick.bind(this);
     this.onLoadRoiComplete = this.onLoadRoiComplete.bind(this);
+    this.onLoadAllRoiClick = this.onLoadAllRoiClick.bind(this);
 
     document.addEventListener(
       'xnatcontourroiextracted',
@@ -133,6 +139,29 @@ export default class LockedCollectionsListItem extends React.Component {
     const { contourRoiImportStatus } = this.state;
     if (Object.keys(contourRoiImportStatus).includes(uid)) {
       contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTED;
+      const someRoisNotLoaded = Object.values(contourRoiImportStatus).some(
+        value => value === DATA_IMPORT_STATUS.NOT_IMPORTED
+      );
+      this.setState({ contourRoiImportStatus, someRoisNotLoaded });
+    }
+  }
+
+  onLoadAllRoiClick() {
+    const { collection } = this.props;
+    const { contourRoiImportStatus } = this.state;
+    const ROIContourArray = collection.ROIContourArray;
+
+    let updateState = false;
+    ROIContourArray.forEach(roi => {
+      const { uid, loadFunc } = roi.metadata;
+      if (contourRoiImportStatus[uid] === DATA_IMPORT_STATUS.NOT_IMPORTED) {
+        contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTING;
+        loadFunc(uid);
+        updateState = true;
+      }
+    });
+
+    if (updateState) {
       this.setState({ contourRoiImportStatus });
     }
   }
@@ -144,6 +173,7 @@ export default class LockedCollectionsListItem extends React.Component {
       collectionVisible,
       contourRoiVisible,
       contourRoiImportStatus,
+      someRoisNotLoaded,
     } = this.state;
 
     const metadata = collection.metadata;
@@ -219,16 +249,28 @@ export default class LockedCollectionsListItem extends React.Component {
         <div className="header">
           <h5>{metadata.name}</h5>
           <div className="icons">
-            <Icon
-              name="lock"
-              className="icon"
-              width="20px"
-              height="20px"
-              onClick={() => {
-                onUnlockClick(metadata.uid);
-              }}
-              title="Unlock ROI Collection"
-            />
+            {someRoisNotLoaded && (
+              <Icon
+                name="xnat-load-roi"
+                className="icon"
+                width="20px"
+                height="20px"
+                onClick={this.onLoadAllRoiClick}
+                title="Load All Contour ROIs"
+              />
+            )}
+            {!someRoisNotLoaded && (
+              <Icon
+                name="lock"
+                className="icon"
+                width="20px"
+                height="20px"
+                onClick={() => {
+                  onUnlockClick(metadata.uid);
+                }}
+                title="Unlock ROI Collection"
+              />
+            )}
             <Icon
               name={collectionVisible ? 'eye' : 'eye-closed'}
               className="icon"
