@@ -20,7 +20,6 @@ const { getToolForElement, setToolPassive } = cornerstoneTools;
  */
 export default class LazyRoiImporter {
   constructor(seriesInstanceUid, updateProgressCallback) {
-    this._useLazyLoading = true;
     this._seriesInstanceUid = seriesInstanceUid;
 
     this.updateProgressCallback = updateProgressCallback;

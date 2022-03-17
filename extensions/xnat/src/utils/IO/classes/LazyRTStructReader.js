@@ -3,6 +3,9 @@ import dicomParser from 'dicom-parser';
 import { Polygon } from '../../../peppermint-tools';
 import allowStateUpdate from '../../awaitStateUpdate';
 import DATA_IMPORT_STATUS from '../../dataImportStatus';
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
+import WebWorkerPromise from 'webworker-promise';
 
 const modules = cornerstoneTools.store.modules;
 const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
@@ -204,12 +207,24 @@ export default class LazyRTStructReader {
 
         roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTING;
 
-        const polygons = await this._extractPolygons(
-          ROIContourUid,
-          ROINumber,
-          polygonItems,
-          roiContour
-        );
+        let polygons = [];
+        const extractContoursConcurrently = true;
+
+        if (extractContoursConcurrently) {
+          polygons = await this._extractPolygonsConcurrently(
+            ROIContourUid,
+            ROINumber,
+            polygonItems,
+            roiContour
+          );
+        } else {
+          polygons = await this._extractPolygons(
+            ROIContourUid,
+            ROINumber,
+            polygonItems,
+            roiContour
+          );
+        }
 
         // Reset polygon count
         roiContour.polygonCount = 0;
@@ -235,7 +250,7 @@ export default class LazyRTStructReader {
   }
 
   /**
-   * _extractPolygons - extracts one ROIContour from the dataset.
+   * _extractPolygons - extracts ROIContours from the dataset.
    *
    * @param ROIContourUid
    * @param ROINumber
@@ -266,6 +281,115 @@ export default class LazyRTStructReader {
         await allowStateUpdate();
       }
     }
+
+    return polygons;
+  }
+
+  /**
+   * _extractPolygonsConcurrently - Concurrently extracts ROIContours from the dataset.
+   *
+   * @param ROIContourUid
+   * @param ROINumber
+   * @param polygonItems
+   * @param roiContour
+   * @returns {Array} polygons
+   */
+  async _extractPolygonsConcurrently(
+    ROIContourUid,
+    ROINumber,
+    polygonItems,
+    roiContour
+  ) {
+    const polygons = [];
+    const numPolygons = polygonItems.length;
+    const byteArray = polygonItems[0].dataSet.byteArray;
+
+    let prevPercentComplete = 0;
+    let polygonsExtracted = 0;
+    const onWorkerUpdate = data => {
+      const { workerId, polygonData } = data;
+      if (polygonData) {
+        const {
+          points,
+          referencedSopInstanceUid,
+          polygonUid,
+          referencedFrameNumber,
+        } = polygonData;
+        const polygon = new Polygon(
+          points,
+          referencedSopInstanceUid,
+          this._seriesInstanceUidToImport,
+          this._roiCollectionLabel,
+          ROIContourUid,
+          polygonUid,
+          referencedFrameNumber
+        );
+        polygons.push(polygon);
+      }
+      polygonsExtracted++;
+      const percentComplete = Math.floor(
+        (polygonsExtracted * 100) / numPolygons
+      );
+      if (percentComplete !== prevPercentComplete) {
+        prevPercentComplete = percentComplete;
+        roiContour.importPercent = percentComplete;
+        this._fireContourExtractedEvent(ROIContourUid, percentComplete);
+        // await allowStateUpdate();
+      }
+    };
+
+    const maxNumberOfWorkers = 4;
+    let arrayStride = Math.floor(numPolygons / maxNumberOfWorkers) || 1;
+    let arrayIndex = 0;
+    const polygonChunks = [];
+    const workers = [];
+    let workerId = 0;
+    while (arrayIndex < numPolygons) {
+      const worker = new RTSPolygonsExtractWorker();
+      workers.push(worker);
+      const workerPromise = new WebWorkerPromise(worker);
+      let arrayEnd = arrayIndex + arrayStride;
+      if (numPolygons - arrayEnd < arrayStride) {
+        arrayEnd = numPolygons;
+      }
+      // const subArray = polygonItems.slice(arrayIndex, arrayEnd);
+      const subArray = [];
+      for (let i = arrayIndex; i < arrayEnd; i++) {
+        const dataSet = polygonItems[i].dataSet;
+        const elements = dataSet.elements;
+        // ContourImageSequence Item 0
+        const ImageSequenceElements = elements.x30060016.items[0].dataSet.elements;
+        subArray.push({
+          ContourGeometricType: elements.x30060042,
+          ContourImageSequence: {
+            ReferencedSOPInstanceUID: ImageSequenceElements.x00081155,
+            ReferencedFrameNumber: ImageSequenceElements.x00081160,
+          },
+          ContourNumber: elements.x30060048,
+          NumberOfContourPoints: elements.x30060046,
+          ContourData: elements.x30060050,
+        });
+      }
+
+      polygonChunks.push(
+        workerPromise.postMessage(
+          {
+            ROINumber,
+            byteArray,
+            polygonItems: subArray,
+            sopInstancesInSeries: this._sopInstancesInSeries,
+            sopInstanceUid: this._sopInstanceUid,
+            workerId: workerId++,
+          },
+          [],
+          (eventName, data) => onWorkerUpdate(data)
+        )
+      );
+
+      arrayIndex = arrayEnd;
+    }
+    await Promise.all(polygonChunks);
+    workers.forEach(worker => worker.terminate());
 
     return polygons;
   }

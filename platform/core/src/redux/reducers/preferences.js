@@ -26,7 +26,7 @@ const defaultState = {
     },
     ContourROILazyLoading: {
       id: 'ContourROILazyLoading',
-      name: 'Contour ROI Lazy Loading',
+      name: 'Contour ROI Lazy Loading / Concurrent Polygon Extraction',
       enabled: true,
     },
   },
