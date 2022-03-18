@@ -33,16 +33,24 @@ export default class LazyAIMReader {
 
     this._freehand3DStore = modules.freehand3D;
 
-    this._fireContourExtractedEvent = (uid, percent) =>
-      triggerEvent(document, 'xnatcontourextracted', { uid, percent });
-    this._fireContourRoiExtractedEvent = uid =>
-      triggerEvent(document, 'xnatcontourroiextracted', { uid });
-    this._addPolygonsToToolStateCallback = addPolygonsToToolStateManager;
-
     this._seriesInstanceUidToImport = seriesInstanceUidToImport;
     this._sopInstancesInSeries = this._getSopInstancesInSeries();
     this._roiCollectionName = roiCollectionName;
     this._roiCollectionLabel = roiCollectionLabel;
+
+    this._fireContourExtractedEvent = (roiUid, percent) =>
+      triggerEvent(document, 'xnatcontourextracted', {
+        structUid: this._roiCollectionLabel,
+        roiUid,
+        percent,
+      });
+    this._fireContourRoiExtractedEvent = roiUid =>
+      triggerEvent(document, 'xnatcontourroiextracted', {
+        structUid: this._roiCollectionLabel,
+        roiUid,
+      });
+    this._addPolygonsToToolStateCallback = addPolygonsToToolStateManager;
+
     await this._extractAnnotations();
   }
 

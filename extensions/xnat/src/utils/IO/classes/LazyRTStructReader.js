@@ -44,10 +44,17 @@ export default class LazyRTStructReader {
 
     this._freehand3DStore = modules.freehand3D;
 
-    this._fireContourExtractedEvent = (uid, percent) =>
-      triggerEvent(document, 'xnatcontourextracted', { uid, percent });
-    this._fireContourRoiExtractedEvent = uid =>
-      triggerEvent(document, 'xnatcontourroiextracted', { uid });
+    this._fireContourExtractedEvent = (roiUid, percent) =>
+      triggerEvent(document, 'xnatcontourextracted', {
+        structUid: this._roiCollectionLabel,
+        roiUid,
+        percent,
+      });
+    this._fireContourRoiExtractedEvent = roiUid =>
+      triggerEvent(document, 'xnatcontourroiextracted', {
+        structUid: this._roiCollectionLabel,
+        roiUid,
+      });
     this._addPolygonsToToolStateCallback = addPolygonsToToolStateManager;
 
     if (this._sopInstancesInSeries.length > 0) {

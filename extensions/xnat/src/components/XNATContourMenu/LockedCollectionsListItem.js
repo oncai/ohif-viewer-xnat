@@ -46,6 +46,11 @@ export default class LockedCollectionsListItem extends React.Component {
       return roi.metadata.importStatus === DATA_IMPORT_STATUS.NOT_IMPORTED;
     });
 
+    // this._structureSet = modules.freehand3D.getters.structureSet(
+    //   props.SeriesInstanceUID,
+    //   metadata.uid
+    // );
+
     this.state = {
       expanded: false,
       collectionVisible,
@@ -135,10 +140,16 @@ export default class LockedCollectionsListItem extends React.Component {
   }
 
   onLoadRoiComplete(evt) {
-    const uid = evt.detail.uid;
+    const { structUid, roiUid } = evt.detail;
+    const { collection } = this.props;
     const { contourRoiImportStatus } = this.state;
-    if (Object.keys(contourRoiImportStatus).includes(uid)) {
-      contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTED;
+
+    if (collection.metadata.uid !== structUid) {
+      return;
+    }
+
+    if (Object.keys(contourRoiImportStatus).includes(roiUid)) {
+      contourRoiImportStatus[roiUid] = DATA_IMPORT_STATUS.IMPORTED;
       const someRoisNotLoaded = Object.values(contourRoiImportStatus).some(
         value => value === DATA_IMPORT_STATUS.NOT_IMPORTED
       );
@@ -211,7 +222,7 @@ export default class LockedCollectionsListItem extends React.Component {
         indexComponent = (
           <ProgressColoredCircle
             color={color}
-            uid={uid}
+            uids={{ structUid: metadata.uid, roiUid: uid }}
             percent={importPercent}
           />
         );
@@ -249,7 +260,7 @@ export default class LockedCollectionsListItem extends React.Component {
         <div className="header">
           <h5>{metadata.name}</h5>
           <div className="icons">
-            {someRoisNotLoaded && (
+            {someRoisNotLoaded ? (
               <Icon
                 name="xnat-load-roi"
                 className="icon"
@@ -258,8 +269,7 @@ export default class LockedCollectionsListItem extends React.Component {
                 onClick={this.onLoadAllRoiClick}
                 title="Load All Contour ROIs"
               />
-            )}
-            {!someRoisNotLoaded && (
+            ) : (
               <Icon
                 name="lock"
                 className="icon"

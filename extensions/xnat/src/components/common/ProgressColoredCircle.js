@@ -9,7 +9,7 @@ const strokeDasharray = radius * 2 * Math.PI;
 const computeProgress = value =>
   strokeDasharray - (value / 100) * strokeDasharray;
 
-const ProgressColoredCircle = ({ color, uid, percent }) => {
+const ProgressColoredCircle = ({ color, uids, percent }) => {
   const [percentComplete, setPercentComplete] = useState(
     computeProgress(percent)
   );
@@ -17,7 +17,7 @@ const ProgressColoredCircle = ({ color, uid, percent }) => {
   useEffect(() => {
     const callback = evt => {
       const data = evt.detail;
-      if (data.uid === uid) {
+      if (data.structUid === uids.structUid && data.roiUid === uids.roiUid) {
         setPercentComplete(computeProgress(data.percent));
         evt.stopPropagation();
       }
