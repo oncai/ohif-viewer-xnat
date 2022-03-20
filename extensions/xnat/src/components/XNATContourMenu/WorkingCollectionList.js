@@ -45,8 +45,8 @@ export default class WorkingRoiCollectionList extends React.Component {
       props.SeriesInstanceUID,
       'DEFAULT'
     );
-    if (structureSet && structureSet.metadata) {
-      collectionVisible = structureSet.metadate.visible;
+    if (structureSet) {
+      collectionVisible = structureSet.visible;
     }
 
     this.state = {

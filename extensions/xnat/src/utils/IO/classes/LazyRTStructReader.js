@@ -436,7 +436,8 @@ export default class LazyRTStructReader {
       this._roiCollectionLabel,
       name,
       {
-        uid,
+        // Auto generate UID to prevent duplicate UID conflicts
+        // uid,
         polygonCount: numPolygons,
         importStatus: DATA_IMPORT_STATUS.NOT_IMPORTED,
         loadFunc,

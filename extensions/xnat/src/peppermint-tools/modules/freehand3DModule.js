@@ -202,6 +202,7 @@ function setStructureSet(seriesInstanceUid, name, options = {}) {
       options.activeROIContourIndex !== undefined
         ? options.activeROIContourIndex
         : null,
+    type: options.type,
     ROIContourCollection: [],
   };
 
@@ -268,6 +269,10 @@ function setDeleteROIFromStructureSet(
   const ROIContourIndex = ROIContourCollection.findIndex(ROIContour => {
     return ROIContour.uid === ROIContourUid;
   });
+
+  if (ROIContourIndex === structureSet.activeROIContourIndex) {
+    structureSet.activeROIContourIndex = 0;
+  }
 
   ROIContourCollection.splice(ROIContourIndex, 1);
 }

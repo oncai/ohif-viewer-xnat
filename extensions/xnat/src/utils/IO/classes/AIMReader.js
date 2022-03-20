@@ -319,7 +319,8 @@ export default class AIMReader {
       this._roiCollectionLabel,
       name,
       {
-        uid,
+        // Auto generate UID to prevent duplicate UID conflicts
+        // uid,
       }
     );
 

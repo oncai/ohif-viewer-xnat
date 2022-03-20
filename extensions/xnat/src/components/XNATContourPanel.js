@@ -385,17 +385,17 @@ export default class XNATContourPanel extends React.Component {
 
     unlockStructureSet(SeriesInstanceUID, roiCollectionToUnlock);
 
-    const workingCollection = this.constructor._workingCollection(
-      SeriesInstanceUID
-    );
-    const lockedCollections = this.constructor._lockedCollections(
-      SeriesInstanceUID
-    );
+    const {
+      workingCollection,
+      lockedCollections,
+      activeROIContourIndex,
+    } = this.getRoiContourList(SeriesInstanceUID);
 
     this.setState({
       unlockConfirmationOpen: false,
       workingCollection,
       lockedCollections,
+      activeROIContourIndex,
     });
   }
 
