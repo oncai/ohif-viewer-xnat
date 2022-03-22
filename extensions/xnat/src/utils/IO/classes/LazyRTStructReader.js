@@ -214,10 +214,16 @@ export default class LazyRTStructReader {
 
         roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTING;
 
-        let polygons = [];
-        const extractContoursConcurrently = true;
+        // Get loading concurrency preferences
+        const preferences = window.store.getState().preferences;
+        const ConcurrentPolygonExtraction =
+          preferences.experimentalFeatures.ConcurrentPolygonExtraction;
+        const concurrentLoadingEnabled =
+          !!ConcurrentPolygonExtraction && ConcurrentPolygonExtraction.enabled;
 
-        if (extractContoursConcurrently) {
+        let polygons = [];
+
+        if (concurrentLoadingEnabled) {
           polygons = await this._extractPolygonsConcurrently(
             ROIContourUid,
             ROINumber,
@@ -356,16 +362,16 @@ export default class LazyRTStructReader {
       workers.push(worker);
       const workerPromise = new WebWorkerPromise(worker);
       let arrayEnd = arrayIndex + arrayStride;
-      if (numPolygons - arrayEnd < arrayStride) {
+      if (numPolygons - arrayEnd <= arrayStride) {
         arrayEnd = numPolygons;
       }
-      // const subArray = polygonItems.slice(arrayIndex, arrayEnd);
       const subArray = [];
       for (let i = arrayIndex; i < arrayEnd; i++) {
         const dataSet = polygonItems[i].dataSet;
         const elements = dataSet.elements;
         // ContourImageSequence Item 0
-        const ImageSequenceElements = elements.x30060016.items[0].dataSet.elements;
+        const ImageSequenceElements =
+          elements.x30060016.items[0].dataSet.elements;
         subArray.push({
           ContourGeometricType: elements.x30060042,
           ContourImageSequence: {
