@@ -136,7 +136,7 @@ export default class WorkingCollectionListItem extends React.Component {
         </td>
         <td className="centered-cell">
           <a
-            style={{ cursor: 'pointer', color: 'white' }}
+            style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
             onClick={() => (polygonCount ? onClick(metadata.uid) : null)}
           >
             {polygonCount}

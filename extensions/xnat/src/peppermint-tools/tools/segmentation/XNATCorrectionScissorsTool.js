@@ -1,6 +1,6 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
-import preMouseDownCallback from './preMouseDownCallback';
+import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
 
 /*
  *  Operation using a modification of the Tobias Heimann Correction Algorithm:
@@ -22,6 +22,11 @@ export default class XNATCircleScissorsTool extends CorrectionScissorsTool {
   preMouseDownCallback(evt) {
     const { detail } = evt;
 
-    preMouseDownCallback(detail.element);
+    triggerSegmentGenerationEvent(detail.element);
+  }
+
+  preTouchStartCallback(evt) {
+    const { detail } = evt;
+    triggerSegmentGenerationEvent(detail.element);
   }
 }

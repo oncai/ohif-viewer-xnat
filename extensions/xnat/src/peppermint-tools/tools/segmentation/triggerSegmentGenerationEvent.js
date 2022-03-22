@@ -4,7 +4,7 @@ import csTools from 'cornerstone-tools';
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const segmentationModule = csTools.getModule('segmentation');
 
-export default function preMouseDownCallback(element) {
+export default function triggerSegmentGenerationEvent(element) {
   const {
     labelmap3D,
     currentImageIdIndex,

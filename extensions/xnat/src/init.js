@@ -51,8 +51,8 @@ const getDefaultConfiguration = () => {
         range: [-29, 150],
       },
       {
-        name: "bone",
-        range: [150, 2000]
+        name: 'bone',
+        range: [150, 2000],
       },
       {
         name: 'custom',
@@ -71,7 +71,11 @@ const getDefaultConfiguration = () => {
  * @param {object} configuration
  * @param {Object|Array} configuration.csToolsConfig
  */
-export default function init({ servicesManager, commandsManager, configuration = {} }) {
+export default function init({
+  servicesManager,
+  commandsManager,
+  configuration = {},
+}) {
   // Initiate cornerstoneNIFTIImageLoader
   initNIFTILoader();
 
@@ -92,9 +96,8 @@ export default function init({ servicesManager, commandsManager, configuration =
   // register the AIAA module
   register('module', 'aiaa', AIAAModule);
 
-  // add other segmentation tools directly from cornerstoneTools
-  const { BrushTool } = cornerstoneTools;
-  cornerstoneTools.addTool(BrushTool, {
+  // Add Brush Eraser tool
+  cornerstoneTools.addTool(Brush3DTool, {
     name: 'BrushEraser',
     configuration: {
       alwaysEraseOnClick: true,
@@ -120,9 +123,13 @@ export default function init({ servicesManager, commandsManager, configuration =
   tools.forEach(addTool);
 
   // subscribe to context menu handler
-  commandsManager.runCommand('subscribeToContextMenuHandler', {
-    tools: [PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
-    contextMenuCallback: handleContourContextMenu,
-    dialogIds: ['context-menu',],
-  }, 'ACTIVE_VIEWPORT::CORNERSTONE');
+  commandsManager.runCommand(
+    'subscribeToContextMenuHandler',
+    {
+      tools: [PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL],
+      contextMenuCallback: handleContourContextMenu,
+      dialogIds: ['context-menu'],
+    },
+    'ACTIVE_VIEWPORT::CORNERSTONE'
+  );
 }

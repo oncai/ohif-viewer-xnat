@@ -128,7 +128,13 @@ const commandsModule = ({ servicesManager }) => {
       }
 
       // --> Skip Measurements Service
-      delete toolState[enabledElement.image.imageId];
+      const imageToolState = toolState[enabledElement.image.imageId];
+      Object.keys(imageToolState).forEach(key => {
+        // Do not delete contours
+        if (key !== 'FreehandRoi3DTool') {
+          delete imageToolState[key];
+        }
+      });
       refreshCornerstoneViewports();
       // <-- Skip Measurements Service
       /*

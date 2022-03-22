@@ -1,6 +1,6 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
-import preMouseDownCallback from './preMouseDownCallback';
+import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
 
 const { RectangleScissorsTool } = csTools;
 
@@ -17,7 +17,7 @@ export default class XNATCircleScissorsTool extends RectangleScissorsTool {
   preMouseDownCallback(evt) {
     const { detail } = evt;
 
-    preMouseDownCallback(detail.element);
+    triggerSegmentGenerationEvent(detail.element);
 
     const { event } = detail;
     if (event.ctrlKey) {
@@ -25,5 +25,10 @@ export default class XNATCircleScissorsTool extends RectangleScissorsTool {
     } else {
       this.activeStrategy = 'FILL_INSIDE';
     }
+  }
+
+  preTouchStartCallback(evt) {
+    const { detail } = evt;
+    triggerSegmentGenerationEvent(detail.element);
   }
 }

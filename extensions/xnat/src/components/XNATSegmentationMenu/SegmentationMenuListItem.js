@@ -139,7 +139,7 @@ export default class SegmentationMenuListItem extends React.Component {
             </span>
           </a>
         </td>
-        <td className="centered-cell">
+        <td className="centered-cell doNotBreak">
           <a
             style={{ cursor: 'pointer', color: 'white' }}
             onClick={() =>
@@ -151,7 +151,7 @@ export default class SegmentationMenuListItem extends React.Component {
         </td>
         <td className="centered-cell">
           <button className="small" onClick={() => onDeleteClick(segmentIndex)}>
-            <Icon name="trash" style={{ width: 13 }} />
+            <Icon name="trash" />
           </button>
         </td>
         <td className="centered-cell">

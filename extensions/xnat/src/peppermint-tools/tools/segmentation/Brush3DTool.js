@@ -20,6 +20,16 @@ export default class Brush3DTool extends BrushTool {
     super(initialProps);
   }
 
+  preTouchStartCallback(evt) {
+    this._startPainting(evt);
+
+    return true;
+  }
+
+  touchEndCallback(evt) {
+    this._endPainting(evt);
+  }
+
   /**
    * Initialise painting with baseBrushTool
    *

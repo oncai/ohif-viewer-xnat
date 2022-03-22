@@ -13,6 +13,13 @@ export default class Brush3DAutoGatedTool extends Brush3DHUGatedTool {
     super(initialProps);
   }
 
+  preTouchStartCallback(evt) {
+    this._setCustomGate(evt);
+    this._startPainting(evt);
+
+    return true;
+  }
+
   /**
    * Event handler for MOUSE_DOWN event.
    *

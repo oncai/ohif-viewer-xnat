@@ -17,6 +17,13 @@ export default class Brush3DHUGatedTool extends Brush3DTool {
     super(initialProps);
   }
 
+  preTouchStartCallback(evt) {
+    this.activeGateRange = segmentationModule.getters.activeGateRange();
+    this._startPainting(evt);
+
+    return true;
+  }
+
   /**
    * Event handler for MOUSE_DOWN event.
    *

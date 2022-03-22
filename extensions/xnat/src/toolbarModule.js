@@ -1,5 +1,5 @@
 import { PEPPERMINT_TOOL_NAMES } from './peppermint-tools';
-import { AIAA_TOOL_NAMES } from  './aiaa-tools';
+import { AIAA_TOOL_NAMES } from './aiaa-tools';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -19,7 +19,9 @@ const definitions = [
         icon: 'xnat-contour-freehand',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL,
+        },
       },
       {
         id: 'FreehandRoiSculptor',
@@ -27,7 +29,17 @@ const definitions = [
         icon: 'xnat-contour-freehand-sculpt',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL,
+        },
+      },
+      {
+        id: 'Clear',
+        label: 'Clear',
+        icon: 'trash',
+        //
+        type: TOOLBAR_BUTTON_TYPES.COMMAND,
+        commandName: 'clearAnnotations',
       },
     ],
   },
@@ -50,7 +62,9 @@ const definitions = [
         icon: 'xnat-mask-smart-ct',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_HU_GATED_TOOL,
+        },
       },
       {
         id: 'Brush3DAutoGatedTool',
@@ -58,7 +72,9 @@ const definitions = [
         icon: 'xnat-mask-auto',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL,
+        },
       },
       {
         id: 'NVIDIAClaraAIAA',
@@ -75,7 +91,9 @@ const definitions = [
         icon: 'circle',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_CIRCLE_SCISSORS_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.XNAT_CIRCLE_SCISSORS_TOOL,
+        },
       },
       {
         id: 'RectangleScissors',
@@ -83,7 +101,9 @@ const definitions = [
         icon: 'stop',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_RECTANGLE_SCISSORS_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.XNAT_RECTANGLE_SCISSORS_TOOL,
+        },
       },
       {
         id: 'FreehandScissors',
@@ -91,7 +111,9 @@ const definitions = [
         icon: 'inline-edit',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_FREEHAND_SCISSORS_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.XNAT_FREEHAND_SCISSORS_TOOL,
+        },
       },
       {
         id: 'SphericalBrush',
@@ -99,7 +121,9 @@ const definitions = [
         icon: 'sphere',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_SPHERICAL_BRUSH_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.XNAT_SPHERICAL_BRUSH_TOOL,
+        },
       },
       {
         id: 'CorrectionScissors',
@@ -107,7 +131,9 @@ const definitions = [
         icon: 'scissors',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: PEPPERMINT_TOOL_NAMES.XNAT_CORRECTION_SCISSORS_TOOL },
+        commandOptions: {
+          toolName: PEPPERMINT_TOOL_NAMES.XNAT_CORRECTION_SCISSORS_TOOL,
+        },
       },
       {
         id: 'BrushEraser',
