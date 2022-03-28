@@ -78,20 +78,20 @@ export default class XNATContourPanel extends React.Component {
     );
 
     let workingCollection = [];
-    let lockedCollections = [];
+    let lockedCollectionIds = [];
     let activeROIContourIndex = 1;
 
     if (SeriesInstanceUID) {
       const roiContourList = this.getRoiContourList(SeriesInstanceUID);
 
       workingCollection = roiContourList.workingCollection;
-      lockedCollections = roiContourList.lockedCollections;
+      lockedCollectionIds = roiContourList.lockedCollectionIds;
       activeROIContourIndex = roiContourList.activeROIContourIndex;
     }
 
     this.state = {
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       unlockConfirmationOpen: false,
       roiCollectionToUnlock: '',
       activeROIContourIndex,
@@ -176,7 +176,7 @@ export default class XNATContourPanel extends React.Component {
   };
 
   /**
-   * getRoiContourList - returns the workingCollection, lockedCollections
+   * getRoiContourList - returns the workingCollection, lockedCollectionIds
    * and th activeROIContourIndex.
    *
    * @returns {null}
@@ -185,7 +185,7 @@ export default class XNATContourPanel extends React.Component {
     SeriesInstanceUID = SeriesInstanceUID || this.state.SeriesInstanceUID;
 
     let workingCollection = [];
-    let lockedCollections = [];
+    let lockedCollectionIds = [];
     let activeROIContourIndex = 0;
 
     if (SeriesInstanceUID) {
@@ -200,14 +200,14 @@ export default class XNATContourPanel extends React.Component {
       workingCollection = this.constructor._workingCollection(
         SeriesInstanceUID
       );
-      lockedCollections = this.constructor._lockedCollections(
+      lockedCollectionIds = this.constructor._lockedCollections(
         SeriesInstanceUID
       );
     }
 
     return {
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
     };
   }
@@ -221,13 +221,13 @@ export default class XNATContourPanel extends React.Component {
   refreshRoiContourList(SeriesInstanceUID) {
     const {
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
     } = this.getRoiContourList(SeriesInstanceUID);
 
     this.setState({
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
       SeriesInstanceUID,
     });
@@ -253,13 +253,13 @@ export default class XNATContourPanel extends React.Component {
     const workingCollection = this.constructor._workingCollection(
       SeriesInstanceUID
     );
-    const lockedCollections = this.constructor._lockedCollections(
+    const lockedCollectionIds = this.constructor._lockedCollections(
       SeriesInstanceUID
     );
 
     this.setState({
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
       importing: false,
       exporting: false,
@@ -387,14 +387,14 @@ export default class XNATContourPanel extends React.Component {
 
     const {
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
     } = this.getRoiContourList(SeriesInstanceUID);
 
     this.setState({
       unlockConfirmationOpen: false,
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       activeROIContourIndex,
     });
   }
@@ -461,7 +461,7 @@ export default class XNATContourPanel extends React.Component {
     }
 
     const structureSetCollection = series.structureSetCollection;
-    const lockedCollections = [];
+    const lockedCollectionIds = [];
 
     for (let i = 0; i < structureSetCollection.length; i++) {
       const structureSet = structureSetCollection[i];
@@ -482,13 +482,10 @@ export default class XNATContourPanel extends React.Component {
         }
       }
 
-      lockedCollections.push({
-        metadata: structureSet,
-        ROIContourArray,
-      });
+      lockedCollectionIds.push(structureSet.uid);
     }
 
-    return lockedCollections;
+    return lockedCollectionIds;
   }
 
   onRoiCollectionNameChange(evt) {
@@ -519,7 +516,7 @@ export default class XNATContourPanel extends React.Component {
   render() {
     const {
       workingCollection,
-      lockedCollections,
+      lockedCollectionIds,
       unlockConfirmationOpen,
       roiCollectionToUnlock,
       activeROIContourIndex,
@@ -633,13 +630,13 @@ export default class XNATContourPanel extends React.Component {
               />
             )}
             {/* LOCKED COLLECTIONS */}
-            {lockedCollections.length !== 0 && (
+            {lockedCollectionIds.length !== 0 && (
               <>
                 <div className="lockedCollectionHeader">
                   <h4> Imported Contour Collections </h4>
                 </div>
                 <LockedCollectionsList
-                  lockedCollections={lockedCollections}
+                  lockedCollectionIds={lockedCollectionIds}
                   onUnlockClick={this.confirmUnlockOnUnlockClick}
                   SeriesInstanceUID={SeriesInstanceUID}
                   onContourClick={this.onContourClick}

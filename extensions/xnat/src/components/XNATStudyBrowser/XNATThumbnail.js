@@ -130,10 +130,10 @@ function ThumbnailFooter({
             onClick={evt => {
               evt.stopPropagation();
               const importedContourLabels = getVolumeImportedContourCollectionLabels();
-              const rtsRois = RTS.filter(
+              const rtsCollections = RTS.filter(
                 roi => !importedContourLabels.includes(roi.label)
               );
-              if (rtsRois.length < 1) {
+              if (rtsCollections.length < 1) {
                 showNotification(
                   'Available contour ROI collections have been already imported.',
                   'info',
@@ -144,7 +144,7 @@ function ThumbnailFooter({
               showModal(
                 RoiImportModal,
                 {
-                  rois: [...rtsRois],
+                  collections: [...rtsCollections],
                   type: 'contour',
                   seriesInfo: {
                     SeriesNumber,
@@ -173,7 +173,7 @@ function ThumbnailFooter({
               showModal(
                 RoiImportModal,
                 {
-                  rois: [...SEG],
+                  collections: [...SEG],
                   type: 'mask',
                   seriesInfo: {
                     SeriesNumber,

@@ -122,7 +122,7 @@ export default class WorkingRoiCollectionList extends React.Component {
                 <Icon name="xnat-tree-plus" /> Contour ROI
               </button>
               <Icon
-                name={collectionVisible ? "eye" : "eye-closed"}
+                name={collectionVisible ? 'eye' : 'eye-closed'}
                 className="icon"
                 width="20px"
                 height="20px"

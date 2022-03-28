@@ -10,14 +10,14 @@ import '../XNATRoiPanel.styl';
  */
 export default class LockedCollectionsList extends React.Component {
   static propTypes = {
-    lockedCollections: PropTypes.any,
-    onUnlockClick: PropTypes.any,
-    SeriesInstanceUID: PropTypes.any,
+    lockedCollectionIds: PropTypes.array,
+    onUnlockClick: PropTypes.func,
+    SeriesInstanceUID: PropTypes.string,
     onContourClick: PropTypes.func,
   };
 
   static defaultProps = {
-    lockedCollections: undefined,
+    lockedCollectionIds: undefined,
     onUnlockClick: undefined,
     SeriesInstanceUID: undefined,
     onContourClick: undefined,
@@ -29,18 +29,18 @@ export default class LockedCollectionsList extends React.Component {
 
   render() {
     const {
-      lockedCollections,
+      lockedCollectionIds,
       onUnlockClick,
       SeriesInstanceUID,
-      onContourClick
+      onContourClick,
     } = this.props;
 
     return (
       <React.Fragment>
-        {lockedCollections.map(collection => (
+        {lockedCollectionIds.map(collectionId => (
           <LockedCollectionsListItem
-            key={collection.metadata.uid}
-            collection={collection}
+            key={collectionId}
+            collectionId={collectionId}
             onUnlockClick={onUnlockClick}
             SeriesInstanceUID={SeriesInstanceUID}
             onClick={onContourClick}

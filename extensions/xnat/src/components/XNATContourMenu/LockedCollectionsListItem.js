@@ -6,6 +6,8 @@ import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import ProgressColoredCircle from '../common/ProgressColoredCircle';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
+import { SortIcon } from '../../elements';
+import getSortIndices from '../../utils/getSortIndices';
 
 import '../XNATRoiPanel.styl';
 
@@ -17,54 +19,67 @@ const modules = cornerstoneTools.store.modules;
  */
 export default class LockedCollectionsListItem extends React.Component {
   static propTypes = {
-    collection: PropTypes.any,
-    onUnlockClick: PropTypes.any,
-    SeriesInstanceUID: PropTypes.any,
-    onClick: PropTypes.func,
+    collectionId: PropTypes.string.isRequired,
+    onUnlockClick: PropTypes.func.isRequired,
+    SeriesInstanceUID: PropTypes.string.isRequired,
+    onClick: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
-    collection: undefined,
-    onUnlockClick: undefined,
-    SeriesInstanceUID: undefined,
-    onClick: undefined,
   };
 
   constructor(props = {}) {
     super(props);
 
-    const { metadata, ROIContourArray } = props.collection;
-    const collectionVisible = metadata.visible;
-    const contourRoiVisible = [];
+    const { collectionId, SeriesInstanceUID } = props;
+
+    this._structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      collectionId
+    );
+
+    const {
+      visible: collectionVisible,
+      expanded,
+      ROIContourCollection,
+    } = this._structureSet;
+    this._ROIContourArray = ROIContourCollection;
+
+    const contourRoiVisible = {};
     const contourRoiImportStatus = {};
-    ROIContourArray.forEach(roi => {
-      contourRoiVisible.push(roi.metadata.visible);
-      contourRoiImportStatus[roi.metadata.uid] = roi.metadata.importStatus;
+    ROIContourCollection.forEach(roi => {
+      contourRoiVisible[roi.uid] = roi.visible;
+      contourRoiImportStatus[roi.uid] = roi.importStatus;
     });
 
-    const someRoisNotLoaded = ROIContourArray.some(roi => {
-      return roi.metadata.importStatus === DATA_IMPORT_STATUS.NOT_IMPORTED;
+    const someRoisNotLoaded = ROIContourCollection.some(roi => {
+      return roi.importStatus === DATA_IMPORT_STATUS.NOT_IMPORTED;
     });
 
-    // this._structureSet = modules.freehand3D.getters.structureSet(
-    //   props.SeriesInstanceUID,
-    //   metadata.uid
-    // );
+    const roiSortingOrder = { ...this._structureSet.roiSortingOrder };
+    const sortIndices = getSortIndices(
+      this._ROIContourArray,
+      'name',
+      roiSortingOrder
+    );
 
     this.state = {
-      expanded: false,
+      expanded,
       collectionVisible,
       contourRoiVisible,
       contourRoiImportStatus,
       someRoisNotLoaded,
+      roiSortingOrder,
+      sortIndices,
     };
 
-    this.onToggleVisibilityClick = this.onToggleVisibilityClick.bind(this);
+    this.onToggleExpandClick = this.onToggleExpandClick.bind(this);
     this.onCollectionShowHideClick = this.onCollectionShowHideClick.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
     this.onLoadRoiClick = this.onLoadRoiClick.bind(this);
     this.onLoadRoiComplete = this.onLoadRoiComplete.bind(this);
     this.onLoadAllRoiClick = this.onLoadAllRoiClick.bind(this);
+    this.onSortClick = this.onSortClick.bind(this);
 
     document.addEventListener(
       'xnatcontourroiextracted',
@@ -80,14 +95,15 @@ export default class LockedCollectionsListItem extends React.Component {
   }
 
   /**
-   * onToggleVisibilityClick - Callback that toggles the expands/collapses the
+   * onToggleExpandClick - Callback that toggles the expands/collapses the
    * list of collection metadata.
    *
    * @returns {null}
    */
-  onToggleVisibilityClick() {
+  onToggleExpandClick() {
     const { expanded } = this.state;
 
+    this._structureSet.expanded = !expanded;
     this.setState({ expanded: !expanded });
   }
 
@@ -97,14 +113,9 @@ export default class LockedCollectionsListItem extends React.Component {
    * @returns {null}
    */
   onCollectionShowHideClick() {
-    const { collection, SeriesInstanceUID } = this.props;
     const { collectionVisible } = this.state;
-    const structureSet = modules.freehand3D.getters.structureSet(
-      SeriesInstanceUID,
-      collection.metadata.uid
-    );
 
-    structureSet.visible = !collectionVisible;
+    this._structureSet.visible = !collectionVisible;
     this.setState({ collectionVisible: !collectionVisible });
 
     cornerstone.getEnabledElements().forEach(enabledElement => {
@@ -117,19 +128,21 @@ export default class LockedCollectionsListItem extends React.Component {
    *
    * @returns {null}
    */
-  onShowHideClick(index) {
-    const { metadata, ROIContourArray } = this.props.collection;
+  onShowHideClick(roiId) {
     const { contourRoiVisible } = this.state;
 
-    const contourRoi = ROIContourArray[index];
-    const visible = contourRoiVisible[index];
+    const contourRoi = this._ROIContourArray.find(roi => roi.uid === roiId);
 
-    contourRoi.metadata.visible = contourRoiVisible[index] = !visible;
-    this.setState({ contourRoiVisible: contourRoiVisible });
+    if (contourRoi) {
+      const visible = contourRoiVisible[roiId];
 
-    cornerstone.getEnabledElements().forEach(enabledElement => {
-      cornerstone.updateImage(enabledElement.element);
-    });
+      contourRoi.visible = contourRoiVisible[roiId] = !visible;
+      this.setState({ contourRoiVisible: contourRoiVisible });
+
+      cornerstone.getEnabledElements().forEach(enabledElement => {
+        cornerstone.updateImage(enabledElement.element);
+      });
+    }
   }
 
   onLoadRoiClick(uid, loadFunc) {
@@ -141,10 +154,9 @@ export default class LockedCollectionsListItem extends React.Component {
 
   onLoadRoiComplete(evt) {
     const { structUid, roiUid } = evt.detail;
-    const { collection } = this.props;
     const { contourRoiImportStatus } = this.state;
 
-    if (collection.metadata.uid !== structUid) {
+    if (this._structureSet.uid !== structUid) {
       return;
     }
 
@@ -158,13 +170,11 @@ export default class LockedCollectionsListItem extends React.Component {
   }
 
   onLoadAllRoiClick() {
-    const { collection } = this.props;
     const { contourRoiImportStatus } = this.state;
-    const ROIContourArray = collection.ROIContourArray;
 
     let updateState = false;
-    ROIContourArray.forEach(roi => {
-      const { uid, loadFunc } = roi.metadata;
+    this._ROIContourArray.forEach(roi => {
+      const { uid, loadFunc } = roi;
       if (contourRoiImportStatus[uid] === DATA_IMPORT_STATUS.NOT_IMPORTED) {
         contourRoiImportStatus[uid] = DATA_IMPORT_STATUS.IMPORTING;
         loadFunc(uid);
@@ -177,22 +187,42 @@ export default class LockedCollectionsListItem extends React.Component {
     }
   }
 
+  onSortClick(columnId, newOrder) {
+    const { roiSortingOrder } = this.state;
+    const newSortingOrder = { ...roiSortingOrder, [columnId]: newOrder };
+
+    const sortIndices = getSortIndices(
+      this._ROIContourArray,
+      'name',
+      newSortingOrder
+    );
+
+    this._structureSet.roiSortingOrder = { ...newSortingOrder };
+
+    this.setState({
+      roiSortingOrder: newSortingOrder,
+      sortIndices,
+    });
+  }
+
   render() {
-    const { collection, onUnlockClick, onClick } = this.props;
+    const { onUnlockClick, onClick } = this.props;
     const {
       expanded,
       collectionVisible,
       contourRoiVisible,
       contourRoiImportStatus,
       someRoisNotLoaded,
+      roiSortingOrder,
+      sortIndices,
     } = this.state;
 
-    const metadata = collection.metadata;
-    const ROIContourArray = collection.ROIContourArray;
+    const { uid: collectionUid, name: collectionName } = this._structureSet;
 
     const expandStyle = expanded ? {} : { transform: 'rotate(90deg)' };
 
-    const listBody = ROIContourArray.map((contourRoi, index) => {
+    const listBody = sortIndices.map(index => {
+      const contourRoi = this._ROIContourArray[index];
       const {
         uid,
         color,
@@ -200,7 +230,7 @@ export default class LockedCollectionsListItem extends React.Component {
         polygonCount,
         importPercent,
         loadFunc,
-      } = contourRoi.metadata;
+      } = contourRoi;
       const importStatus = contourRoiImportStatus[uid];
       const isLoaded = importStatus === DATA_IMPORT_STATUS.IMPORTED;
 
@@ -222,7 +252,7 @@ export default class LockedCollectionsListItem extends React.Component {
         indexComponent = (
           <ProgressColoredCircle
             color={color}
-            uids={{ structUid: metadata.uid, roiUid: uid }}
+            uids={{ structUid: collectionUid, roiUid: uid }}
             percent={importPercent}
           />
         );
@@ -244,11 +274,11 @@ export default class LockedCollectionsListItem extends React.Component {
           <td>
             <button
               className="small"
-              onClick={() => (isLoaded ? this.onShowHideClick(index) : null)}
+              onClick={() => (isLoaded ? this.onShowHideClick(uid) : null)}
               disabled={!isLoaded}
               title={!isLoaded ? 'ROI not loaded' : ''}
             >
-              <Icon name={contourRoiVisible[index] ? 'eye' : 'eye-closed'} />
+              <Icon name={contourRoiVisible[uid] ? 'eye' : 'eye-closed'} />
             </button>
           </td>
         </tr>
@@ -258,7 +288,7 @@ export default class LockedCollectionsListItem extends React.Component {
     return (
       <div className="collectionSection">
         <div className="header">
-          <h5>{metadata.name}</h5>
+          <h5>{collectionName}</h5>
           <div className="icons">
             {someRoisNotLoaded ? (
               <Icon
@@ -276,7 +306,7 @@ export default class LockedCollectionsListItem extends React.Component {
                 width="20px"
                 height="20px"
                 onClick={() => {
-                  onUnlockClick(metadata.uid);
+                  onUnlockClick(collectionUid);
                 }}
                 title="Unlock ROI Collection"
               />
@@ -294,9 +324,7 @@ export default class LockedCollectionsListItem extends React.Component {
               style={expandStyle}
               width="20px"
               height="20px"
-              onClick={() => {
-                this.setState({ expanded: !expanded });
-              }}
+              onClick={this.onToggleExpandClick}
             />
           </div>
         </div>
@@ -310,7 +338,13 @@ export default class LockedCollectionsListItem extends React.Component {
                     #
                   </th>
                   <th width="75%" className="left-aligned-cell">
-                    ROI Name
+                    ROI Name{' '}
+                    <SortIcon
+                      size={15}
+                      order={roiSortingOrder.name}
+                      columnId="name"
+                      onClick={this.onSortClick}
+                    />
                   </th>
                   <th width="10%" className="centered-cell">
                     N

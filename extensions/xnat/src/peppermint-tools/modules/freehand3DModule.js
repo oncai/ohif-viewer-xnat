@@ -4,6 +4,7 @@ import generateUID from '../utils/generateUID.js';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 import TOOL_NAMES from '../toolNames';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
+import SORT_ORDER from '../../constants/sortOrder';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -202,8 +203,10 @@ function setStructureSet(seriesInstanceUid, name, options = {}) {
       options.activeROIContourIndex !== undefined
         ? options.activeROIContourIndex
         : null,
-    type: options.type,
     ROIContourCollection: [],
+    type: options.type,
+    expanded: false,
+    roiSortingOrder: { name: SORT_ORDER.NONE },
   };
 
   series.structureSetCollection.push(structureSet);
@@ -233,8 +236,11 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     visible: true,
     importStatus,
     importPercent: importStatus === DATA_IMPORT_STATUS.IMPORTED ? 100 : 0,
-    loadFunc: options.loadFunc,
   };
+
+  if (options.loadFunc) {
+    ROIContour.loadFunc = options.loadFunc;
+  }
 
   structureSet.ROIContourCollection.push(ROIContour);
 

@@ -31,6 +31,8 @@ import Loader from './Loader/Loader';
 
 import { sliderUtils, ReactSlider } from './rangeSliders';
 
+import SortIcon from './SortIcon/SortIcon';
+
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
@@ -61,4 +63,4 @@ const XNATICONS = {
   'xnat-load-roi': xnatLoadRoi,
 };
 
-export { XNATICONS, Loader, sliderUtils, ReactSlider };
+export { XNATICONS, Loader, sliderUtils, ReactSlider, SortIcon };
