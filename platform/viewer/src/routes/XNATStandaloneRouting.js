@@ -43,6 +43,11 @@ class XNATStandaloneRouting extends Component {
         projectId: projectId,
       });
 
+      // Query ROI Color settings
+      commandsManager.runCommand('xnatCheckAndSetRoiColorList', {
+        projectId: projectId,
+      });
+
       // Query user information
       getUserInformation(rootUrl);
 

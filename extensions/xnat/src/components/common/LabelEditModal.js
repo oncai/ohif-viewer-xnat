@@ -2,28 +2,22 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 function LabelEditModal(props) {
-  const {
-    labelTag,
-    currentLabel,
-    itemId,
-    onUpdateProperty,
-    onClose,
-  } = props;
+  const { labelTag, currentLabel, itemId, onUpdateProperty, onClose } = props;
 
   const [state, setState] = useState({
     newLabel: currentLabel,
     validLabel: true,
   });
 
-  const onChangeLabel = (evt) => {
+  const onChangeLabel = evt => {
     const label = evt.target.value;
 
     setState({
       ...state,
       newLabel: label,
-      validLabel: label.length > 0 && label.length <= 64
+      validLabel: label.length > 0 && label.length <= 64,
     });
-  }
+  };
 
   const labelEntry = (
     <div style={{ marginBottom: 10 }}>
@@ -35,11 +29,12 @@ function LabelEditModal(props) {
         type="text"
         autoComplete="off"
         defaultValue={state.newLabel}
-        placeholder="Enter Segmentation Label.."
-        tabIndex="1"
+        placeholder="Enter Label.."
+        tabIndex="0"
         style={{
-          borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)'
+          borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)',
         }}
+        autoFocus
       />
     </div>
   );

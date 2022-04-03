@@ -5,6 +5,7 @@ import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanc
 import TOOL_NAMES from '../toolNames';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 import SORT_ORDER from '../../constants/sortOrder';
+import sessionMap from '../../utils/sessionMap';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -247,6 +248,38 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
   return ROIContour.uid;
 }
 
+function setROIContourColor(
+  seriesInstanceUid,
+  structureSetUid,
+  ROIContourUid,
+  options = {}
+) {
+  let colorUpdated = false;
+  const ROIContour = getROIContour(
+    seriesInstanceUid,
+    structureSetUid,
+    ROIContourUid
+  );
+
+  if (!ROIContour) {
+    return colorUpdated;
+  }
+
+  if (options.useProjectColors) {
+    const roiColorList = sessionMap.getRoiColorList();
+    const item = roiColorList.find(c => c.label === ROIContour.name.toLowerCase());
+    if (item) {
+      ROIContour.color = item.color;
+      colorUpdated = true;
+    }
+  } else if (options.newColor) {
+    ROIContour.color = options.newColor;
+    colorUpdated = true;
+  }
+
+  return colorUpdated;
+}
+
 function setROIContourAndSetIndexActive(
   seriesInstanceUid,
   structureSetUid,
@@ -411,6 +444,7 @@ const setters = {
   series: setSeries,
   structureSet: setStructureSet,
   ROIContour: setROIContour,
+  ROIContourColor: setROIContourColor,
   ROIContourAndSetIndexActive: setROIContourAndSetIndexActive,
   deleteROIFromStructureSet: setDeleteROIFromStructureSet,
   deleteStructureSet: setDeleteStructureSet,

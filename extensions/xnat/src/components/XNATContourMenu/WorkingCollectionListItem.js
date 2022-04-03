@@ -7,6 +7,7 @@ import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import showModal from '../common/showModal.js';
 import LabelEditModal from '../common/LabelEditModal.js';
+import refreshViewports from '../../utils/refreshViewports';
 
 const modules = store.modules;
 
@@ -62,6 +63,17 @@ export default class WorkingCollectionListItem extends React.Component {
       'DEFAULT',
       itemId
     );
+
+    const colorUpdated = freehand3DModule.setters.ROIContourColor(
+      SeriesInstanceUID,
+      'DEFAULT',
+      itemId,
+      { useProjectColors: true }
+    );
+
+    if (colorUpdated) {
+      refreshViewports();
+    }
 
     this.setState({ name: newLabel });
   }
