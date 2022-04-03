@@ -22,10 +22,10 @@ import generateUID from '../utils/generateUID.js';
 import interpolate from '../utils/freehandInterpolate/interpolate';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 import STRATEGY_NAMES from '../strategyNames';
+import insertOrDelete from '../utils/insertOrDelete';
 
 // Cornerstone 3rd party dev kit imports
 const {
-  insertOrDelete,
   freehandArea,
   calculateFreehandStatistics,
 } = importInternal('util/freehandUtils');
@@ -232,6 +232,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     const isNonDefaultStrategy =
       this.activeStrategy === STRATEGY_NAMES.CONTOUR_ADD_REMOVE_HANDLE ||
       this.activeStrategy === STRATEGY_NAMES.REMOVE_CONTOUR;
+    const isCtrlKey = eventData.event.ctrlKey;
 
     if (!toolData) {
       if (isNonDefaultStrategy) {
@@ -244,10 +245,11 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     const nearby = this._pointNearHandleAllTools(eventData);
     const freehand3DStore = this._freehand3DStore;
 
-    if (eventData.event.ctrlKey || isNonDefaultStrategy) {
+    if (isCtrlKey || isNonDefaultStrategy) {
       if (nearby !== undefined && nearby.handleNearby.hasBoundingBox) {
         // Ctrl + clicked textBox, do nothing but still consume event.
       } else if (
+        isCtrlKey ||
         this.activeStrategy === STRATEGY_NAMES.CONTOUR_ADD_REMOVE_HANDLE
       ) {
         insertOrDelete.call(this, evt, nearby);
@@ -262,7 +264,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
           toolData.data[toolIndex]
         ) {
           const data = toolData.data[toolIndex];
-          const strctureSet = this._freehand3DStore.getters.structureSet(
+          const strctureSet = freehand3DStore.getters.structureSet(
             data.seriesInstanceUid,
             data.structureSetUid
           );

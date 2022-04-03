@@ -267,7 +267,9 @@ function setROIContourColor(
 
   if (options.useProjectColors) {
     const roiColorList = sessionMap.getRoiColorList();
-    const item = roiColorList.find(c => c.label === ROIContour.name.toLowerCase());
+    const item = roiColorList.find(
+      c => c.label === ROIContour.name.toLowerCase()
+    );
     if (item) {
       ROIContour.color = item.color;
       colorUpdated = true;
