@@ -255,6 +255,9 @@ class XNATStandaloneRouting extends Component {
   }
 
   async componentDidMount() {
+    document.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
     try {
       let { search } = this.props.location;
 
