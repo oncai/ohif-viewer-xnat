@@ -32,7 +32,7 @@ const defaultState = {
     ConcurrentPolygonExtraction: {
       id: 'ConcurrentPolygonExtraction',
       name: 'RTStruct Concurrent Polygon Extraction',
-      enabled: false,
+      enabled: true,
     },
   },
 };

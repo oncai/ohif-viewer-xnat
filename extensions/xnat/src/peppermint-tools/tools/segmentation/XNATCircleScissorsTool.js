@@ -16,19 +16,17 @@ export default class XNATCircleScissorsTool extends CircleScissorsTool {
 
   preMouseDownCallback(evt) {
     const { detail } = evt;
-
     triggerSegmentGenerationEvent(detail.element);
-
-    const { event } = detail;
-    if (event.ctrlKey) {
-      this.activeStrategy = 'ERASE_INSIDE';
-    } else {
-      this.activeStrategy = 'FILL_INSIDE';
-    }
   }
 
   preTouchStartCallback(evt) {
-    const { detail } = evt;
-    triggerSegmentGenerationEvent(detail.element);
+    this.preMouseDownCallback(evt);
+  }
+
+  applyActiveStrategy(evt, operationData) {
+    if (evt.detail.event.ctrlKey) {
+      return this.strategies['ERASE_INSIDE'].call(this, evt, operationData);
+    }
+    return this.strategies[this.activeStrategy].call(this, evt, operationData);
   }
 }

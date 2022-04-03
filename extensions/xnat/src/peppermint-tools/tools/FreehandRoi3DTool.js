@@ -10,6 +10,7 @@ import {
   importInternal,
   FreehandRoiTool,
   getToolState,
+  removeToolState,
   store,
   toolStyle,
   toolColors,
@@ -20,6 +21,7 @@ import TOOL_NAMES from '../toolNames';
 import generateUID from '../utils/generateUID.js';
 import interpolate from '../utils/freehandInterpolate/interpolate';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
+import STRATEGY_NAMES from '../strategyNames';
 
 // Cornerstone 3rd party dev kit imports
 const {
@@ -40,11 +42,20 @@ const numbersWithCommas = importInternal('util/numbersWithCommas');
 const pointInsideBoundingBox = importInternal('util/pointInsideBoundingBox');
 const calculateSUV = importInternal('util/calculateSUV');
 
+const noop = () => {};
+
 export default class FreehandRoi3DTool extends FreehandRoiTool {
   constructor(props = {}) {
     const defaultProps = {
       configuration: defaultFreehandConfiguration(),
       name: TOOL_NAMES.FREEHAND_ROI_3D_TOOL,
+      strategies: {
+        DRAW_CONTOUR: noop,
+        CONTOUR_ADD_REMOVE_HANDLE: noop,
+        REMOVE_CONTOUR: noop,
+      },
+      defaultStrategy: STRATEGY_NAMES.DRAW_CONTOUR,
+      // svgCursor: contourDrawCursor,
     };
 
     const initialProps = Object.assign(defaultProps, props);
@@ -218,18 +229,48 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
 
     const toolData = getToolState(evt.currentTarget, this.name);
 
+    const isNonDefaultStrategy =
+      this.activeStrategy === STRATEGY_NAMES.CONTOUR_ADD_REMOVE_HANDLE ||
+      this.activeStrategy === STRATEGY_NAMES.REMOVE_CONTOUR;
+
     if (!toolData) {
+      if (isNonDefaultStrategy) {
+        preventPropagation(evt);
+        return true;
+      }
       return false;
     }
 
     const nearby = this._pointNearHandleAllTools(eventData);
     const freehand3DStore = this._freehand3DStore;
 
-    if (eventData.event.ctrlKey) {
+    if (eventData.event.ctrlKey || isNonDefaultStrategy) {
       if (nearby !== undefined && nearby.handleNearby.hasBoundingBox) {
         // Ctrl + clicked textBox, do nothing but still consume event.
-      } else {
+      } else if (
+        this.activeStrategy === STRATEGY_NAMES.CONTOUR_ADD_REMOVE_HANDLE
+      ) {
         insertOrDelete.call(this, evt, nearby);
+      } else if (this.activeStrategy === STRATEGY_NAMES.REMOVE_CONTOUR) {
+        let toolIndex;
+        if (nearby) {
+          toolIndex = nearby.toolIndex;
+        }
+        if (
+          toolIndex !== undefined &&
+          toolData.data &&
+          toolData.data[toolIndex]
+        ) {
+          const data = toolData.data[toolIndex];
+          const strctureSet = this._freehand3DStore.getters.structureSet(
+            data.seriesInstanceUid,
+            data.structureSetUid
+          );
+          if (!strctureSet.isLocked) {
+            removeToolState(evt.currentTarget, this.name, data);
+            updateImage(evt.currentTarget);
+          }
+        }
       }
 
       preventPropagation(evt);
@@ -254,6 +295,10 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     }
 
     return false;
+  }
+
+  preTouchStartCallback(evt) {
+    this.preMouseDownCallback(evt);
   }
 
   /**
@@ -508,7 +553,7 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
             left: points[0].x,
             right: points[0].x,
             bottom: points[0].y,
-            top: points[0].x,
+            top: points[0].y,
           };
 
           for (let i = 0; i < points.length; i++) {

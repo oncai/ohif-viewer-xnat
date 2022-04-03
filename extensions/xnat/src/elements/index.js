@@ -26,6 +26,13 @@ import xnatOpacity from './icons/xnat-opacity.svg';
 import xnatContrastRange from './icons/xnat-contrast-range.svg';
 import xnatRefresh from './icons/xnat-refresh.svg';
 import xnatLoadRoi from './icons/xnat-load-roi.svg';
+import xnatDialogHandle from './icons/xnat-dialog-handle.svg';
+import xnatCircle from './icons/xnat-circle.svg';
+import xnatCircleEraseInside from './icons/xnat-circle-erase-inside.svg';
+import xnatCircleFillOutside from './icons/xnat-circle-fill-outside.svg';
+import xnatCircleEraseOutside from './icons/xnat-circle-erase-outside.svg';
+import xnatContourHandle from './icons/xnat-contour-handle.svg';
+import xnatDeleteContour from './icons/xnat-delete-contour.svg';
 
 import Loader from './Loader/Loader';
 
@@ -61,6 +68,13 @@ const XNATICONS = {
   'xnat-contrast-range': xnatContrastRange,
   'xnat-refresh': xnatRefresh,
   'xnat-load-roi': xnatLoadRoi,
+  'xnat-dialog-handle': xnatDialogHandle,
+  'xnat-circle': xnatCircle,
+  'xnat-circle-erase-inside': xnatCircleEraseInside,
+  'xnat-circle-fill-outside': xnatCircleFillOutside,
+  'xnat-circle-erase-outside': xnatCircleEraseOutside,
+  'xnat-contour-handle': xnatContourHandle,
+  'xnat-delete-contour': xnatDeleteContour,
 };
 
 export { XNATICONS, Loader, sliderUtils, ReactSlider, SortIcon };

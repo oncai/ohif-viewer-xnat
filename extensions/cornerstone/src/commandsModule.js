@@ -12,7 +12,11 @@ import {
   getWindowing,
 } from './state';
 import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
-import { referenceLines } from '@xnat-ohif/extension-xnat';
+import {
+  referenceLines,
+  XNATToolStrategiesDialog,
+} from '@xnat-ohif/extension-xnat';
+
 const scroll = cornerstoneTools.import('util/scroll');
 
 const { studyMetadataManager } = OHIF.utils;
@@ -23,6 +27,34 @@ const refreshCornerstoneViewports = () => {
     if (enabledElement.image) {
       cornerstone.updateImage(enabledElement.element);
     }
+  });
+};
+
+const showXNATToolStrategies = options => {
+  const { toolStrategies, tool, servicesManager } = options;
+  const { UIDialogService } = servicesManager.services;
+  const DIALOG_ID = 'XNAT_TOOL_STRATEGIES_DIALOG_ID';
+
+  if (!UIDialogService) {
+    return;
+  }
+
+  // UIDialogService.dismiss({ id: DIALOG_ID });
+  const { x, y } = document
+    .querySelector(`.ViewerMain`)
+    .getBoundingClientRect();
+  UIDialogService.create({
+    id: DIALOG_ID,
+    content: XNATToolStrategiesDialog,
+    contentProps: {
+      toolStrategies,
+      tool,
+      onClose: UIDialogService.dismiss({ id: DIALOG_ID }),
+    },
+    defaultPosition: {
+      x: x + 20 || 0,
+      y: y + 100 || 0,
+    },
   });
 };
 
@@ -96,7 +128,7 @@ const commandsModule = ({ servicesManager }) => {
     // TODO: this is receiving `evt` from `ToolbarRow`. We could use it to have
     //       better mouseButtonMask sets.
     setToolActive: options => {
-      const { toolName, evt, ...rest } = options;
+      const { toolName, evt, toolStrategies, ...rest } = options;
       const toolOptions = {
         ...rest,
         mouseButtonMask: 1,
@@ -105,6 +137,19 @@ const commandsModule = ({ servicesManager }) => {
         console.warn('No toolname provided to setToolActive command');
       }
       cornerstoneTools.setToolActive(toolName, toolOptions);
+
+      if (toolStrategies && toolStrategies.length) {
+        const element = getEnabledElement(0);
+        const tool = cornerstoneTools.getToolForElement(element, toolName);
+        showXNATToolStrategies({
+          toolStrategies,
+          tool,
+          servicesManager: servicesManager,
+        });
+      } else {
+        const { UIDialogService } = servicesManager.services;
+        UIDialogService.dismiss({ id: 'XNAT_TOOL_STRATEGIES_DIALOG_ID' });
+      }
     },
     clearAnnotations: ({ viewports }) => {
       const element = getEnabledElement(viewports.activeViewportIndex);

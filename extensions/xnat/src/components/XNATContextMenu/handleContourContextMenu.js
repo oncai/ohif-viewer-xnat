@@ -33,7 +33,7 @@ function handleContourContextMenu(event, callbackData) {
       },
       onDelete: () => {
         const element = eventData.element;
-        commandsManager.runCommand('xnatRemoveToolState', {
+        commandsManager.runCommand('xnatRemoveContour', {
           element,
           toolType: callbackData.nearbyToolData.toolType,
           tool: callbackData.nearbyToolData.tool,

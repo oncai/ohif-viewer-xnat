@@ -1,5 +1,6 @@
 import { PEPPERMINT_TOOL_NAMES } from './peppermint-tools';
 import { AIAA_TOOL_NAMES } from './aiaa-tools';
+import STRATEGY_NAMES from './peppermint-tools/strategyNames';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -21,6 +22,23 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: {
           toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_TOOL,
+          toolStrategies: [
+            {
+              label: 'Draw',
+              icon: 'xnat-contour-freehand',
+              id: STRATEGY_NAMES.DRAW_CONTOUR,
+            },
+            {
+              label: '+/- Handle',
+              icon: 'xnat-contour-handle',
+              id: STRATEGY_NAMES.CONTOUR_ADD_REMOVE_HANDLE,
+            },
+            {
+              label: 'Remove',
+              icon: 'xnat-delete-contour',
+              id: STRATEGY_NAMES.REMOVE_CONTOUR,
+            },
+          ],
         },
       },
       {
@@ -32,14 +50,6 @@ const definitions = [
         commandOptions: {
           toolName: PEPPERMINT_TOOL_NAMES.FREEHAND_ROI_3D_SCULPTOR_TOOL,
         },
-      },
-      {
-        id: 'Clear',
-        label: 'Clear',
-        icon: 'trash',
-        //
-        type: TOOLBAR_BUTTON_TYPES.COMMAND,
-        commandName: 'clearAnnotations',
       },
     ],
   },
@@ -93,6 +103,28 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: {
           toolName: PEPPERMINT_TOOL_NAMES.XNAT_CIRCLE_SCISSORS_TOOL,
+          toolStrategies: [
+            {
+              label: 'Fill In',
+              icon: 'xnat-circle',
+              id: STRATEGY_NAMES.FILL_INSIDE,
+            },
+            {
+              label: 'Fill Out',
+              icon: 'xnat-circle-fill-outside',
+              id: STRATEGY_NAMES.FILL_OUTSIDE,
+            },
+            {
+              label: 'Erase In',
+              icon: 'xnat-circle-erase-inside',
+              id: STRATEGY_NAMES.ERASE_INSIDE,
+            },
+            {
+              label: 'Erase Out',
+              icon: 'xnat-circle-erase-outside',
+              id: STRATEGY_NAMES.ERASE_OUTSIDE,
+            },
+          ],
         },
       },
       {
