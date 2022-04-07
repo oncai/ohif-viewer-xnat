@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import cornerstoneTools from 'cornerstone-tools';
-import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import ProgressColoredCircle from '../common/ProgressColoredCircle';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 import { SortIcon } from '../../elements';
 import getSortIndices from '../../utils/getSortIndices';
+import refreshViewports from '../../utils/refreshViewports';
+import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
 
 import '../XNATRoiPanel.styl';
 
@@ -42,6 +43,7 @@ export default class LockedCollectionsListItem extends React.Component {
       visible: collectionVisible,
       expanded,
       ROIContourCollection,
+      activeColorTemplate,
     } = this._structureSet;
     this._ROIContourArray = ROIContourCollection;
 
@@ -71,6 +73,7 @@ export default class LockedCollectionsListItem extends React.Component {
       someRoisNotLoaded,
       roiSortingOrder,
       sortIndices,
+      activeColorTemplate,
     };
 
     this.onToggleExpandClick = this.onToggleExpandClick.bind(this);
@@ -80,6 +83,9 @@ export default class LockedCollectionsListItem extends React.Component {
     this.onLoadRoiComplete = this.onLoadRoiComplete.bind(this);
     this.onLoadAllRoiClick = this.onLoadAllRoiClick.bind(this);
     this.onSortClick = this.onSortClick.bind(this);
+    this.onCollectionColorTemplateChanged = this.onCollectionColorTemplateChanged.bind(
+      this
+    );
 
     document.addEventListener(
       'xnatcontourroiextracted',
@@ -118,9 +124,7 @@ export default class LockedCollectionsListItem extends React.Component {
     this._structureSet.visible = !collectionVisible;
     this.setState({ collectionVisible: !collectionVisible });
 
-    cornerstone.getEnabledElements().forEach(enabledElement => {
-      cornerstone.updateImage(enabledElement.element);
-    });
+    refreshViewports();
   }
 
   /**
@@ -139,9 +143,7 @@ export default class LockedCollectionsListItem extends React.Component {
       contourRoi.visible = contourRoiVisible[roiId] = !visible;
       this.setState({ contourRoiVisible: contourRoiVisible });
 
-      cornerstone.getEnabledElements().forEach(enabledElement => {
-        cornerstone.updateImage(enabledElement.element);
-      });
+      refreshViewports();
     }
   }
 
@@ -205,6 +207,26 @@ export default class LockedCollectionsListItem extends React.Component {
     });
   }
 
+  onCollectionColorTemplateChanged(evt) {
+    const value = evt.target.value;
+
+    const { collectionId, SeriesInstanceUID } = this.props;
+
+    const structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      collectionId
+    );
+
+    modules.freehand3D.setters.updateStructureSetColorTemplate(
+      structureSet,
+      value
+    );
+
+    this.setState({ activeColorTemplate: value });
+
+    refreshViewports();
+  }
+
   render() {
     const { onUnlockClick, onClick } = this.props;
     const {
@@ -215,6 +237,7 @@ export default class LockedCollectionsListItem extends React.Component {
       someRoisNotLoaded,
       roiSortingOrder,
       sortIndices,
+      activeColorTemplate,
     } = this.state;
 
     const { uid: collectionUid, name: collectionName } = this._structureSet;
@@ -287,7 +310,7 @@ export default class LockedCollectionsListItem extends React.Component {
 
     return (
       <div className="collectionSection">
-        <div className="header">
+        <div className={`header${expanded ? ' expanded' : ''}`}>
           <h5>{collectionName}</h5>
           <div className="icons">
             {someRoisNotLoaded ? (
@@ -331,6 +354,30 @@ export default class LockedCollectionsListItem extends React.Component {
 
         {expanded && (
           <>
+            <div className="header subHeading">
+              <Icon
+                name="xnat-colormap"
+                width="18px"
+                height="18px"
+                title="Active Color Template"
+              />
+              <select
+                value={activeColorTemplate}
+                onChange={this.onCollectionColorTemplateChanged}
+              >
+                {Object.keys(ROI_COLOR_TEMPLATES).map(key => {
+                  if (key !== ROI_COLOR_TEMPLATES.META.id) {
+                    return (
+                      <option key={key} value={key}>
+                        {key === ROI_COLOR_TEMPLATES.CUSTOM.id
+                          ? 'Auto-Generated'
+                          : ROI_COLOR_TEMPLATES[key].desc}
+                      </option>
+                    );
+                  }
+                })}
+              </select>
+            </div>
             <table className="collectionTable">
               <thead>
                 <tr>

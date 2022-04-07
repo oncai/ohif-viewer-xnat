@@ -44,6 +44,7 @@ export default function(seriesInstanceUid, structureSetUid) {
         uid: ROIContour.uid,
         polygonCount: ROIContour.polygonCount,
         color: ROIContour.color,
+        colorTemplates: ROIContour.colorTemplates,
       }
     );
   }

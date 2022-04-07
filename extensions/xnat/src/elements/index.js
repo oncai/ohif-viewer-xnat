@@ -40,6 +40,8 @@ import { sliderUtils, ReactSlider } from './rangeSliders';
 
 import SortIcon from './SortIcon/SortIcon';
 
+import ROIContourColorPicker from './colorPickers/ROIContourColorPicker';
+
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
@@ -77,4 +79,11 @@ const XNATICONS = {
   'xnat-delete-contour': xnatDeleteContour,
 };
 
-export { XNATICONS, Loader, sliderUtils, ReactSlider, SortIcon };
+export {
+  XNATICONS,
+  Loader,
+  sliderUtils,
+  ReactSlider,
+  SortIcon,
+  ROIContourColorPicker,
+};

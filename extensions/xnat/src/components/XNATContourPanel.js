@@ -385,6 +385,8 @@ export default class XNATContourPanel extends React.Component {
 
     unlockStructureSet(SeriesInstanceUID, roiCollectionToUnlock);
 
+    refreshViewports();
+
     const {
       workingCollection,
       lockedCollectionIds,

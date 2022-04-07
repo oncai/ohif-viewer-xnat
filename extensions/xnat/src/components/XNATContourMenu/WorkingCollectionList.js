@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import csTools from 'cornerstone-tools';
-import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import WorkingCollectionListItem from './WorkingCollectionListItem.js';
+import refreshViewports from '../../utils/refreshViewports';
+import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
 
 import '../XNATRoiPanel.styl';
 
@@ -11,7 +12,7 @@ const modules = csTools.store.modules;
 
 /**
  * @class WorkingRoiCollectionList - Renders a list of
- * WorkingCollectionListItem, displaying metadata of the working ROIContour
+ * ROI contours, displaying metadata of the working ROIContour
  * Collection.
  */
 export default class WorkingRoiCollectionList extends React.Component {
@@ -41,20 +42,26 @@ export default class WorkingRoiCollectionList extends React.Component {
     super(props);
 
     let collectionVisible = true;
+    let activeColorTemplate = ROI_COLOR_TEMPLATES.CUSTOM.id;
     const structureSet = modules.freehand3D.getters.structureSet(
       props.SeriesInstanceUID,
       'DEFAULT'
     );
     if (structureSet) {
       collectionVisible = structureSet.visible;
+      activeColorTemplate = structureSet.activeColorTemplate;
     }
 
     this.state = {
       isExpanded: true,
       collectionVisible,
+      activeColorTemplate,
     };
 
     this.onCollectionShowHideClick = this.onCollectionShowHideClick.bind(this);
+    this.onCollectionColorTemplateChanged = this.onCollectionColorTemplateChanged.bind(
+      this
+    );
   }
 
   /**
@@ -73,9 +80,26 @@ export default class WorkingRoiCollectionList extends React.Component {
     structureSet.visible = !collectionVisible;
     this.setState({ collectionVisible: !collectionVisible });
 
-    cornerstone.getEnabledElements().forEach(enabledElement => {
-      cornerstone.updateImage(enabledElement.element);
-    });
+    refreshViewports();
+  }
+
+  onCollectionColorTemplateChanged(evt) {
+    const value = evt.target.value;
+
+    const { SeriesInstanceUID } = this.props;
+    const structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      'DEFAULT'
+    );
+
+    modules.freehand3D.setters.updateStructureSetColorTemplate(
+      structureSet,
+      value
+    );
+
+    this.setState({ activeColorTemplate: value });
+
+    refreshViewports();
   }
 
   render() {
@@ -90,7 +114,10 @@ export default class WorkingRoiCollectionList extends React.Component {
       onRoiCollectionNameChange,
     } = this.props;
 
-    const { isExpanded, collectionVisible } = this.state;
+    const { isExpanded, collectionVisible, activeColorTemplate } = this.state;
+
+    const canChangeRoiColor =
+      activeColorTemplate === ROI_COLOR_TEMPLATES.CUSTOM.id;
 
     // default structurset
     const defaultStructureSet = modules.freehand3D.getters.structureSet(
@@ -104,7 +131,7 @@ export default class WorkingRoiCollectionList extends React.Component {
     return (
       <React.Fragment>
         <div className="collectionSection">
-          <div className="header">
+          <div className={`header${isExpanded ? ' expanded' : ''}`}>
             <h5 style={{ flex: 1, marginRight: 5, marginLeft: 2 }}>
               <input
                 name="roiContourName"
@@ -144,13 +171,35 @@ export default class WorkingRoiCollectionList extends React.Component {
 
           {isExpanded && (
             <div>
+              <div className="header subHeading">
+                <Icon
+                  name="xnat-colormap"
+                  width="18px"
+                  height="18px"
+                  title="Active Color Template"
+                />
+                <select
+                  value={activeColorTemplate}
+                  onChange={this.onCollectionColorTemplateChanged}
+                >
+                  {Object.keys(ROI_COLOR_TEMPLATES).map(key => {
+                    if (key !== ROI_COLOR_TEMPLATES.META.id) {
+                      return (
+                        <option key={key} value={key}>
+                          {ROI_COLOR_TEMPLATES[key].desc}
+                        </option>
+                      );
+                    }
+                  })}
+                </select>
+              </div>
               <table className="collectionTable">
                 <thead>
                   <tr>
                     <th width="5%" className="centered-cell">
                       #
                     </th>
-                    <th width="55%" className="left-aligned-cell">
+                    <th width="45%" className="left-aligned-cell">
                       ROI Name
                     </th>
                     <th width="10%" className="centered-cell">
@@ -158,6 +207,7 @@ export default class WorkingRoiCollectionList extends React.Component {
                     </th>
                     <th width="10%" className="" />
                     <th width="10%" className="" />
+                    {canChangeRoiColor && <th width="10%" className="" />}
                   </tr>
                 </thead>
                 <tbody>
@@ -172,6 +222,7 @@ export default class WorkingRoiCollectionList extends React.Component {
                         onRoiRemove={onRoiRemove}
                         SeriesInstanceUID={SeriesInstanceUID}
                         onClick={onContourClick}
+                        canChangeRoiColor={canChangeRoiColor}
                       />
                     ))}
                 </tbody>

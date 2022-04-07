@@ -11,7 +11,7 @@ export default function({ projectId }) {
         console.log(
           `ROI Color List (Project) = ${JSON.stringify(response[0])}`
         );
-        sessionMap.setRoiColorList(response);
+        sessionMap.setProjectRoiColorList(response);
       }
     })
     .catch(error => {

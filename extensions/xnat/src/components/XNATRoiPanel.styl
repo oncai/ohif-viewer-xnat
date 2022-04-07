@@ -205,6 +205,30 @@
         &:hover
           color: var(--hover-color)
 
+      &.expanded
+        border-radius: 5px 5px 0 0
+
+      &.subHeading
+        border-radius: 0 5px 5px 0
+        justify-content: flex-end
+
+      select
+        padding: 0 5px
+        margin: 0 5px
+        height: 22px
+        background-color: transparent
+        border: 1px solid var(--ui-border-color)
+        //border-radius: 5px
+        color: white
+        outline: none
+
+        option
+          background-color: var(--ui-gray)
+          color: white
+
+        &:focus
+          outline: none
+
   .roiEdit
     display: flex
     width: 100%

@@ -44,6 +44,8 @@ export default function(
   freehand3DStore.setters.structureSet(seriesInstanceUid, structureSetName, {
     uid: structureSetUid,
     isLocked: true,
+    expanded: true,
+    activeColorTemplate: structureSet.activeColorTemplate,
   });
 
   let ROIContourIndex = 0;
@@ -60,6 +62,7 @@ export default function(
           uid: oldROIContour.uid,
           polygonCount: oldROIContour.polygonCount,
           color: oldROIContour.color,
+          colorTemplates: oldROIContour.colorTemplates,
         }
       );
 

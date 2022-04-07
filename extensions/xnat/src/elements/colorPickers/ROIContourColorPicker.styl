@@ -1,0 +1,25 @@
+.ROIContourColorPicker
+  position: relative
+
+  .swatch
+    cursor: pointer
+    color: var(--text-secondary-color)
+
+  svg
+    width: 18px
+    height: 18px
+    padding-top: 2px
+
+  .popover
+    position: absolute
+    right: 12px
+    z-index: 10
+    //overflow: hidden
+
+  .cover
+    position: fixed
+    inset: 0
+
+  .sketch-picker
+    background: var(--ui-gray-darkest) !important
+    border: 1px solid var(--active-color)

@@ -224,7 +224,7 @@ const sessionMap = {
     _map.aiaaSettings.serverUrl.project = url;
   },
 
-  setRoiColorList: roiColors => {
+  setProjectRoiColorList: roiColors => {
     const componentToHex = c => {
       let hex = c.toString(16);
       return hex.length === 1 ? '0' + hex : hex;
@@ -241,8 +241,12 @@ const sessionMap = {
       }
     }
   },
-  getRoiColorList: () => {
+  getProjectRoiColorList: () => {
     return _map.roiColorList;
+  },
+  getProjectRoiColor: roiName => {
+    const item = _map.roiColorList.find(c => c.label === roiName.trim().toLowerCase());
+    return item ? item.color : undefined;
   },
 };
 
