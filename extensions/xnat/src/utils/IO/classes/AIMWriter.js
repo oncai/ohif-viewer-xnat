@@ -168,6 +168,7 @@ export default class AIMWriter extends XMLWriter {
    */
   _addImageAnnotation(polygons, ROIContourIndex) {
     this._referencedSopInstanceUids = [];
+    this._shapeIdentifier = 0;
 
     this._startImageAnnotation(polygons, ROIContourIndex);
     this._addMarkupEntityCollection(polygons, ROIContourIndex);

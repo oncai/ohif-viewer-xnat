@@ -6,6 +6,7 @@ import DATA_IMPORT_STATUS from '../../dataImportStatus';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
 import WebWorkerPromise from 'webworker-promise';
+import generateUID from '../../../peppermint-tools/utils/generateUID';
 
 const modules = cornerstoneTools.store.modules;
 const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
@@ -325,9 +326,10 @@ export default class LazyRTStructReader {
         const {
           points,
           referencedSopInstanceUid,
-          polygonUid,
+          // polygonUid,
           referencedFrameNumber,
         } = polygonData;
+        const polygonUid = generateUID();
         const polygon = new Polygon(
           points,
           referencedSopInstanceUid,
@@ -512,10 +514,11 @@ export default class LazyRTStructReader {
     const referencedFrameNumber = contourImageSequenceData.string(
       RTStructTag['ReferencedFrameNumber']
     );
-    const contourNumber = contourSequenceItemData.string(
-      RTStructTag['ContourNumber']
-    );
-    const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+    // const contourNumber = contourSequenceItemData.string(
+    //   RTStructTag['ContourNumber']
+    // );
+    // const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+    const polygonUid = generateUID();
 
     const points = this._extractPoints(
       contourSequenceItemData,

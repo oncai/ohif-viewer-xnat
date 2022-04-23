@@ -112,9 +112,8 @@ registerWebWorker(async (message, emit) => {
       polygonItem.ContourImageSequence.ReferencedFrameNumber
     );
 
-    const contourNumber = string(byteArray, polygonItem.ContourNumber);
-
-    const polygonUid = `${sopInstanceUid}.${ROINumber}.${contourNumber}`;
+    // const contourNumber = string(byteArray, polygonItem.ContourNumber);
+    // const polygonUid = `${sopInstanceUid}.${ROINumber}.${contourNumber}`;
 
     // Extract Points
     const points = [];
@@ -132,7 +131,7 @@ registerWebWorker(async (message, emit) => {
     polygonData = {
       points,
       referencedSopInstanceUid,
-      polygonUid,
+      // polygonUid,
       referencedFrameNumber,
     };
 

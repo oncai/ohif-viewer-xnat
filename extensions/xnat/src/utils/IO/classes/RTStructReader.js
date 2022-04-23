@@ -5,6 +5,7 @@ import allowStateUpdate from '../../awaitStateUpdate';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
 import WebWorkerPromise from 'webworker-promise';
+import generateUID from '../../../peppermint-tools/utils/generateUID';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -283,9 +284,10 @@ export default class RTStructReader {
         const {
           points,
           referencedSopInstanceUid,
-          polygonUid,
+          // polygonUid,
           referencedFrameNumber,
         } = polygonData;
+        const polygonUid = generateUID();
         const polygon = new Polygon(
           points,
           referencedSopInstanceUid,
@@ -459,13 +461,18 @@ export default class RTStructReader {
       return;
     }
 
+    // Required if the Referenced SOP Instance is a multi-frame image
     const referencedFrameNumber = contourImageSequenceData.string(
       RTStructTag['ReferencedFrameNumber']
     );
-    const contourNumber = contourSequenceItemData.string(
-      RTStructTag['ContourNumber']
-    );
-    const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+
+    // ContourNumber (3006,0048) value is Optional (3); no semantics
+    // or ordering shall be inferred from it
+    // const contourNumber = contourSequenceItemData.string(
+    //   RTStructTag['ContourNumber']
+    // );
+    // const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+    const polygonUid = generateUID();
 
     const points = this._extractPoints(
       contourSequenceItemData,
