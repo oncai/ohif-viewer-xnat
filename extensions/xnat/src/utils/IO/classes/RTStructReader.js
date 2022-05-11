@@ -6,6 +6,7 @@ import allowStateUpdate from '../../awaitStateUpdate';
 import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
 import WebWorkerPromise from 'webworker-promise';
 import generateUID from '../../../peppermint-tools/utils/generateUID';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -231,7 +232,18 @@ export default class RTStructReader {
       RTStructTag['ReferencedROINumber']
     );
 
-    const ROIContourUid = this._createNewROIContourAndGetUid(ROINumber);
+    const ROIDisplayColor = ROIContourDataSet.string(
+      RTStructTag['ROIDisplayColor']
+    );
+    // Set default ROI color to black
+    const ROIColor = ROIDisplayColor
+      ? colorTools.rgbToHex(ROIDisplayColor, '\\')
+      : '#00000';
+
+    const ROIContourUid = this._createNewROIContourAndGetUid(
+      ROINumber,
+      ROIColor
+    );
 
     const contourSequence =
       ROIContourDataSet.elements[RTStructTag['ContourSequence']];
@@ -267,7 +279,18 @@ export default class RTStructReader {
       RTStructTag['ReferencedROINumber']
     );
 
-    const ROIContourUid = this._createNewROIContourAndGetUid(ROINumber);
+    const ROIDisplayColor = ROIContourDataSet.string(
+      RTStructTag['ROIDisplayColor']
+    );
+    // Set default ROI color to black
+    const ROIColor = ROIDisplayColor
+      ? colorTools.rgbToHex(ROIDisplayColor, '\\')
+      : '#00000';
+
+    const ROIContourUid = this._createNewROIContourAndGetUid(
+      ROINumber,
+      ROIColor
+    );
 
     const contourSequence =
       ROIContourDataSet.elements[RTStructTag['ContourSequence']];
@@ -368,9 +391,10 @@ export default class RTStructReader {
    * _createNewROIContourAndGetUid - Creates a new ROIContour and returns its UID.
    *
    * @param  {number} ROINumber The index of the ROIContour.
+   * @param ROIColor
    * @returns {string}  The ROICOntourUid.
    */
-  _createNewROIContourAndGetUid(ROINumber) {
+  _createNewROIContourAndGetUid(ROINumber, ROIColor) {
     const freehand3DStore = this._freehand3DStore;
     let name;
     let uid;
@@ -399,6 +423,7 @@ export default class RTStructReader {
       {
         // Auto generate UID to prevent duplicate UID conflicts
         // uid,
+        color: ROIColor,
       }
     );
 
@@ -537,6 +562,7 @@ const RTStructTag = {
   ROINumber: 'x30060022',
   ROIName: 'x30060026',
   ReferencedROINumber: 'x30060084',
+  ROIDisplayColor: 'x3006002a',
   ContourSequence: 'x30060040',
   ContourImageSequence: 'x30060016',
   ReferencedSOPInstanceUID: 'x00081155',

@@ -249,14 +249,16 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
   if (options.colorTemplates) {
     ROIContour.colorTemplates = options.colorTemplates;
   } else {
+    const generateCustomColor = !options.color || options.color === '#000000';
     ROIContour.colorTemplates = {
-      [ROI_COLOR_TEMPLATES.META.id]: options.color,
+      [ROI_COLOR_TEMPLATES.META.id]: options.color || '#000000',
       [ROI_COLOR_TEMPLATES.PROJECT.id]: sessionMap.getProjectRoiColor(
         ROIContour.name
       ),
-      [ROI_COLOR_TEMPLATES.CUSTOM.id]: options.color
-        ? options.color
-        : getNextColor(),
+      // [ROI_COLOR_TEMPLATES.CUSTOM.id]: getNextColor(),
+      [ROI_COLOR_TEMPLATES.CUSTOM.id]: generateCustomColor
+        ? getNextColor()
+        : options.color,
     };
   }
 

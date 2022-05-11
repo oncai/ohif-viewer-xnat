@@ -1,3 +1,5 @@
+import colorTools from './colorTools';
+
 const _map = {
   scans: [],
   sessions: [],
@@ -225,20 +227,11 @@ const sessionMap = {
   },
 
   setProjectRoiColorList: roiColors => {
-    const componentToHex = c => {
-      let hex = c.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    };
     for (let i = 0; i < roiColors.length; i++) {
       const { label, color } = roiColors[i];
-      try {
-        const rgbStrings = color.split(',');
-        const rgb = rgbStrings.map(c => Number(c));
-        const colorHex = `#${componentToHex(rgb[0])}${componentToHex(rgb[1])}${componentToHex(rgb[2])}`
-        _map.roiColorList.push({ label: label.toLowerCase(), color: colorHex });
-      } catch (err) {
-        console.error(`Error parsing ROI color: ${label} ${color}`);
-      }
+      const colorHex = colorTools.rgbToHex(color, ',');
+      _map.roiColorList.push({ label: label.toLowerCase(), color: colorHex });
+      // console.error(`Error parsing ROI color: ${label} ${color}`);
     }
   },
   getProjectRoiColorList: () => {
@@ -246,7 +239,7 @@ const sessionMap = {
   },
   getProjectRoiColor: roiName => {
     const item = _map.roiColorList.find(c => c.label === roiName.trim().toLowerCase());
-    return item ? item.color : undefined;
+    return item ? item.color : '#000000';
   },
 };
 

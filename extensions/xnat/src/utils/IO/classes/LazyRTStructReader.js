@@ -7,6 +7,7 @@ import DATA_IMPORT_STATUS from '../../dataImportStatus';
 import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
 import WebWorkerPromise from 'webworker-promise';
 import generateUID from '../../../peppermint-tools/utils/generateUID';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
@@ -202,6 +203,15 @@ export default class LazyRTStructReader {
       const ROINumber = ROIContourDataSet.string(
         RTStructTag['ReferencedROINumber']
       );
+
+      const ROIDisplayColor = ROIContourDataSet.string(
+        RTStructTag['ROIDisplayColor']
+      );
+      // Set default ROI color to black
+      const ROIColor = ROIDisplayColor
+        ? colorTools.rgbToHex(ROIDisplayColor, '\\')
+        : '#00000';
+
       const contourSequence =
         ROIContourDataSet.elements[RTStructTag['ContourSequence']];
       const polygonItems = contourSequence.items;
@@ -258,7 +268,8 @@ export default class LazyRTStructReader {
       const ROIContourUid = this._createNewROIContourAndGetUid(
         ROINumber,
         polygonItems.length,
-        loadFunc
+        loadFunc,
+        ROIColor
       );
     }
   }
@@ -415,9 +426,10 @@ export default class LazyRTStructReader {
    * @param  {string} ROINumber The index of the ROIContour.
    * @param {number} numPolygons
    * @param {function} loadFunc
+   * @param ROIColor
    * @returns {string}  The ROICOntourUid.
    */
-  _createNewROIContourAndGetUid(ROINumber, numPolygons, loadFunc) {
+  _createNewROIContourAndGetUid(ROINumber, numPolygons, loadFunc, ROIColor) {
     const freehand3DStore = this._freehand3DStore;
     let name;
     let uid;
@@ -449,6 +461,7 @@ export default class LazyRTStructReader {
         polygonCount: numPolygons,
         importStatus: DATA_IMPORT_STATUS.NOT_IMPORTED,
         loadFunc,
+        color: ROIColor,
       }
     );
 
@@ -579,6 +592,7 @@ const RTStructTag = {
   ROINumber: 'x30060022',
   ROIName: 'x30060026',
   ReferencedROINumber: 'x30060084',
+  ROIDisplayColor: 'x3006002a',
   ContourSequence: 'x30060040',
   ContourImageSequence: 'x30060016',
   ReferencedSOPInstanceUID: 'x00081155',

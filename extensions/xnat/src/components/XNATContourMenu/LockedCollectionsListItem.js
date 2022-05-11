@@ -366,15 +366,13 @@ export default class LockedCollectionsListItem extends React.Component {
                 onChange={this.onCollectionColorTemplateChanged}
               >
                 {Object.keys(ROI_COLOR_TEMPLATES).map(key => {
-                  if (key !== ROI_COLOR_TEMPLATES.META.id) {
-                    return (
-                      <option key={key} value={key}>
-                        {key === ROI_COLOR_TEMPLATES.CUSTOM.id
-                          ? 'Auto-Generated'
-                          : ROI_COLOR_TEMPLATES[key].desc}
-                      </option>
-                    );
-                  }
+                  return (
+                    <option key={key} value={key}>
+                      {key === ROI_COLOR_TEMPLATES.CUSTOM.id
+                        ? 'Auto-Generated'
+                        : ROI_COLOR_TEMPLATES[key].desc}
+                    </option>
+                  );
                 })}
               </select>
             </div>

@@ -2,6 +2,7 @@ import cornerstoneTools from 'cornerstone-tools';
 import { Polygon } from '../../../peppermint-tools';
 import allowStateUpdate from '../../awaitStateUpdate';
 import DATA_IMPORT_STATUS from '../../dataImportStatus';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
@@ -323,6 +324,7 @@ export default class LazyAIMReader {
     let name;
     let uid;
     let comment;
+    let color;
 
     for (let i = 0; i < childElementsOfAnnotation.length; i++) {
       if (childElementsOfAnnotation[i].tagName === 'uniqueIdentifier') {
@@ -331,6 +333,19 @@ export default class LazyAIMReader {
         name = childElementsOfAnnotation[i].getAttribute('value');
       } else if (childElementsOfAnnotation[i].tagName === 'comment') {
         comment = childElementsOfAnnotation[i].getAttribute('value');
+      } else if (
+        childElementsOfAnnotation[i].tagName === 'markupEntityCollection'
+      ) {
+        const markupEntity0 = childElementsOfAnnotation[i].children[0];
+        if (markupEntity0) {
+          const lineColorNode = markupEntity0.getElementsByTagName(
+            'lineColour'
+          )[0];
+          if (lineColorNode) {
+            const lineColor = lineColorNode.getAttribute('value');
+            color = colorTools.rgbToHex(lineColor, ',');
+          }
+        }
       }
     }
 
@@ -375,6 +390,7 @@ export default class LazyAIMReader {
         polygonCount: numPolygons,
         importStatus: DATA_IMPORT_STATUS.NOT_IMPORTED,
         loadFunc,
+        color,
       }
     );
 
