@@ -15,8 +15,20 @@ const rgbToHex = (rgbString, delimiter) => {
   return colorHex;
 };
 
+const hexToRgb = hex => {
+  const comp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return comp
+    ? {
+        r: parseInt(comp[1], 16),
+        g: parseInt(comp[2], 16),
+        b: parseInt(comp[3], 16),
+      }
+    : null;
+};
+
 const colorTools = {
   rgbToHex: rgbToHex,
+  hexToRgb: hexToRgb,
 };
 
 export default colorTools;

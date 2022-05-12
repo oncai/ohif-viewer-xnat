@@ -16,6 +16,7 @@ export default class RoiExtractor {
   constructor(seriesInstanceUid) {
     this._seriesInstanceUid = seriesInstanceUid;
     this._ROIContours = [];
+    this._ROIColor = [];
     this._freehand3DStore = modules.freehand3D;
   }
 
@@ -43,6 +44,7 @@ export default class RoiExtractor {
     for (let i = 0; i < ROIContourCollection.length; i++) {
       if (ROIContourCollection[i] && ROIContourCollection[i].polygonCount > 0) {
         this._ROIContours[i] = [];
+        this._ROIColor[i] = ROIContourCollection[i].color;
       }
     }
 
@@ -92,7 +94,7 @@ export default class RoiExtractor {
       );
       const referencedStructureSet = data.referencedStructureSet;
 
-      // Check to see if the ROIContour referencing this polygon is eligble for export.
+      // Check to see if the ROIContour referencing this polygon is eligible for export.
       if (
         referencedStructureSet.uid === 'DEFAULT' &&
         exportMask[ROIContourIndex]
@@ -124,6 +126,8 @@ export default class RoiExtractor {
       data.uid,
       frameNumber
     );
+
+    polygon.color = this._ROIColor[ROIContourIndex];
 
     this._ROIContours[ROIContourIndex].push(polygon);
   }

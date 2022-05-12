@@ -21,6 +21,7 @@ export default class Polygon {
     this._polygonUid = polygonUid;
     this._frameNumber = frameNumber;
     this._interpolated = interpolated;
+    this._color = '';
   }
 
   _deepCopyPoints(points) {
@@ -143,5 +144,13 @@ export default class Polygon {
 
   get frameNumber() {
     return this._frameNumber;
+  }
+
+  get color() {
+    return this._color;
+  }
+
+  set color(value) {
+    this._color = value;
   }
 }

@@ -1,5 +1,6 @@
 import cornerstoneTools from 'cornerstone-tools';
 import XMLWriter from 'xml-writer';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -226,6 +227,12 @@ export default class AIMWriter extends XMLWriter {
    * @returns {null}
    */
   _addMarkupEntity(polygon) {
+    let lineColor;
+    const rgb = colorTools.hexToRgb(polygon.color);
+    if (rgb) {
+      lineColor = `${rgb.r},${rgb.g},${rgb.b}`;
+    }
+
     this.startElement('MarkupEntity').writeAttribute(
       'xsi:type',
       'TwoDimensionPolyline'
@@ -233,6 +240,7 @@ export default class AIMWriter extends XMLWriter {
     this._addProperty('uniqueIdentifier', 'root', `${polygon.uid}`);
     this._addProperty('shapeIdentifier', 'value', `${this._shapeIdentifier}`);
     this._addProperty('includeFlag', 'value', 'true'); //Note: no support for lesions with holes (.e.g. donuts) for now.
+    if (lineColor) this._addProperty('lineColour', 'value', lineColor);
     this._addProperty('imageReferenceUid', 'root', polygon.sopInstanceUid);
     this._addProperty('referencedFrameNumber', 'value', polygon.frameNumber);
     this._addTwoDimensionSpatialCoordinateCollection(
