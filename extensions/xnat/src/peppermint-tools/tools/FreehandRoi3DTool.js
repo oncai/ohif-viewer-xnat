@@ -4,6 +4,7 @@ import {
   pixelToCanvas,
   getEnabledElement,
   getPixels,
+  internal,
 } from 'cornerstone-core';
 import { point } from 'cornerstone-math';
 import {
@@ -41,6 +42,9 @@ const modules = store.modules;
 const numbersWithCommas = importInternal('util/numbersWithCommas');
 const pointInsideBoundingBox = importInternal('util/pointInsideBoundingBox');
 const calculateSUV = importInternal('util/calculateSUV');
+const getPixelSpacing = importInternal('util/getPixelSpacing');
+
+const { calculateTransform } = internal;
 
 const noop = () => {};
 
@@ -624,9 +628,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
 
           // Retrieve the pixel spacing values, and if they are not
           // Real non-zero values, set them to 1
-          const columnPixelSpacing = image.columnPixelSpacing || 1;
-          const rowPixelSpacing = image.rowPixelSpacing || 1;
-          const scaling = columnPixelSpacing * rowPixelSpacing;
+          const { colPixelSpacing, rowPixelSpacing } = getPixelSpacing(image);
+          const scaling = (colPixelSpacing || 1) * (rowPixelSpacing || 1);
 
           area = freehandArea(points, scaling);
 
@@ -852,6 +855,49 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       EVENTS.MEASUREMENT_REMOVED,
       this._onMeasurementRemoved
     );
+  }
+
+  /**
+   * @param {*} element
+   * @param {*} data
+   * @param {*} coords
+   * @returns {number} the distance in canvas units from the provided coordinates to the
+   * closest rendered portion of the annotation. -1 if the distance cannot be
+   * calculated.
+   */
+  distanceFromPointCanvas(element, data, coords) {
+    let distance = Infinity;
+
+    if (!data) {
+      return -1;
+    }
+
+    // Fix the pixel to canvas transform instead of calling pixelToCanvas
+    const enabledElement = getEnabledElement(element);
+    const context = enabledElement.canvas.getContext('2d');
+    const { a, d, e, f } = context.getTransform();
+    const transform = calculateTransform(enabledElement);
+    transform.scale(1 / a, 1 / d);
+    transform.translate(-e, -f);
+
+    const canvasCoords = transform.transformPoint(coords.x, coords.y);
+
+    const points = data.handles.points;
+
+    for (let i = 0; i < points.length; i++) {
+      const handleCanvas = transform.transformPoint(points[i].x, points[i].y);
+
+      const distanceI = point.distance(handleCanvas, canvasCoords);
+
+      distance = Math.min(distance, distanceI);
+    }
+
+    // If an error caused distance not to be calculated, return -1.
+    if (distance === Infinity) {
+      return -1;
+    }
+
+    return distance;
   }
 }
 
