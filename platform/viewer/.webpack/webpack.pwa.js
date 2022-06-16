@@ -96,10 +96,21 @@ module.exports = (env, argv) => {
           from: `${ROOT_MODULES_DIR}/itk/WebWorkers`,
           to: `${DIST_DIR}/itk/WebWorkers`,
         },
+        // {
+        //   from: `${ROOT_MODULES_DIR}/itk/ImageIOs`,
+        //   to: `${DIST_DIR}/itk/ImageIOs`,
+        // },
         {
-          from: `${ROOT_MODULES_DIR}/itk/ImageIOs`,
-          to: `${DIST_DIR}/itk/ImageIOs`,
+          from: `${ROOT_MODULES_DIR}/itk/ImageIOs/itkDICOMImageSeriesReaderJSBinding*.{js,wasm}`,
+          to: `${DIST_DIR}/itk/ImageIOs/[name].[ext]`,
+          toType: 'template',
         },
+        {
+          from: `${ROOT_MODULES_DIR}/itk/ImageIOs/itkNiftiImageIOJSBinding*.{js,wasm}`,
+          to: `${DIST_DIR}/itk/ImageIOs/[name].[ext]`,
+          toType: 'template',
+        },
+        // cornerstone-wado-image-loader
         {
           from:
             '../../../node_modules/cornerstone-wado-image-loader/dist/dynamic-import',

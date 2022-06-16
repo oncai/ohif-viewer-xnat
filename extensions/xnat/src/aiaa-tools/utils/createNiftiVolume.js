@@ -1,4 +1,3 @@
-import readImageFile from 'itk/readImageFile';
 import readImageDICOMFileSeries from 'itk/readImageDICOMFileSeries';
 import writeArrayBuffer from 'itk/writeArrayBuffer';
 
