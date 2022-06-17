@@ -27,7 +27,7 @@ const ROIContourColorPicker = ({
     <div className="ROIContourColorPicker">
       <div className="swatch" onClick={handleClick}>
         {/*<div className="color" style={{ backgroundColor: color }} />*/}
-        <Icon name="palette" width="13px" height="13px" />
+        <Icon name="palette" />
       </div>
       {pickerActive && (
         <div className="popover" style={{ bottom: popoverPos }}>

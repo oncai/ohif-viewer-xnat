@@ -131,6 +131,9 @@ export default function(
       activeROIContourUid
     );
   }
+
+  // reset working collection name
+  structureSet.name = '_';
 }
 
 /**

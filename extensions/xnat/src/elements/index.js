@@ -33,6 +33,7 @@ import xnatCircleFillOutside from './icons/xnat-circle-fill-outside.svg';
 import xnatCircleEraseOutside from './icons/xnat-circle-erase-outside.svg';
 import xnatContourHandle from './icons/xnat-contour-handle.svg';
 import xnatDeleteContour from './icons/xnat-delete-contour.svg';
+import xnatPincel from './icons/xnat-pencil.svg';
 
 import Loader from './Loader/Loader';
 
@@ -77,6 +78,7 @@ const XNATICONS = {
   'xnat-circle-erase-outside': xnatCircleEraseOutside,
   'xnat-contour-handle': xnatContourHandle,
   'xnat-delete-contour': xnatDeleteContour,
+  'xnat-pencil': xnatPincel,
 };
 
 export {

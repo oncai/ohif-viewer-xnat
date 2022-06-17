@@ -121,23 +121,29 @@ export default class SegmentationMenuListItem extends React.Component {
           />
         </td>
         <td className="left-aligned-cell">
-          <a
-            style={{ cursor: 'pointer'}}
-            onClick={() => {
-              onEditClick(segmentIndex, metadata);
-            }}
-          >
-            <span style={{ color: 'var(--text-primary-color)' }}>
-              {segmentLabel}
-            </span>
-            <span
-              style={{ color: 'var(--text-secondary-color)', display: 'block' }}
+          <div className="editableWrapper">
+            <a
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onEditClick(segmentIndex, metadata);
+              }}
             >
-              {typeWithModifier}
-              {' - '}
-              {segmentCategory}
-            </span>
-          </a>
+              <span style={{ color: 'var(--text-primary-color)' }}>
+                {segmentLabel}
+                <Icon name="xnat-pencil" />
+              </span>
+              <span
+                style={{
+                  color: 'var(--text-secondary-color)',
+                  display: 'block',
+                }}
+              >
+                {typeWithModifier}
+                {' - '}
+                {segmentCategory}
+              </span>
+            </a>
+          </div>
         </td>
         <td className="centered-cell doNotBreak">
           <a
@@ -148,11 +154,6 @@ export default class SegmentationMenuListItem extends React.Component {
           >
             {slices.length ? `${slices.length}` : '0'}
           </a>
-        </td>
-        <td className="centered-cell">
-          <button className="small" onClick={() => onDeleteClick(segmentIndex)}>
-            <Icon name="trash" />
-          </button>
         </td>
         <td className="centered-cell">
           <button className="small" onClick={this.onShowHideClick}>
@@ -171,7 +172,12 @@ export default class SegmentationMenuListItem extends React.Component {
               )
             }
           >
-            <Icon name="palette" />
+            <Icon name="palette" style={{ width: 14, height: 14 }} />
+          </button>
+        </td>
+        <td className="centered-cell">
+          <button className="small" onClick={() => onDeleteClick(segmentIndex)}>
+            <Icon name="trash" />
           </button>
         </td>
       </tr>

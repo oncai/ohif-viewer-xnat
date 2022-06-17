@@ -229,8 +229,22 @@
         &:focus
           outline: none
 
+  .editableWrapper
+    position: relative
+
+    svg
+      //position: absolute
+      color: var(--text-secondary-color)
+      background-color: transparent
+      width: 10px
+      height: 10px
+      margin-left: 5px
+      //top: 2px
+      //right: 2px
+      fill: var(--text-disabled-color)
+
   .roiEdit
-    display: flex
+    font-size: 14px
     width: 100%
     border: none
     color: var(--text-primary-color)

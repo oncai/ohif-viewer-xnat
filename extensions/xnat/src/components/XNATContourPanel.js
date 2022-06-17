@@ -617,7 +617,7 @@ export default class XNATContourPanel extends React.Component {
           <div className="roiCollectionBody">
             {/* WORKING COLLECTIONS */}
             <div className="workingCollectionHeader">
-              <h4> In-Progress Contour Collections </h4>
+              <h4> In-Progress Contour Collection </h4>
             </div>
             {SeriesInstanceUID && (
               <WorkingCollectionList

@@ -172,12 +172,17 @@ export default class WorkingCollectionListItem extends React.Component {
           />
         </td>
         <td className="left-aligned-cell">
-          <a
-            style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
-            onClick={this.onEditClick}
-          >
-            {name}
-          </a>
+          <div className="editableWrapper">
+            <a
+              style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
+              onClick={this.onEditClick}
+            >
+              {name}
+              <span>
+                <Icon name="xnat-pencil" />
+              </span>
+            </a>
+          </div>
         </td>
         <td className="centered-cell">
           <a
@@ -186,11 +191,6 @@ export default class WorkingCollectionListItem extends React.Component {
           >
             {polygonCount}
           </a>
-        </td>
-        <td className="">
-          <button className="small" onClick={() => onRoiRemove(metadata.uid)}>
-            <Icon name="trash" width="13px" height="13px" />
-          </button>
         </td>
         <td className="">
           <button className="small" onClick={this.onShowHideClick}>
@@ -206,6 +206,11 @@ export default class WorkingCollectionListItem extends React.Component {
             />
           </td>
         )}
+        <td className="">
+          <button className="small" onClick={() => onRoiRemove(metadata.uid)}>
+            <Icon name="trash" width="13px" height="13px" />
+          </button>
+        </td>
       </tr>
     );
   }

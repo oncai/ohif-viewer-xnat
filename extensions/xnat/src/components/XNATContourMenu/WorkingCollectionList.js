@@ -132,7 +132,10 @@ export default class WorkingRoiCollectionList extends React.Component {
       <React.Fragment>
         <div className="collectionSection">
           <div className={`header${isExpanded ? ' expanded' : ''}`}>
-            <h5 style={{ flex: 1, marginRight: 5, marginLeft: 2 }}>
+            <div
+              className="editableWrapper"
+              style={{ flex: 1, marginRight: 5, marginLeft: 2 }}
+            >
               <input
                 name="roiContourName"
                 className="roiEdit"
@@ -143,7 +146,10 @@ export default class WorkingRoiCollectionList extends React.Component {
                 placeholder="Unnamed ROI collection"
                 tabIndex="1"
               />
-            </h5>
+              <span style={{ position: 'absolute', right: 2, top: 2 }}>
+                <Icon name="xnat-pencil" />
+              </span>
+            </div>
             <div className="icons">
               <button onClick={onNewRoiButtonClick}>
                 <Icon name="xnat-tree-plus" /> Contour ROI
