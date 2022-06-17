@@ -138,6 +138,7 @@ const commandsModule = ({ servicesManager }) => {
       }
       cornerstoneTools.setToolActive(toolName, toolOptions);
 
+      /*
       if (toolStrategies && toolStrategies.length) {
         const element = getEnabledElement(0);
         const tool = cornerstoneTools.getToolForElement(element, toolName);
@@ -150,6 +151,7 @@ const commandsModule = ({ servicesManager }) => {
         const { UIDialogService } = servicesManager.services;
         UIDialogService.dismiss({ id: 'XNAT_TOOL_STRATEGIES_DIALOG_ID' });
       }
+      */
     },
     clearAnnotations: ({ viewports }) => {
       const element = getEnabledElement(viewports.activeViewportIndex);
