@@ -49,6 +49,8 @@ const XNATSeriesThumbnails = props => {
         SeriesNumber,
         stackPercentComplete,
         hasWarnings,
+        seriesNotation,
+        SOPInstanceUID,
       } = thumb;
 
       return (
@@ -79,6 +81,8 @@ const XNATSeriesThumbnails = props => {
             onDoubleClick={onThumbnailDoubleClick}
             // XNAT ROIS
             hasRois={hasRois}
+            seriesNotation={seriesNotation}
+            SOPInstanceUID={SOPInstanceUID}
           />
         </div>
       );

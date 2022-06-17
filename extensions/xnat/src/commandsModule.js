@@ -5,7 +5,8 @@ import cornerstone from 'cornerstone-core';
 import onKeyDownEvent from './utils/onKeyDownEvent';
 import KEY_COMMANDS from './utils/keyCommands';
 import queryAiaaSettings from './utils/IO/queryAiaaSettings';
-import { referenceLines } from './utils/CSReferenceLines/referenceLines';
+import queryRoiColorList from './utils/IO/queryRoiColorList';
+// import { referenceLines } from './utils/CSReferenceLines/referenceLines';
 
 const refreshCornerstoneViewports = () => {
   cornerstone.getEnabledElements().forEach(enabledElement => {
@@ -88,6 +89,14 @@ const definitions = {
     options: { json: null, sessionVariables: null },
     context: 'VIEWER',
   },
+  xnatGetScan: {
+    commandFn: ({ seriesInstanceUid }) => {
+      return sessionMap.getScan(seriesInstanceUid);
+    },
+    storeContexts: [],
+    options: { seriesInstanceUid: null },
+    context: 'VIEWER',
+  },
   xnatGetExperimentID: {
     commandFn: ({ SeriesInstanceUID }) => {
       return sessionMap.getExperimentID(SeriesInstanceUID);
@@ -108,7 +117,13 @@ const definitions = {
     options: { projectId: null },
     context: 'VIEWER',
   },
-  xnatRemoveToolState: {
+  xnatCheckAndSetRoiColorList: {
+    commandFn: queryRoiColorList,
+    storeContexts: [],
+    options: { projectId: null },
+    context: 'VIEWER',
+  },
+  xnatRemoveContour: {
     commandFn: ({ element, toolType, tool }) => {
       const freehand3DModule = csTools.store.modules.freehand3D;
       const strctureSet = freehand3DModule.getters.structureSet(

@@ -1,5 +1,5 @@
+import cornerstone from 'cornerstone-core';
 import { ReconstructionIssues } from './../enums.js';
-
 
 /**
  * Checks if a series is reconstructable to a 3D volume.
@@ -54,9 +54,9 @@ function processMultiframe(instances) {
     reconstructionIssues: [],
     numberOfImagesPerSubset: instances.length,
   };
-  const metadata = instances[0].getData().metadata;
+  const { metadata } = instances[0].getData();
   // enable for NM image
-  if (metadata.Modality === 'NM') {
+  if (metadata.Modality === 'NM' && metadata.NumberOfFrames > 2) {
     value.isReconstructable = true;
   } else {
     value.reconstructionIssues.push(ReconstructionIssues.MULTIFRAMES);

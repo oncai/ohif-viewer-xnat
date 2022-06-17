@@ -1,6 +1,6 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
-import preMouseDownCallback from './preMouseDownCallback';
+import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
 
 const { SphericalBrushTool } = csTools;
 
@@ -17,7 +17,7 @@ export default class XNATSphericalBrushTool extends SphericalBrushTool {
   preMouseDownCallback(evt) {
     const { detail } = evt;
 
-    preMouseDownCallback(detail.element);
+    triggerSegmentGenerationEvent(detail.element);
 
     const { event } = detail;
     if (event.ctrlKey) {
@@ -27,5 +27,17 @@ export default class XNATSphericalBrushTool extends SphericalBrushTool {
     }
 
     super.preMouseDownCallback(evt);
+  }
+
+  preTouchStartCallback(evt) {
+    const { detail } = evt;
+
+    this._startPainting(evt);
+
+    triggerSegmentGenerationEvent(detail.element);
+  }
+
+  touchEndCallback(evt) {
+    this._endPainting(evt);
   }
 }

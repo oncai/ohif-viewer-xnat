@@ -22,7 +22,7 @@ const {
   onModified,
 } = OHIF.measurements.MeasurementHandlers;
 
-const imageLoadField = event => {
+const imageLoadFailed = event => {
   const servicesManager = window.ohif.app.servicesManager;
   const { UINotificationService } = servicesManager.services;
 
@@ -61,7 +61,6 @@ const onNewImage = event => {
     voi.windowWidth = windowWidth;
     voi.windowCenter = windowCenter;
     cornerstone.setViewport(element, viewport);
-    // cornerstone.updateImage(element);
   }
 };
 
@@ -163,7 +162,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       {
         target: 'element',
         eventName: cornerstone.EVENTS.IMAGE_LOAD_FAILED,
-        handler: imageLoadField,
+        handler: imageLoadFailed,
       },
       {
         target: 'element',

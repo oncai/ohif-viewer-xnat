@@ -47,6 +47,8 @@ export {
   XNATViewportOverlay,
 } from './components/XNATViewportOverlay/XNATViewportOverlay';
 
+export { XNATToolStrategiesDialog } from './components/XNATToolStrategies';
+
 export { ICRAboutContent } from './components/AboutContent/ICRAboutContent';
 
 export {

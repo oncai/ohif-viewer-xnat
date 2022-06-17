@@ -42,7 +42,13 @@ const _getFirstImageId = ({ StudyInstanceUID, displaySetInstanceUID }) => {
     const displaySet = studyMetadata.findDisplaySet(
       displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
     );
-    return displaySet.images[0].getImageId();
+    const image = displaySet.images[0];
+    const { metadata } = image.getData();
+    let imageId = image.getImageId();
+    if (metadata.NumberOfFrames > 1 && !imageId.includes('frame=')) {
+      imageId = `${imageId}?frame=0`;
+    }
+    return imageId;
   } catch (error) {
     console.error('Failed to retrieve firstImageId');
     return null;

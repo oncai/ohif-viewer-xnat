@@ -205,8 +205,46 @@
         &:hover
           color: var(--hover-color)
 
+      &.expanded
+        border-radius: 5px 5px 0 0
+
+      &.subHeading
+        border-radius: 0 5px 5px 0
+        justify-content: flex-end
+
+      select
+        padding: 0 5px
+        margin: 0 5px
+        height: 22px
+        background-color: transparent
+        border: 1px solid var(--ui-border-color)
+        //border-radius: 5px
+        color: white
+        outline: none
+
+        option
+          background-color: var(--ui-gray)
+          color: white
+
+        &:focus
+          outline: none
+
+  .editableWrapper
+    position: relative
+
+    svg
+      //position: absolute
+      color: var(--text-secondary-color)
+      background-color: transparent
+      width: 10px
+      height: 10px
+      margin-left: 5px
+      //top: 2px
+      //right: 2px
+      fill: var(--text-disabled-color)
+
   .roiEdit
-    display: flex
+    font-size: 14px
     width: 100%
     border: none
     color: var(--text-primary-color)
@@ -216,11 +254,16 @@
       outline: solid 1px var(--ui-sky-blue)
 
   .roiColor
-    height: 15px
-    width: 15px
+    height: 18px
+    width: 18px
     background-color: #bbb
     border-radius: 50%
     display: inline-block
+    vertical-align: middle
+
+  .roiProgressCircle
+    transform: rotate(-90deg)
+    transform-origin: 50% 50%
 
   .roiPanelFooter
     display: -webkit-flex
@@ -312,14 +355,19 @@
     //border: 1px dotted
     padding: 4px
 
+    svg
+      vertical-align: middle
+
   tr
     //border-bottom: 1px dotted
+    word-break: break-all
     word-wrap: break-word
     white-space: -o-pre-wrap
     white-space: pre-wrap
     white-space: -moz-pre-wrap
     white-space: -pre-wrap
     height: 32px
+    background-color: #171717
 
     td
       //border-left: 1px dotted
@@ -343,11 +391,11 @@
 .right-aligned-cell
   text-align: right  !important
 
+.doNotBreak
+  word-break: normal
+
 .warningMessage
   display: inline-block
   color: var(--ui-yellow)
   font-size: 13px
   margin: 5px 0
-//.subRow
-//  background-color: #333333
-//  border: 2px solid var(--ui-gray-light)

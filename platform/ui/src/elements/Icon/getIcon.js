@@ -195,7 +195,7 @@ export default function getIcon(key, props) {
     return React.createElement('div', null, 'Missing Icon');
   }
 
-  return React.createElement(ICONS[key], props);
+  return ICONS[key](props);
 }
 
 export { ICONS };

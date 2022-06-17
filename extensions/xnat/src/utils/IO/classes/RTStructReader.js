@@ -2,6 +2,11 @@ import { Polygon } from '../../../peppermint-tools';
 import dicomParser from 'dicom-parser';
 import cornerstoneTools from 'cornerstone-tools';
 import allowStateUpdate from '../../awaitStateUpdate';
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import RTSPolygonsExtractWorker from '../workers/RTSPolygonsExtractor.worker';
+import WebWorkerPromise from 'webworker-promise';
+import generateUID from '../../../peppermint-tools/utils/generateUID';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -184,13 +189,28 @@ export default class RTStructReader {
       numAllContours += polygon.length;
     }
 
+    // Get loading concurrency preferences
+    const preferences = window.store.getState().preferences;
+    const ConcurrentPolygonExtraction =
+      preferences.experimentalFeatures.ConcurrentPolygonExtraction;
+    const concurrentLoadingEnabled =
+      !!ConcurrentPolygonExtraction && ConcurrentPolygonExtraction.enabled;
+
     let extractedNumContours = 0;
     for (let i = 0; i < ROIContours.length; i++) {
-      await this._extractOneROIContour(
-        ROIContours[i].dataSet,
-        extractedNumContours,
-        numAllContours
-      );
+      if (concurrentLoadingEnabled) {
+        await this._extractOneROIContourConcurrently(
+          ROIContours[i].dataSet,
+          extractedNumContours,
+          numAllContours
+        );
+      } else {
+        await this._extractOneROIContour(
+          ROIContours[i].dataSet,
+          extractedNumContours,
+          numAllContours
+        );
+      }
       extractedNumContours += numContours[i];
     }
   }
@@ -199,6 +219,8 @@ export default class RTStructReader {
    * _extractOneROIContour - extracts one ROIContour from the dataset.
    *
    * @param  {type} ROIContourDataSet The dataset of the ROIContour.
+   * @param extractedNumContours
+   * @param numAllContours
    * @returns {null}
    */
   async _extractOneROIContour(
@@ -210,7 +232,18 @@ export default class RTStructReader {
       RTStructTag['ReferencedROINumber']
     );
 
-    const ROIContourUid = this._createNewROIContourAndGetUid(ROINumber);
+    const ROIDisplayColor = ROIContourDataSet.string(
+      RTStructTag['ROIDisplayColor']
+    );
+    // Set default ROI color to black
+    const ROIColor = ROIDisplayColor
+      ? colorTools.rgbToHex(ROIDisplayColor, '\\')
+      : '#00000';
+
+    const ROIContourUid = this._createNewROIContourAndGetUid(
+      ROINumber,
+      ROIColor
+    );
 
     const contourSequence =
       ROIContourDataSet.elements[RTStructTag['ContourSequence']];
@@ -230,12 +263,138 @@ export default class RTStructReader {
   }
 
   /**
+   * _extractOneROIContourConcurrently - extracts one ROIContour using web workers.
+   *
+   * @param  {type} ROIContourDataSet The dataset of the ROIContour.
+   * @param extractedNumContours
+   * @param numAllContours
+   * @returns {null}
+   */
+  async _extractOneROIContourConcurrently(
+    ROIContourDataSet,
+    extractedNumContours,
+    numAllContours
+  ) {
+    const ROINumber = ROIContourDataSet.string(
+      RTStructTag['ReferencedROINumber']
+    );
+
+    const ROIDisplayColor = ROIContourDataSet.string(
+      RTStructTag['ROIDisplayColor']
+    );
+    // Set default ROI color to black
+    const ROIColor = ROIDisplayColor
+      ? colorTools.rgbToHex(ROIDisplayColor, '\\')
+      : '#00000';
+
+    const ROIContourUid = this._createNewROIContourAndGetUid(
+      ROINumber,
+      ROIColor
+    );
+
+    const contourSequence =
+      ROIContourDataSet.elements[RTStructTag['ContourSequence']];
+    const polygonItems = contourSequence.items;
+
+    const polygons = [];
+    const numPolygons = polygonItems.length;
+    const byteArray = polygonItems[0].dataSet.byteArray;
+
+    let polygonsExtracted = extractedNumContours;
+    const onWorkerUpdate = data => {
+      const { workerId, polygonData } = data;
+      if (polygonData) {
+        const {
+          points,
+          referencedSopInstanceUid,
+          // polygonUid,
+          referencedFrameNumber,
+        } = polygonData;
+        const polygonUid = generateUID();
+        const polygon = new Polygon(
+          points,
+          referencedSopInstanceUid,
+          this._seriesInstanceUidToImport,
+          this._roiCollectionLabel,
+          ROIContourUid,
+          polygonUid,
+          referencedFrameNumber
+        );
+        this._polygons.push(polygon);
+      }
+      polygonsExtracted++;
+      const percentComplete = Math.floor(
+        (polygonsExtracted * 100) / numAllContours
+      );
+      if (percentComplete !== this._percentComplete) {
+        this._updateProgressCallback(`Reading Buffer: ${percentComplete}%`);
+        this._percentComplete = percentComplete;
+        // await allowStateUpdate();
+      }
+    };
+
+    const maxNumberOfWorkers = 4;
+    let arrayStride = Math.floor(numPolygons / maxNumberOfWorkers) || 1;
+    let arrayIndex = 0;
+    const polygonChunks = [];
+    const workers = [];
+    let workerId = 0;
+    while (arrayIndex < numPolygons) {
+      const worker = new RTSPolygonsExtractWorker();
+      workers.push(worker);
+      const workerPromise = new WebWorkerPromise(worker);
+      let arrayEnd = arrayIndex + arrayStride;
+      if (numPolygons - arrayEnd <= arrayStride) {
+        arrayEnd = numPolygons;
+      }
+      const subArray = [];
+      for (let i = arrayIndex; i < arrayEnd; i++) {
+        const dataSet = polygonItems[i].dataSet;
+        const elements = dataSet.elements;
+        // ContourImageSequence Item 0
+        const ImageSequenceElements =
+          elements.x30060016.items[0].dataSet.elements;
+        subArray.push({
+          ContourGeometricType: elements.x30060042,
+          ContourImageSequence: {
+            ReferencedSOPInstanceUID: ImageSequenceElements.x00081155,
+            ReferencedFrameNumber: ImageSequenceElements.x00081160,
+          },
+          ContourNumber: elements.x30060048,
+          NumberOfContourPoints: elements.x30060046,
+          ContourData: elements.x30060050,
+        });
+      }
+
+      polygonChunks.push(
+        workerPromise.postMessage(
+          {
+            ROINumber,
+            byteArray,
+            polygonItems: subArray,
+            sopInstancesInSeries: this._sopInstancesInSeries,
+            sopInstanceUid: this._sopInstanceUid,
+            workerId: workerId++,
+          },
+          [],
+          (eventName, data) => onWorkerUpdate(data)
+        )
+      );
+
+      arrayIndex = arrayEnd;
+    }
+    await Promise.all(polygonChunks);
+    workers.forEach(worker => worker.terminate());
+  }
+
+  /**
    * _createNewROIContourAndGetUid - Creates a new ROIContour and returns its UID.
    *
    * @param  {number} ROINumber The index of the ROIContour.
+   * @param ROIColor
    * @returns {string}  The ROICOntourUid.
    */
-  _createNewROIContourAndGetUid(ROINumber) {
+  _createNewROIContourAndGetUid(ROINumber, ROIColor) {
     const freehand3DStore = this._freehand3DStore;
     let name;
     let uid;
@@ -262,7 +421,9 @@ export default class RTStructReader {
       this._roiCollectionLabel,
       name,
       {
-        uid,
+        // Auto generate UID to prevent duplicate UID conflicts
+        // uid,
+        color: ROIColor,
       }
     );
 
@@ -325,13 +486,18 @@ export default class RTStructReader {
       return;
     }
 
+    // Required if the Referenced SOP Instance is a multi-frame image
     const referencedFrameNumber = contourImageSequenceData.string(
       RTStructTag['ReferencedFrameNumber']
     );
-    const contourNumber = contourSequenceItemData.string(
-      RTStructTag['ContourNumber']
-    );
-    const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+
+    // ContourNumber (3006,0048) value is Optional (3); no semantics
+    // or ordering shall be inferred from it
+    // const contourNumber = contourSequenceItemData.string(
+    //   RTStructTag['ContourNumber']
+    // );
+    // const polygonUid = `${this._sopInstanceUid}.${ROINumber}.${contourNumber}`;
+    const polygonUid = generateUID();
 
     const points = this._extractPoints(
       contourSequenceItemData,
@@ -396,6 +562,7 @@ const RTStructTag = {
   ROINumber: 'x30060022',
   ROIName: 'x30060026',
   ReferencedROINumber: 'x30060084',
+  ROIDisplayColor: 'x3006002a',
   ContourSequence: 'x30060040',
   ContourImageSequence: 'x30060016',
   ReferencedSOPInstanceUID: 'x00081155',

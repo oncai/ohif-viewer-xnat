@@ -8,6 +8,7 @@ const PACKAGE = require('../platform/viewer/package.json');
 const loadShadersRule = require('./rules/loadShaders.js');
 const loadWebWorkersRule = require('./rules/loadWebWorkers.js');
 const transpileJavaScriptRule = require('./rules/transpileJavaScript.js');
+const svgrLoader = require('./rules/svgrLoader.js');
 // ~~ PLUGINS
 const TerserJSPlugin = require('terser-webpack-plugin');
 // ~~ ENV VARS
@@ -54,6 +55,7 @@ module.exports = (env, argv, { SRC_DIR, DIST_DIR }) => {
         transpileJavaScriptRule(mode),
         loadWebWorkersRule,
         loadShadersRule,
+        svgrLoader,
       ],
     },
     resolve: {

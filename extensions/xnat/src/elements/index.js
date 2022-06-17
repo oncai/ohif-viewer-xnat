@@ -25,10 +25,23 @@ import xnatColormap from './icons/xnat-colormap.svg';
 import xnatOpacity from './icons/xnat-opacity.svg';
 import xnatContrastRange from './icons/xnat-contrast-range.svg';
 import xnatRefresh from './icons/xnat-refresh.svg';
+import xnatLoadRoi from './icons/xnat-load-roi.svg';
+import xnatDialogHandle from './icons/xnat-dialog-handle.svg';
+import xnatCircle from './icons/xnat-circle.svg';
+import xnatCircleEraseInside from './icons/xnat-circle-erase-inside.svg';
+import xnatCircleFillOutside from './icons/xnat-circle-fill-outside.svg';
+import xnatCircleEraseOutside from './icons/xnat-circle-erase-outside.svg';
+import xnatContourHandle from './icons/xnat-contour-handle.svg';
+import xnatDeleteContour from './icons/xnat-delete-contour.svg';
+import xnatPincel from './icons/xnat-pencil.svg';
 
 import Loader from './Loader/Loader';
 
 import { sliderUtils, ReactSlider } from './rangeSliders';
+
+import SortIcon from './SortIcon/SortIcon';
+
+import ROIContourColorPicker from './colorPickers/ROIContourColorPicker';
 
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
@@ -57,6 +70,22 @@ const XNATICONS = {
   'xnat-opacity': xnatOpacity,
   'xnat-contrast-range': xnatContrastRange,
   'xnat-refresh': xnatRefresh,
+  'xnat-load-roi': xnatLoadRoi,
+  'xnat-dialog-handle': xnatDialogHandle,
+  'xnat-circle': xnatCircle,
+  'xnat-circle-erase-inside': xnatCircleEraseInside,
+  'xnat-circle-fill-outside': xnatCircleFillOutside,
+  'xnat-circle-erase-outside': xnatCircleEraseOutside,
+  'xnat-contour-handle': xnatContourHandle,
+  'xnat-delete-contour': xnatDeleteContour,
+  'xnat-pencil': xnatPincel,
 };
 
-export { XNATICONS, Loader, sliderUtils, ReactSlider };
+export {
+  XNATICONS,
+  Loader,
+  sliderUtils,
+  ReactSlider,
+  SortIcon,
+  ROIContourColorPicker,
+};

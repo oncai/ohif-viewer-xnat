@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
+import isEqual from 'lodash.isequal';
 
 import { MODULE_TYPES } from '@ohif/core';
 import {
@@ -35,7 +36,7 @@ class ToolbarRow extends Component {
     // NOTE: withDialog, withModal HOCs
     dialog: PropTypes.any,
     modal: PropTypes.any,
-    preferences: PropTypes.object
+    preferences: PropTypes.object,
   };
 
   static defaultProps = {
@@ -142,8 +143,11 @@ class ToolbarRow extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const activeContextsChanged =
-      prevProps.activeContexts !== this.props.activeContexts;
+    const activeContexts = this.props.activeContexts;
+    const activeContextsChanged = !isEqual(
+      prevProps.activeContexts,
+      activeContexts
+    );
 
     const prevStudies = prevProps.studies;
     const prevActiveViewport = prevProps.activeViewport;
@@ -174,9 +178,45 @@ class ToolbarRow extends Component {
     }
 
     if (activeContextsChanged) {
+      const visibleToolbarButtons = _getVisibleToolbarButtons.call(this);
+      let defaultActiveButton;
+      let activeButtons = [];
+      const isCornerstone = activeContexts.includes(
+        'ACTIVE_VIEWPORT::CORNERSTONE'
+      );
+      const isVtk = activeContexts.includes('ACTIVE_VIEWPORT::VTK');
+      if (isCornerstone) {
+        defaultActiveButton = visibleToolbarButtons.filter(
+          button => button.id === 'Wwwc'
+        )[0];
+      } else if (isVtk) {
+        defaultActiveButton = visibleToolbarButtons.filter(
+          button => button.id === 'Crosshairs'
+        )[0];
+        // hide the subtool dialog
+        const { dialog } = this.props;
+        dialog.dismiss({ id: 'XNAT_TOOL_STRATEGIES_DIALOG_ID' });
+      }
+      // Switch to the default active button
+      if (defaultActiveButton) {
+        if (defaultActiveButton.commandName && isCornerstone) {
+          const options = Object.assign({}, defaultActiveButton.commandOptions);
+          commandsManager.runCommand(defaultActiveButton.commandName, options);
+        }
+        if (defaultActiveButton.type === 'setToolActive') {
+          activeButtons = [defaultActiveButton];
+          // Update activeTool ins store
+          store.dispatch({
+            type: 'SET_ACTIVE_TOOL',
+            activeTool: defaultActiveButton.commandOptions.toolName,
+          });
+        }
+      }
+
       this.setState(
         {
-          toolbarButtons: _getVisibleToolbarButtons.call(this),
+          toolbarButtons: visibleToolbarButtons,
+          activeButtons: activeButtons,
         },
         this.closeCineDialogIfNotApplicable
       );
@@ -207,8 +247,9 @@ class ToolbarRow extends Component {
       this.state.activeButtons
     );
 
-    const showLayoutButton =
-      this.props.activeContexts.includes('ACTIVE_VIEWPORT::CORNERSTONE');
+    const showLayoutButton = this.props.activeContexts.includes(
+      'ACTIVE_VIEWPORT::CORNERSTONE'
+    );
 
     const onPress = (side, value) => {
       this.props.handleSidePanelChange(side, value);
@@ -272,34 +313,38 @@ function _getCustomButtonComponent(button, activeButtons) {
 function _getExpandableButtonComponent(button, activeButtons) {
   // Iterate over button definitions and update `onClick` behavior
   let activeCommand;
-  const childButtons = button.buttons.map(childButton => {
-    childButton.onClick = _handleToolbarButtonClick.bind(this, childButton);
+  const childButtons = button.buttons
+    .map(childButton => {
+      childButton.onClick = _handleToolbarButtonClick.bind(this, childButton);
 
-    if (activeButtons.map(button => button.id).indexOf(childButton.id) > -1) {
-      activeCommand = childButton.id;
-    }
+      if (activeButtons.map(button => button.id).indexOf(childButton.id) > -1) {
+        activeCommand = childButton.id;
+      }
 
-    return childButton;
-  }).filter(button => {
-    let isEnabled = true;
-    if ('experimentalFeature' in button) {
-      const { experimentalFeatures = {} } = this.props.preferences;
-      const feature = Object.keys(experimentalFeatures).filter(key => {
-        return (experimentalFeatures[key].id === button.id)
-          && experimentalFeatures[key].enabled;
-      })[0];
+      return childButton;
+    })
+    .filter(button => {
+      let isEnabled = true;
+      if ('experimentalFeature' in button) {
+        const { experimentalFeatures = {} } = this.props.preferences;
+        const feature = Object.keys(experimentalFeatures).filter(key => {
+          return (
+            experimentalFeatures[key].id === button.id &&
+            experimentalFeatures[key].enabled
+          );
+        })[0];
 
-      isEnabled = feature !== undefined;
-    }
+        isEnabled = feature !== undefined;
+      }
 
-    if (!isEnabled && activeCommand === button.id) {
-      activeCommand = undefined;
-      // Update activeTool ins store
-      store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: 'CustomWwwc'});
-    }
+      if (!isEnabled && activeCommand === button.id) {
+        activeCommand = undefined;
+        // Update activeTool in store
+        store.dispatch({ type: 'SET_ACTIVE_TOOL', activeTool: 'CustomWwwc' });
+      }
 
-    return isEnabled;
-  });
+      return isEnabled;
+    });
 
   return (
     <ExpandableToolMenu
@@ -374,7 +419,10 @@ function _handleToolbarButtonClick(button, evt, props) {
     );
     this.setState({ activeButtons: [...toggables, button] });
     // Update activeTool ins store
-    store.dispatch({type: 'SET_ACTIVE_TOOL', activeTool: button.commandOptions.toolName});
+    store.dispatch({
+      type: 'SET_ACTIVE_TOOL',
+      activeTool: button.commandOptions.toolName,
+    });
   } else if (button.type === 'builtIn') {
     this._handleBuiltIn(button);
   }

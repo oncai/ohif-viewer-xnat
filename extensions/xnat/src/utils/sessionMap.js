@@ -1,3 +1,5 @@
+import colorTools from './colorTools';
+
 const _map = {
   scans: [],
   sessions: [],
@@ -10,8 +12,9 @@ const _map = {
     serverUrl: {
       site: '',
       project: '',
-    }
+    },
   },
+  roiColorList: [],
 };
 
 const sessionMap = {
@@ -79,6 +82,7 @@ const sessionMap = {
           seriesInstanceUid: seriesList[j].SeriesInstanceUID,
           seriesDescription: seriesList[j].SeriesDescription,
           seriesNumber: seriesList[j].SeriesNumber,
+          displaySets: [],
           ...metadata,
         });
       }
@@ -220,6 +224,22 @@ const sessionMap = {
   },
   setAiaaProjectUrl: url => {
     _map.aiaaSettings.serverUrl.project = url;
+  },
+
+  setProjectRoiColorList: roiColors => {
+    for (let i = 0; i < roiColors.length; i++) {
+      const { label, color } = roiColors[i];
+      const colorHex = colorTools.rgbToHex(color, ',');
+      _map.roiColorList.push({ label: label.toLowerCase(), color: colorHex });
+      // console.error(`Error parsing ROI color: ${label} ${color}`);
+    }
+  },
+  getProjectRoiColorList: () => {
+    return _map.roiColorList;
+  },
+  getProjectRoiColor: roiName => {
+    const item = _map.roiColorList.find(c => c.label === roiName.trim().toLowerCase());
+    return item ? item.color : '#000000';
   },
 };
 

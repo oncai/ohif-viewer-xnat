@@ -24,6 +24,16 @@ const defaultState = {
         overlapSegments: false,
       },
     },
+    ContourROILazyLoading: {
+      id: 'ContourROILazyLoading',
+      name: 'Contour ROI Lazy Loading',
+      enabled: false,
+    },
+    ConcurrentPolygonExtraction: {
+      id: 'ConcurrentPolygonExtraction',
+      name: 'RTStruct Concurrent Polygon Extraction',
+      enabled: true,
+    },
   },
 };
 

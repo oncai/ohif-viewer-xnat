@@ -3,6 +3,10 @@ import csTools from 'cornerstone-tools';
 import generateUID from '../utils/generateUID.js';
 import getSeriesInstanceUidFromEnabledElement from '../../utils/getSeriesInstanceUidFromEnabledElement';
 import TOOL_NAMES from '../toolNames';
+import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
+import SORT_ORDER from '../../constants/sortOrder';
+import sessionMap from '../../utils/sessionMap';
+import ROI_COLOR_TEMPLATES from '../roiColorTemplates';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -202,6 +206,12 @@ function setStructureSet(seriesInstanceUid, name, options = {}) {
         ? options.activeROIContourIndex
         : null,
     ROIContourCollection: [],
+    type: options.type,
+    expanded: options.expanded !== undefined ? options.expanded : false,
+    roiSortingOrder: { name: SORT_ORDER.NONE },
+    activeColorTemplate: options.activeColorTemplate
+      ? options.activeColorTemplate
+      : ROI_COLOR_TEMPLATES.CUSTOM.id,
   };
 
   series.structureSetCollection.push(structureSet);
@@ -219,13 +229,47 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     );
   }
 
+  const importStatus = options.hasOwnProperty('importStatus')
+    ? options.importStatus
+    : DATA_IMPORT_STATUS.IMPORTED;
+
   const ROIContour = {
     uid: options.uid ? options.uid : generateUID(),
     name,
-    color: options.color ? options.color : getNextColor(),
+    // color: options.color ? options.color : getNextColor(),
     polygonCount: options.polygonCount ? options.polygonCount : 0,
     visible: true,
+    importStatus,
+    importPercent: importStatus === DATA_IMPORT_STATUS.IMPORTED ? 100 : 0,
   };
+
+  const collectionColorTemplate = structureSet.activeColorTemplate;
+
+  // Color available per template
+  if (options.colorTemplates) {
+    ROIContour.colorTemplates = options.colorTemplates;
+  } else {
+    const generateCustomColor = !options.color || options.color === '#000000';
+    ROIContour.colorTemplates = {
+      [ROI_COLOR_TEMPLATES.META.id]: options.color || '#000000',
+      [ROI_COLOR_TEMPLATES.PROJECT.id]: sessionMap.getProjectRoiColor(
+        ROIContour.name
+      ),
+      // [ROI_COLOR_TEMPLATES.CUSTOM.id]: getNextColor(),
+      [ROI_COLOR_TEMPLATES.CUSTOM.id]: generateCustomColor
+        ? getNextColor()
+        : options.color,
+    };
+  }
+
+  // Set color and fall back to the custom color
+  ROIContour.color =
+    ROIContour.colorTemplates[collectionColorTemplate] ||
+    ROIContour.colorTemplates[ROI_COLOR_TEMPLATES.CUSTOM.id];
+
+  if (options.loadFunc) {
+    ROIContour.loadFunc = options.loadFunc;
+  }
 
   structureSet.ROIContourCollection.push(ROIContour);
 
@@ -260,6 +304,10 @@ function setDeleteROIFromStructureSet(
   const ROIContourIndex = ROIContourCollection.findIndex(ROIContour => {
     return ROIContour.uid === ROIContourUid;
   });
+
+  if (ROIContourIndex === structureSet.activeROIContourIndex) {
+    structureSet.activeROIContourIndex = 0;
+  }
 
   ROIContourCollection.splice(ROIContourIndex, 1);
 }
@@ -377,6 +425,60 @@ function decrementPolygonCount(
   ROIContour.polygonCount--;
 }
 
+function updateStructureSetColorTemplate(structureSet, colorTemplateId) {
+  structureSet.activeColorTemplate = colorTemplateId;
+
+  structureSet.ROIContourCollection.forEach(roi => {
+    if (
+      colorTemplateId === ROI_COLOR_TEMPLATES.PROJECT.id &&
+      !roi.colorTemplates[ROI_COLOR_TEMPLATES.PROJECT.id]
+    ) {
+      roi.colorTemplates[
+        ROI_COLOR_TEMPLATES.PROJECT.id
+      ] = sessionMap.getProjectRoiColor(roi.name);
+    }
+
+    roi.color =
+      roi.colorTemplates[colorTemplateId] ||
+      roi.colorTemplates[ROI_COLOR_TEMPLATES.CUSTOM.id];
+  });
+}
+
+function updateROIContourColor(structureSet, ROIContourUid, options = {}) {
+  const ROIContour = structureSet.ROIContourCollection.find(ROIContour => {
+    return ROIContour && ROIContour.uid === ROIContourUid;
+  });
+
+  const { colorTemplateId, customColor } = options;
+
+  switch (colorTemplateId) {
+    case ROI_COLOR_TEMPLATES.CUSTOM.id:
+      if (customColor) {
+        ROIContour.colorTemplates[colorTemplateId] = customColor;
+      }
+      break;
+    case ROI_COLOR_TEMPLATES.PROJECT.id:
+      ROIContour.colorTemplates[
+        colorTemplateId
+      ] = sessionMap.getProjectRoiColor(ROIContour.name);
+      break;
+    case ROI_COLOR_TEMPLATES.META.id:
+      break;
+  }
+
+  if (colorTemplateId === ROI_COLOR_TEMPLATES.PROJECT.id) {
+    ROIContour.colorTemplates[
+      ROI_COLOR_TEMPLATES.PROJECT.id
+    ] = sessionMap.getProjectRoiColor(ROIContour.name);
+  }
+
+  ROIContour.color =
+    ROIContour.colorTemplates[options.colorTemplateId] ||
+    ROIContour.colorTemplates[ROI_COLOR_TEMPLATES.CUSTOM.id];
+
+  return ROIContour.color;
+}
+
 const getters = {
   series: getSeries,
   structureSet: getStructureSet,
@@ -409,6 +511,8 @@ const setters = {
   toggleDisplayStats: () => {
     state.displayStats = !state.displayStats;
   },
+  updateStructureSetColorTemplate,
+  updateROIContourColor,
 };
 
 /**
@@ -445,11 +549,7 @@ function getImageIdOfCenterFrameOfROIContour(
     const toolData = imageIdSpecificToolState[toolName].data;
 
     if (
-      _toolDataContainsROIContour(
-        toolData,
-        seriesInstanceUid,
-        roiContourUid
-      )
+      _toolDataContainsROIContour(toolData, seriesInstanceUid, roiContourUid)
     ) {
       imageIdIndicies.push(i);
     }
@@ -468,16 +568,16 @@ function _toolDataContainsROIContour(
 ) {
   return !!toolData.some(
     toolDataI =>
-      toolDataI.seriesInstanceUid ===
-      seriesInstanceUid && toolDataI.ROIContourUid === roiContourUid
+      toolDataI.seriesInstanceUid === seriesInstanceUid &&
+      toolDataI.ROIContourUid === roiContourUid
   );
 }
 
 /**
  * enabledElementCallback - Element specific initilisation.
  * @public
- * @param  {Object} enabledElement  The element on which the module is
- *                                  being initialised.
+ * @param  {Object} element  The element on which the module is
+ *                           being initialised.
  */
 function enabledElementCallback(element) {
   const enabledElement = cornerstone.getEnabledElement(element);
@@ -507,24 +607,24 @@ export default {
 
 // TODO - Perhaps it'd be better if this now read from the CST4 default segment color LUT?
 const importColors = [
-  '#6495ED',//'cornflowerblue',
-  '#B22222',//'firebrick',
-  '#DAA520',//'goldenrod',
-  '#8A2BE2',//'blueviolet',
-  '#CD5C5C',//'indianred',
-  '#FF4500',//'orange',
-  '#48D1CC',//'mediumturquoise',
-  '#F08080',//'lightcoral',
-  '#F0E68C',//'khaki',
-  '#8B008B',//'darkmagenta',
-  '#20B2AA',//'lightseagreen',
-  '#FF6347',//'tomato',
-  '#7FFFD4',//'aquamarine',
-  '#E9967A',//'darksalmon',
-  '#FFE4B5',//'moccasin',
-  '#DA70D6',//'orchid',
-  '#87CEEB',//'skyblue',
-  '#CD853F',//'peru',
+  '#6495ED', //'cornflowerblue',
+  '#B22222', //'firebrick',
+  '#DAA520', //'goldenrod',
+  '#8A2BE2', //'blueviolet',
+  '#CD5C5C', //'indianred',
+  '#FF4500', //'orange',
+  '#48D1CC', //'mediumturquoise',
+  '#F08080', //'lightcoral',
+  '#F0E68C', //'khaki',
+  '#8B008B', //'darkmagenta',
+  '#20B2AA', //'lightseagreen',
+  '#FF6347', //'tomato',
+  '#7FFFD4', //'aquamarine',
+  '#E9967A', //'darksalmon',
+  '#FFE4B5', //'moccasin',
+  '#DA70D6', //'orchid',
+  '#87CEEB', //'skyblue',
+  '#CD853F', //'peru',
 ];
 
 // Such that first color will be the first in roiColors

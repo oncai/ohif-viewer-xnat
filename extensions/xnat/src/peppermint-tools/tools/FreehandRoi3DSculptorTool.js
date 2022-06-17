@@ -1,12 +1,19 @@
+import { getEnabledElement, internal } from 'cornerstone-core';
 import {
   FreehandRoiSculptorTool,
   toolColors,
   store,
   getToolState,
+  getToolForElement,
+  importInternal,
 } from 'cornerstone-tools';
 import { updateImage } from 'cornerstone-core';
 import interpolate from '../utils/freehandInterpolate/interpolate.js';
 import TOOL_NAMES from '../toolNames';
+
+const drawHandles = importInternal('drawing/drawHandles');
+
+const { calculateTransform } = internal;
 
 const { modules, state } = store;
 
@@ -105,6 +112,147 @@ export default class FreehandRoi3DSculptorTool extends FreehandRoiSculptorTool {
 
     data.invalidated = true;
     data.interpolated = false;
+  }
+
+  renderToolData(evt) {
+    const eventData = evt.detail;
+
+    if (this.configuration.currentTool === null) {
+      return false;
+    }
+
+    const element = eventData.element;
+    const config = this.configuration;
+
+    const toolState = getToolState(element, this.referencedToolName);
+    const data = toolState.data[config.currentTool];
+
+    if (!data) {
+      return false;
+    }
+
+    if (this._active) {
+      const context = eventData.canvasContext.canvas.getContext('2d');
+      const options = {
+        color: this.configuration.dragColor,
+        fill: null,
+        handleRadius: this._toolSizeCanvas,
+      };
+
+      const coords = this.configuration.mouseLocation.handles.start;
+      const fixedCoords = this._fixPixelCoords(coords, evt);
+
+      drawHandles(
+        context,
+        eventData,
+        { start: fixedCoords }, //this.configuration.mouseLocation.handles,
+        options
+      );
+    } else if (this.configuration.showCursorOnHover && !this._recentTouchEnd) {
+      this._renderHoverCursor(evt);
+    }
+  }
+
+  /**
+   * Renders the cursor
+   *
+   * @private
+   * @param  {type} evt description
+   * @returns {void}
+   */
+  _renderHoverCursor(evt) {
+    const eventData = evt.detail;
+    const element = eventData.element;
+    const context = eventData.canvasContext.canvas.getContext('2d');
+
+    const toolState = getToolState(element, this.referencedToolName);
+    const data = toolState.data[this.configuration.currentTool];
+
+    this._recentTouchEnd = false;
+
+    let coords;
+
+    if (this.configuration.mouseUpRender) {
+      coords = this.configuration.mouseLocation.handles.start;
+      this.configuration.mouseUpRender = false;
+    } else {
+      coords = state.mousePositionImage;
+    }
+
+    const fixedCoords = this._fixPixelCoords(coords, evt);
+
+    const freehandRoiTool = getToolForElement(element, this.referencedToolName);
+    let radiusCanvas = freehandRoiTool.distanceFromPointCanvas(
+      element,
+      data,
+      coords
+    );
+
+    this.configuration.mouseLocation.handles.start.x = coords.x;
+    this.configuration.mouseLocation.handles.start.y = coords.y;
+
+    if (this.configuration.limitRadiusOutsideRegion) {
+      const unlimitedRadius = radiusCanvas;
+
+      radiusCanvas = this._limitCursorRadiusCanvas(eventData, radiusCanvas);
+
+      // Fade if distant
+      if (
+        unlimitedRadius >
+        this.configuration.hoverCursorFadeDistance * radiusCanvas
+      ) {
+        context.globalAlpha = this.configuration.hoverCursorFadeAlpha;
+      }
+    }
+
+    const options = {
+      fill: null,
+      color: this.configuration.hoverColor,
+      handleRadius: radiusCanvas,
+    };
+
+    drawHandles(
+      context,
+      eventData,
+      { start: fixedCoords }, // this.configuration.mouseLocation.handles,
+      options
+    );
+
+    if (this.configuration.limitRadiusOutsideRegion) {
+      context.globalAlpha = 1.0; // Reset drawing alpha for other draw calls.
+    }
+  }
+
+  _fixPixelCoords(coords, evt) {
+    const eventData = evt.detail;
+    const element = eventData.element;
+    const enabledElement = getEnabledElement(element);
+    const context = enabledElement.canvas.getContext('2d');
+
+    /*
+      a: Horizontal scaling
+      d: Vertical scaling
+      e: Horizontal moving
+      f: Vertical moving
+    */
+    const { a, d, e, f } = context.getTransform();
+
+    // Pixel to canvas
+    const transform = calculateTransform(enabledElement);
+    const transform_inverted = transform.clone();
+    transform_inverted.invert();
+
+    // Fix canvas coordinates
+    transform.scale(1 / a, 1 / d);
+    transform.translate(-e, -f);
+
+    const canvasCoords = transform.transformPoint(coords.x, coords.y);
+    const pixelCoords = transform_inverted.transformPoint(
+      canvasCoords.x,
+      canvasCoords.y
+    );
+
+    return pixelCoords;
   }
 }
 

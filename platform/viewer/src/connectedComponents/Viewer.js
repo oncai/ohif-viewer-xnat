@@ -446,7 +446,7 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
             inconsistencyWarnings.push('The dataset frames have different pixel spacing.');
             break;
           case ReconstructionIssues.MULTIFRAMES:
-            inconsistencyWarnings.push('The dataset is a multiframes.');
+            inconsistencyWarnings.push('The dataset is multi-frame.');
             break;
           default:
             break;
@@ -622,10 +622,12 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         InstanceNumber,
         numImageFrames,
         SeriesNumber,
+        seriesNotation,
       } = displaySet;
 
       let imageId;
       let altImageText;
+      let SOPInstanceUID;
 
       if (displaySet.Modality && displaySet.Modality === 'SEG') {
         // TODO: We want to replace this with a thumbnail showing
@@ -637,6 +639,8 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
           displaySet.numberOfImagesPerSubset || displaySet.images.length;
         const imageIndex = Math.floor(numImages / 2);
         imageId = displaySet.images[imageIndex].getImageId();
+        SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
+          .SOPInstanceUID;
       } else {
         altImageText = displaySet.Modality ? displaySet.Modality : 'UN';
       }
@@ -654,6 +658,8 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         numImageFrames,
         SeriesNumber,
         hasWarnings,
+        seriesNotation,
+        SOPInstanceUID,
       };
     });
 

@@ -1,6 +1,7 @@
 import cornerstoneTools from 'cornerstone-tools';
 import { Polygon } from '../../../peppermint-tools';
 import allowStateUpdate from '../../awaitStateUpdate';
+import colorTools from '../../colorTools';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -145,21 +146,22 @@ export default class AIMReader {
 
     this._percentComplete = 0;
     let numAllContours = 0;
-    const numContours = [];
+    const allMarkupEntities = [];
     for (let i = 0; i < annotations.length; i++) {
-      const markupEntitys = annotations[i].getElementsByTagName('MarkupEntity');
-      numContours.push(markupEntitys.length);
-      numAllContours += markupEntitys.length;
+      const markupEntities = annotations[i].getElementsByTagName('MarkupEntity');
+      allMarkupEntities.push(markupEntities);
+      numAllContours += markupEntities.length;
     }
 
     let extractedNumContours = 0;
     for (let i = 0; i < annotations.length; i++) {
       await this._extractPolygons(
         annotations[i],
+        allMarkupEntities[i],
         extractedNumContours,
         numAllContours
       );
-      extractedNumContours += numContours[i];
+      extractedNumContours += allMarkupEntities[i].length;
     }
   }
 
@@ -167,15 +169,26 @@ export default class AIMReader {
    * _extractPolygons - Extracts each polygon from a particular annotation.
    *
    * @param  {HTMLElement} annotation An AIM ImageAnnotation.
+   * @param markupEntities
+   * @param extractedNumContours
+   * @param numAllContours
    * @returns {null}
    */
-  async _extractPolygons(annotation, extractedNumContours, numAllContours) {
+  async _extractPolygons(
+    annotation,
+    markupEntities,
+    extractedNumContours,
+    numAllContours
+  ) {
     const children = annotation.children;
     const { ROIContourUid, name } = this._createNewVolumeAndGetUid(children);
-    const markupEntitys = annotation.getElementsByTagName('MarkupEntity');
 
-    for (let i = 0; i < markupEntitys.length; i++) {
-      this._addMarkupEntityIfPolygon(markupEntitys[i], ROIContourUid);
+    for (let i = 0; i < markupEntities.length; i++) {
+      const markupEntity = markupEntities[i];
+      // Add a MarkupEntity to the polygon list if type is TwoDimensionPolyline
+      if (markupEntity.getAttribute('xsi:type') === 'TwoDimensionPolyline') {
+        this._addPolygon(markupEntity, ROIContourUid);
+      }
       const percentComplete = Math.floor(
         ((extractedNumContours + i + 1) * 100) / numAllContours
       );
@@ -184,20 +197,6 @@ export default class AIMReader {
         this._percentComplete = percentComplete;
         await allowStateUpdate();
       }
-    }
-  }
-
-  /**
-   * _addMarkupEntityIfPolygon - Adds a MarkupEntity to the polygon list if
-   * is of the xsi:type "TwoDimensionPolyline"
-   *
-   * @param  {HTMLElement} markupEntity  The AIM MarkupEntity
-   * @param  {string} ROIContourUid The UID of the new ROIContour.
-   * @returns {null}
-   */
-  _addMarkupEntityIfPolygon(markupEntity, ROIContourUid) {
-    if (markupEntity.getAttribute('xsi:type') === 'TwoDimensionPolyline') {
-      this._addPolygon(markupEntity, ROIContourUid);
     }
   }
 
@@ -274,6 +273,7 @@ export default class AIMReader {
     let name;
     let uid;
     let comment;
+    let color;
 
     for (let i = 0; i < childElementsOfAnnotation.length; i++) {
       if (childElementsOfAnnotation[i].tagName === 'uniqueIdentifier') {
@@ -282,6 +282,19 @@ export default class AIMReader {
         name = childElementsOfAnnotation[i].getAttribute('value');
       } else if (childElementsOfAnnotation[i].tagName === 'comment') {
         comment = childElementsOfAnnotation[i].getAttribute('value');
+      } else if (
+        childElementsOfAnnotation[i].tagName === 'markupEntityCollection'
+      ) {
+        const markupEntity0 = childElementsOfAnnotation[i].children[0];
+        if (markupEntity0) {
+          const lineColorNode = markupEntity0.getElementsByTagName(
+            'lineColour'
+          )[0];
+          if (lineColorNode) {
+            const lineColor = lineColorNode.getAttribute('value');
+            color = colorTools.rgbToHex(lineColor, ',');
+          }
+        }
       }
     }
 
@@ -293,7 +306,7 @@ export default class AIMReader {
         name = comment;
       } else {
         console.log(
-          'No name or comment for imageAnnotation, using default name "Untitled Lession"'
+          'No name or comment for imageAnnotation, using default name "Untitled ROI"'
         );
         name = 'Untitled ROI';
       }
@@ -321,7 +334,9 @@ export default class AIMReader {
       this._roiCollectionLabel,
       name,
       {
-        uid,
+        // Auto generate UID to prevent duplicate UID conflicts
+        // uid,
+        color,
       }
     );
 

@@ -37,12 +37,7 @@ const getVolumeImportedContourCollectionLabels = () => {
 };
 
 const ImportCollectionContainer = props => {
-  const {
-    rois,
-    type,
-    selectedRois,
-    setSelectedRois,
-  } = props;
+  const { collections, type, selectedRois, setSelectedRois } = props;
   return (
     <div className="importCollectionContainer">
       <table className="collectionTable">
@@ -54,7 +49,7 @@ const ImportCollectionContainer = props => {
           </tr>
         </thead>
         <tbody>
-          {rois.map((roi, index) => (
+          {collections.map((collection, index) => (
             <tr key={index}>
               <td className="centered-cell">
                 <input
@@ -77,8 +72,8 @@ const ImportCollectionContainer = props => {
                   value={index}
                 />
               </td>
-              <td className="left-aligned-cell">{roi.name}</td>
-              <td className="left-aligned-cell">{`${roi.date} ${roi.time}`}</td>
+              <td className="left-aligned-cell">{collection.name}</td>
+              <td className="left-aligned-cell">{`${collection.date} ${collection.time}`}</td>
             </tr>
           ))}
         </tbody>
@@ -88,7 +83,7 @@ const ImportCollectionContainer = props => {
   );
 };
 
-const RoiImportModal = ({ rois, type, seriesInfo, onClose }) => {
+const RoiImportModal = ({ collections, type, seriesInfo, onClose }) => {
   const [selectedRois, setSelectedRois] = useState([]);
   const [importing, setImporting] = useState(false);
   const [progressText, setProgressText] = useState(type =>
@@ -115,7 +110,7 @@ const RoiImportModal = ({ rois, type, seriesInfo, onClose }) => {
   } else {
     content = (
       <ImportCollectionContainer
-        rois={rois}
+        collections={collections}
         type={type}
         selectedRois={selectedRois}
         setSelectedRois={setSelectedRois}
@@ -153,7 +148,7 @@ const RoiImportModal = ({ rois, type, seriesInfo, onClose }) => {
               if (type === 'mask') {
                 setImporting(true);
                 importMaskRoiCollection(
-                  rois[selectedRois[0]],
+                  collections[selectedRois[0]],
                   {
                     updateImportingText: setProgressText,
                     onImportComplete: onClose,
@@ -162,11 +157,13 @@ const RoiImportModal = ({ rois, type, seriesInfo, onClose }) => {
                   true
                 );
               } else if (type === 'contour') {
-                const collectionsToParse = rois.filter((roi, index) =>
+                const collectionsToParse = collections.filter((collection, index) =>
                   selectedRois.includes(index)
                 );
                 setImporting(true);
-                importContourRoiCollections(collectionsToParse, {
+                importContourRoiCollections(
+                  collectionsToParse,
+                  {
                     updateImportingText: setProgressText,
                     onImportComplete: onClose,
                     updateProgress: setImportProgress,
@@ -186,7 +183,7 @@ const RoiImportModal = ({ rois, type, seriesInfo, onClose }) => {
 };
 
 RoiImportModal.propTypes = {
-  rois: PropTypes.array.isRequired,
+  collections: PropTypes.array.isRequired,
   type: PropTypes.string.isRequired,
   seriesInfo: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,

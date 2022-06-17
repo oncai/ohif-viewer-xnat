@@ -21,6 +21,8 @@ function ThumbnailFooter({
   hasWarnings,
   hasRois,
   imageId,
+  seriesNotation,
+  SOPInstanceUID,
 }) {
   const [inconsistencyWarnings, inconsistencyWarningsSet] = useState([]);
 
@@ -128,10 +130,10 @@ function ThumbnailFooter({
             onClick={evt => {
               evt.stopPropagation();
               const importedContourLabels = getVolumeImportedContourCollectionLabels();
-              const rtsRois = RTS.filter(
+              const rtsCollections = RTS.filter(
                 roi => !importedContourLabels.includes(roi.label)
               );
-              if (rtsRois.length < 1) {
+              if (rtsCollections.length < 1) {
                 showNotification(
                   'Available contour ROI collections have been already imported.',
                   'info',
@@ -142,7 +144,7 @@ function ThumbnailFooter({
               showModal(
                 RoiImportModal,
                 {
-                  rois: [...rtsRois],
+                  collections: [...rtsCollections],
                   type: 'contour',
                   seriesInfo: {
                     SeriesNumber,
@@ -171,7 +173,7 @@ function ThumbnailFooter({
               showModal(
                 RoiImportModal,
                 {
-                  rois: [...SEG],
+                  collections: [...SEG],
                   type: 'mask',
                   seriesInfo: {
                     SeriesNumber,
@@ -216,10 +218,40 @@ function ThumbnailFooter({
     );
   };
 
+  const displaySeriesNumber = seriesNotation ? (
+    <OverlayTrigger
+      placement="right"
+      overlay={
+        <Tooltip
+          placement="right"
+          className="in tooltip-warning"
+          id="tooltip-duplicate-number"
+        >
+          {/*<div className="warningTitle">Duplicate Series Numbers</div>*/}
+          <div className="warningContent" style={{ borderRadius: 7 }}>
+            Automatically generated for clarity; duplicate SeriesNumber values.
+          </div>
+        </Tooltip>
+      }
+    >
+      <div>
+        {SeriesNumber}
+        <b style={{ color: '#E29E4A' }}>{`-${seriesNotation}`}</b>
+      </div>
+    </OverlayTrigger>
+  ) : (
+    SeriesNumber
+  );
+
   return (
     <div className={classNames('series-details', { 'info-only': infoOnly })}>
       <div className="series-description">{SeriesDescription}</div>
-      {getSeriesInformation(SeriesNumber, InstanceNumber, numImageFrames, inconsistencyWarnings)}
+      {getSeriesInformation(
+        displaySeriesNumber,
+        InstanceNumber,
+        numImageFrames,
+        inconsistencyWarnings
+      )}
     </div>
   );
 }

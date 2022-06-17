@@ -44,6 +44,7 @@ export default function(seriesInstanceUid, structureSetUid) {
         uid: ROIContour.uid,
         polygonCount: ROIContour.polygonCount,
         color: ROIContour.color,
+        colorTemplates: ROIContour.colorTemplates,
       }
     );
   }
@@ -63,11 +64,14 @@ export default function(seriesInstanceUid, structureSetUid) {
         const toolState = toolStateManager[elementId][FREEHAND_ROI_3D_TOOL];
         const toolData = toolState.data;
 
-        movePolygonsInInstance(
-          workingStructureSet,
-          toolData,
-          seriesInstanceUid
+        const filteredToolData = toolData.filter(
+          data => data.structureSetUid === structureSetUid
         );
+
+        // Process if the instance has contours belonging to the structure set
+        if (filteredToolData.length > 0) {
+          movePolygonsInInstance(workingStructureSet, toolData);
+        }
       }
     }
   });
@@ -87,32 +91,24 @@ export default function(seriesInstanceUid, structureSetUid) {
  * Moves the ROIs defined by the seriesInstanceUid, roiCollectionName
  * and exportMask from the working directory to a new named roiCollection.
  *
- * @param  {Object} exportData  An object containing the required information
- *                              to execute the move opperation.
+ * @param workingStructureSet
+ * @param toolData
  */
-function movePolygonsInInstance(
-  workingStructureSet,
-  toolData,
-  seriesInstanceUid
-) {
-  const freehand3DStore = modules.freehand3D;
-
+function movePolygonsInInstance(workingStructureSet, toolData) {
   for (let i = 0; i < toolData.length; i++) {
     const data = toolData[i];
 
-    const referencedROIContour = freehand3DStore.getters.ROIContour(
-      seriesInstanceUid,
-      'DEFAULT',
-      data.ROIContourUid
+    const referencedROIContour = workingStructureSet.ROIContourCollection.find(
+      ROIContour => {
+        return ROIContour && ROIContour.uid === data.ROIContourUid;
+      }
     );
-
-    const referencedStructureSet = freehand3DStore.getters.structureSet(
-      seriesInstanceUid,
-      'DEFAULT'
-    );
+    if (!referencedROIContour) {
+      continue;
+    }
 
     data.structureSetUid = 'DEFAULT';
+    data.referencedStructureSet = workingStructureSet;
     data.referencedROIContour = referencedROIContour;
-    data.referencedStructureSet = referencedStructureSet;
   }
 }

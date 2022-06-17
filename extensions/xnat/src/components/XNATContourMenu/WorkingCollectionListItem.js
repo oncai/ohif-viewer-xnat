@@ -1,12 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { store } from 'cornerstone-tools';
-
-import '../XNATRoiPanel.styl';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import showModal from '../common/showModal.js';
 import LabelEditModal from '../common/LabelEditModal.js';
+import refreshViewports from '../../utils/refreshViewports';
+import { ROIContourColorPicker } from '../../elements';
+import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
+
+import '../XNATRoiPanel.styl';
 
 const modules = store.modules;
 
@@ -23,6 +26,7 @@ export default class WorkingCollectionListItem extends React.Component {
     onRoiRemove: PropTypes.any,
     SeriesInstanceUID: PropTypes.any,
     onClick: PropTypes.func,
+    canChangeRoiColor: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -33,6 +37,7 @@ export default class WorkingCollectionListItem extends React.Component {
     onRoiRemove: undefined,
     SeriesInstanceUID: undefined,
     onClick: undefined,
+    canChangeRoiColor: true,
   };
 
   constructor(props = {}) {
@@ -40,13 +45,15 @@ export default class WorkingCollectionListItem extends React.Component {
 
     this.onEditClick = this.onEditClick.bind(this);
     this.onUpdateLabel = this.onUpdateLabel.bind(this);
+    this.onUpdateColor = this.onUpdateColor.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
 
-    const { visible, name } = this.props.metadata;
+    const { visible, name, color } = this.props.metadata;
 
     this.state = {
       visible,
       name,
+      color,
     };
   }
 
@@ -63,7 +70,42 @@ export default class WorkingCollectionListItem extends React.Component {
       itemId
     );
 
-    this.setState({ name: newLabel });
+    const structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      'DEFAULT'
+    );
+
+    const color = modules.freehand3D.setters.updateROIContourColor(
+      structureSet,
+      itemId,
+      {
+        colorTemplateId: structureSet.activeColorTemplate,
+      }
+    );
+
+    refreshViewports();
+
+    this.setState({ name: newLabel, color: color });
+  }
+
+  onUpdateColor(data) {
+    const { color, ROIContourUid } = data;
+    const { SeriesInstanceUID } = this.props;
+
+    const structureSet = modules.freehand3D.getters.structureSet(
+      SeriesInstanceUID,
+      'DEFAULT'
+    );
+
+    modules.freehand3D.setters.updateROIContourColor(
+      structureSet,
+      ROIContourUid,
+      { colorTemplateId: ROI_COLOR_TEMPLATES.CUSTOM.id, customColor: color }
+    );
+
+    refreshViewports();
+
+    this.setState({ color: color });
   }
 
   onEditClick() {
@@ -102,14 +144,14 @@ export default class WorkingCollectionListItem extends React.Component {
       onRoiRemove,
       onClick,
       activeROIContourIndex,
+      canChangeRoiColor,
     } = this.props;
 
     const checked = activeROIContourIndex === roiContourIndex;
     const name = metadata.name;
     const polygonCount = metadata.polygonCount;
-    const roiContourColor = metadata.color;
 
-    const { visible } = this.state;
+    const { visible, color } = this.state;
     const showHideIcon = visible ? (
       <Icon name="eye" width="13px" height="13px" />
     ) : (
@@ -118,38 +160,55 @@ export default class WorkingCollectionListItem extends React.Component {
 
     return (
       <tr>
-        <td className="centered-cell" style={{ backgroundColor: roiContourColor }}>
+        <td
+          className="centered-cell"
+          style={{ backgroundColor: metadata.color }}
+        >
           <input
             type="radio"
             checked={checked}
             onChange={() => onRoiChange(roiContourIndex)}
-            style={{ backgroundColor: roiContourColor }}
+            style={{ backgroundColor: metadata.color }}
           />
         </td>
         <td className="left-aligned-cell">
-          <a
-            style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
-            onClick={this.onEditClick}
-          >
-            {name}
-          </a>
+          <div className="editableWrapper">
+            <a
+              style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
+              onClick={this.onEditClick}
+            >
+              {name}
+              <span>
+                <Icon name="xnat-pencil" />
+              </span>
+            </a>
+          </div>
         </td>
         <td className="centered-cell">
           <a
-            style={{ cursor: 'pointer', color: 'white' }}
+            style={{ cursor: 'pointer', color: 'var(--text-primary-color)' }}
             onClick={() => (polygonCount ? onClick(metadata.uid) : null)}
           >
             {polygonCount}
           </a>
         </td>
         <td className="">
-          <button className="small" onClick={() => onRoiRemove(metadata.uid)}>
-            <Icon name="trash" width="13px" height="13px" />
-          </button>
-        </td>
-        <td className="">
           <button className="small" onClick={this.onShowHideClick}>
             {showHideIcon}
+          </button>
+        </td>
+        {canChangeRoiColor && (
+          <td className="">
+            <ROIContourColorPicker
+              ROIContourUid={metadata.uid}
+              roiContourColor={metadata.color}
+              onUpdateROIContourColor={this.onUpdateColor}
+            />
+          </td>
+        )}
+        <td className="">
+          <button className="small" onClick={() => onRoiRemove(metadata.uid)}>
+            <Icon name="trash" width="13px" height="13px" />
           </button>
         </td>
       </tr>

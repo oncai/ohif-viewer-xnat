@@ -1,6 +1,6 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
-import preMouseDownCallback from './preMouseDownCallback';
+import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
 
 const { CircleScissorsTool } = csTools;
 
@@ -16,14 +16,17 @@ export default class XNATCircleScissorsTool extends CircleScissorsTool {
 
   preMouseDownCallback(evt) {
     const { detail } = evt;
+    triggerSegmentGenerationEvent(detail.element);
+  }
 
-    preMouseDownCallback(detail.element);
+  preTouchStartCallback(evt) {
+    this.preMouseDownCallback(evt);
+  }
 
-    const { event } = detail;
-    if (event.ctrlKey) {
-      this.activeStrategy = 'ERASE_INSIDE';
-    } else {
-      this.activeStrategy = 'FILL_INSIDE';
+  applyActiveStrategy(evt, operationData) {
+    if (evt.detail.event.ctrlKey) {
+      return this.strategies['ERASE_INSIDE'].call(this, evt, operationData);
     }
+    return this.strategies[this.activeStrategy].call(this, evt, operationData);
   }
 }
