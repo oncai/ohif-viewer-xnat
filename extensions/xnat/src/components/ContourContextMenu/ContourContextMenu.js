@@ -5,33 +5,30 @@ import React from 'react';
 
 const modules = csTools.store.modules;
 
-const XNATContextMenu =
-  ({ eventData,
-     callbackData,
-     onClose,
-     onDelete,
-     onCopy,
-     OnPaste,
-     onEmpty
-  }) => {
+const ContourContextMenu = ({
+  eventData,
+  callbackData,
+  onClose,
+  onDelete,
+  onCopy,
+  onPaste,
+  onEmpty,
+}) => {
   const contourDropdownItems = [
     {
       label: 'Delete contour',
       actionType: 'Delete',
-      action: () =>
-        onDelete(),
+      action: () => onDelete(),
     },
     {
       label: 'Copy contour',
       actionType: 'Copy',
-      action: () =>
-        onCopy(),
+      action: () => onCopy(),
     },
     {
       label: 'Cancel',
       actionType: 'Cancel',
-      action: () =>
-        onClose(),
+      action: () => onClose(),
     },
   ];
 
@@ -39,20 +36,17 @@ const XNATContextMenu =
     {
       label: 'Paste contour',
       actionType: 'Paste',
-      action: () =>
-        OnPaste(),
+      action: () => onPaste(),
     },
     {
       label: 'Empty clipboard',
       actionType: 'Empty',
-      action: () =>
-        onEmpty(),
+      action: () => onEmpty(),
     },
     {
       label: 'Cancel',
       actionType: 'Cancel',
-      action: () =>
-        onClose(),
+      action: () => onClose(),
     },
   ];
 
@@ -93,7 +87,7 @@ const XNATContextMenu =
   );
 };
 
-XNATContextMenu.propTypes = {
+ContourContextMenu.propTypes = {
   eventData: PropTypes.object,
   callbackData: PropTypes.object,
   onClose: PropTypes.func,
@@ -103,4 +97,4 @@ XNATContextMenu.propTypes = {
   onEmpty: PropTypes.func,
 };
 
-export default XNATContextMenu;
+export default ContourContextMenu;

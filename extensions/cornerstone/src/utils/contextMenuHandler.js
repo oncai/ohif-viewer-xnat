@@ -6,12 +6,10 @@ const subscribeList = [];
 const dialogIdList = [];
 
 function subscribe(tools, contextMenuCallback, dialogIds = []) {
-  subscribeList.push(
-    {
-      tools: tools,
-      callback: contextMenuCallback,
-    }
-  );
+  subscribeList.push({
+    tools: tools,
+    callback: contextMenuCallback,
+  });
 
   dialogIds.forEach(id => {
     if (dialogIdList.indexOf(id) === -1) {
@@ -80,17 +78,22 @@ function invokeSubscriberCallback(evt, isTouchEvent = false) {
     isTouchEvent: isTouchEvent,
   };
 
-  const subscriber = subscribeList.filter(subscriber => {
-    callbackData.nearbyToolData = commandsManager.runCommand('getNearbyToolData', {
-      element: eventData.element,
-      canvasCoordinates: eventData.currentPoints.canvas,
-      availableToolTypes: subscriber.tools,
-    });
+  let subscriber;
+  for (let i = 0; i < subscribeList.length; i++) {
+    subscriber = subscribeList[i];
+    callbackData.nearbyToolData = commandsManager.runCommand(
+      'getNearbyToolData',
+      {
+        element: eventData.element,
+        canvasCoordinates: eventData.currentPoints.canvas,
+        availableToolTypes: subscriber.tools,
+      }
+    );
 
-    return callbackData.nearbyToolData !== undefined;
-  })[0];
+    if (callbackData.nearbyToolData !== undefined) break;
+  }
 
-  if (subscriber) {
+  if (callbackData.nearbyToolData !== undefined) {
     subscriber.callback(evt, callbackData);
   } else {
     // when no nearByData is found, show the shared/general context menu

@@ -16,10 +16,12 @@ import {
   XNATRectangleScissorsTool,
   XNATCorrectionScissorsTool,
 } from './peppermint-tools';
-import { handleContourContextMenu } from './components/XNATContextMenu';
+import { handleContourContextMenu } from './components/ContourContextMenu';
 
 import { AIAAProbeTool, AIAAModule } from './aiaa-tools';
 import { MONAIProbeTool, MONAIModule } from './MONAILabelClient';
+
+import { initXNATMeasurement } from './XNATMeasurement';
 
 const { store, register, addTool } = cornerstoneTools;
 const { modules } = store;
@@ -137,4 +139,10 @@ export default function init({
     },
     'ACTIVE_VIEWPORT::CORNERSTONE'
   );
+
+  initXNATMeasurement({
+    servicesManager,
+    commandsManager,
+    configuration,
+  });
 }
