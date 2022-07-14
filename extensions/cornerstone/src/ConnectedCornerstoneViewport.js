@@ -14,6 +14,7 @@ import {
   referenceLines,
   updateImageSynchronizer,
 } from '@xnat-ohif/extension-xnat';
+import getDisplayedArea from './utils/getDisplayedArea';
 
 const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
 const {
@@ -38,8 +39,23 @@ const imageLoadFailed = event => {
   }
 };
 
+const onImageLoaded = event => {
+  // The displayedArea is image specific, so associate it with the image rather than the viewport.
+  const eventDetail = event.detail;
+  if (!eventDetail) {
+    return;
+  }
+
+  const { image } = eventDetail;
+  if (!image) {
+    return;
+  }
+
+  image.displayedArea = getDisplayedArea(image);
+};
+
 const onNewImage = event => {
-  // Make sure to update the viewport with the correct voi values
+  // Make sure to update the viewport with the correct voi values.
   const eventDetail = event.detail;
   if (!eventDetail) {
     return;
@@ -62,6 +78,21 @@ const onNewImage = event => {
     voi.windowCenter = windowCenter;
     cornerstone.setViewport(element, viewport);
   }
+};
+
+const onPreRender = event => {
+  // Workaround to update the viewport with the image specific displayedArea
+  const eventDetail = event.detail;
+  if (!eventDetail || !eventDetail.enabledElement) {
+    return;
+  }
+
+  const { viewport, image } = eventDetail.enabledElement;
+  if (!viewport || !image) {
+    return;
+  }
+
+  viewport.displayedArea = image.displayedArea;
 };
 
 // TODO: Transition to enums for the action names so that we can ensure they stay up to date
@@ -175,6 +206,16 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         target: 'element',
         eventName: cornerstone.EVENTS.NEW_IMAGE,
         handler: onNewImage,
+      },
+      {
+        target: 'element',
+        eventName: cornerstone.EVENTS.IMAGE_LOADED,
+        handler: onImageLoaded,
+      },
+      {
+        target: 'element',
+        eventName: cornerstone.EVENTS.PRE_RENDER,
+        handler: onPreRender,
       },
     ],
   };
