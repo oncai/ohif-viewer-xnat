@@ -353,6 +353,7 @@ const commandsModule = ({ servicesManager }) => {
       activeViewportIndex,
       refreshViewports = true,
       displaySetInstanceUID,
+      windowingType,
     }) => {
       const studies = studyMetadataManager.all();
       const study = studies.find(
@@ -372,6 +373,12 @@ const commandsModule = ({ servicesManager }) => {
 
       if (!displaySet) {
         return;
+      }
+
+      if (windowingType) {
+        const element = getEnabledElement(activeViewportIndex);
+        const enabledElement = cornerstone.getEnabledElement(element);
+        setWindowing(enabledElement.uuid, windowingType);
       }
 
       displaySet.SOPInstanceUID = SOPInstanceUID;
