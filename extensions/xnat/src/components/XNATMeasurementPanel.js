@@ -187,6 +187,7 @@ export default class XNATMeasurementPanel extends React.Component {
       frameIndex,
       activeViewportIndex: activeIndex,
       displaySetInstanceUID: viewports[activeIndex].displaySetInstanceUID,
+      windowingType: 'Manual',
     });
   }
 

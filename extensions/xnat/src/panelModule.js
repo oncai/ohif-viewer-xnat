@@ -95,7 +95,7 @@ const PanelModule = (commandsManager, api, servicesManager) => {
       },
       {
         icon: 'xnat-annotations',
-        label: 'Meas.',
+        label: 'Measurements',
         from: 'right',
         target: 'xnat-measurement-panel',
       },
