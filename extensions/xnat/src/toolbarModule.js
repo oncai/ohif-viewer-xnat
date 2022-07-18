@@ -1,6 +1,7 @@
 import { PEPPERMINT_TOOL_NAMES } from './peppermint-tools';
 import { AIAA_TOOL_NAMES } from './aiaa-tools';
 import STRATEGY_NAMES from './peppermint-tools/strategyNames';
+import { MONAI_TOOL_NAMES } from './MONAILabelClient';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -86,13 +87,22 @@ const definitions = [
           toolName: PEPPERMINT_TOOL_NAMES.BRUSH_3D_AUTO_GATED_TOOL,
         },
       },
+      // {
+      //   id: 'NVIDIAClaraAIAA',
+      //   label: 'NVIDIA AIAA',
+      //   icon: 'dot-circle',
+      //   type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+      //   commandName: 'setToolActive',
+      //   commandOptions: { toolName: AIAA_TOOL_NAMES.AIAA_PROB_TOOL },
+      //   experimentalFeature: true,
+      // },
       {
-        id: 'NVIDIAClaraAIAA',
-        label: 'NVIDIA AIAA',
+        id: 'MONAILabel',
+        label: 'MONAILabel',
         icon: 'dot-circle',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: AIAA_TOOL_NAMES.AIAA_PROB_TOOL },
+        commandOptions: { toolName: MONAI_TOOL_NAMES.MONAI_PROB_TOOL },
         experimentalFeature: true,
       },
       {

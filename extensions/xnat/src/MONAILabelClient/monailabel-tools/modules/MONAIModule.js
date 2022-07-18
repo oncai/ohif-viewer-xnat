@@ -1,4 +1,4 @@
-import AIAAClient from '../client/AIAAClient.js';
+import { MONAIClient } from '../../api';
 
 const state = {
   points: new Map(),
@@ -11,7 +11,7 @@ const configuration = {
   deepgrowPointColors: ['red', 'blue'],
 };
 
-const client = new AIAAClient();
+const client = new MONAIClient();
 
 function setPoint(segmentUid, pointData) {
   let points;
@@ -37,11 +37,14 @@ function getSegmentPoints(segmentUid, toolType) {
       return p.toolType === toolType;
     });
     segmentPoints.fg = toolPoints.filter(p => {
-      return !p.background;
-    }).map(p => [p.x, p.y, p.z]);
-    segmentPoints.bg = toolPoints.filter(p => {
-      return p.background;
-    }).map(p => [p.x, p.y, p.z]);
+        return !p.background;
+      })
+      .map(p => [p.x, p.y, p.z]);
+    segmentPoints.bg = toolPoints
+      .filter(p => {
+        return p.background;
+      })
+      .map(p => [p.x, p.y, p.z]);
   }
 
   return segmentPoints;

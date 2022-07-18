@@ -1,12 +1,10 @@
-import ApiWrapper from './ApiWrapper.js';
-import AIAA_TOOL_TYPES from '../toolTypes.js';
-import prepareRunParameters from '../utils/prepareRunParameters.js';
-import showNotification from '../../components/common/showNotification';
-import { saveFile, readFile } from '../../utils/xnatDev.js';
-import testModelList from './testModelList.js';
-import AIAA_MODEL_TYPES from '../modelTypes';
-import NIFTIReader from '../../utils/IO/classes/NIFTIReader/NIFTIReader';
-import common from '../../common';
+import ApiWrapper from './ApiWrapper';
+import { MONAI_TOOL_TYPES } from '../../monailabel-tools';
+import showNotification from '../../../components/common/showNotification';
+import NIFTIReader from '../../../utils/IO/classes/NIFTIReader/NIFTIReader';
+import common from '../../../common';
+import cloneDeep from 'lodash.clonedeep';
+import sessionMap from '../../../utils/sessionMap';
 
 const {
   createDicomVolume,
@@ -14,17 +12,17 @@ const {
   readNrrd,
 } = common.utils.reformat;
 
-const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
+const SESSION_ID_PREFIX = 'MONAI_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
 const USE_NIFTI = true;
 
-export default class AIAAClient {
+export default class MONAIClient {
   constructor() {
     this.api = new ApiWrapper('');
     this.isConnected = false;
     this.isSuccess = true;
     this.models = [];
-    this.currentTool = AIAA_TOOL_TYPES[0];
+    this.currentTool = MONAI_TOOL_TYPES[0];
     this.currentModel = null;
   }
 
@@ -34,7 +32,7 @@ export default class AIAAClient {
       showNotification(
         `Failed to fetch models! Reason: ${response.data}`,
         'error',
-        'NVIDIA AIAA'
+        'MONAILabel'
       );
 
       this.isConnected = false;
@@ -43,52 +41,47 @@ export default class AIAAClient {
       return false;
     }
 
-    // showNotification(
-    //   'Fetched available models',
-    //   'success',
-    //   'NVIDIA AIAA'
-    // );
-
     this.isConnected = true;
-    this.models = response.data;
 
-    this.models.forEach(model => {
-      if (model.type === AIAA_MODEL_TYPES.DEEPGROW) {
-        model.is3D = false;
-        if (!model.deepgrow) {
-          const index3D = model.description.toLowerCase().indexOf('3d');
-          if (index3D >= 0) {
-            model.is3D = true;
-          }
-        } else {
-          const index3D = model.deepgrow.toLowerCase().indexOf('3d');
-          if (index3D >= 0) {
-            model.is3D = true;
-          }
-        }
-      }
-    });
+    const data = response.data;
+    const models = cloneDeep(data.models);
+    this.models = Object.keys(models).map(key => ({
+      ...models[key],
+      name: key,
+    }));
 
     return true;
-  }
+  };
 
   runModel = async (parameters, updateStatusModal) => {
     const { SeriesInstanceUID, imageIds, segmentPoints } = parameters;
-    updateStatusModal('Getting AIAA session info ...');
-    let session_id = await this._getSession(SeriesInstanceUID)
 
-    // Create session if not available
-    if (session_id === null) {
-      updateStatusModal('Creating a new AIAA session ...');
-      const res = await this._createSession(SeriesInstanceUID, imageIds);
-      if (!res) {
-        return null;
+    const { projectId, subjectId, experimentId } = sessionMap.getScan(
+      SeriesInstanceUID
+    );
+    const scanId = imageIds[0].split('/scans/')[1].split('/')[0];
+    const monaiImageId = `${projectId}/${subjectId}/${experimentId}/${scanId}`;
+
+    const imageInfo = await this.api.getImageInfo(monaiImageId);
+    const hasXnatDatastore =
+      imageInfo.status === 200 && imageInfo.data && !_.isEmpty(imageInfo.data);
+
+    let session_id = null;
+    if (!hasXnatDatastore) {
+      updateStatusModal('Getting MONAILabel session info ...');
+      session_id = await this._getSession(SeriesInstanceUID);
+
+      // Create session if not available
+      if (session_id === null) {
+        updateStatusModal('Creating a new MONAILabel session ...');
+        const res = await this._createSession(SeriesInstanceUID, imageIds);
+        if (!res) {
+          return null;
+        }
+        session_id = this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
       }
-      session_id =
-        this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
     }
 
-    // Construct run parameters
     let fgPoints = [];
     let bgPoints = [];
     if (!_.isEmpty(segmentPoints)) {
@@ -105,31 +98,28 @@ export default class AIAAClient {
         bgPoints = segmentPoints.bg;
       }
     }
-    const runParams = prepareRunParameters({
-      model: this.currentModel,
-      fgPoints: fgPoints,
-      bgPoints: bgPoints,
-    }, USE_NIFTI);
+
+    // Construct run parameters
+    const params = {
+      result_extension: USE_NIFTI ? '.nii.gz' : '.nrrd',
+      result_dtype: 'uint16',
+      result_compress: true,
+      // Points
+      foreground: fgPoints,
+      background: bgPoints,
+    };
 
     updateStatusModal(`Running ${this.currentModel.name}, please wait...`);
-    // showNotification(
-    //   `Running ${this.currentModel.name}, please wait...`,
-    //   'info',
-    //   'NVIDIA AIAA'
-    // );
 
-    // Request to run model on AIAA server
+    // Request to run model on MONAILabel server
     const response = await this.api.runModel(
-      runParams.apiUrl,
-      runParams.params,
       this.currentModel.name,
-      session_id
+      params,
+      session_id,
+      monaiImageId
     );
 
     if (response.status === 200) {
-      // const imageBlob = new Blob([response.data],
-      //   { type: 'application/octet-stream' });
-      // saveFile(imageBlob, 'mask_image');
       if (USE_NIFTI) {
         const niftiReader = new NIFTIReader(imageIds);
         const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(response.data);
@@ -142,41 +132,19 @@ export default class AIAAClient {
       showNotification(
         `Failed to run ${this.currentModel.name}! Reason: ${response.data}`,
         'error',
-        'NVIDIA AIAA'
+        'MONAILabel'
       );
       return null;
     }
-  }
-
-  getTestModels = async () => {
-    this.isConnected = true;
-    this.models = testModelList;
-
-    return true;
-  }
-
-  readTestFile = async (imageIds) => {
-    const buffer = await readFile();
-    if (buffer === null) {
-      return null;
-    }
-
-    if (USE_NIFTI) {
-      const niftiReader = new NIFTIReader(imageIds);
-      const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(buffer);
-      return { data: image, size: maskImageSize };
-    } else {
-      const { image, maskImageSize } = readNrrd(buffer);
-      return { data: image, size: maskImageSize };
-    }
-  }
+  };
 
   _getSession = async SeriesInstanceUID => {
     let session_id = null;
 
     // check if session is available
-    const sessionID_cookie =
-      this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
+    const sessionID_cookie = this._getCookie(
+      `${SESSION_ID_PREFIX}${SeriesInstanceUID}`
+    );
     if (sessionID_cookie) {
       const response = await this.api.getSession(sessionID_cookie, true);
       if (response.status === 200) {
@@ -185,15 +153,15 @@ export default class AIAAClient {
     }
 
     return session_id;
-  }
+  };
 
   _createSession = async (SeriesInstanceUID, imageIds) => {
     let res = false;
 
     showNotification(
-      'Creating a new AIAA Session, please wait...',
+      'Creating a new MONAILabel Session, please wait...',
       'info',
-      'NVIDIA AIAA'
+      'MONAILabel'
     );
 
     let volumeBuffer;
@@ -220,25 +188,24 @@ export default class AIAAClient {
       res = true;
 
       showNotification(
-        'AIAA Session was created successfully',
+        'MONAILabel Session was created successfully',
         'success',
-        'NVIDIA AIAA'
+        'MONAILabel'
       );
-
     } else {
       showNotification(
-        `Failed to create AIAA Session! Reason: ${response.data}`,
+        `Failed to create MONAILabel Session! Reason: ${response.data}`,
         'error',
-        'NVIDIA AIAA'
+        'MONAILabel'
       );
     }
 
     return res;
-  }
+  };
 
   _setCookie = (name, value) => {
     document.cookie = `${name}=${escape(value)}`;
-  }
+  };
 
   _getCookie = (name) => {
     let value = null;
@@ -253,5 +220,5 @@ export default class AIAAClient {
     }
 
     return value;
-  }
+  };
 }
