@@ -19,6 +19,7 @@ import {
 import { handleContourContextMenu } from './components/XNATContextMenu';
 
 import { AIAAProbeTool, AIAAModule } from './aiaa-tools';
+import { MONAIProbeTool, MONAIModule } from './MONAILabelClient';
 
 const { store, register, addTool } = cornerstoneTools;
 const { modules } = store;
@@ -94,7 +95,9 @@ export default function init({
   freehand3DStore.state.displayStats = config.showFreehandStats;
 
   // register the AIAA module
-  register('module', 'aiaa', AIAAModule);
+  // register('module', 'aiaa', AIAAModule);
+
+  register('module', 'monai', MONAIModule);
 
   // Add Brush Eraser tool
   cornerstoneTools.addTool(Brush3DTool, {
@@ -111,7 +114,9 @@ export default function init({
     FreehandRoi3DTool,
     FreehandRoi3DSculptorTool,
     /* AIAA Tools */
-    AIAAProbeTool,
+    // AIAAProbeTool,
+    /* MONAI Tools */
+    MONAIProbeTool,
     /* Additional maks tools */
     XNATSphericalBrushTool,
     XNATFreehandScissorsTool,
