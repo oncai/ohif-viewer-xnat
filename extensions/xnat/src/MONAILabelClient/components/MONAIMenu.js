@@ -465,7 +465,7 @@ export default class MONAIMenu extends React.Component {
       <div className="roiPanelFooter">
         <div className="title-with-icon">
           <h4>
-            NVIDIA AI-Assisted Annotation
+            MONAILabel Annotation
           </h4>
           <Icon
             className="settings-icon"
