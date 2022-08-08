@@ -9,7 +9,7 @@ const MeasurementPropertyModal = props => {
   const coding = metadata.codingSequence[0];
 
   const [state, setState] = useState({
-    label: metadata.label,
+    name: metadata.name,
     description: metadata.description,
     categoryUID: coding.CategoryCodeSequence.CodeValue,
     typeUID: coding.TypeCodeSequence.CodeValue,
@@ -78,12 +78,12 @@ const MeasurementPropertyModal = props => {
   };
 
   const onChangeLabel = evt => {
-    const label = evt.target.value;
+    const name = evt.target.value;
 
     setState({
       ...state,
-      label,
-      validLabel: label.length > 0 && label.length <= 64,
+      name,
+      validLabel: name.length > 0 && name.length <= 64,
     });
   };
 
@@ -161,17 +161,17 @@ const MeasurementPropertyModal = props => {
     );
   }
 
-  const label = (
+  const name = (
     <div style={{ marginBottom: 10 }}>
-      <label>Label</label>
+      <label>Name</label>
       <input
-        name="label"
+        name="name"
         className="form-themed form-control input-overload"
         onChange={onChangeLabel}
         type="text"
         autoComplete="off"
-        defaultValue={state.label}
-        placeholder="Measurement Label.."
+        defaultValue={state.name}
+        placeholder="Measurement name.."
         tabIndex="1"
         style={{
           borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)',
@@ -184,7 +184,7 @@ const MeasurementPropertyModal = props => {
     <div style={{ marginBottom: 10 }}>
       <label>Description</label>
       <input
-        name="label"
+        name="description"
         className="form-themed form-control input-overload"
         onChange={onChangeDescription}
         type="text"
@@ -202,7 +202,7 @@ const MeasurementPropertyModal = props => {
   return (
     <React.Fragment>
       <div>
-        {label}
+        {name}
         {description}
         {categorySelect}
         {typeSelect}
@@ -223,7 +223,7 @@ const MeasurementPropertyModal = props => {
             data-cy="ok-btn"
             onClick={() => {
               onUpdateProperty({
-                label: state.label,
+                name: state.name,
                 description: state.description,
                 categoryUID: state.categoryUID,
                 typeUID: state.typeUID,

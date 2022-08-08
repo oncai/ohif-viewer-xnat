@@ -1,4 +1,4 @@
-import toolDescriptors from './toolDescriptors';
+import { ImageMeasurementCollection, imageMeasurements } from './classes';
 import dataExchange from './dataExchange';
 
-export { toolDescriptors, dataExchange };
+export { ImageMeasurementCollection, imageMeasurements, dataExchange };

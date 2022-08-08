@@ -1,9 +1,10 @@
 import cornerstone from 'cornerstone-core';
-import csTools from 'cornerstone-tools';
+import { addTool, EVENTS as CS_EVENTS } from 'cornerstone-tools';
 import throttle from 'lodash.throttle';
-import { toolTypes } from './measurement-tools';
+import { XNATToolTypes } from './measurement-tools';
 import { handleMeasurementContextMenu } from './components';
 import { xnatMeasurementApi } from './api';
+import { xnatAnnotationTools } from './measurement-tools';
 
 const MEASUREMENT_ACTION_MAP = {
   added: event => {
@@ -31,6 +32,9 @@ export default function init({
   commandsManager,
   configuration,
 }) {
+  // add XNAT annotation tools to CS Tools
+  Object.values(xnatAnnotationTools).forEach(addTool);
+
   // TODO: MEASUREMENT_COMPLETED (not present in initial implementation)
   const onMeasurementsChanged = (action, event) => {
     return MEASUREMENT_ACTION_MAP[action](event);
@@ -44,30 +48,25 @@ export default function init({
     const element = evt.detail.element;
 
     element.addEventListener(
-      csTools.EVENTS.MEASUREMENT_ADDED,
+      CS_EVENTS.MEASUREMENT_ADDED,
       onMeasurementAdded
     );
     element.addEventListener(
-      csTools.EVENTS.MEASUREMENT_REMOVED,
+      CS_EVENTS.MEASUREMENT_REMOVED,
       onMeasurementRemoved
     );
     element.addEventListener(
-      csTools.EVENTS.MEASUREMENT_MODIFIED,
+      CS_EVENTS.MEASUREMENT_MODIFIED,
       onMeasurementModified
     );
     element.addEventListener(
-      csTools.EVENTS.MEASUREMENT_COMPLETED,
+      CS_EVENTS.MEASUREMENT_COMPLETED,
       onMeasurementCompleted
     );
 
-    // element.addEventListener(
-    //   csTools.EVENTS.LABELMAP_MODIFIED,
-    //   onLabelmapModified
-    // );
-
-    // element.addEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
-    // element.addEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
-    // element.addEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
+    // element.addEventListener(CS_EVENTS.TOUCH_PRESS, onTouchPress);
+    // element.addEventListener(CS_EVENTS.MOUSE_CLICK, handleClick);
+    // element.addEventListener(CS_EVENTS.TOUCH_START, onTouchStart);
 
     // TODO: This makes scrolling painfully slow
     // element.addEventListener(cornerstone.EVENTS.NEW_IMAGE, onNewImage);
@@ -77,29 +76,29 @@ export default function init({
     const element = evt.detail.element;
 
     element.removeEventListener(
-      csTools.EVENTS.MEASUREMENT_ADDED,
+      CS_EVENTS.MEASUREMENT_ADDED,
       onMeasurementAdded
     );
     element.removeEventListener(
-      csTools.EVENTS.MEASUREMENT_REMOVED,
+      CS_EVENTS.MEASUREMENT_REMOVED,
       onMeasurementRemoved
     );
     element.removeEventListener(
-      csTools.EVENTS.MEASUREMENT_MODIFIED,
+      CS_EVENTS.MEASUREMENT_MODIFIED,
       onMeasurementModified
     );
     element.removeEventListener(
-      csTools.EVENTS.MEASUREMENT_COMPLETED,
+      CS_EVENTS.MEASUREMENT_COMPLETED,
       onMeasurementCompleted
     );
     // element.removeEventListener(
-    //   csTools.EVENTS.LABELMAP_MODIFIED,
+    //   CS_EVENTS.LABELMAP_MODIFIED,
     //   onLabelmapModified
     // );
 
-    // element.removeEventListener(csTools.EVENTS.TOUCH_PRESS, onTouchPress);
-    // element.removeEventListener(csTools.EVENTS.MOUSE_CLICK, handleClick);
-    // element.removeEventListener(csTools.EVENTS.TOUCH_START, onTouchStart);
+    // element.removeEventListener(CS_EVENTS.TOUCH_PRESS, onTouchPress);
+    // element.removeEventListener(CS_EVENTS.MOUSE_CLICK, handleClick);
+    // element.removeEventListener(CS_EVENTS.TOUCH_START, onTouchStart);
 
     // TODO: This makes scrolling painfully slow
     // element.removeEventListener(cornerstone.EVENTS.NEW_IMAGE, onNewImage);
@@ -118,7 +117,7 @@ export default function init({
   commandsManager.runCommand(
     'subscribeToContextMenuHandler',
     {
-      tools: [...toolTypes],
+      tools: [...Object.values(XNATToolTypes)],
       contextMenuCallback: handleMeasurementContextMenu,
       dialogIds: ['context-menu', 'labelling'],
     },

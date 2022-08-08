@@ -4,7 +4,6 @@ import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 import XNATSegmentationColorSelectModal from './components/XNATSegmentationColorSelectModal/XNATSegmentationColorSelectModal';
 import XNATMeasurementPanel from './components/XNATMeasurementPanel';
-// import { XNATMeasurementPanel } from './XNATMeasurement';
 
 const PanelModule = (commandsManager, api, servicesManager) => {
   const { UIModalService } = servicesManager.services;

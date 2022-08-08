@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
-import OHIF from '@ohif/core';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import onIOCancel from './common/helpers/onIOCancel';
 import XNATMeasurementImportMenu from './XNATMeasurementImportMenu/XNATMeasurementImportMenu';
@@ -11,11 +10,11 @@ import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromV
 import { Icon } from '@ohif/ui';
 import {
   xnatMeasurementApi,
-  XNATMeasurementTable,
+  MeasurementWorkingCollection,
   XNAT_EVENTS,
-  actionFunctions,
   assignViewportParameters,
 } from '../XNATMeasurement';
+import refreshViewports from '../utils/refreshViewports';
 
 import './XNATRoiPanel.styl';
 
@@ -40,22 +39,17 @@ export default class XNATMeasurementPanel extends React.Component {
 
     const { viewports, activeIndex } = props;
 
-    const SeriesInstanceUID = getSeriesInstanceUidFromViewport(
-      viewports,
-      activeIndex
-    );
+    const displaySetInstanceUID = viewports[activeIndex].displaySetInstanceUID;
 
-    const { displayCriteria } = xnatMeasurementApi.config;
     const collections = xnatMeasurementApi.getMeasurementCollections({
-      SeriesInstanceUID,
+      displaySetInstanceUID,
     });
 
     this.state = {
       importing: false,
       exporting: false,
       showSettings: false,
-      SeriesInstanceUID,
-      displayCriteria,
+      displaySetInstanceUID,
       collections,
       selectedKey: '',
     };
@@ -67,7 +61,6 @@ export default class XNATMeasurementPanel extends React.Component {
     );
     this.addEventListeners = this.addEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
-    this.onItemClick = this.onItemClick.bind(this);
     this.onItemRemove = this.onItemRemove.bind(this);
     this.onJumpToItem = this.onJumpToItem.bind(this);
     this.onResetViewport = this.onResetViewport.bind(this);
@@ -77,15 +70,13 @@ export default class XNATMeasurementPanel extends React.Component {
 
   componentDidUpdate(prevProps) {
     const { viewports, activeIndex } = this.props;
-    const { SeriesInstanceUID } = this.state;
+    const { displaySetInstanceUID } = this.state;
 
     if (
       viewports[activeIndex] &&
-      viewports[activeIndex].SeriesInstanceUID !== SeriesInstanceUID
+      viewports[activeIndex].displaySetInstanceUID !== displaySetInstanceUID
     ) {
-      this.refreshMeasurementList(
-        viewports[activeIndex] && viewports[activeIndex].SeriesInstanceUID
-      );
+      this.refreshMeasurementList();
     }
   }
 
@@ -138,19 +129,24 @@ export default class XNATMeasurementPanel extends React.Component {
   }
 
   cornerstoneEventListenerHandler() {
-    this.refreshMeasurementList(this.state.SeriesInstanceUID);
+    this.refreshMeasurementList();
   }
 
-  refreshMeasurementList(SeriesInstanceUID) {
-    const collections = xnatMeasurementApi.getMeasurementCollections({
-      SeriesInstanceUID,
-      displayCriteria: this.state.displayCriteria,
-    });
-    this.setState({ SeriesInstanceUID, collections: collections });
-  }
-
-  onItemClick(measurement) {
-    this.setState({ selectedKey: measurement.uuid });
+  refreshMeasurementList() {
+    const { viewports, activeIndex } = this.props;
+    if (viewports[activeIndex]) {
+      const {
+        displaySetInstanceUID,
+        SeriesInstanceUID,
+        StudyInstanceUID,
+      } = viewports[activeIndex];
+      const collections = xnatMeasurementApi.getMeasurementCollections({
+        displaySetInstanceUID,
+        SeriesInstanceUID,
+        StudyInstanceUID,
+      });
+      this.setState({ displaySetInstanceUID, collections: collections });
+    }
   }
 
   onJumpToItem(measurement) {
@@ -203,9 +199,10 @@ export default class XNATMeasurementPanel extends React.Component {
     assignViewportParameters(itemViewport, viewport);
   }
 
-  onItemRemove(measurement) {
-    actionFunctions.onRemoveSingleMeasurement(measurement);
-    this.refreshMeasurementList(this.state.SeriesInstanceUID);
+  onItemRemove(measurementReference) {
+    xnatMeasurementApi.removeMeasurement(measurementReference, true);
+    refreshViewports();
+    this.refreshMeasurementList();
   }
 
   onIOComplete() {}
@@ -215,7 +212,7 @@ export default class XNATMeasurementPanel extends React.Component {
       importing,
       exporting,
       showSettings,
-      SeriesInstanceUID,
+      displaySetInstanceUID,
       collections,
       selectedKey,
     } = this.state;
@@ -232,7 +229,10 @@ export default class XNATMeasurementPanel extends React.Component {
       component = <div>Measurement Exporting</div>;
     } else {
       component = (
-        <div className="xnatPanel" onClick={() => this.setState({ selectedKey: undefined })}>
+        <div
+          className="xnatPanel"
+          onClick={() => this.setState({ selectedKey: '' })}
+        >
           <div className="panelHeader">
             <div className="title-with-icon">
               <h3>Measurement Annotations</h3>
@@ -255,13 +255,12 @@ export default class XNATMeasurementPanel extends React.Component {
 
           <div className="roiCollectionBody">
             <div className="workingCollectionHeader">
-              <h4> Measurement Collection </h4>
+              <h4> In-Progress Measurement Collection </h4>
             </div>
 
-            <XNATMeasurementTable
-              collection={collections[0]}
+            <MeasurementWorkingCollection
+              collection={collections.workingCollection}
               selectedKey={selectedKey}
-              onItemClick={this.onItemClick}
               onItemRemove={this.onItemRemove}
               onJumpToItem={this.onJumpToItem}
               onResetViewport={this.onResetViewport}
@@ -274,178 +273,3 @@ export default class XNATMeasurementPanel extends React.Component {
     return <React.Fragment>{component}</React.Fragment>;
   }
 }
-
-/**
- *  Takes a list of tools grouped and return all tools separately
- *
- * @param {Array} [toolGroups=[]] - The grouped tools
- * @returns {Array} - The list of all tools on all groups
-function getAllTools(toolGroups = []) {
-  let tools = [];
-  toolGroups.forEach(toolGroup => (tools = tools.concat(toolGroup.childTools)));
-
-  return tools;
-}
-*/
-/**
- * Takes a list of objects and a property and return the list grouped by the property
- *
- * @param {Array} list - The objects to be grouped by
- * @param {string} props - The property to group the objects
- * @returns {Object}
-function groupBy(list, props) {
-  return list.reduce((a, b) => {
-    (a[b[props]] = a[b[props]] || []).push(b);
-    return a;
-  }, {});
-}
-*/
-/**
- * Take a measurement toolName and return if any warnings
- *
- * @param {string} toolName - The tool name
- * @returns {string}
-function getWarningsForMeasurement(toolName) {
-  const isToolSupported = true;
-
-  return {
-    hasWarnings: !isToolSupported,
-    warningTitle: isToolSupported ? '' : 'Unsupported Tool',
-    warningList: isToolSupported
-      ? []
-      : [`${toolName} cannot be persisted at this time`],
-  };
-}
-*/
-/**
- * Takes measurementData and build the measurement text to be used into the table
- *
- * @param {Object} [measurementData={}]
- * @param {string} measurementData.location - The measurement location
- * @param {string} measurementData.description - The measurement description
- * @returns {string}
-function getMeasurementText(measurementData = {}) {
-  const defaultText = '...';
-  const { location = '', description = '' } = measurementData;
-  const result = location + (description ? ` (${description})` : '');
-
-  return result || defaultText;
-}
-*/
-
-/**
- * Takes a list of measurements grouped by measurement numbers and return each measurement data by available timepoint
- *
- * @param {Array} measurementNumberList - The list of measurements
- * @param {Array} timepoints - The list of available timepoints
- * @param {Function} displayFunction - The function that builds the display text by each tool
- * @returns
-function getDataForEachMeasurementNumber(
-  measurementNumberList,
-  timepoints,
-  displayFunction
-) {
-  const data = [];
-  // on each measurement number we should get each measurement data by available timepoint
-  measurementNumberList.forEach(measurement => {
-    timepoints.forEach(timepoint => {
-      const eachData = {
-        displayText: '...',
-      };
-      if (measurement.timepointId === timepoint.timepointId) {
-        eachData.displayText = displayFunction(measurement);
-      }
-      data.push(eachData);
-    });
-  });
-
-  return data;
-}
-*/
-
-/**
- * Take measurements from MeasurementAPI structure and convert into a measurementTable structure
- *
- * @returns
-function convertMeasurementsToTableData(SeriesInstanceUID) {
-  const measurementApi = OHIF.measurements.MeasurementApi;
-  const timepointApi = OHIF.measurements.TimepointApi;
-
-  const toolCollections = measurementApi.Instance.tools;
-  const timepoints = timepointApi.Instance.timepoints;
-
-  const config = measurementApi.getConfiguration();
-  const toolGroups = config.measurementTools;
-  const tools = getAllTools(toolGroups);
-
-  const tableMeasurements = toolGroups.map(toolGroup => {
-    return {
-      groupName: toolGroup.name,
-      groupId: toolGroup.id,
-      measurements: [],
-    };
-  });
-
-  Object.keys(toolCollections).forEach(toolId => {
-    const toolMeasurements = toolCollections[toolId];
-    const tool = tools.find(tool => tool.id === toolId);
-    const { displayFunction } = tool.options.measurementTable;
-
-    // Group by measurementNumber so we can display then all in the same line
-    const groupedMeasurements = groupBy(toolMeasurements, 'measurementNumber');
-
-    Object.keys(groupedMeasurements).forEach(groupedMeasurementsIndex => {
-      const measurementNumberList =
-        groupedMeasurements[groupedMeasurementsIndex];
-      const measurementData = measurementNumberList[0];
-      const {
-        measurementNumber,
-        lesionNamingNumber,
-        toolType,
-      } = measurementData;
-      const measurementId = measurementData._id;
-
-      const {
-        hasWarnings,
-        warningTitle,
-        warningList,
-      } = getWarningsForMeasurement(toolType);
-
-      //check if all measurements with same measurementNumber will have same LABEL
-      const tableMeasurement = {
-        itemNumber: lesionNamingNumber,
-        label: getMeasurementText(measurementData),
-        measurementId,
-        measurementNumber,
-        lesionNamingNumber,
-        toolType,
-        hasWarnings,
-        warningTitle,
-        warningList,
-        isSplitLesion: false, //TODO
-        data: getDataForEachMeasurementNumber(
-          measurementNumberList,
-          timepoints,
-          displayFunction
-        ),
-      };
-
-      // find the group object for the tool
-      const toolGroupMeasurements = tableMeasurements.find(group => {
-        return group.groupId === tool.toolGroup;
-      });
-      // inject the new measurement for this measurementNumer
-      toolGroupMeasurements.measurements.push(tableMeasurement);
-    });
-  });
-
-  // Sort measurements by lesion naming number
-  tableMeasurements.forEach(tm => {
-    tm.measurements.sort((m1, m2) =>
-      m1.lesionNamingNumber > m2.lesionNamingNumber ? 1 : -1
-    );
-  });
-
-  return tableMeasurements;
-}
-*/

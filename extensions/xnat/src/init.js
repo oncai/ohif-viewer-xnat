@@ -102,7 +102,7 @@ export default function init({
   register('module', 'monai', MONAIModule);
 
   // Add Brush Eraser tool
-  cornerstoneTools.addTool(Brush3DTool, {
+  addTool(Brush3DTool, {
     name: 'BrushEraser',
     configuration: {
       alwaysEraseOnClick: true,
