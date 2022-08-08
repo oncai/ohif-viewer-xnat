@@ -1,239 +1,155 @@
 import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
-import { toolDescriptors, dataExchange } from './lib';
-import { getImageAttributes } from './utils';
-import LIST from './ListCriteria';
+import { ImageMeasurementCollection, imageMeasurements } from './lib';
+import { getImageAttributes, assignViewportParameters } from '../utils';
 import XNAT_EVENTS from './XNATEvents';
-import getAnatomyCoding from '../utils/getAnatomyCoding';
-import assignViewportParameters from '../utils/assignViewportParameters';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 
-const defaultConfig = {
-  displayCriteria: {
-    // filtering criteria
-    filter: LIST.FILTER.CURRENT_SCAN,
-    // grouping criteria
-    // sorting criteria
-  },
-};
-
 class XNATMeasurementApi {
   constructor() {
-    this._config = Object.assign({}, defaultConfig);
     this.init();
   }
 
   init() {
-    const toolDescriptorList = [];
-    const measurementsCollection = {};
-    Object.keys(toolDescriptors).forEach(key => {
-      const toolDescriptor = toolDescriptors[key];
-      toolDescriptorList.push(toolDescriptor);
-      measurementsCollection[toolDescriptor.id] = [];
+    const supportedToolTypes = [];
+    Object.keys(imageMeasurements).forEach(key => {
+      const tool = imageMeasurements[key];
+      supportedToolTypes.push(tool.toolType);
     });
-    this._toolDescriptorList = toolDescriptorList;
-    this._measurements = [];
-    this._measurementUuids = [];
-    // Grouped by tool type
-    this._measurementsCollection = measurementsCollection;
+    this._supportedToolTypes = supportedToolTypes;
+    this._seriesCollections = new Map();
   }
 
-  getToolDescriptor(toolType) {
-    return this._toolDescriptorList.find(
-      descriptor => descriptor.cornerstoneToolType === toolType
+  isToolSupported(toolType) {
+    return this._supportedToolTypes.includes(toolType);
+  }
+
+  getMeasurementCollections(paras) {
+    let seriesCollection = this._seriesCollections.get(
+      paras.displaySetInstanceUID
     );
-  }
-
-  get config() {
-    return Object.assign({}, this._config);
-  }
-
-  get measurements() {
-    return this._measurements;
-  }
-
-  addMeasurement(params) {
-    const { element, measurementData, toolType, descriptor } = params;
-
-    const collection = this._measurementsCollection[toolType];
-    if (!collection) return;
-
-    if (!measurementData || measurementData.cancelled) return;
-
-    const imageAttributes = getImageAttributes(element);
-    const viewport = {};
-    const currentViewport = cornerstone.getViewport(element);
-    assignViewportParameters(viewport, currentViewport);
-    const metadata = {
-      label: 'Unnamed measurement',
-      codingSequence: [
-        getAnatomyCoding({
-          categoryUID: 'T-D0050',
-          typeUID: 'T-D0050',
-          // modifierUID: undefined,
-        }),
-      ],
-      description: '',
-      displayFunction: descriptor.options.displayFunction,
-      // userId: ToDo add user ID from the XNAT session,
-      toolType,
-      viewport,
-      icon: descriptor.icon,
-    };
-
-    measurementData.xnatMetadata = Object.assign({}, imageAttributes, metadata);
-    measurementData.descriptor = descriptor;
-    measurementData.toolType = toolType;
-
-    descriptor.options.updateMetadata(measurementData);
-
-    this._measurements.push(measurementData);
-    this._measurementUuids.push(measurementData.uuid);
-
-    return true;
-  }
-
-  modifyMeasurement(params) {
-    const { measurementData, toolType, descriptor } = params;
-
-    const collection = this._measurementsCollection[toolType];
-    if (!collection) return;
-
-    descriptor.options.updateMetadata(measurementData);
-
-    return true;
-  }
-
-  removeMeasurement(params) {
-    const { measurementData, toolType } = params;
-    const uuid = measurementData.uuid;
-
-    const collection = this._measurementsCollection[toolType];
-    if (!collection) return;
-
-    let index = this._measurementUuids.indexOf(uuid);
-    if (index > -1) {
-      this._measurementUuids.splice(index, 1);
-      this._measurements.splice(index, 1);
+    if (!seriesCollection) {
+      seriesCollection = {
+        workingCollection: new ImageMeasurementCollection({ paras }),
+        importedCollections: [],
+      };
+      this._seriesCollections.set(
+        paras.displaySetInstanceUID,
+        seriesCollection
+      );
     }
 
-    return true;
+    return seriesCollection;
   }
 
   onMeasurementCompleted(event) {
-    const eventData = _getEventData(event);
-    const { element, measurementData, toolType } = eventData;
+    const eventData = event.detail;
+    const { element, measurementData, toolName: toolType } = eventData;
 
-    if (!this.getToolDescriptor) return;
-    const descriptor = this.getToolDescriptor(toolType);
-    if (!descriptor) return;
-
-    if (
-      this.addMeasurement({ element, measurementData, toolType, descriptor })
-    ) {
-      triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
-      // refreshCornerstoneViewports();
-      // TODO: Notify about the last activated measurement
-      // if (MeasurementApi.isToolIncluded(tool)) {
-      //     // TODO: Notify that viewer suffered changes
-      //   }
+    if (!this.isToolSupported || !this.isToolSupported(toolType)) {
+      return;
     }
+
+    if (!measurementData || measurementData.cancelled) return;
+
+    // set tool color
+    const color = measurementData.color;
+    measurementData.color = color ? color : csTools.toolColors.getToolColor();
+
+    if (this.addMeasurement({ element, measurementData, toolType })) {
+      triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
+      // TODO: Notify about the last activated measurement
+    }
+  }
+
+  addMeasurement(params) {
+    const { element, measurementData, toolType } = params;
+
+    const currentViewport = cornerstone.getViewport(element);
+    const imageAttributes = getImageAttributes(element);
+
+    const seriesCollection = this.getMeasurementCollections(imageAttributes);
+    const collection = seriesCollection.workingCollection;
+    const { uuid: collectionUID } = collection.metadata;
+
+    const MeasurementTool = imageMeasurements[toolType];
+    const measurement = new MeasurementTool(false, {
+      collectionUID,
+      measurementData,
+      imageAttributes,
+      viewport: assignViewportParameters({}, currentViewport),
+    });
+
+    collection.addMeasurement(measurement);
+
+    return true;
   }
 
   onMeasurementModified(event) {
-    const eventData = _getEventData(event);
-    const { element, measurementData, toolType } = eventData;
+    const eventData = event.detail;
+    const { element, measurementData, toolName: toolType } = eventData;
+    const { measurementReference } = measurementData;
 
-    if (!this.getToolDescriptor) return;
-    const descriptor = this.getToolDescriptor(toolType);
-    if (!descriptor) return;
-
-    if (this.modifyMeasurement({ measurementData, toolType, descriptor })) {
-      triggerEvent(element, XNAT_EVENTS.MEASUREMENT_MODIFIED, {});
-      // TODO: Notify about the last activated measurement
-      // if (MeasurementApi.isToolIncluded(tool)) {
-      //     // TODO: Notify that viewer suffered changes
-      //   }
+    if (
+      !this.isToolSupported ||
+      !this.isToolSupported(toolType) ||
+      !measurementReference
+    ) {
+      return;
     }
+
+    triggerEvent(element, XNAT_EVENTS.MEASUREMENT_MODIFIED, {});
+    // TODO: Notify about the last activated measurement
   }
 
   onMeasurementRemoved(event) {
-    const eventData = _getEventData(event);
-    const { element, measurementData, toolType } = eventData;
+    const eventData = event.detail;
+    const { element, measurementData, toolName: toolType } = eventData;
+    const { measurementReference } = measurementData;
 
-    if (!this.getToolDescriptor) return;
-    const descriptor = this.getToolDescriptor(toolType);
-    if (!descriptor) return;
+    if (
+      !this.isToolSupported ||
+      !this.isToolSupported(toolType) ||
+      !measurementReference
+    ) {
+      return;
+    }
 
-    if (this.removeMeasurement({ measurementData, toolType })) {
+    if (this.removeMeasurement(measurementReference)) {
       triggerEvent(element, XNAT_EVENTS.MEASUREMENT_REMOVED, {});
-      // refreshCornerstoneViewports();
       // TODO: Notify about the last activated measurement
-      // if (MeasurementApi.isToolIncluded(tool)) {
-      //     // TODO: Notify that viewer suffered changes
-      //   }
     }
   }
 
-  /**
-   *
-   * @param options
-   * @return {*[]} measurement arranged in collections based on display criteria
-   */
-  getMeasurementCollections(options = {}) {
-    let displayCriteria;
-    if (options.displayCriteria) {
-      displayCriteria = Object.assign(
-        this._config.displayCriteria,
-        options.displayCriteria
-      );
-      this._config.displayCriteria = displayCriteria;
-    } else {
-      displayCriteria = this._config.displayCriteria;
-    }
+  removeMeasurement(measurementReference, removeToolState = false) {
+    const { uuid, toolType, imageId } = measurementReference;
 
-    const measurements = this._measurements;
+    const seriesCollection = this.getMeasurementCollections(
+      measurementReference
+    );
+    const collection = seriesCollection.workingCollection;
 
-    // Apply filtering criteria
-    let filteredCollection = [];
-    switch (displayCriteria.filter) {
-      case LIST.FILTER.CURRENT_SCAN:
-        filteredCollection = _filterMeasurements(
-          measurements,
-          'SeriesInstanceUID',
-          options.SeriesInstanceUID
+    if (removeToolState) {
+      const toolState = csTools.globalImageIdSpecificToolStateManager.saveToolState();
+      if (imageId && toolState[imageId]) {
+        const toolData = toolState[imageId][toolType];
+        const measurementEntries = toolData && toolData.data;
+        const measurementEntry = measurementEntries.find(
+          item => item.uuid === uuid
         );
-        break;
-      case LIST.FILTER.CURRENT_SESSION:
-        break;
-      case LIST.FILTER.ALL:
-        break;
+        if (measurementEntry) {
+          const index = measurementEntries.indexOf(measurementEntry);
+          measurementEntries.splice(index, 1);
+        }
+      }
     }
 
-    const collections = [];
-    collections.push(filteredCollection);
+    collection.removeMeasurement(uuid);
 
-    return collections;
+    return true;
   }
 }
-
-const _filterMeasurements = (list, prop, value) => {
-  return list.filter(item => item.xnatMetadata[prop] === value);
-};
-
-const _getUuidList = list => {
-  return list.map(item => item.uuid);
-};
-
-const _getEventData = event => {
-  const eventData = event.detail;
-  if (eventData.toolName) {
-    eventData.toolType = eventData.toolName;
-  }
-
-  return eventData;
-};
 
 const xnatMeasurementApi = new XNATMeasurementApi();
 

@@ -1,4 +1,4 @@
-import XNATMeasurementTable from './XNATMeasurementTable/XNATMeasurementTable';
+import MeasurementWorkingCollection from './MeasurementWorkingCollection/MeasurementWorkingCollection';
 import handleMeasurementContextMenu from './MeasurementContextMenu/handleMeasurementContextMenu';
 
-export { XNATMeasurementTable, handleMeasurementContextMenu };
+export { MeasurementWorkingCollection, handleMeasurementContextMenu };

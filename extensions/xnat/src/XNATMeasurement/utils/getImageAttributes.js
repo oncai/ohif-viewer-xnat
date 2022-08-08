@@ -7,30 +7,31 @@ export default function(element) {
 
   // Get StudyInstanceUID & PatientID
   const {
-    StudyInstanceUID,
     PatientID,
+    PatientBirthDate = '',
+    StudyInstanceUID,
     SeriesInstanceUID,
     SOPInstanceUID,
   } = cornerstone.metaData.get('instance', imageId);
+
+  const {
+    activeViewportIndex,
+    viewportSpecificData,
+  } = window.store.getState().viewports;
+  const { displaySetInstanceUID } = viewportSpecificData[activeViewportIndex];
 
   const splitImageId = imageId.split('&frame');
   const frameIndex =
     splitImageId[1] !== undefined ? Number(splitImageId[1]) : 0;
 
-  // const imagePath = [
-  //   StudyInstanceUID,
-  //   SeriesInstanceUID,
-  //   SOPInstanceUID,
-  //   frameIndex,
-  // ].join('_');
-
   return {
     PatientID,
+    PatientBirthDate,
     StudyInstanceUID,
     SeriesInstanceUID,
     SOPInstanceUID,
     frameIndex,
-    // imagePath,
     imageId,
+    displaySetInstanceUID,
   };
 }

@@ -1,12 +1,12 @@
 const toolTypes = [
+  'Length',
   'Angle',
   'Bidirectional',
-  'Length',
-  'FreehandMouse',
   'EllipticalRoi',
   'CircleRoi',
   'RectangleRoi',
   'ArrowAnnotate',
+  'FreehandMouse',
 ];
 
 export default toolTypes;

@@ -191,6 +191,22 @@ const definitions = [
       },
     ],
   },
+  {
+    id: 'Measurement',
+    label: 'Measurement',
+    icon: 'xnat-annotations',
+    buttons: [
+      {
+        id: 'XNATLength',
+        label: 'Length',
+        icon: 'xnat-measure-length',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATLength' },
+      },
+    ],
+  },
 ];
 
 export default {

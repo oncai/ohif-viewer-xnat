@@ -1,42 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
-import showModal from '../../../components/common/showModal';
-import { onShowSingleMeasurement } from '../../utils/actionFunctions';
-import MeasurementPropertyModal from '../MeasurementPropertyModal/MeasurementPropertyModal';
 import getAnatomyCoding from '../../utils/getAnatomyCoding';
+import showModal from '../../../components/common/showModal';
+import MeasurementPropertyModal from '../MeasurementPropertyModal/MeasurementPropertyModal';
+import { toggleVisibility } from '../../utils';
 
-const _getCodingText = ({ category, type, modifier }) => {
-  let typeWithModifier = type;
-
-  if (modifier) {
-    typeWithModifier += ` (${modifier})`;
-  }
-
-  return `${typeWithModifier} - ${category}`;
-};
-
-const _onEditClick = (metadata, onEditUpdate) => {
-  const onUpdateProperty = data => {
-    const { label, description, categoryUID, typeUID, modifierUID } = data;
-    metadata.label = label;
-    metadata.description = description;
-    metadata.codingSequence[0] = getAnatomyCoding({
-      categoryUID,
-      typeUID,
-      modifierUID,
-    });
-    onEditUpdate();
-  };
-
-  showModal(
-    MeasurementPropertyModal,
-    { metadata, onUpdateProperty },
-    metadata.label
-  );
-};
-
-const XNATMeasurementTableItem = props => {
+const WorkingCollectionItem = props => {
   const {
     measurement,
     selected,
@@ -45,43 +15,29 @@ const XNATMeasurementTableItem = props => {
     onJumpToItem,
     onResetViewport,
   } = props;
-  const { xnatMetadata, visible } = measurement;
-  const {
-    label,
-    description,
-    displayFunction,
-    codingSequence,
-    icon,
-  } = xnatMetadata;
+  const { metadata, internal, csData } = measurement;
+  const { uuid, name, description, codingSequence, visible } = metadata;
+  const { icon, displaySetInstanceUID } = internal;
 
-  const [state, setState] = useState({
-    visible: visible,
-    coding: {
+  const [isVisible, setVisible] = useState(visible);
+  const [coding, setCoding] = useState({
+    category: codingSequence[0].CategoryCodeSequence.CodeMeaning,
+    type: codingSequence[0].TypeCodeSequence.CodeMeaning,
+    modifier:
+      codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence &&
+      codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence.CodeMeaning,
+  });
+
+  const codingText = _getCodingText(coding);
+
+  const onCodingUpdated = () => {
+    setCoding({
       category: codingSequence[0].CategoryCodeSequence.CodeMeaning,
       type: codingSequence[0].TypeCodeSequence.CodeMeaning,
       modifier:
         codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence &&
-        codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence.CodeMeaning,
-    },
-  });
-
-  const codingText = _getCodingText({
-    category: state.coding.category,
-    type: state.coding.type,
-    modifier: state.coding.modifier,
-  });
-
-  const onEditUpdate = () => {
-    setState({
-      ...state,
-      coding: {
-        category: codingSequence[0].CategoryCodeSequence.CodeMeaning,
-        type: codingSequence[0].TypeCodeSequence.CodeMeaning,
-        modifier:
-          codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence &&
-          codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence
-            .CodeMeaning,
-      },
+        codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence
+          .CodeMeaning,
     });
   };
 
@@ -95,7 +51,7 @@ const XNATMeasurementTableItem = props => {
           title="Edit metadata"
           onClick={event => {
             event.stopPropagation();
-            _onEditClick(measurement.xnatMetadata, onEditUpdate);
+            _onEditClick(metadata, onCodingUpdated);
           }}
         />
       </button>
@@ -122,7 +78,7 @@ const XNATMeasurementTableItem = props => {
           title="Remove"
           onClick={event => {
             event.stopPropagation();
-            onItemRemove(measurement);
+            onItemRemove(csData.measurementReference);
           }}
         />
       </button>
@@ -133,7 +89,7 @@ const XNATMeasurementTableItem = props => {
     <tr
       onClick={event => {
         event.stopPropagation();
-        onItemClick(measurement);
+        onItemClick(uuid);
       }}
     >
       <td
@@ -146,15 +102,33 @@ const XNATMeasurementTableItem = props => {
       >
         <Icon name={icon} width="16px" height="16px" />
       </td>
-      <td className="left-aligned-cell" style={{ cursor: 'pointer' }}>
-        <span style={{ color: 'var(--text-primary-color)' }}>{label}</span>
+      <td
+        className="left-aligned-cell"
+        style={{
+          cursor: 'pointer',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
+        <span
+          style={{ color: 'var(--text-primary-color)' }}
+          title="Measurement name"
+        >
+          {name}
+        </span>
         <span
           style={{ color: 'var(--text-secondary-color)', display: 'block' }}
+          title="Description"
         >
           {`${description ? description : '...'}`}
         </span>
         <span
-          style={{ color: 'var(--text-secondary-color)', display: 'block' }}
+          style={{
+            color: 'var(--text-secondary-color)',
+            display: 'block',
+            fontWeight: 'bold',
+          }}
+          title="Coding"
         >
           {codingText}
         </span>
@@ -162,17 +136,17 @@ const XNATMeasurementTableItem = props => {
           {actionButtons}
         </div>
       </td>
-      <td className="centered-cell">{displayFunction(xnatMetadata)}</td>
+      <td className="centered-cell">{measurement.displayText}</td>
       <td className="centered-cell">
         <button
           className="small"
           onClick={event => {
             event.stopPropagation();
-            onShowSingleMeasurement(measurement);
-            setState({ ...state, visible: !state.visible });
+            toggleVisibility.item(uuid, displaySetInstanceUID);
+            setVisible(!isVisible);
           }}
         >
-          {state.visible ? (
+          {isVisible ? (
             <Icon name="eye" width="16px" height="16px" />
           ) : (
             <Icon name="eye-closed" width="16px" height="16px" />
@@ -183,7 +157,7 @@ const XNATMeasurementTableItem = props => {
   );
 };
 
-XNATMeasurementTableItem.propTypes = {
+WorkingCollectionItem.propTypes = {
   measurement: PropTypes.object.isRequired,
   selected: PropTypes.bool.isRequired,
   onItemClick: PropTypes.func.isRequired,
@@ -192,4 +166,35 @@ XNATMeasurementTableItem.propTypes = {
   onResetViewport: PropTypes.func.isRequired,
 };
 
-export default XNATMeasurementTableItem;
+const _getCodingText = coding => {
+  const { category, type, modifier } = coding;
+  let typeWithModifier = type;
+
+  if (modifier) {
+    typeWithModifier += ` (${modifier})`;
+  }
+
+  return `${typeWithModifier} - ${category}`;
+};
+
+const _onEditClick = (metadata, onCodingUpdated) => {
+  const onUpdateProperty = data => {
+    const { name, description, categoryUID, typeUID, modifierUID } = data;
+    metadata.name = name;
+    metadata.description = description;
+    metadata.codingSequence[0] = getAnatomyCoding({
+      categoryUID,
+      typeUID,
+      modifierUID,
+    });
+    onCodingUpdated();
+  };
+
+  showModal(
+    MeasurementPropertyModal,
+    { metadata, onUpdateProperty },
+    metadata.name
+  );
+};
+
+export default WorkingCollectionItem;

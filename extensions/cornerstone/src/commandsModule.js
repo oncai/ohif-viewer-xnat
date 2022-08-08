@@ -392,7 +392,11 @@ const commandsModule = ({ servicesManager }) => {
         refreshCornerstoneViewports();
       }
     },
-    subscribeToContextMenuHandler: ({ tools, contextMenuCallback, dialogIds }) => {
+    subscribeToContextMenuHandler: ({
+      tools,
+      contextMenuCallback,
+      dialogIds,
+    }) => {
       contextMenuHandler.subscribe(tools, contextMenuCallback, dialogIds);
     },
     cancelTask: () => {
