@@ -505,6 +505,7 @@ async function updateMetaDataProvider(studies) {
           }
           naturalizedDicom.Modality = series.Modality;
           naturalizedDicom.SeriesInstanceUID = series.SeriesInstanceUID;
+          naturalizedDicom.SeriesDate = series.SeriesDate;
           naturalizedDicom.SeriesTime = series.SeriesTime;
           // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
           // OverlayData is loaded conditionally in metadataProvider.addInstance
