@@ -97,6 +97,10 @@ export default class ImageMeasurement {
     return this._xnat.internal;
   }
 
+  get imageReference() {
+    return this._xnat.imageReference;
+  }
+
   updateMetadata(newMetadata) {
     this._xnat.metadata = {
       ...this._xnat.metadata,
@@ -118,5 +122,13 @@ export default class ImageMeasurement {
     throw new Error(
       `Method displayText not implemented for base class ImageMeasurement.`
     );
+  }
+
+  generateDataObject() {
+    this._dataObject = {
+      ...this._xnat.metadata,
+      imageReference: { ...this._xnat.imageReference },
+      viewport: { ...this._xnat.viewport },
+    };
   }
 }

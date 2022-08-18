@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import '../XNATRoiPanel.styl';
-
-export default class XNATContourImportMenu extends React.Component {
+export default class MeasurementImportMenu extends React.Component {
   static propTypes = {
     onImportComplete: PropTypes.any,
     onImportCancel: PropTypes.any,

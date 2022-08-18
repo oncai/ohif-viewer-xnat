@@ -4,13 +4,12 @@ import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import onIOCancel from './common/helpers/onIOCancel';
-import XNATMeasurementImportMenu from './XNATMeasurementImportMenu/XNATMeasurementImportMenu';
-import XNATMeasurementExportMenu from './XNATMeasurementExportMenu/XNATMeasurementExportMenu';
-import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
 import { Icon } from '@ohif/ui';
 import {
   xnatMeasurementApi,
   MeasurementWorkingCollection,
+  MeasurementExportMenu,
+  MeasurementImportMenu,
   XNAT_EVENTS,
   assignViewportParameters,
 } from '../XNATMeasurement';
@@ -226,7 +225,13 @@ export default class XNATMeasurementPanel extends React.Component {
     } else if (importing) {
       component = <div>Measurement Importing</div>;
     } else if (exporting) {
-      component = <div>Measurement Exporting</div>;
+      component = (
+        <MeasurementExportMenu
+          onExportComplete={this.onIOComplete}
+          onExportCancel={this.onIOCancel}
+          workingCollection={collections.workingCollection}
+        />
+      );
     } else {
       component = (
         <div
@@ -246,8 +251,8 @@ export default class XNATMeasurementPanel extends React.Component {
               />
             </div>
             <MenuIOButtons
-              ImportCallbackOrComponent={XNATMeasurementImportMenu}
-              ExportCallbackOrComponent={XNATMeasurementExportMenu}
+              ImportCallbackOrComponent={MeasurementImportMenu}
+              ExportCallbackOrComponent={MeasurementExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
             />

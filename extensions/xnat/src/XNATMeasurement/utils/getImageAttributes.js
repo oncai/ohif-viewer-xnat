@@ -8,6 +8,7 @@ export default function(element) {
   // Get StudyInstanceUID & PatientID
   const {
     PatientID,
+    PatientName,
     PatientBirthDate = '',
     StudyInstanceUID,
     SeriesInstanceUID,
@@ -26,6 +27,7 @@ export default function(element) {
 
   return {
     PatientID,
+    PatientName,
     PatientBirthDate,
     StudyInstanceUID,
     SeriesInstanceUID,

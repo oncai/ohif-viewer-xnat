@@ -111,9 +111,9 @@
     "webpack-dev-server": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-merge": "^4.2.1",
+    "webworker-promise": "^0.4.2",
     "workbox-webpack-plugin": "^5.1.4",
-    "worker-loader": "^2.0.0",
-    "webworker-promise": "^0.4.2"
+    "worker-loader": "^2.0.0"
   },
   "husky": {
     "hooks": {
