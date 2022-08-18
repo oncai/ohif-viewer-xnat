@@ -1,5 +1,5 @@
 import { LengthTool } from 'cornerstone-tools';
-import XNATToolTypes from '../xnatToolTypes';
+import XNATToolTypes from '../XNATToolTypes';
 
 /**
  * @public

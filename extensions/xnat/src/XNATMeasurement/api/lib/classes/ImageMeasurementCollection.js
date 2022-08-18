@@ -1,5 +1,6 @@
 import csTools from 'cornerstone-tools';
 import moment from 'moment';
+import { version } from '../../../../../package.json';
 
 /**
  * @typedef {object} XNATImageMeasurementCollection
@@ -90,16 +91,24 @@ export default class ImageMeasurementCollection {
 
   initWorkingCollection(paras) {
     const {
+      PatientID,
+      PatientName,
+      PatientBirthDate,
       StudyInstanceUID,
       SeriesInstanceUID,
       displaySetInstanceUID,
     } = paras;
+    const userInfo = window.ohif.userInfo || {
+      loginName: '',
+      name: '',
+    };
     this.metadata = {
       uuid: _generateUUID(),
       name: '',
       description: '',
     };
     this.imageReference = {
+      PatientID,
       StudyInstanceUID,
       SeriesInstanceUID,
       imageCollection: [],
@@ -114,18 +123,18 @@ export default class ImageMeasurementCollection {
       revision: 1,
     };
     this.user = {
-      name: '',
-      loginName: '',
+      name: userInfo.name,
+      loginName: userInfo.loginName,
     };
     this.subject = {
-      name: '',
-      id: '',
-      birthDate: '',
+      name: PatientName,
+      id: PatientID,
+      birthDate: PatientBirthDate,
     };
     this.equipment = {
       manufacturerName: '',
-      manufacturerModelName: '',
-      softwareVersion: '',
+      manufacturerModelName: 'XNAT-OHIF-Viewer',
+      softwareVersion: version.toUpperCase(),
     };
     this.internal = {
       locked: false,
@@ -152,7 +161,33 @@ export default class ImageMeasurementCollection {
     this._measurements.delete(uuid);
   }
 
-  updateImageReference() {}
+  generateDataObject() {
+    // Build imageReference
+    const imageCollection = this.imageReference.imageCollection;
+    const imageMeasurements = [];
+    this.measurements.forEach(measurement => {
+      const imageReference = measurement.imageReference;
+      imageCollection.push({
+        ...imageReference,
+      });
+    });
+
+    const collectionObject = {
+      ...this.metadata,
+      ...this.tracking,
+      user: { ...this.user },
+      subject: { ...this.subject },
+      equipment: { ...this.equipment },
+      imageReference: { ...this.imageReference },
+      imageMeasurements: [],
+    };
+  }
+
+  generateJson() {
+    // Generate collection data object
+    const collectionObject = this.generateDataObject();
+
+  }
 }
 
 /**

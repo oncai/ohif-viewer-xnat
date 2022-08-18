@@ -38,4 +38,13 @@ export default class XNATLength extends ImageMeasurement {
     }
     return displayText;
   }
+
+  generateDataObject() {
+    const { handles } = this._csMeasurementData;
+    debugger;
+    this._xnat.data = {
+      handles: {},
+    };
+    super.generateDataObject();
+  }
 }

@@ -149,6 +149,13 @@ class XNATMeasurementApi {
 
     return true;
   }
+
+  exportWorkingCollection(collectionReference) {
+    const seriesCollection = this.getMeasurementCollections(
+      collectionReference
+    );
+    const collection = seriesCollection.workingCollection;
+  }
 }
 
 const xnatMeasurementApi = new XNATMeasurementApi();
