@@ -1,4 +1,4 @@
-import csTools from 'cornerstone-tools';
+import cloneDeep from 'lodash.clonedeep';
 import moment from 'moment';
 import { version } from '../../../../../package.json';
 
@@ -85,7 +85,7 @@ export default class ImageMeasurementCollection {
     if (!imported) {
       this.initWorkingCollection(paras);
     } else {
-      // process imported measurement collection
+      this.initImportedCollection(paras);
     }
   }
 
@@ -144,6 +144,47 @@ export default class ImageMeasurementCollection {
     };
   }
 
+  initImportedCollection(paras) {
+    const { collectionObject, displaySetInstanceUID } = paras;
+    const {
+      uuid,
+      name,
+      description,
+      created,
+      modified,
+      revision,
+      imageReference,
+      user,
+      subject,
+      equipment,
+      imageMeasurements,
+    } = collectionObject;
+    this.metadata = {
+      uuid,
+      name,
+      description,
+    };
+    this.imageReference = { ...imageReference };
+    this.xnatMetadata = {
+      label: '',
+      collectionId: '',
+    };
+    this.tracking = {
+      created,
+      modified,
+      revision,
+    };
+    this.user = { ...user };
+    this.subject = { ...subject };
+    this.equipment = { ...equipment };
+    this.internal = {
+      locked: true,
+      imported: true,
+      visible: true,
+      displaySetInstanceUID,
+    };
+  }
+
   get measurements() {
     return Array.from(this._measurements.values());
   }
@@ -161,15 +202,20 @@ export default class ImageMeasurementCollection {
     this._measurements.delete(uuid);
   }
 
-  generateDataObject() {
+  assignNewUuid() {
+    this.metadata.uuid = _generateUUID();
+  }
+
+  generateDataObject(selectedMeasurements) {
     // Build imageReference
     const imageCollection = this.imageReference.imageCollection;
     const imageMeasurements = [];
-    this.measurements.forEach(measurement => {
+    selectedMeasurements.forEach(measurement => {
       const imageReference = measurement.imageReference;
       imageCollection.push({
         ...imageReference,
       });
+      imageMeasurements.push(measurement.generateDataObject());
     });
 
     const collectionObject = {
@@ -179,14 +225,10 @@ export default class ImageMeasurementCollection {
       subject: { ...this.subject },
       equipment: { ...this.equipment },
       imageReference: { ...this.imageReference },
-      imageMeasurements: [],
+      imageMeasurements,
     };
-  }
 
-  generateJson() {
-    // Generate collection data object
-    const collectionObject = this.generateDataObject();
-
+    return cloneDeep(collectionObject);
   }
 }
 

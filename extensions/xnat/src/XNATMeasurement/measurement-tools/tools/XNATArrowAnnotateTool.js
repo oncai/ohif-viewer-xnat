@@ -1,17 +1,16 @@
-import { LengthTool } from 'cornerstone-tools';
+import { ArrowAnnotateTool } from 'cornerstone-tools';
 import XNATToolTypes from '../XNATToolTypes';
 
 /**
  * @public
- * @class XNATLengthTool
+ * @class XNATArrowAnnotateTool
  * @memberof Tools.Annotation
- * @classdesc Tool for measuring distances.
- * @extends Tools.LengthTool
+ * @extends Tools.ArrowAnnotateTool
  */
-export default class XNATLengthTool extends LengthTool {
+export default class XNATArrowAnnotateTool extends ArrowAnnotateTool {
   constructor(props = {}) {
     const defaultProps = {
-      name: XNATToolTypes.LENGTH,
+      name: XNATToolTypes.ARROW_ANNOTATE,
     };
 
     const initialProps = Object.assign(defaultProps, props);

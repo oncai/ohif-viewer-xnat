@@ -2,17 +2,17 @@ import React from 'react';
 import ImageMeasurement from './ImageMeasurement';
 import { XNATToolTypes } from '../../../../measurement-tools';
 
-export default class XNATLength extends ImageMeasurement {
+export default class XNATRectangleRoi extends ImageMeasurement {
   static get genericToolType() {
-    return 'Length';
+    return 'RectangleRoi';
   }
 
   static get toolType() {
-    return XNATToolTypes.LENGTH;
+    return XNATToolTypes.RECTANGLE_ROI;
   }
 
   static get icon() {
-    return 'xnat-measure-length';
+    return 'xnat-measure-rectangle';
   }
 
   constructor(isImported, props) {
@@ -22,6 +22,7 @@ export default class XNATLength extends ImageMeasurement {
   get displayText() {
     const csData = this.csData;
     let displayText = null;
+    debugger;
     if (csData && csData.length && !isNaN(csData.length)) {
       displayText = (
         <div>

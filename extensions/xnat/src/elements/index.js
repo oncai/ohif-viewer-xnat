@@ -35,6 +35,11 @@ import xnatContourHandle from './icons/xnat-contour-handle.svg';
 import xnatDeleteContour from './icons/xnat-delete-contour.svg';
 import xnatPincel from './icons/xnat-pencil.svg';
 import xnatMeasureLength from './icons/xnat-measure-length.svg';
+import xnatMeasureArrow from './icons/xnat-measure-arrow.svg';
+import xnatMeasureAngle from './icons/xnat-measure-angle.svg';
+import xnatMeasureBidirectional from './icons/xnat-measure-bidirectional.svg';
+import xnatMeasureCircle from './icons/xnat-measure-circle.svg';
+import xnatMeasureRectangle from './icons/xnat-measure-rectangle.svg';
 
 import Loader from './Loader/Loader';
 
@@ -81,6 +86,11 @@ const XNATICONS = {
   'xnat-delete-contour': xnatDeleteContour,
   'xnat-pencil': xnatPincel,
   'xnat-measure-length': xnatMeasureLength,
+  'xnat-measure-arrow': xnatMeasureArrow,
+  'xnat-measure-angle': xnatMeasureAngle,
+  'xnat-measure-bidirectional': xnatMeasureBidirectional,
+  'xnat-measure-circle': xnatMeasureCircle,
+  'xnat-measure-rectangle': xnatMeasureRectangle,
 };
 
 export {

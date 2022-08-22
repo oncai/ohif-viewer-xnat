@@ -215,6 +215,51 @@ const definitions = [
         commandName: 'setToolActive',
         commandOptions: { toolName: 'XNATLength' },
       },
+      {
+        id: 'XNATArrowAnnotate',
+        label: 'Annotate',
+        icon: 'xnat-measure-arrow',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATArrowAnnotate' },
+      },
+      {
+        id: 'XNATAngle',
+        label: 'Angle',
+        icon: 'xnat-measure-angle',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATAngle' },
+      },
+      {
+        id: 'XNATBidirectional',
+        label: 'Bidirectional',
+        icon: 'xnat-measure-bidirectional',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATBidirectional' },
+      },
+      {
+        id: 'XNATEllipticalRoi',
+        label: 'Ellipse',
+        icon: 'xnat-measure-circle',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATEllipticalRoi' },
+      },
+      {
+        id: 'XNATRectangleRoi',
+        label: 'Rectangle',
+        icon: 'xnat-measure-rectangle',
+        //
+        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+        commandName: 'setToolActive',
+        commandOptions: { toolName: 'XNATRectangleRoi' },
+      },
     ],
   },
 ];

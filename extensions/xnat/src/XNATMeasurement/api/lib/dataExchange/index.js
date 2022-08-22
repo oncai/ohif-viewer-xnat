@@ -1,11 +1,11 @@
-import retrieveMeasurementsList from './retrieveMeasurementsList';
-import retrieveMeasurements from './retrieveMeasurements';
-import storeMeasurements from './storeMeasurements';
+import retrieveMeasurementCollectionList from './retrieveMeasurementCollectionList';
+import retrieveMeasurementCollection from './retrieveMeasurementCollection';
+import storeMeasurementCollection from './storeMeasurementCollection';
 
 const dataExchange = {
-  retrieveMeasurementsList,
-  retrieveMeasurements,
-  storeMeasurements,
+  retrieveMeasurementCollectionList,
+  retrieveMeasurementCollection,
+  storeMeasurementCollection,
 };
 
 export default dataExchange;
