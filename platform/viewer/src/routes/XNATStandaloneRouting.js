@@ -573,7 +573,7 @@ function updateXnatSessionMap(studies) {
 
 function setValidOverlaySeries(studies) {
   const backgroundModalities = ['MR', 'CT'];
-  const overlayModalities = ['PT', 'NM'];
+  const overlayModalities = ['PT', 'NM', 'MR'];
   studies.forEach((study, studyIndex, studies) => {
     study.displaySets.forEach((displaySet, displaySetIndex, displaySets) => {
       displaySet.validOverlayDisplaySets = {};

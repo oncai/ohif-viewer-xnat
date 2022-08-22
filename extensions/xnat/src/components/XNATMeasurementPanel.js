@@ -8,6 +8,7 @@ import { Icon } from '@ohif/ui';
 import {
   xnatMeasurementApi,
   MeasurementWorkingCollection,
+  MeasurementImportedCollection,
   MeasurementExportMenu,
   MeasurementImportMenu,
   XNAT_EVENTS,
@@ -40,7 +41,7 @@ export default class XNATMeasurementPanel extends React.Component {
 
     const displaySetInstanceUID = viewports[activeIndex].displaySetInstanceUID;
 
-    const collections = xnatMeasurementApi.getMeasurementCollections({
+    const seriesCollection = xnatMeasurementApi.getMeasurementCollections({
       displaySetInstanceUID,
     });
 
@@ -49,7 +50,7 @@ export default class XNATMeasurementPanel extends React.Component {
       exporting: false,
       showSettings: false,
       displaySetInstanceUID,
-      collections,
+      seriesCollection,
       selectedKey: '',
     };
 
@@ -63,6 +64,7 @@ export default class XNATMeasurementPanel extends React.Component {
     this.onItemRemove = this.onItemRemove.bind(this);
     this.onJumpToItem = this.onJumpToItem.bind(this);
     this.onResetViewport = this.onResetViewport.bind(this);
+    this.onUnlockImportedCollection = this.onUnlockImportedCollection.bind(this);
 
     this.addEventListeners();
   }
@@ -139,12 +141,12 @@ export default class XNATMeasurementPanel extends React.Component {
         SeriesInstanceUID,
         StudyInstanceUID,
       } = viewports[activeIndex];
-      const collections = xnatMeasurementApi.getMeasurementCollections({
+      const seriesCollection = xnatMeasurementApi.getMeasurementCollections({
         displaySetInstanceUID,
         SeriesInstanceUID,
         StudyInstanceUID,
       });
-      this.setState({ displaySetInstanceUID, collections: collections });
+      this.setState({ displaySetInstanceUID, seriesCollection });
     }
   }
 
@@ -159,7 +161,8 @@ export default class XNATMeasurementPanel extends React.Component {
       return;
     }
 
-    const { imageId, viewport: itemViewport } = measurement.xnatMetadata;
+    const { internal, viewport: itemViewport } = measurement;
+    const { imageId } = internal;
 
     const imageIds = toolState.data[0].imageIds;
     const frameIndex = imageIds.indexOf(imageId);
@@ -169,7 +172,7 @@ export default class XNATMeasurementPanel extends React.Component {
       imageId
     );
 
-    const switchViewport = true;
+    const switchViewport = false;
     if (switchViewport) {
       const viewport = cornerstone.getViewport(element);
       assignViewportParameters(viewport, itemViewport);
@@ -204,7 +207,14 @@ export default class XNATMeasurementPanel extends React.Component {
     this.refreshMeasurementList();
   }
 
-  onIOComplete() {}
+  onIOComplete() {
+    this.setState({
+      importing: false,
+      exporting: false,
+    });
+  }
+
+  onUnlockImportedCollection() {}
 
   render() {
     const {
@@ -212,7 +222,7 @@ export default class XNATMeasurementPanel extends React.Component {
       exporting,
       showSettings,
       displaySetInstanceUID,
-      collections,
+      seriesCollection,
       selectedKey,
     } = this.state;
 
@@ -229,7 +239,7 @@ export default class XNATMeasurementPanel extends React.Component {
         <MeasurementExportMenu
           onExportComplete={this.onIOComplete}
           onExportCancel={this.onIOCancel}
-          workingCollection={collections.workingCollection}
+          seriesCollection={seriesCollection}
         />
       );
     } else {
@@ -262,14 +272,32 @@ export default class XNATMeasurementPanel extends React.Component {
             <div className="workingCollectionHeader">
               <h4> In-Progress Measurement Collection </h4>
             </div>
-
+            {/* WORKING COLLECTION */}
             <MeasurementWorkingCollection
-              collection={collections.workingCollection}
+              collection={seriesCollection.workingCollection}
               selectedKey={selectedKey}
               onItemRemove={this.onItemRemove}
               onJumpToItem={this.onJumpToItem}
               onResetViewport={this.onResetViewport}
             />
+            {/* IMPORTED COLLECTIONS */}
+            {seriesCollection.importedCollections.length !== 0 && (
+              <>
+                <div className="lockedCollectionHeader">
+                  <h4> Imported Measurement Collections </h4>
+                </div>
+                {seriesCollection.importedCollections.map(
+                  importedCollection => (
+                    <MeasurementImportedCollection
+                      key={importedCollection.metadata.uuid}
+                      collection={importedCollection}
+                      onJumpToItem={this.onJumpToItem}
+                      onUnlockCollection={this.onUnlockImportedCollection}
+                    />
+                  )
+                )}
+              </>
+            )}
           </div>
         </div>
       );

@@ -93,6 +93,10 @@ export default class ImageMeasurement {
     return this._xnat.metadata;
   }
 
+  get viewport() {
+    return this._xnat.viewport;
+  }
+
   get internal() {
     return this._xnat.internal;
   }
@@ -125,10 +129,13 @@ export default class ImageMeasurement {
   }
 
   generateDataObject() {
-    this._dataObject = {
+    const dataObject = {
       ...this._xnat.metadata,
       imageReference: { ...this._xnat.imageReference },
       viewport: { ...this._xnat.viewport },
+      data: { ...this._xnat.data },
     };
+
+    return dataObject;
   }
 }

@@ -11,9 +11,16 @@ const MeasurementWorkingCollection = props => {
   const [isExpanded, setExpanded] = useState(true);
   const [selectedKey, setSelectedKey] = useState('');
   const [isVisible, setVisible] = useState(internal.visible);
+  const [name, setName] = useState(metadata.name);
 
   const onItemClick = uuid => {
     setSelectedKey(selectedKey === uuid ? '' : uuid);
+  };
+
+  const onCollectionNameChange = evt => {
+    const value = evt.target.value;
+    metadata.name = value;
+    setName(value);
   };
 
   return (
@@ -26,10 +33,10 @@ const MeasurementWorkingCollection = props => {
           <input
             name="roiContourName"
             className="roiEdit"
-            // onChange={onRoiCollectionNameChange}
+            onChange={onCollectionNameChange}
             type="text"
             autoComplete="off"
-            defaultValue={collection.metadata.name}
+            defaultValue={name}
             placeholder="Unnamed measurement collection"
             tabIndex="1"
           />

@@ -1,17 +1,16 @@
-import { LengthTool } from 'cornerstone-tools';
+import { EllipticalRoiTool } from 'cornerstone-tools';
 import XNATToolTypes from '../XNATToolTypes';
 
 /**
  * @public
- * @class XNATLengthTool
+ * @class XNATEllipticalRoiTool
  * @memberof Tools.Annotation
- * @classdesc Tool for measuring distances.
- * @extends Tools.LengthTool
+ * @extends Tools.EllipticalRoiTool
  */
-export default class XNATLengthTool extends LengthTool {
+export default class XNATEllipticalRoiTool extends EllipticalRoiTool {
   constructor(props = {}) {
     const defaultProps = {
-      name: XNATToolTypes.LENGTH,
+      name: XNATToolTypes.ELLIPTICAL_ROI,
     };
 
     const initialProps = Object.assign(defaultProps, props);

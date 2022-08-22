@@ -2,17 +2,17 @@ import React from 'react';
 import ImageMeasurement from './ImageMeasurement';
 import { XNATToolTypes } from '../../../../measurement-tools';
 
-export default class XNATLength extends ImageMeasurement {
+export default class XNATAngle extends ImageMeasurement {
   static get genericToolType() {
-    return 'Length';
+    return 'Angle';
   }
 
   static get toolType() {
-    return XNATToolTypes.LENGTH;
+    return XNATToolTypes.ANGLE;
   }
 
   static get icon() {
-    return 'xnat-measure-length';
+    return 'xnat-measure-angle';
   }
 
   constructor(isImported, props) {
@@ -22,17 +22,12 @@ export default class XNATLength extends ImageMeasurement {
   get displayText() {
     const csData = this.csData;
     let displayText = null;
-    if (csData && csData.length && !isNaN(csData.length)) {
+    if (csData && csData.rAngle) {
       displayText = (
         <div>
-          <span>{csData.length.toFixed(2)}</span>
-          {csData.unit && (
-            <span
-              style={{ color: 'var(--text-secondary-color)', display: 'block' }}
-            >
-              {csData.unit}
-            </span>
-          )}
+          <span>
+            {csData.rAngle + String.fromCharCode(parseInt('00B0', 16))}
+          </span>
         </div>
       );
     }
@@ -40,10 +35,9 @@ export default class XNATLength extends ImageMeasurement {
   }
 
   generateDataObject() {
-    const { length, unit, handles } = this.csData;
+    const { rAngle, handles } = this.csData;
     this._xnat.data = {
-      length,
-      unit,
+      rAngle,
       handles: { ...handles },
     };
     return super.generateDataObject();

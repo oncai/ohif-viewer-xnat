@@ -3,6 +3,7 @@ import csTools from 'cornerstone-tools';
 import { ImageMeasurementCollection, imageMeasurements } from './lib';
 import { getImageAttributes, assignViewportParameters } from '../utils';
 import XNAT_EVENTS from './XNATEvents';
+import {measurements} from "@ohif/core";
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 
@@ -150,11 +151,27 @@ class XNATMeasurementApi {
     return true;
   }
 
-  exportWorkingCollection(collectionReference) {
-    const seriesCollection = this.getMeasurementCollections(
-      collectionReference
-    );
-    const collection = seriesCollection.workingCollection;
+  lockExportedCollection(
+    seriesCollection,
+    collectionObject,
+    selectedMeasurements
+  ) {
+    const { workingCollection, importedCollections } = seriesCollection;
+    const displaySetInstanceUID =
+      workingCollection.internal.displaySetInstanceUID;
+    const lockedCollection = new ImageMeasurementCollection({
+      paras: {
+        collectionObject,
+        displaySetInstanceUID,
+      },
+      imported: true,
+    });
+    importedCollections.push(lockedCollection);
+    selectedMeasurements.forEach(measurement => {
+      const { uuid } = measurement.metadata;
+      lockedCollection.addMeasurement(measurement);
+      workingCollection.removeMeasurement(uuid);
+    });
   }
 }
 

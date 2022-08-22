@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
+import { xnatMeasurementApi, dataExchange } from '../../api';
 import showNotification from '../../../components/common/showNotification';
 
 export default class MeasurementExportMenu extends React.Component {
   static propTypes = {
     onExportComplete: PropTypes.func.isRequired,
     onExportCancel: PropTypes.func.isRequired,
-    workingCollection: PropTypes.object.isRequired,
+    seriesCollection: PropTypes.object.isRequired,
   };
 
   constructor(props = {}) {
@@ -15,7 +16,7 @@ export default class MeasurementExportMenu extends React.Component {
 
     this._cancelablePromises = [];
 
-    const { workingCollection } = props;
+    const { workingCollection } = props.seriesCollection;
     this._measurements = workingCollection.measurements;
     const { name } = workingCollection.metadata;
     const selectedCheckboxes = [];
@@ -38,7 +39,12 @@ export default class MeasurementExportMenu extends React.Component {
     this.onCollectionNameChanged = this.onCollectionNameChanged.bind(this);
   }
 
-  onCollectionNameChanged(evt) {}
+  onCollectionNameChanged(evt) {
+    const { workingCollection } = this.props.seriesCollection;
+    const value = evt.target.value;
+    workingCollection.metadata.name = value;
+    this.setState({ collectionName: value });
+  }
 
   /**
    * async onExportButtonClick - Exports the current measurement collection to XNAT.
@@ -46,72 +52,64 @@ export default class MeasurementExportMenu extends React.Component {
    * @returns {null}
    */
   async onExportButtonClick() {
-    const { measurementList, selectedCheckboxes } = this.state;
-    const { SeriesInstanceUID, viewportData } = this.props;
-    const roiCollectionName = this._roiCollectionName;
+    const { seriesCollection } = this.props;
+    const { collectionName, selectedCheckboxes } = this.state;
 
     // Check the name isn't empty, and isn't just whitespace.
-    if (roiCollectionName.replace(/ /g, '').length === 0) {
+    if (collectionName.replace(/ /g, '').length === 0) {
+      showNotification('A valid collection name is required.', 'warning');
       return;
     }
 
-    const exportMask = [];
+    const selectedMeasurements = [];
 
     let atLeastOneMeasurementSelected = false;
 
-    for (let i = 0; i < measurementList.length; i++) {
+    for (let i = 0; i < selectedCheckboxes.length; i++) {
       if (selectedCheckboxes[i]) {
-        exportMask[measurementList[i].index] = true;
+        selectedMeasurements.push(this._measurements[i]);
         atLeastOneMeasurementSelected = true;
       }
     }
 
     if (!atLeastOneMeasurementSelected) {
+      showNotification('Please select one or more measurements.', 'warning');
       return;
     }
 
     this.setState({ exporting: true });
 
-    const roiExtractor = new RoiExtractor(SeriesInstanceUID);
-    const roiContours = roiExtractor.extractROIContours(exportMask);
-    const seriesInfo = getSeriesInfoForImageId(viewportData);
+    // const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
 
-    const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
+    try {
+      const collectionObject = seriesCollection.workingCollection.generateDataObject(
+        selectedMeasurements
+      );
+      const serializedJson = JSON.stringify(collectionObject);
+      await dataExchange.storeMeasurementCollection(serializedJson);
+      showNotification(
+        'Measurements collection exported successfully.',
+        'success'
+      );
 
-    const aw = new AIMWriter(roiCollectionName, xnat_label, dateTime);
-    aw.writeImageAnnotationCollection(roiContours, seriesInfo);
+      // Lock measurements collection for editing if the export is successful.
+      xnatMeasurementApi.lockExportedCollection(
+        seriesCollection,
+        collectionObject,
+        selectedMeasurements
+      );
 
-    // Attempt export to XNAT. Lock ROIs for editing if the export is successful.
-    const aimExporter = new AIMExporter(aw);
+      this.props.onExportComplete();
+    } catch (error) {
+      console.log(error);
 
-    await aimExporter
-      .exportToXNAT()
-      .then(success => {
-        console.log('PUT successful.');
-
-        //lockExportedROIs(
-        lockStructureSet(
-          exportMask,
-          seriesInfo.seriesInstanceUid,
-          roiCollectionName,
-          xnat_label
-        );
-
-        clearCachedExperimentRoiCollections(aimExporter.experimentID);
-        showNotification('Contour collection exported successfully', 'success');
-
-        this.props.onExportComplete();
-      })
-      .catch(error => {
-        console.log(error);
-        // TODO -> Work on backup mechanism, disabled for now.
-        //localBackup.saveBackUpForActiveSeries();
-
-        const message = error.message || 'Unknown error';
-        showNotification(message, 'error', 'Error exporting mask collection');
-
-        this.props.onExportCancel();
-      });
+      const message = error.message || 'Unknown error';
+      showNotification(
+        message,
+        'error',
+        'Error exporting measurements collection'
+      );
+    }
   }
 
   /**
@@ -200,20 +198,20 @@ export default class MeasurementExportMenu extends React.Component {
           <thead>
             <tr>
               <th width="10%" className="centered-cell" />
-              <th width="60%" className="left-aligned-cell">
+              <th width="55%" className="left-aligned-cell">
                 Measurement
               </th>
               <th width="20%" className="centered-cell">
                 Value
               </th>
-              <th width="10%" className="centered-cell">
+              <th width="15%" className="centered-cell">
+                <span>Export</span>
                 <input
                   type="checkbox"
                   checked={selectAllChecked}
                   value={selectAllChecked}
                   onChange={this.onChangeSelectAllCheckbox}
                 />
-                {' Export'}
               </th>
             </tr>
           </thead>
@@ -272,8 +270,8 @@ export default class MeasurementExportMenu extends React.Component {
             <input
               type="text"
               defaultValue={collectionName}
-              onChange={this.onTextInputChange}
-              placeholder="Unnamed ROI collection"
+              onChange={this.onCollectionNameChanged}
+              placeholder="Unnamed measurement collection"
               tabIndex="-1"
               autoComplete="off"
               style={{ flex: 1 }}
