@@ -202,8 +202,10 @@ export default class ImageMeasurementCollection {
     this._measurements.delete(uuid);
   }
 
-  assignNewUuid() {
-    this.metadata.uuid = _generateUUID();
+  resetMetadata() {
+    // this.metadata.uuid = _generateUUID();
+    this.metadata.name = '';
+    this.metadata.description = '';
   }
 
   generateDataObject(selectedMeasurements) {

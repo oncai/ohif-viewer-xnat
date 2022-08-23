@@ -51,10 +51,7 @@ const MeasurementWorkingCollection = props => {
             width="20px"
             height="20px"
             onClick={event => {
-              toggleVisibility.collection(
-                metadata.uuid,
-                internal.displaySetInstanceUID
-              );
+              toggleVisibility.collection(internal.displaySetInstanceUID);
               setVisible(!isVisible);
             }}
           />

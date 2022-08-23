@@ -64,7 +64,12 @@ export default class XNATMeasurementPanel extends React.Component {
     this.onItemRemove = this.onItemRemove.bind(this);
     this.onJumpToItem = this.onJumpToItem.bind(this);
     this.onResetViewport = this.onResetViewport.bind(this);
-    this.onUnlockImportedCollection = this.onUnlockImportedCollection.bind(this);
+    this.onUnlockImportedCollection = this.onUnlockImportedCollection.bind(
+      this
+    );
+    this.onRemoveImportedCollection = this.onRemoveImportedCollection.bind(
+      this
+    );
 
     this.addEventListeners();
   }
@@ -196,7 +201,7 @@ export default class XNATMeasurementPanel extends React.Component {
     const element = enabledElements[activeIndex].element;
     const toolState = csTools.getToolState(element, 'stack');
 
-    const { viewport: itemViewport } = measurement.xnatMetadata;
+    const { viewport: itemViewport } = measurement.viewport;
     const viewport = cornerstone.getViewport(element);
     assignViewportParameters(itemViewport, viewport);
   }
@@ -215,6 +220,16 @@ export default class XNATMeasurementPanel extends React.Component {
   }
 
   onUnlockImportedCollection() {}
+
+  onRemoveImportedCollection(collectionUuid) {
+    const { displaySetInstanceUID } = this.state;
+    xnatMeasurementApi.removeImportedCollection(
+      collectionUuid,
+      displaySetInstanceUID
+    );
+    refreshViewports();
+    this.refreshMeasurementList();
+  }
 
   render() {
     const {
@@ -293,6 +308,7 @@ export default class XNATMeasurementPanel extends React.Component {
                       collection={importedCollection}
                       onJumpToItem={this.onJumpToItem}
                       onUnlockCollection={this.onUnlockImportedCollection}
+                      onRemoveCollection={this.onRemoveImportedCollection}
                     />
                   )
                 )}
