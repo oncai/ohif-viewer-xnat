@@ -5,6 +5,7 @@ import getAnatomyCoding from '../../utils/getAnatomyCoding';
 import showModal from '../../../components/common/showModal';
 import MeasurementPropertyModal from '../MeasurementPropertyModal/MeasurementPropertyModal';
 import { toggleVisibility } from '../../utils';
+import getCodingText from '../common/getCodingText';
 
 const WorkingCollectionItem = props => {
   const {
@@ -28,7 +29,7 @@ const WorkingCollectionItem = props => {
       codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence.CodeMeaning,
   });
 
-  const codingText = _getCodingText(coding);
+  const codingText = getCodingText(coding);
 
   const onCodingUpdated = () => {
     setCoding({
@@ -36,8 +37,7 @@ const WorkingCollectionItem = props => {
       type: codingSequence[0].TypeCodeSequence.CodeMeaning,
       modifier:
         codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence &&
-        codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence
-          .CodeMeaning,
+        codingSequence[0].TypeCodeSequence.TypeModifierCodeSequence.CodeMeaning,
     });
   };
 
@@ -169,17 +169,6 @@ WorkingCollectionItem.propTypes = {
   onItemRemove: PropTypes.func.isRequired,
   onJumpToItem: PropTypes.func.isRequired,
   onResetViewport: PropTypes.func.isRequired,
-};
-
-const _getCodingText = coding => {
-  const { category, type, modifier } = coding;
-  let typeWithModifier = type;
-
-  if (modifier) {
-    typeWithModifier += ` (${modifier})`;
-  }
-
-  return `${typeWithModifier} - ${category}`;
 };
 
 const _onEditClick = (metadata, onCodingUpdated) => {

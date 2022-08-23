@@ -4,15 +4,17 @@ import refreshViewports from '../../utils/refreshViewports';
 const toggleItemVisibility = (
   uuid,
   displaySetInstanceUID,
-  lockedMeasurement = false
+  importedCollectionUuid = undefined
 ) => {
   const collections = xnatMeasurementApi.getMeasurementCollections({
     displaySetInstanceUID,
   });
 
   let collection;
-  if (lockedMeasurement) {
-    collection = undefined;
+  if (importedCollectionUuid) {
+    collection = collections.importedCollections.find(
+      collectionI => collectionI.metadata.uuid === importedCollectionUuid
+    );
   } else {
     collection = collections.workingCollection;
   }
@@ -28,17 +30,18 @@ const toggleItemVisibility = (
 };
 
 const toggleCollectionVisibility = (
-  uuid,
   displaySetInstanceUID,
-  lockedCollection = false
+  importedCollectionUuid = undefined
 ) => {
   const collections = xnatMeasurementApi.getMeasurementCollections({
     displaySetInstanceUID,
   });
 
   let collection;
-  if (lockedCollection) {
-    collection = undefined;
+  if (importedCollectionUuid) {
+    collection = collections.importedCollections.find(
+      collectionI => collectionI.metadata.uuid === importedCollectionUuid
+    );
   } else {
     collection = collections.workingCollection;
   }

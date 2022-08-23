@@ -5,7 +5,7 @@ import { toggleVisibility } from '../../utils';
 import ImportedCollectionItem from './ImportedCollectionItem';
 
 const MeasurementImportedCollection = props => {
-  const { collection, onJumpToItem, onUnlockCollection } = props;
+  const { collection, onJumpToItem, onUnlockCollection, onRemoveCollection } = props;
   const { metadata, internal } = collection;
 
   const [isExpanded, setExpanded] = useState(true);
@@ -23,8 +23,8 @@ const MeasurementImportedCollection = props => {
             height="20px"
             onClick={event => {
               toggleVisibility.collection(
-                metadata.uuid,
-                internal.displaySetInstanceUID
+                internal.displaySetInstanceUID,
+                metadata.uuid
               );
               setVisible(!isVisible);
             }}
@@ -35,9 +35,19 @@ const MeasurementImportedCollection = props => {
             width="20px"
             height="20px"
             onClick={() => {
-              onUnlockCollection(collection);
+              onUnlockCollection(metadata.uuid);
             }}
-            title="Unlock ROI Collection"
+            title="Unlock Measurement Collection"
+          />
+          <Icon
+            name="trash"
+            className="icon"
+            width="20px"
+            height="20px"
+            onClick={() => {
+              onRemoveCollection(metadata.uuid);
+            }}
+            title="Remove Measurement Collection"
           />
           <Icon
             name={`angle-double-${isExpanded ? 'down' : 'up'}`}
@@ -86,6 +96,7 @@ MeasurementImportedCollection.propTypes = {
   collection: PropTypes.object.isRequired,
   onJumpToItem: PropTypes.func.isRequired,
   onUnlockCollection: PropTypes.func.isRequired,
+  onRemoveCollection: PropTypes.func.isRequired,
 };
 
 export default MeasurementImportedCollection;

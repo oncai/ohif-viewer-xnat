@@ -3,7 +3,7 @@ import csTools from 'cornerstone-tools';
 import { ImageMeasurementCollection, imageMeasurements } from './lib';
 import { getImageAttributes, assignViewportParameters } from '../utils';
 import XNAT_EVENTS from './XNATEvents';
-import {measurements} from "@ohif/core";
+import { measurements } from '@ohif/core';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 
@@ -151,6 +151,42 @@ class XNATMeasurementApi {
     return true;
   }
 
+  removeImportedCollection(collectionUuid, displaySetInstanceUID) {
+    const seriesCollection = this.getMeasurementCollections({
+      displaySetInstanceUID,
+    });
+    const collection = seriesCollection.importedCollections.find(
+      collectionI => collectionI.metadata.uuid === collectionUuid
+    );
+
+    // Remove toolstate
+    const toolState = csTools.globalImageIdSpecificToolStateManager.saveToolState();
+    collection.measurements.forEach(measurement => {
+      const {
+        uuid,
+        toolType,
+        imageId,
+      } = measurement.csData.measurementReference;
+      if (imageId && toolState[imageId]) {
+        const toolData = toolState[imageId][toolType];
+        const measurementEntries = toolData && toolData.data;
+        const measurementEntry = measurementEntries.find(
+          item => item.uuid === uuid
+        );
+        if (measurementEntry) {
+          const index = measurementEntries.indexOf(measurementEntry);
+          measurementEntries.splice(index, 1);
+        }
+      }
+    });
+
+    const index = seriesCollection.importedCollections.indexOf(
+      collectionI => collectionI.metadata.uuid === collectionUuid
+    );
+
+    seriesCollection.importedCollections.splice(index, 1);
+  }
+
   lockExportedCollection(
     seriesCollection,
     collectionObject,
@@ -172,6 +208,8 @@ class XNATMeasurementApi {
       lockedCollection.addMeasurement(measurement);
       workingCollection.removeMeasurement(uuid);
     });
+
+    workingCollection.resetMetadata();
   }
 }
 
