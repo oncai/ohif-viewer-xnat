@@ -16,7 +16,7 @@ const WorkingCollectionItem = props => {
     onResetViewport,
   } = props;
   const { metadata, internal, csData } = measurement;
-  const { uuid, name, description, codingSequence, visible } = metadata;
+  const { uuid, name, description, codingSequence, visible, color } = metadata;
   const { icon, displaySetInstanceUID } = internal;
 
   const [isVisible, setVisible] = useState(visible);
@@ -100,7 +100,12 @@ const WorkingCollectionItem = props => {
           onJumpToItem(measurement);
         }}
       >
-        <Icon name={icon} width="16px" height="16px" />
+        <Icon
+          name={icon}
+          width="16px"
+          height="16px"
+          style={{ fill: `${color}`, color: `${color}` }}
+        />
       </td>
       <td
         className="left-aligned-cell"
