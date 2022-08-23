@@ -1,6 +1,7 @@
 import React from 'react';
 import ImageMeasurement from './ImageMeasurement';
 import { XNATToolTypes } from '../../../../measurement-tools';
+import FormattedValue from './utils/FormattedValue';
 
 export default class XNATLength extends ImageMeasurement {
   static get genericToolType() {
@@ -21,19 +22,11 @@ export default class XNATLength extends ImageMeasurement {
 
   get displayText() {
     const csData = this.csData;
+    const unit = this.metadata.unit;
     let displayText = null;
     if (csData && csData.length && !isNaN(csData.length)) {
       displayText = (
-        <div>
-          <span>{csData.length.toFixed(2)}</span>
-          {csData.unit && (
-            <span
-              style={{ color: 'var(--text-secondary-color)', display: 'block' }}
-            >
-              {csData.unit}
-            </span>
-          )}
-        </div>
+        <FormattedValue value={csData.length.toFixed(2)} suffix={unit} />
       );
     }
     return displayText;

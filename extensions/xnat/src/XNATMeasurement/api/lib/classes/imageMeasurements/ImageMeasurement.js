@@ -1,4 +1,5 @@
 import { getAnatomyCoding } from '../../../../utils';
+import getSpatialUnit from '../../../../utils/getSpatialUnit';
 
 export default class ImageMeasurement {
   static get genericToolType() {
@@ -55,6 +56,7 @@ export default class ImageMeasurement {
         lineThickness: 1,
         dashedLine: false,
         visible: true,
+        unit: getSpatialUnit(imageId),
       },
       imageReference: {
         SOPInstanceUID,
