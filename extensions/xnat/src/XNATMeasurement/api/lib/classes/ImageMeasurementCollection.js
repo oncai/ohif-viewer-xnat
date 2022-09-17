@@ -157,7 +157,6 @@ export default class ImageMeasurementCollection {
       user,
       subject,
       equipment,
-      imageMeasurements,
     } = collectionObject;
     this.metadata = {
       uuid,
@@ -210,6 +209,7 @@ export default class ImageMeasurementCollection {
 
   generateDataObject(selectedMeasurements) {
     // Build imageReference
+    this.imageReference.imageCollection = [];
     const imageCollection = this.imageReference.imageCollection;
     const imageMeasurements = [];
     selectedMeasurements.forEach(measurement => {

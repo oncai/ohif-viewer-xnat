@@ -23,6 +23,8 @@ export default class ImageMeasurement {
   constructor(isImported, props) {
     if (!isImported) {
       this.initNew(props);
+    } else {
+      this.initImported(props);
     }
   }
 
@@ -91,6 +93,93 @@ export default class ImageMeasurement {
     this._csMeasurementData = measurementData;
   }
 
+  initImported(props) {
+    const { collectionUID, measurementObject, imageAttributes } = props;
+
+    // measurementObject
+    const {
+      uuid,
+      name,
+      description,
+      codingSequence,
+      color,
+      lineThickness,
+      dashedLine,
+      visible,
+      unit,
+      viewport,
+      data,
+    } = measurementObject;
+
+    // imageReference
+    const {
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      SOPInstanceUID,
+      frameIndex,
+      imageId,
+      displaySetInstanceUID,
+    } = imageAttributes;
+
+    this._xnat = {
+      metadata: {
+        uuid,
+        toolType: this.constructor.genericToolType,
+        name,
+        description,
+        codingSequence,
+        color,
+        lineThickness,
+        dashedLine,
+        visible,
+        unit,
+      },
+      imageReference: {
+        SOPInstanceUID,
+        frameIndex,
+      },
+      viewport,
+      internal: {
+        locked: false,
+        imported: true,
+        active: false,
+        modified: false,
+        icon: this.constructor.icon,
+        StudyInstanceUID,
+        SeriesInstanceUID,
+        displaySetInstanceUID,
+        imageId,
+        collectionUID,
+      },
+      data: {}, // Data exchange, measurement type-specific
+    };
+
+    const { handles } = data;
+
+    const measurementData = {
+      active: false,
+      color,
+      handles: { ...handles },
+      invalidated: true,
+      unit,
+      uuid,
+      visible,
+    };
+
+    measurementData.measurementReference = {
+      toolType: this.constructor.toolType,
+      genericToolType: this.constructor.genericToolType,
+      uuid,
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      displaySetInstanceUID,
+      imageId,
+      collectionUID,
+    };
+
+    this._csMeasurementData = measurementData;
+  }
+
   get metadata() {
     return this._xnat.metadata;
   }
@@ -127,6 +216,12 @@ export default class ImageMeasurement {
   get displayText() {
     throw new Error(
       `Method displayText not implemented for base class ImageMeasurement.`
+    );
+  }
+
+  populateCSMeasurementData(data) {
+    throw new Error(
+      `Method populateCSMeasurementData not implemented for base class ImageMeasurement.`
     );
   }
 

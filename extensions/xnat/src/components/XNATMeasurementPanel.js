@@ -41,9 +41,9 @@ export default class XNATMeasurementPanel extends React.Component {
 
     const displaySetInstanceUID = viewports[activeIndex].displaySetInstanceUID;
 
-    const seriesCollection = xnatMeasurementApi.getMeasurementCollections({
-      displaySetInstanceUID,
-    });
+    const seriesCollection = xnatMeasurementApi.getMeasurementCollections(
+      displaySetInstanceUID
+    );
 
     this.state = {
       importing: false,
@@ -141,16 +141,10 @@ export default class XNATMeasurementPanel extends React.Component {
   refreshMeasurementList() {
     const { viewports, activeIndex } = this.props;
     if (viewports[activeIndex]) {
-      const {
-        displaySetInstanceUID,
-        SeriesInstanceUID,
-        StudyInstanceUID,
-      } = viewports[activeIndex];
-      const seriesCollection = xnatMeasurementApi.getMeasurementCollections({
-        displaySetInstanceUID,
-        SeriesInstanceUID,
-        StudyInstanceUID,
-      });
+      const { displaySetInstanceUID } = viewports[activeIndex];
+      const seriesCollection = xnatMeasurementApi.getMeasurementCollections(
+        displaySetInstanceUID
+      );
       this.setState({ displaySetInstanceUID, seriesCollection });
     }
   }
@@ -248,7 +242,16 @@ export default class XNATMeasurementPanel extends React.Component {
     if (showSettings) {
       component = <div>Measurement Settings</div>;
     } else if (importing) {
-      component = <div>Measurement Importing</div>;
+      const { SeriesInstanceUID } = viewports[activeIndex];
+      component = (
+        <MeasurementImportMenu
+          onImportComplete={this.onIOComplete}
+          onImportCancel={this.onIOCancel}
+          SeriesInstanceUID={SeriesInstanceUID}
+          displaySetInstanceUID={displaySetInstanceUID}
+          seriesCollection={seriesCollection}
+        />
+      );
     } else if (exporting) {
       component = (
         <MeasurementExportMenu

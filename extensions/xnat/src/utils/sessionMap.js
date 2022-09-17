@@ -69,7 +69,7 @@ const sessionMap = {
       projectId: metadata.projectId,
       subjectId: metadata.subjectId,
       experimentId: metadata.experimentId,
-      experimentLabeL: metadata.experimentLabel,
+      experimentLabel: metadata.experimentLabel,
     });
 
     const studies = json.studies;
