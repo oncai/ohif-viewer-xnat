@@ -6,9 +6,9 @@ const toggleItemVisibility = (
   displaySetInstanceUID,
   importedCollectionUuid = undefined
 ) => {
-  const collections = xnatMeasurementApi.getMeasurementCollections({
-    displaySetInstanceUID,
-  });
+  const collections = xnatMeasurementApi.getMeasurementCollections(
+    displaySetInstanceUID
+  );
 
   let collection;
   if (importedCollectionUuid) {
@@ -33,9 +33,9 @@ const toggleCollectionVisibility = (
   displaySetInstanceUID,
   importedCollectionUuid = undefined
 ) => {
-  const collections = xnatMeasurementApi.getMeasurementCollections({
-    displaySetInstanceUID,
-  });
+  const collections = xnatMeasurementApi.getMeasurementCollections(
+    displaySetInstanceUID
+  );
 
   let collection;
   if (importedCollectionUuid) {

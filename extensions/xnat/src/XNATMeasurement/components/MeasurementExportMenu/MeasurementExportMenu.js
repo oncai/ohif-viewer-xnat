@@ -101,7 +101,7 @@ export default class MeasurementExportMenu extends React.Component {
 
       this.props.onExportComplete();
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       const message = error.message || 'Unknown error';
       showNotification(

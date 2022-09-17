@@ -32,11 +32,16 @@ export default class XNATLength extends ImageMeasurement {
     return displayText;
   }
 
+  populateCSMeasurementData(data) {
+    const { length } = data;
+    this._csMeasurementData.length = length;
+  }
+
   generateDataObject() {
     const { length, unit, handles } = this.csData;
     this._xnat.data = {
       length,
-      unit,
+      unit: unit + String.fromCharCode(178),
       handles: { ...handles },
     };
     return super.generateDataObject();

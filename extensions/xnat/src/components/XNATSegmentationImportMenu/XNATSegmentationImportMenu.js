@@ -37,7 +37,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
     for (let i = 0; i < this._sessions.length; i++) {
       const experimentId = this._sessions[i].experimentId;
       sessionRoiCollections[experimentId] = {
-        experimentLabeL: this._sessions[i].experimentLabeL,
+        experimentLabel: this._sessions[i].experimentLabel,
         importList: [],
         scanSelected: 'All',
         segmentationSelected: '',
@@ -391,7 +391,7 @@ export default class XNATSegmentationImportMenu extends React.Component {
                 key={key}
                 value={key}
                 disabled={session.importList.length === 0}
-              >{`${session.experimentLabeL}`}</option>
+              >{`${session.experimentLabel}`}</option>
             );
           })}
         </select>
