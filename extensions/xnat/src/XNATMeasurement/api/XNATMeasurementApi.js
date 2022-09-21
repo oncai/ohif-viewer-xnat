@@ -196,11 +196,12 @@ class XNATMeasurementApi {
     const {
       StudyInstanceUID,
       SeriesInstanceUID,
+      Modality,
     } = lockedCollection.imageReference;
 
     const toolTypes = [];
     measurementObjects.forEach(measurementObject => {
-      const { toolType, imageReference, data } = measurementObject;
+      const { toolType, imageReference } = measurementObject;
       const MeasurementTool = this._supportedGenericToolTypes[toolType];
       if (MeasurementTool) {
         const { SOPInstanceUID, frameIndex } = imageReference;
@@ -218,10 +219,10 @@ class XNATMeasurementApi {
             imageId,
             StudyInstanceUID,
             SeriesInstanceUID,
+            Modality,
             displaySetInstanceUID,
           },
         });
-        measurement.populateCSMeasurementData(data);
 
         // Add measurement to toolstate
         globalToolStateManager.addImageIdToolState(
