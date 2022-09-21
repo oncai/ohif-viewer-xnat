@@ -96,6 +96,7 @@ export default class ImageMeasurementCollection {
       PatientBirthDate,
       StudyInstanceUID,
       SeriesInstanceUID,
+      Modality,
       displaySetInstanceUID,
     } = paras;
     const userInfo = window.ohif.userInfo || {
@@ -111,6 +112,7 @@ export default class ImageMeasurementCollection {
       PatientID,
       StudyInstanceUID,
       SeriesInstanceUID,
+      Modality,
       imageCollection: [],
     };
     this.xnatMetadata = {

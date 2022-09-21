@@ -8,13 +8,17 @@ const getImageAttributes = element => {
   const enabledElement = cornerstone.getEnabledElement(element);
   const imageId = enabledElement.image.imageId;
 
-  const { SOPInstanceUID } = cornerstone.metaData.get('instance', imageId);
+  const { SOPInstanceUID, Modality } = cornerstone.metaData.get(
+    'instance',
+    imageId
+  );
 
   const splitImageId = imageId.split('&frame');
   const frameIndex =
     splitImageId[1] !== undefined ? Number(splitImageId[1]) : 0;
 
   return {
+    Modality,
     SOPInstanceUID,
     frameIndex,
     imageId,

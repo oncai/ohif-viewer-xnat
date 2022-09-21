@@ -22,28 +22,27 @@ export default class XNATLength extends ImageMeasurement {
 
   get displayText() {
     const csData = this.csData;
-    const unit = this.metadata.unit;
+    const { spatialUnit } = this.measurementUnits;
     let displayText = null;
     if (csData && csData.length && !isNaN(csData.length)) {
       displayText = (
-        <FormattedValue value={csData.length.toFixed(2)} suffix={unit} />
+        <FormattedValue value={csData.length.toFixed(2)} suffix={spatialUnit} />
       );
     }
     return displayText;
   }
 
-  populateCSMeasurementData(data) {
-    const { length } = data;
-    this._csMeasurementData.length = length;
-  }
-
   generateDataObject() {
-    const { length, unit, handles } = this.csData;
+    const { length, handles } = this.csData;
     this._xnat.data = {
       length,
-      unit: unit + String.fromCharCode(178),
       handles: { ...handles },
     };
+
+    const values = this._xnat.values;
+    const { spatialUnit } = this.measurementUnits;
+    values.push({ name: 'length', value: length, unit: spatialUnit });
+
     return super.generateDataObject();
   }
 }

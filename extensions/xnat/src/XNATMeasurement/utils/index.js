@@ -4,6 +4,7 @@ import getAnatomyCoding from './getAnatomyCoding';
 import assignViewportParameters from './assignViewportParameters';
 import toggleVisibility from './toggleVisibility';
 import refreshToolStateManager from './refreshToolStateManager';
+import getMeasurementUnits from './getMeasurementUnits';
 
 export {
   getImageAttributes,
@@ -13,4 +14,5 @@ export {
   assignViewportParameters,
   toggleVisibility,
   refreshToolStateManager,
+  getMeasurementUnits,
 };

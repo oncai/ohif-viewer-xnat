@@ -1,5 +1,4 @@
-import { getAnatomyCoding } from '../../../../utils';
-import getSpatialUnit from '../../../../utils/getSpatialUnit';
+import { getAnatomyCoding, getMeasurementUnits } from '../../../../utils';
 
 export default class ImageMeasurement {
   static get genericToolType() {
@@ -21,6 +20,9 @@ export default class ImageMeasurement {
   }
 
   constructor(isImported, props) {
+    const { imageId, Modality } = props.imageAttributes;
+    this._measurementUnits = getMeasurementUnits(imageId, Modality);
+
     if (!isImported) {
       this.initNew(props);
     } else {
@@ -58,7 +60,6 @@ export default class ImageMeasurement {
         lineThickness: 1,
         dashedLine: false,
         visible: true,
-        unit: getSpatialUnit(imageId),
       },
       imageReference: {
         SOPInstanceUID,
@@ -77,7 +78,8 @@ export default class ImageMeasurement {
         imageId,
         collectionUID,
       },
-      data: {}, // Data exchange, measurement type-specific
+      data: {}, // CS-Tools Data exchange, measurement type-specific
+      values: [], // measurement value-unit pairs, used in export
     };
 
     measurementData.measurementReference = {
@@ -106,7 +108,6 @@ export default class ImageMeasurement {
       lineThickness,
       dashedLine,
       visible,
-      unit,
       viewport,
       data,
     } = measurementObject;
@@ -132,7 +133,6 @@ export default class ImageMeasurement {
         lineThickness,
         dashedLine,
         visible,
-        unit,
       },
       imageReference: {
         SOPInstanceUID,
@@ -151,17 +151,15 @@ export default class ImageMeasurement {
         imageId,
         collectionUID,
       },
-      data: {}, // Data exchange, measurement type-specific
+      data: {}, // CS-Tools Data exchange, measurement type-specific
+      values: [], // measurement value-unit pairs, used in export
     };
 
-    const { handles } = data;
-
     const measurementData = {
+      ...data,
       active: false,
       color,
-      handles: { ...handles },
       invalidated: true,
-      unit,
       uuid,
       visible,
     };
@@ -178,6 +176,10 @@ export default class ImageMeasurement {
     };
 
     this._csMeasurementData = measurementData;
+  }
+
+  get measurementUnits() {
+    return this._measurementUnits;
   }
 
   get metadata() {
@@ -219,18 +221,13 @@ export default class ImageMeasurement {
     );
   }
 
-  populateCSMeasurementData(data) {
-    throw new Error(
-      `Method populateCSMeasurementData not implemented for base class ImageMeasurement.`
-    );
-  }
-
   generateDataObject() {
     const dataObject = {
       ...this._xnat.metadata,
       imageReference: { ...this._xnat.imageReference },
       viewport: { ...this._xnat.viewport },
       data: { ...this._xnat.data },
+      measurements: [...this._xnat.values],
     };
 
     return dataObject;
