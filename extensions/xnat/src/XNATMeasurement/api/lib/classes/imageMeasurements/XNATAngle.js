@@ -1,6 +1,7 @@
 import React from 'react';
 import ImageMeasurement from './ImageMeasurement';
 import { XNATToolTypes } from '../../../../measurement-tools';
+import FormattedValue from './utils/FormattedValue';
 
 export default class XNATAngle extends ImageMeasurement {
   static get genericToolType() {
@@ -21,25 +22,27 @@ export default class XNATAngle extends ImageMeasurement {
 
   get displayText() {
     const csData = this.csData;
+    const { angleUnit } = this.measurementUnits;
     let displayText = null;
     if (csData && csData.rAngle) {
-      displayText = (
-        <div>
-          <span>
-            {csData.rAngle + String.fromCharCode(parseInt('00B0', 16))}
-          </span>
-        </div>
-      );
+      displayText = <FormattedValue value={csData.rAngle} suffix={angleUnit} />;
     }
     return displayText;
   }
 
   generateDataObject() {
+    const dataObject = super.generateDataObject();
+
     const { rAngle, handles } = this.csData;
-    this._xnat.data = {
+    dataObject.data = {
       rAngle,
       handles: { ...handles },
     };
-    return super.generateDataObject();
+
+    const values = dataObject.measurements;
+    const { angleUnit } = this.measurementUnits;
+    values.push({ name: 'angle', value: rAngle, unit: angleUnit });
+
+    return dataObject;
   }
 }

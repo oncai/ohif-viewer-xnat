@@ -126,7 +126,7 @@ const importContourRoiCollection = async (
         callbacks
       );
       if (errorMessage) {
-        showNotification(errorMessage, 'error', 'Mask Import');
+        showNotification(errorMessage, 'error', 'Contours Import');
       } else {
         showNotification(
           `Contours collection ${roiCollectionInfo.name} imported successfully`,

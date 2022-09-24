@@ -33,11 +33,17 @@ export default class XNATArrowAnnotate extends ImageMeasurement {
   }
 
   generateDataObject() {
+    const dataObject = super.generateDataObject();
+
     const { text, handles } = this.csData;
-    this._xnat.data = {
+    dataObject.data = {
       text,
       handles: { ...handles },
     };
-    return super.generateDataObject();
+
+    const values = dataObject.measurements;
+    values.push({ name: 'arrow', comment: text, unit: '' });
+
+    return dataObject;
   }
 }

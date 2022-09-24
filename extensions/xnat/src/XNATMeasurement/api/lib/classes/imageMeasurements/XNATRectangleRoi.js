@@ -22,23 +22,17 @@ export default class XNATRectangleRoi extends ImageMeasurement {
 
   get displayText() {
     const csData = this.csData;
-    const spatialUnit = this.metadata.unit;
+    const { areaUnit } = this.measurementUnits;
     let displayText = null;
     if (csData && csData.cachedStats) {
       // area, count, mean, variance, stdDev, min, max, meanStdDevSUV
-      const { area, mean, stdDev } = csData.cachedStats;
-      const pixelUnit = csData.unit;
+      const { area } = csData.cachedStats;
       displayText = (
         <>
           <FormattedValue
             prefix={'Area'}
             value={area.toFixed(0)}
-            suffix={spatialUnit + String.fromCharCode(178)}
-          />
-          <FormattedValue
-            prefix={'Mean'}
-            value={mean.toFixed(0)}
-            suffix={pixelUnit}
+            suffix={areaUnit}
           />
         </>
       );
@@ -47,13 +41,44 @@ export default class XNATRectangleRoi extends ImageMeasurement {
   }
 
   generateDataObject() {
-    // Unit in csData stores the pixel value unit (i.e. HU)
-    const { cachedStats: stats, unit, handles } = this.csData;
-    this._xnat.data = {
-      stats,
-      unit,
+    const dataObject = super.generateDataObject();
+
+    const { cachedStats, handles } = this.csData;
+    dataObject.data = {
+      cachedStats,
       handles: { ...handles },
     };
-    return super.generateDataObject();
+
+    const values = dataObject.measurements;
+    const { areaUnit, pixelUnit } = this.measurementUnits;
+
+    if (cachedStats) {
+      const {
+        area,
+        count,
+        mean,
+        variance,
+        stdDev,
+        min,
+        max,
+        meanStdDevSUV,
+      } = cachedStats;
+      if (area !== undefined)
+        values.push({ name: 'area', value: area, unit: areaUnit });
+      if (count !== undefined) values.push({ name: 'count', value: count });
+      values.push({ name: 'mean', value: mean, unit: pixelUnit });
+      if (variance !== undefined)
+        values.push({ name: 'variance', value: variance });
+      if (stdDev !== undefined)
+        values.push({ name: 'stdDev', value: stdDev, unit: pixelUnit });
+      if (min !== undefined)
+        values.push({ name: 'min', value: min, unit: pixelUnit });
+      if (max !== undefined)
+        values.push({ name: 'max', value: max, unit: pixelUnit });
+      if (meanStdDevSUV !== undefined)
+        values.push({ name: 'meanStdDevSUV', value: meanStdDevSUV });
+    }
+
+    return dataObject;
   }
 }

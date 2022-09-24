@@ -38,7 +38,7 @@ import { version } from '../../../../../package.json';
 
 /**
  * @typedef {object} xnatMetadata
- * @property {String} label - XNAT RoiCollection label
+ * @property {String} collectionLabel - XNAT RoiCollection label
  * @property {String} collectionId - XNAT RoiCollection ID
  */
 
@@ -97,6 +97,7 @@ export default class ImageMeasurementCollection {
       StudyInstanceUID,
       SeriesInstanceUID,
       Modality,
+      SeriesNumber,
       displaySetInstanceUID,
     } = paras;
     const userInfo = window.ohif.userInfo || {
@@ -116,11 +117,11 @@ export default class ImageMeasurementCollection {
       imageCollection: [],
     };
     this.xnatMetadata = {
-      label: '',
+      collectionLabel: '',
       collectionId: '',
     };
     this.tracking = {
-      created: moment().format('YYYYMMDD HH:mm:ss.SSS'),
+      created: moment().format('YYYYMMDDHHmmss.SSS'),
       modified: '',
       revision: 1,
     };
@@ -143,6 +144,7 @@ export default class ImageMeasurementCollection {
       imported: false,
       visible: true,
       displaySetInstanceUID,
+      SeriesNumber,
     };
   }
 
@@ -167,7 +169,7 @@ export default class ImageMeasurementCollection {
     };
     this.imageReference = { ...imageReference };
     this.xnatMetadata = {
-      label: '',
+      collectionLabel: '',
       collectionId: '',
     };
     this.tracking = {

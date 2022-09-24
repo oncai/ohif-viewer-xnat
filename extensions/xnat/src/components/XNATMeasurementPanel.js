@@ -213,7 +213,14 @@ export default class XNATMeasurementPanel extends React.Component {
     });
   }
 
-  onUnlockImportedCollection() {}
+  onUnlockImportedCollection(collectionUuid) {
+    const { displaySetInstanceUID } = this.state;
+    xnatMeasurementApi.unlockImportedCollection(
+      collectionUuid,
+      displaySetInstanceUID
+    );
+    this.refreshMeasurementList();
+  }
 
   onRemoveImportedCollection(collectionUuid) {
     const { displaySetInstanceUID } = this.state;

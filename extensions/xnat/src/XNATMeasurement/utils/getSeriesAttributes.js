@@ -33,6 +33,7 @@ const getSeriesAttributes = displaySetInstanceUID => {
       StudyInstanceUID,
       SeriesInstanceUID,
       Modality,
+      SeriesNumber,
     } = cornerstone.metaData.get('instance', imageId);
 
     return {
@@ -42,6 +43,7 @@ const getSeriesAttributes = displaySetInstanceUID => {
       StudyInstanceUID,
       SeriesInstanceUID,
       Modality,
+      SeriesNumber,
       imageId,
       displaySetInstanceUID,
     };
