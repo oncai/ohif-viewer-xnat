@@ -5,7 +5,12 @@ import { toggleVisibility } from '../../utils';
 import ImportedCollectionItem from './ImportedCollectionItem';
 
 const MeasurementImportedCollection = props => {
-  const { collection, onJumpToItem, onUnlockCollection, onRemoveCollection } = props;
+  const {
+    collection,
+    onJumpToItem,
+    onUnlockCollection,
+    onRemoveCollection,
+  } = props;
   const { metadata, internal } = collection;
 
   const [isExpanded, setExpanded] = useState(true);

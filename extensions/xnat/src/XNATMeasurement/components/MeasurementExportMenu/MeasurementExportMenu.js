@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
 import { xnatMeasurementApi, dataExchange } from '../../api';
 import showNotification from '../../../components/common/showNotification';
+import generateDateTimeAndLabel from '../../../utils/IO/helpers/generateDateAndTimeLabel';
 
 export default class MeasurementExportMenu extends React.Component {
   static propTypes = {
@@ -22,8 +23,12 @@ export default class MeasurementExportMenu extends React.Component {
     const selectedCheckboxes = [];
     this._measurements.forEach(() => selectedCheckboxes.push(true));
 
-    // Get from collection->xnatMetadata
-    // const { dateTime, label } = generateDateTimeAndLabel('AIM');
+    const { label } = generateDateTimeAndLabel('MEAS');
+    const { SeriesNumber } = workingCollection.internal;
+    this._xnatCollectionLabel = label;
+    if (SeriesNumber !== undefined) {
+      this._xnatCollectionLabel += `_S${SeriesNumber}`;
+    }
 
     this.state = {
       collectionName: name,
@@ -79,20 +84,22 @@ export default class MeasurementExportMenu extends React.Component {
 
     this.setState({ exporting: true });
 
-    // const xnat_label = `${label}_S${seriesInfo.seriesNumber}`;
-
     try {
-      const collectionObject = seriesCollection.workingCollection.generateDataObject(
+      const { workingCollection } = seriesCollection;
+      const collectionObject = workingCollection.generateDataObject(
         selectedMeasurements
       );
       const serializedJson = JSON.stringify(collectionObject);
-      await dataExchange.storeMeasurementCollection(serializedJson);
+      await dataExchange.storeMeasurementCollection(serializedJson, {
+        collectionLabel: this._xnatCollectionLabel,
+        SeriesInstanceUID: workingCollection.imageReference.SeriesInstanceUID,
+      });
       showNotification(
-        'Measurements collection exported successfully.',
+        'Measurement collection exported successfully.',
         'success'
       );
 
-      // Lock measurements collection for editing if the export is successful.
+      // Lock measurement collection for editing if the export is successful.
       xnatMeasurementApi.lockExportedCollection(
         seriesCollection,
         collectionObject,
@@ -107,7 +114,7 @@ export default class MeasurementExportMenu extends React.Component {
       showNotification(
         message,
         'error',
-        'Error exporting measurements collection'
+        'Error exporting measurement collection'
       );
     }
   }
@@ -181,7 +188,7 @@ export default class MeasurementExportMenu extends React.Component {
 
     if (emptyCollection) {
       exportListBody = (
-        <h5>Empty measurements collection. Export is not available.</h5>
+        <h5>Empty measurement collection. Export is not available.</h5>
       );
     } else if (exporting) {
       exportListBody = (
@@ -254,7 +261,7 @@ export default class MeasurementExportMenu extends React.Component {
     return (
       <div className="xnatPanel">
         <div className="panelHeader">
-          <h3>Export measurements collection</h3>
+          <h3>Export measurement collection</h3>
           {!exporting && (
             <button className="small" onClick={this.onCloseButtonClick}>
               <Icon name="xnat-cancel" />

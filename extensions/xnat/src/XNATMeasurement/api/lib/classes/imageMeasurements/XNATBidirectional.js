@@ -22,7 +22,7 @@ export default class XNATBidirectional extends ImageMeasurement {
 
   get displayText() {
     const csData = this.csData;
-    const unit = this.metadata.unit;
+    const { spatialUnit } = this.measurementUnits;
     let displayText = null;
     if (csData && csData.longestDiameter && csData.shortestDiameter) {
       displayText = (
@@ -30,12 +30,12 @@ export default class XNATBidirectional extends ImageMeasurement {
           <FormattedValue
             prefix={'L'}
             value={csData.longestDiameter}
-            suffix={unit}
+            suffix={spatialUnit}
           />
           <FormattedValue
             prefix={'W'}
             value={csData.shortestDiameter}
-            suffix={unit}
+            suffix={spatialUnit}
           />
         </>
       );
@@ -44,12 +44,28 @@ export default class XNATBidirectional extends ImageMeasurement {
   }
 
   generateDataObject() {
-    const { length, unit, handles } = this.csData;
-    this._xnat.data = {
-      length,
-      unit,
+    const dataObject = super.generateDataObject();
+
+    const { shortestDiameter, longestDiameter, handles } = this.csData;
+    dataObject.data = {
+      shortestDiameter,
+      longestDiameter,
       handles: { ...handles },
     };
-    return super.generateDataObject();
+
+    const values = dataObject.measurements;
+    const { spatialUnit } = this.measurementUnits;
+    values.push({
+      name: 'shortestDiameter',
+      value: parseFloat(shortestDiameter),
+      unit: spatialUnit,
+    });
+    values.push({
+      name: 'longestDiameter',
+      value: parseFloat(longestDiameter),
+      unit: spatialUnit,
+    });
+
+    return dataObject;
   }
 }

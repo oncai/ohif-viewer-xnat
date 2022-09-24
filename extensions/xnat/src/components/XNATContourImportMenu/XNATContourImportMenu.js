@@ -557,7 +557,10 @@ export default class XNATContourImportMenu extends React.Component {
                       <td className="left-aligned-cell">
                         {roiCollection.name}
                       </td>
-                      <td>{`${roiCollection.date} ${roiCollection.time}`}</td>
+                      <td>
+                        <div>{roiCollection.date}</div>
+                        <div>{roiCollection.time}</div>
+                      </td>
                       <td className="centered-cell">
                         {`${roiCollection.referencedSeriesNumber}`}
                       </td>

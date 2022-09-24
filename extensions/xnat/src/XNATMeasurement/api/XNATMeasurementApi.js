@@ -1,4 +1,5 @@
 import cornerstone from 'cornerstone-core';
+import OHIF from '@ohif/core';
 import csTools from 'cornerstone-tools';
 import { ImageMeasurementCollection, imageMeasurements } from './lib';
 import {
@@ -12,6 +13,8 @@ import XNAT_EVENTS from './XNATEvents';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
+
+const { studyMetadataManager } = OHIF.utils;
 
 class XNATMeasurementApi {
   constructor() {
@@ -175,7 +178,11 @@ class XNATMeasurementApi {
     return true;
   }
 
-  addImportedCollection(displaySetInstanceUID, collectionObject) {
+  addImportedCollection(SeriesInstanceUID, collectionLabel, collectionObject) {
+    const displaySetInstanceUID = this.getDisplaySetInstanceUID(
+      SeriesInstanceUID
+    );
+
     const seriesCollection = this.getMeasurementCollections(
       displaySetInstanceUID
     );
@@ -190,14 +197,12 @@ class XNATMeasurementApi {
       imported: true,
     });
 
+    lockedCollection.xnatMetadata.collectionLabel = collectionLabel;
+
     importedCollections.push(lockedCollection);
 
     const { uuid: collectionUID } = lockedCollection.metadata;
-    const {
-      StudyInstanceUID,
-      SeriesInstanceUID,
-      Modality,
-    } = lockedCollection.imageReference;
+    const { StudyInstanceUID, Modality } = lockedCollection.imageReference;
 
     const toolTypes = [];
     measurementObjects.forEach(measurementObject => {
@@ -269,9 +274,9 @@ class XNATMeasurementApi {
       }
     });
 
-    const index = seriesCollection.importedCollections.indexOf(
-      collectionI => collectionI.metadata.uuid === collectionUuid
-    );
+    const index = seriesCollection.importedCollections
+      .map(collectionI => collectionI.metadata.uuid)
+      .indexOf(collectionUuid);
 
     seriesCollection.importedCollections.splice(index, 1);
   }
@@ -299,6 +304,78 @@ class XNATMeasurementApi {
     });
 
     workingCollection.resetMetadata();
+  }
+
+  unlockImportedCollection(collectionUuid, displaySetInstanceUID) {
+    const seriesCollection = this.getMeasurementCollections(
+      displaySetInstanceUID
+    );
+    const { workingCollection, importedCollections } = seriesCollection;
+
+    const collectionIndex = importedCollections
+      .map(collectionI => collectionI.metadata.uuid)
+      .indexOf(collectionUuid);
+
+    if (collectionIndex < 0) {
+      return;
+    }
+
+    const collection = importedCollections[collectionIndex];
+
+    const { metadata: dstMetadata } = workingCollection;
+    collection.measurements.forEach(measurement => {
+      measurement.unlockToWorking(dstMetadata.uuid);
+      workingCollection.addMeasurement(measurement);
+    });
+
+    importedCollections.splice(collectionIndex, 1);
+  }
+
+  isCollectionEligibleForImport(roiCollectionInfo, SeriesInstanceUID) {
+    const displaySetInstanceUID = this.getDisplaySetInstanceUID(
+      SeriesInstanceUID
+    );
+
+    const item = roiCollectionInfo.items[0];
+    const { collectionType, label } = item.data_fields;
+
+    if (collectionType !== 'MEAS') {
+      return false;
+    }
+
+    const seriesCollection = this.getMeasurementCollections(
+      displaySetInstanceUID
+    );
+    const { importedCollections } = seriesCollection;
+    const collectionAlreadyImported = importedCollections.some(
+      collection => collection.xnatMetadata.collectionLabel === label
+    );
+
+    return !collectionAlreadyImported;
+  }
+
+  getDisplaySetInstanceUID(SeriesInstanceUID) {
+    let displaySetInstanceUID = undefined;
+    const studies = studyMetadataManager.all();
+    for (let i = 0; i < studies.length; i++) {
+      const study = studies[i];
+      const displaySets = study.getDisplaySets();
+
+      for (let j = 0; j < displaySets.length; j++) {
+        const displaySet = displaySets[j];
+
+        if (displaySet.SeriesInstanceUID === SeriesInstanceUID) {
+          displaySetInstanceUID = displaySet.displaySetInstanceUID;
+          break;
+        }
+      }
+
+      if (displaySetInstanceUID) {
+        break;
+      }
+    }
+
+    return displaySetInstanceUID;
   }
 }
 

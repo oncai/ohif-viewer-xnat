@@ -78,8 +78,6 @@ export default class ImageMeasurement {
         imageId,
         collectionUID,
       },
-      data: {}, // CS-Tools Data exchange, measurement type-specific
-      values: [], // measurement value-unit pairs, used in export
     };
 
     measurementData.measurementReference = {
@@ -122,10 +120,13 @@ export default class ImageMeasurement {
       displaySetInstanceUID,
     } = imageAttributes;
 
+    const genericToolType = this.constructor.genericToolType;
+    const toolType = this.constructor.toolType;
+
     this._xnat = {
       metadata: {
         uuid,
-        toolType: this.constructor.genericToolType,
+        toolType: genericToolType,
         name,
         description,
         codingSequence,
@@ -140,7 +141,7 @@ export default class ImageMeasurement {
       },
       viewport,
       internal: {
-        locked: false,
+        locked: true,
         imported: true,
         active: false,
         modified: false,
@@ -151,8 +152,6 @@ export default class ImageMeasurement {
         imageId,
         collectionUID,
       },
-      data: {}, // CS-Tools Data exchange, measurement type-specific
-      values: [], // measurement value-unit pairs, used in export
     };
 
     const measurementData = {
@@ -162,11 +161,13 @@ export default class ImageMeasurement {
       invalidated: true,
       uuid,
       visible,
+      toolType,
+      toolName: toolType,
     };
 
     measurementData.measurementReference = {
-      toolType: this.constructor.toolType,
-      genericToolType: this.constructor.genericToolType,
+      toolType,
+      genericToolType,
       uuid,
       StudyInstanceUID,
       SeriesInstanceUID,
@@ -205,6 +206,15 @@ export default class ImageMeasurement {
     };
   }
 
+  unlockToWorking(collectionUID) {
+    const { internal } = this._xnat;
+    internal.locked = false;
+    internal.collectionUID = collectionUID;
+
+    const { measurementReference } = this._csMeasurementData;
+    measurementReference.collectionUID = collectionUID;
+  }
+
   /**
    * Cornerstone measurement data
    */
@@ -226,8 +236,8 @@ export default class ImageMeasurement {
       ...this._xnat.metadata,
       imageReference: { ...this._xnat.imageReference },
       viewport: { ...this._xnat.viewport },
-      data: { ...this._xnat.data },
-      measurements: [...this._xnat.values],
+      data: {},
+      measurements: [],
     };
 
     return dataObject;

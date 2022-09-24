@@ -1,10 +1,8 @@
-import retrieveMeasurementCollectionList from './retrieveMeasurementCollectionList';
-import retrieveMeasurementCollection from './retrieveMeasurementCollection';
+import retrieveMeasurementCollections from './retrieveMeasurementCollections';
 import storeMeasurementCollection from './storeMeasurementCollection';
 
 const dataExchange = {
-  retrieveMeasurementCollectionList,
-  retrieveMeasurementCollection,
+  retrieveMeasurementCollections,
   storeMeasurementCollection,
 };
 

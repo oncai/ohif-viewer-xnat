@@ -33,16 +33,18 @@ export default class XNATLength extends ImageMeasurement {
   }
 
   generateDataObject() {
+    const dataObject = super.generateDataObject();
+
     const { length, handles } = this.csData;
-    this._xnat.data = {
+    dataObject.data = {
       length,
       handles: { ...handles },
     };
 
-    const values = this._xnat.values;
+    const values = dataObject.measurements;
     const { spatialUnit } = this.measurementUnits;
     values.push({ name: 'length', value: length, unit: spatialUnit });
 
-    return super.generateDataObject();
+    return dataObject;
   }
 }
