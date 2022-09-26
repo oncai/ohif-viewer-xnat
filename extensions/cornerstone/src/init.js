@@ -64,7 +64,7 @@ export default function init({ servicesManager, configuration }) {
     annotations: [
       csTools.ArrowAnnotateTool,
       csTools.BidirectionalTool,
-      csTools.LengthTool,
+      // csTools.LengthTool,
       csTools.AngleTool,
       csTools.FreehandRoiTool,
       csTools.EllipticalRoiTool,

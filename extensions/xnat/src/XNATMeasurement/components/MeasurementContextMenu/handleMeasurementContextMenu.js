@@ -21,10 +21,14 @@ const handleMeasurementContextMenu = (event, callbackData) => {
       isTouchEvent: callbackData.isTouchEvent,
       onDelete: (nearbyToolData, eventData) => {
         const element = eventData.element;
+        const tool = callbackData.nearbyToolData.tool;
+        if (tool.locked) {
+          return;
+        }
         commandsManager.runCommand('removeToolState', {
           element,
           toolType: callbackData.nearbyToolData.toolType,
-          tool: callbackData.nearbyToolData.tool,
+          tool,
         });
       },
       onClose: () => UIDialogService.dismiss({ id: 'context-menu' }),

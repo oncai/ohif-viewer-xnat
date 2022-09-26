@@ -90,6 +90,8 @@ export default class ImageMeasurement {
       imageId,
       collectionUID,
     };
+    measurementData.locked = false;
+
     this._csMeasurementData = measurementData;
   }
 
@@ -175,6 +177,7 @@ export default class ImageMeasurement {
       imageId,
       collectionUID,
     };
+    measurementData.locked = true;
 
     this._csMeasurementData = measurementData;
   }
@@ -206,6 +209,16 @@ export default class ImageMeasurement {
     };
   }
 
+  lockToExported(collectionUID) {
+    const { internal } = this._xnat;
+    internal.locked = true;
+    internal.collectionUID = collectionUID;
+
+    const { measurementReference } = this._csMeasurementData;
+    measurementReference.collectionUID = collectionUID;
+    this._csMeasurementData.locked = true;
+  }
+
   unlockToWorking(collectionUID) {
     const { internal } = this._xnat;
     internal.locked = false;
@@ -213,6 +226,7 @@ export default class ImageMeasurement {
 
     const { measurementReference } = this._csMeasurementData;
     measurementReference.collectionUID = collectionUID;
+    this._csMeasurementData.locked = false;
   }
 
   /**
