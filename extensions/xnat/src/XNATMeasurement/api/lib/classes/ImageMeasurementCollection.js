@@ -206,7 +206,7 @@ export default class ImageMeasurementCollection {
   }
 
   resetMetadata() {
-    // this.metadata.uuid = _generateUUID();
+    this.metadata.uuid = _generateUUID();
     this.metadata.name = '';
     this.metadata.description = '';
   }

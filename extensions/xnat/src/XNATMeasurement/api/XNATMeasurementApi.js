@@ -297,7 +297,9 @@ class XNATMeasurementApi {
       imported: true,
     });
     importedCollections.push(lockedCollection);
+    const { metadata: dstMetadata } = lockedCollection;
     selectedMeasurements.forEach(measurement => {
+      measurement.lockToExported(dstMetadata.uuid);
       const { uuid } = measurement.metadata;
       lockedCollection.addMeasurement(measurement);
       workingCollection.removeMeasurement(uuid);
