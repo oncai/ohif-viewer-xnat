@@ -495,11 +495,18 @@ async function updateMetaDataProvider(studies) {
           naturalizedDicom.PatientID = study.PatientID;
           naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
           // naturalizedDicom.StudyDescription = study.StudyDescription;
+          naturalizedDicom.StudyInstanceUID = study.StudyInstanceUID;
+          naturalizedDicom.StudyDate = study.StudyDate;
+          naturalizedDicom.StudyTime = study.StudyTime;
           naturalizedDicom.SeriesNumber = series.SeriesNumber;
           naturalizedDicom.SeriesDescription = series.SeriesDescription;
           if (!naturalizedDicom.PlanarConfiguration) {
             naturalizedDicom.PlanarConfiguration = 0;
           }
+          naturalizedDicom.Modality = series.Modality;
+          naturalizedDicom.SeriesInstanceUID = series.SeriesInstanceUID;
+          naturalizedDicom.SeriesDate = series.SeriesDate;
+          naturalizedDicom.SeriesTime = series.SeriesTime;
           // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
           // OverlayData is loaded conditionally in metadataProvider.addInstance
 
