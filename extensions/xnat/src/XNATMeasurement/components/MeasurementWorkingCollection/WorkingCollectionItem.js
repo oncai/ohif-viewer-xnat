@@ -55,21 +55,21 @@ const WorkingCollectionItem = props => {
           }}
         />
       </button>
-      <button className="btnAction">
-        <Icon
-          name="reset"
-          width="16px"
-          height="16px"
-          title="Reset presentation state"
-          onClick={event => {
-            event.stopPropagation();
-            onResetViewport(measurement);
-          }}
-        />
-      </button>
-      <button className="btnAction">
-        <Icon name="palette" width="16px" height="16px" title="Change color" />
-      </button>
+      {/*<button className="btnAction">*/}
+      {/*  <Icon*/}
+      {/*    name="reset"*/}
+      {/*    width="16px"*/}
+      {/*    height="16px"*/}
+      {/*    title="Reset presentation state"*/}
+      {/*    onClick={event => {*/}
+      {/*      event.stopPropagation();*/}
+      {/*      onResetViewport(measurement);*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*</button>*/}
+      {/*<button className="btnAction">*/}
+      {/*  <Icon name="palette" width="16px" height="16px" title="Change color" />*/}
+      {/*</button>*/}
       <button className="btnAction">
         <Icon
           name="trash"
