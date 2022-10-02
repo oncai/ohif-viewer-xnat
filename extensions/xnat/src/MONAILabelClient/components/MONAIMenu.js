@@ -13,7 +13,7 @@ import refreshViewports from '../../utils/refreshViewports.js';
 import { removeEmptyLabelmaps2D } from '../../peppermint-tools';
 import isValidUrl from '../../utils/isValidUrl.js';
 import sessionMap from '../../utils/sessionMap';
-import { MONAI_MODEL_TYPES } from '../api';
+import updateLabelmap from '../utils/updateLabelmap';
 
 import '../../components/XNATRoiPanel.styl';
 
@@ -28,7 +28,7 @@ export default class MONAIMenu extends React.Component {
     activeIndex: PropTypes.any.isRequired,
     firstImageId: PropTypes.any.isRequired,
     segmentsData: PropTypes.object.isRequired,
-    onNewSegment: PropTypes.func.isRequired,
+    onNewOrUpdateSegments: PropTypes.func.isRequired,
   };
 
   constructor(props = {}) {
@@ -111,39 +111,13 @@ export default class MONAIMenu extends React.Component {
   }
 
   async monaiProbToolEventListenerHandler(evt) {
-    const { z, segmentUid, toolType } = evt.detail;
-    let segmentPoints = this._monaiModule.getters.segmentPoints(
-      segmentUid,
-      toolType
-    );
+    const { z, pointCollectionId, modelDimension } = evt.detail;
+    const segmentPoints =
+      modelDimension === 3
+        ? this._monaiModule.getters.points(pointCollectionId)
+        : this._monaiModule.getters.points(pointCollectionId, z);
 
-    if (toolType === MONAI_MODEL_TYPES.ANNOTATION) {
-      const minPoints = this._monaiModule.configuration.annotationMinPoints;
-      if (segmentPoints.fg.length === 1) {
-        showNotification(
-          `The Annotation tool requires >= ${minPoints} points to run`,
-          'warning',
-          'MONAILabel'
-        );
-        return;
-      } else if (segmentPoints.fg.length < minPoints) {
-        return;
-      }
-    }
-
-    if (toolType === MONAI_MODEL_TYPES.DEEPGROW) {
-      const deepgrowModel = this._monaiClient.currentModel;
-      if (deepgrowModel.dimension === 2) {
-        segmentPoints.fg = segmentPoints.fg.filter(p => {
-          return p[2] === z;
-        });
-        segmentPoints.bg = segmentPoints.bg.filter(p => {
-          return p[2] === z;
-        });
-      }
-    }
-
-    this.onRunModel(segmentPoints);
+    this.onRunModel({ segmentPoints, frameIndex: z });
   }
 
   getViewParameters(viewports, studies, activeIndex) {
@@ -166,11 +140,9 @@ export default class MONAIMenu extends React.Component {
   }
 
   onClearPoints(all = true) {
-    const toolType = this._monaiClient.currentTool.type;
-    const { element } = this._viewParameters;
+    const { SeriesInstanceUID } = this._viewParameters;
     const { segments, activeSegmentIndex } = this.props.segmentsData;
 
-    let imageIdsPoints;
     if (!all) {
       const segIndex = segments.findIndex(seg => {
         return seg.index === activeSegmentIndex;
@@ -179,46 +151,25 @@ export default class MONAIMenu extends React.Component {
         return;
       }
       const segmentUid = segments[segIndex].metadata.uid;
-      imageIdsPoints = this._monaiModule.setters.removePointsForSegment(
-        segmentUid,
-        toolType
+      this._monaiModule.setters.removeModelSegmentPoints(
+        SeriesInstanceUID,
+        segmentUid
       );
     } else {
       // Remove tool points for all segments
-      let segmentUids = [];
+      const segmentUids = [];
       segments.forEach(seg => {
         segmentUids.push(seg.metadata.uid);
       });
       if (segmentUids.length === 0) {
-        return;
+        // A DeepEdit model
+        segmentUids.push('');
       }
-      imageIdsPoints = this._monaiModule.setters.removePointsForAllSegments(
-        segmentUids,
-        toolType
+      this._monaiModule.setters.removeModelAllPoints(
+        SeriesInstanceUID,
+        segmentUids
       );
     }
-
-    if (_.isEmpty(imageIdsPoints)) {
-      return;
-    }
-
-    const enabledElement = cornerstone.getEnabledElement(element);
-    const currentImageId = enabledElement.image.imageId;
-    Object.keys(imageIdsPoints).forEach(id => {
-      enabledElement.image.imageId = id;
-      const toolData = csTools.getToolState(
-        enabledElement.element,
-        'AIAAProbeTool'
-      );
-      if (!toolData) {
-        return;
-      }
-      const pointUuids = imageIdsPoints[id];
-      toolData.data = toolData.data.filter(data => {
-        return pointUuids.indexOf(data.uuid) === -1;
-      });
-    });
-    enabledElement.image.imageId = currentImageId;
 
     refreshViewports();
   }
@@ -264,7 +215,7 @@ export default class MONAIMenu extends React.Component {
     refreshViewports();
   };
 
-  onRunModel = async (segmentPoints = {}) => {
+  onRunModel = async pointData => {
     const modal = showStatusModal();
 
     const { element } = this._viewParameters;
@@ -276,24 +227,36 @@ export default class MONAIMenu extends React.Component {
       height: refImage.height,
       numberOfFrames: imageIds.length,
     };
+    const { activeSegmentIndex } = this.props.segmentsData;
 
-    let maskImage;
-    if (LOCAL_TEST) {
-      maskImage = await this._monaiClient.readTestFile(imageIds);
-    } else {
-      const parameters = {
-        SeriesInstanceUID: this._viewParameters.SeriesInstanceUID,
-        imageIds,
-        segmentPoints: segmentPoints,
-      };
+    let result;
+    try {
+      if (LOCAL_TEST) {
+        result = await this._monaiClient.readTestFile(imageIds);
+      } else {
+        const parameters = {
+          SeriesInstanceUID: this._viewParameters.SeriesInstanceUID,
+          imageIds,
+          segmentPoints: pointData && pointData.segmentPoints,
+          activeSegmentIndex,
+        };
 
-      maskImage = await this._monaiClient.runModel(
-        parameters,
-        updateStatusModal
+        result = await this._monaiClient.runModel(
+          parameters,
+          updateStatusModal
+        );
+      }
+    } catch (error) {
+      modal.close();
+      showNotification(
+        error.message || 'Unknown error!',
+        'error',
+        'MONAILabel'
       );
+      return;
     }
 
-    if (!maskImage || !maskImage.data) {
+    if (!result || !result.maskArray) {
       modal.close();
       showNotification(
         'Error in parsing the mask image',
@@ -303,7 +266,7 @@ export default class MONAIMenu extends React.Component {
       return;
     }
 
-    const maskImageSize = maskImage.size;
+    const maskImageSize = result.size;
     console.log(`Mask image size = 
                 ${maskImageSize.width}, 
                 ${maskImageSize.height}, 
@@ -319,124 +282,47 @@ export default class MONAIMenu extends React.Component {
       return;
     }
 
-    // const { segmentsData } = this.props;
-    // let activeIndex = segmentsData.activeSegmentIndex;
-    let activeIndex;
-    if (this._monaiClient.currentTool.type === MONAI_MODEL_TYPES.SEGMENTATION) {
-      const labels = this._monaiClient.currentModel.labels;
-      let indexes = [];
-      for (let l = 0; l < labels.length; l++) {
-        indexes.push(this.props.onNewSegment(`AIAA - ${labels[l]}`));
-      }
-      activeIndex = indexes[0];
-    } else {
-      const labelmap3D = segmentationModule.getters.labelmap3D(
-        this._viewParameters.element,
-        0
+    const { maskArray, size, matchingLabels, segIndices } = result;
+
+    if (!matchingLabels.length) {
+      showNotification(
+        'Empty mask was returned by the model run.',
+        'warning',
+        'MONAILabel'
       );
-      const { activeSegmentIndex } = labelmap3D;
-      activeIndex = activeSegmentIndex;
+      modal.close();
+      return;
     }
-
-    this.updateLabelmap(
-      maskImage.data,
-      maskImage.size,
-      activeIndex,
-      segmentPoints
-    );
-
-    modal.close();
-  };
-
-  updateLabelmap(image, size, activeIndex, segmentPoints) {
-    /*
-                            updateView      slice
-    seg / ann               null            null
-    seg/ann & !multi_label  overlap
-    deepgrow                override        sliceIndex
-    * */
-    let updateType = undefined;
-    const segmentOffset = activeIndex - 1;
 
     const { firstImageId } = this.props;
-
     const { state } = segmentationModule;
     const brushStackState = state.series[firstImageId];
+    const { activeLabelmapIndex } = brushStackState;
+    const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
 
-    let labelmap3D = null;
-
-    if (brushStackState) {
-      const { activeLabelmapIndex } = brushStackState;
-      labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
-    }
-
-    if (labelmap3D === null) {
-      return;
-    }
-
-    const slicelengthInBytes = image.byteLength / size.numberOfFrames;
-    const sliceLength = size.width * size.height; //slicelengthInBytes / 2; //UInt16
-    const bytesPerVoxel = slicelengthInBytes / sliceLength;
-
-    if (bytesPerVoxel !== 1 && bytesPerVoxel !== 2) {
-      console.error(
-        `No method for parsing ArrayBuffer to ${bytesPerVoxel}-byte array`
-      );
-      return;
-    }
-
-    const typedArray = bytesPerVoxel === 1 ? Uint8Array : Uint16Array;
-
-    const updateSlice = (s, override = false) => {
-      const sliceOffset = slicelengthInBytes * s;
-      const imageData = new typedArray(image, sliceOffset, sliceLength);
-
-      const imageHasData = imageData.some(pixel => pixel !== 0);
-      if (!imageHasData) {
-        return;
-      }
-
-      const labelmap = segmentationModule.getters.labelmap2DByImageIdIndex(
+    try {
+      updateLabelmap(
+        this._monaiClient.currentModel,
         labelmap3D,
-        s,
-        size.height,
-        size.width
+        maskArray,
+        size,
+        pointData && pointData.frameIndex,
+        segIndices
       );
-
-      let labelmapData = labelmap.pixelData;
-
-      for (let j = 0; j < imageData.length; j++) {
-        if (imageData[j] > 0) {
-          labelmapData[j] = imageData[j] + segmentOffset;
-        } else if (override && labelmapData[j] === activeIndex) {
-          labelmapData[j] = 0;
-        }
-      }
-
-      segmentationModule.setters.updateSegmentsOnLabelmap2D(labelmap);
-    };
-
-    const isDeepgrow =
-      this._monaiClient.currentTool.type === MONAI_MODEL_TYPES.DEEPGROW;
-
-    if (isDeepgrow && this._monaiClient.currentModel.dimension === 2) {
-      let sliceIndex;
-      if (segmentPoints.fg.length > 0) {
-        sliceIndex = segmentPoints.fg[0][2];
-      } else if (segmentPoints.bg.length > 0) {
-        sliceIndex = segmentPoints.fg[0][2];
-      }
-      updateSlice(sliceIndex, true);
-    } else {
-      for (let s = 0; s < size.numberOfFrames; s++) {
-        updateSlice(s, isDeepgrow);
-      }
+    } catch (error) {
+      showNotification(
+        error.message || 'Unknown error!',
+        'error',
+        'MONAILabel'
+      );
     }
 
     removeEmptyLabelmaps2D(labelmap3D);
-
+    this.props.onNewOrUpdateSegments(matchingLabels);
     refreshViewports();
-  }
+
+    modal.close();
+  };
 
   render() {
     const { api, models } = this.state;
@@ -464,9 +350,7 @@ export default class MONAIMenu extends React.Component {
     return (
       <div className="roiPanelFooter">
         <div className="title-with-icon">
-          <h4>
-            MONAILabel Annotation
-          </h4>
+          <h4>MONAILabel</h4>
           <Icon
             className="settings-icon"
             name="reset"
