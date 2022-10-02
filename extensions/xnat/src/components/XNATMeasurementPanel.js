@@ -276,14 +276,14 @@ export default class XNATMeasurementPanel extends React.Component {
           <div className="panelHeader">
             <div className="title-with-icon">
               <h3>Measurement Annotations</h3>
-              <Icon
-                className="settings-icon"
-                name="cog"
-                width="20px"
-                height="20px"
-                onClick={() => this.setState({ showSettings: true })}
-                title="Measurement Settings"
-              />
+              {/*<Icon*/}
+              {/*  className="settings-icon"*/}
+              {/*  name="cog"*/}
+              {/*  width="20px"*/}
+              {/*  height="20px"*/}
+              {/*  onClick={() => this.setState({ showSettings: true })}*/}
+              {/*  title="Measurement Settings"*/}
+              {/*/>*/}
             </div>
             <MenuIOButtons
               ImportCallbackOrComponent={MeasurementImportMenu}

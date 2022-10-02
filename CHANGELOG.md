@@ -1,3 +1,15 @@
+**3.4.0 RC-1**
+
+- New feature: Measurement Service to manage and interact with measurement annotations.
+  - Measurement panel: groups measurements into working and imported collections.
+  - Export and import measurement collections to and from the XNAT platform.
+  - Individual measurement interaction buttons: edit metadata, toggle visibility, jump to slice, and remove.
+  - Measurement API to interface with measurements from other Viewer extensions.
+- New feature: Client for MONAI Label server to facilitate interactive medical image annotation.
+  - Interactively segment parts of an image using clicks (DeepGrow & DeepEdit models).
+  - Fully automated annotation without user interaction (Segmentation models).
+- Minor improvements and bug fixes.
+
 **3.3.0**
 
 - New feature: lazy loading of contour ROIs. The feature can be activated in preferences.
