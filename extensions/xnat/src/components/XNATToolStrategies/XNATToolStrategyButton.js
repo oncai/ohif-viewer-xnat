@@ -20,7 +20,7 @@ const XNATToolStrategyButton = props => {
   );
 };
 
-XNATToolStrategyButton.prototypes = {
+XNATToolStrategyButton.propTypes = {
   strategyId: PropTypes.string.isRequired,
   isActive: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,

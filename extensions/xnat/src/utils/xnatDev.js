@@ -144,7 +144,7 @@ export async function saveFile(blob, filename) {
   a.click();
 }
 
-export async function readFile() {
+export async function readFile(readAsText = false) {
   let inFile = null;
 
   const reader = (file) => {
@@ -159,7 +159,11 @@ export async function readFile() {
         });
       };
       reader.onerror = error => reject(error);
-      reader.readAsArrayBuffer(file);
+      if (readAsText) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     });
   }
 

@@ -3,6 +3,7 @@ import XNATNavigationPanel from './components/XNATNavigationPanel.js';
 import XNATContourPanel from './components/XNATContourPanel.js';
 import XNATSegmentationPanel from './components/XNATSegmentationPanel.js';
 import XNATSegmentationColorSelectModal from './components/XNATSegmentationColorSelectModal/XNATSegmentationColorSelectModal';
+import XNATMeasurementPanel from './components/XNATMeasurementPanel';
 
 const PanelModule = (commandsManager, api, servicesManager) => {
   const { UIModalService } = servicesManager.services;
@@ -59,6 +60,12 @@ const PanelModule = (commandsManager, api, servicesManager) => {
     );
   };
 
+  const ExtendedXNATMeasurementPanel = props => {
+    return (
+      <XNATMeasurementPanel {...props} onJumpToItem={roiItemClickHandler} />
+    );
+  };
+
   return {
     menuOptions: [
       {
@@ -85,6 +92,12 @@ const PanelModule = (commandsManager, api, servicesManager) => {
         from: 'right',
         target: 'xnat-segmentation-panel',
       },
+      {
+        icon: 'xnat-annotations',
+        label: 'Measurements',
+        from: 'right',
+        target: 'xnat-measurement-panel',
+      },
     ],
     components: [
       {
@@ -98,6 +111,10 @@ const PanelModule = (commandsManager, api, servicesManager) => {
       {
         id: 'xnat-segmentation-panel',
         component: ExtendedXNATSegmentationPanel,
+      },
+      {
+        id: 'xnat-measurement-panel',
+        component: ExtendedXNATMeasurementPanel,
       },
     ],
     defaultContext: ['ACTIVE_VIEWPORT::CORNERSTONE'],

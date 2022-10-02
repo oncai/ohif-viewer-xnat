@@ -399,3 +399,29 @@
   color: var(--ui-yellow)
   font-size: 13px
   margin: 5px 0
+
+.rowActions
+  display: flex
+  justify-content: flex-end
+  height: 0
+  overflow: hidden
+  transition: all 0.3s ease
+  visibility: hidden
+
+  .btnAction
+    background-color: transparent
+    border: none
+    color: var(--text-secondary-color)
+    cursor: pointer
+    line-height: 35px
+    height: 35px
+    transition: all 0.3s ease
+
+
+    &:hover, &:active
+      color: var(--text-primary-color)
+      background-color: transparent
+
+  &.selected
+    height: auto
+    visibility: visible
