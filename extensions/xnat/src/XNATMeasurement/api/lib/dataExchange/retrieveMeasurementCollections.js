@@ -19,7 +19,9 @@ const retrieveMeasurementCollection = async (
   const collection = result[0];
   const fileType = collection.collection;
   if (fileType === collectionInfo.collectionType) {
-    const collectionObject = await fetchJSON(collection.URI).promise;
+    // The URIs fetched have an additional /, so remove it.
+    const uri = collection.URI.slice(1);
+    const collectionObject = await fetchJSON(uri).promise;
     if (!collectionObject) {
       throw new Error('Error importing the measurement file.');
     }
