@@ -90,6 +90,7 @@ export default class XNATSegmentationPanel extends React.Component {
     this.onDeleteClick = this.onDeleteClick.bind(this);
     this.onIOComplete = this.onIOComplete.bind(this);
     this.onNewSegment = this.onNewSegment.bind(this);
+    this.onNewOrUpdateSegments = this.onNewOrUpdateSegments.bind(this);
     this.onIOCancel = onIOCancel.bind(this);
     this.getSegmentList = this.getSegmentList.bind(this);
     this.refreshSegmentList = this.refreshSegmentList.bind(this);
@@ -301,7 +302,8 @@ export default class XNATSegmentationPanel extends React.Component {
     }
 
     const segments = this.constructor._segments(firstImageId);
-    const activeSegmentIndex = this._getActiveSegmentIndex(firstImageId);
+    // const activeSegmentIndex = this._getActiveSegmentIndex(firstImageId);
+    const activeSegmentIndex = labelmap3D.activeSegmentIndex;
 
     this.setState({
       segments,
@@ -312,6 +314,47 @@ export default class XNATSegmentationPanel extends React.Component {
     refreshViewports();
 
     return activeSegmentIndex;
+  }
+
+  onNewOrUpdateSegments(labelList) {
+    let { labelmap3D, firstImageId } = this.state;
+
+    let metadata = [];
+    let activeSegmentIndex;
+    if (labelmap3D) {
+      activeSegmentIndex = labelmap3D.activeSegmentIndex;
+      metadata = labelmap3D.metadata;
+    } else {
+      const element = getElementFromFirstImageId(firstImageId);
+      const labelmapData = segmentationModule.getters.labelmap2D(element);
+      labelmap3D = labelmapData.labelmap3D;
+      activeSegmentIndex = 1;
+      labelmap3D.activeSegmentIndex = activeSegmentIndex;
+      metadata = labelmap3D.metadata;
+    }
+
+    labelList.forEach(item => {
+      const { label, value } = item;
+      const segmentMetadata = metadata[value];
+      if (segmentMetadata) {
+        if (label) {
+          segmentMetadata.SegmentLabel = label;
+        }
+      } else {
+        const newMetadata = generateSegmentationMetadata(
+          label ? label : 'Unnamed Segment'
+        );
+        metadata[value] = newMetadata;
+      }
+    });
+
+    const segments = this.constructor._segments(firstImageId);
+
+    this.setState({
+      segments,
+      activeSegmentIndex,
+      labelmap3D,
+    });
   }
 
   /**
@@ -402,6 +445,10 @@ export default class XNATSegmentationPanel extends React.Component {
       const aiaaModule = cornerstoneTools.store.modules.aiaa;
       const segmentUid = labelmap3D.metadata[segmentIndex].uid;
       aiaaModule.setters.removeAllPointsForSegment(segmentUid);
+    } else if ('monai' in cornerstoneTools.store.modules) {
+      const monaiModule = cornerstoneTools.store.modules.monai;
+      const segmentUid = labelmap3D.metadata[segmentIndex].uid;
+      monaiModule.setters.removeSegmentAllPoints(segmentUid);
     }
 
     segmentationModule.setters.deleteSegment(element, segmentIndex);
@@ -640,6 +687,7 @@ export default class XNATSegmentationPanel extends React.Component {
               firstImageId: firstImageId,
               segmentsData: { segments, activeSegmentIndex },
               onNewSegment: this.onNewSegment,
+              onNewOrUpdateSegments: this.onNewOrUpdateSegments,
             }}
           />
         </div>

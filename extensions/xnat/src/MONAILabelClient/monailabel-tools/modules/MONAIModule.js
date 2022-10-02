@@ -1,112 +1,133 @@
-import { MONAIClient } from '../../api';
+import { MONAI_MODEL_TYPES, MONAIClient } from '../../api';
+import csTools from 'cornerstone-tools';
+
+const globalToolStateManager =
+  csTools.globalImageIdSpecificToolStateManager;
 
 const state = {
   points: new Map(),
   menuIsOpen: false,
 };
 
-const configuration = {
-  annotationMinPoints: 6,
-  annotationPointColors: ['yellow'],
-  deepgrowPointColors: ['red', 'blue'],
-};
+const configuration = {};
 
 const client = new MONAIClient();
 
-function setPoint(segmentUid, pointData) {
-  let points;
-  if (!state.points.has(segmentUid)) {
-    points = [];
-    state.points.set(segmentUid, points);
+function addPoint(pointCollectionId, pointData) {
+  let points = [];
+  if (!state.points.has(pointCollectionId)) {
+    state.points.set(pointCollectionId, points);
   } else {
-    points = state.points.get(segmentUid);
+    points = state.points.get(pointCollectionId);
   }
 
   points.push(pointData);
 }
 
-function getSegmentPoints(segmentUid, toolType) {
-  let segmentPoints = {
-    fg: [],
-    bg: [],
-  };
+function getPoints(pointCollectionId, frameIndex = undefined) {
+  let segmentPoints = undefined;
 
-  if (state.points.has(segmentUid)) {
-    const points = state.points.get(segmentUid);
-    const toolPoints = points.filter(p => {
-      return p.toolType === toolType;
-    });
-    segmentPoints.fg = toolPoints.filter(p => {
-        return !p.background;
-      })
-      .map(p => [p.x, p.y, p.z]);
-    segmentPoints.bg = toolPoints
-      .filter(p => {
-        return p.background;
-      })
-      .map(p => [p.x, p.y, p.z]);
+  const points = state.points.get(pointCollectionId);
+  if (points) {
+    segmentPoints = {};
+    let fg = points.filter(
+      p =>
+        !p.background && (frameIndex !== undefined ? p.z === frameIndex : true)
+    );
+    let bg = points.filter(
+      p =>
+        p.background && (frameIndex !== undefined ? p.z === frameIndex : true)
+    );
+    segmentPoints.fg = fg.map(p => [p.x, p.y, p.z]);
+    segmentPoints.bg = bg.map(p => [p.x, p.y, p.z]);
   }
 
   return segmentPoints;
 }
 
-function removePointsForSegment(segmentUid, toolType) {
-  if (!state.points.has(segmentUid)) {
-    return {};
+function removeModelSegmentPoints(SeriesInstanceUID, segmentUid) {
+  const pointCollectionId = _getPointCollectionId(
+    SeriesInstanceUID,
+    segmentUid
+  );
+  const points = state.points.get(pointCollectionId);
+  if (!points) {
+    return;
   }
+  _clearToolState(points);
+  state.points.delete(pointCollectionId);
+}
 
-  let points = state.points.get(segmentUid);
-  let imageIdsPoints = {};
-  points = points.filter(p => {
-    if (p.toolType === toolType) {
-      let idPoints = imageIdsPoints[p.imageId];
-      if (idPoints === undefined) {
-        idPoints = imageIdsPoints[p.imageId] = [];
-      }
-      idPoints.push(p.uuid);
-      return false;
+function removeModelAllPoints(SeriesInstanceUID, segmentUids) {
+  let allPoints = [];
+  const pointCollectionIds = [];
+  segmentUids.forEach(segmentUid => {
+    const pointCollectionId = _getPointCollectionId(
+      SeriesInstanceUID,
+      segmentUid
+    );
+    pointCollectionIds.push(pointCollectionId);
+    const points = state.points.get(pointCollectionId);
+    if (!points) {
+      return;
     }
-    return true;
+    allPoints = [...allPoints, ...points];
   });
+  _clearToolState(allPoints);
+  pointCollectionIds.forEach(id => state.points.delete(id));
+}
 
-  if (points.length === 0) {
-    state.points.delete(segmentUid);
-  } else {
-    state.points.set(segmentUid, points);
+function removeSegmentAllPoints(segmentUid) {
+  const allKys = [...state.points.keys()];
+  const pointCollectionIds = allKys.filter(key => key.endsWith(segmentUid));
+  let allPoints = [];
+  pointCollectionIds.forEach(pointCollectionId => {
+    const points = state.points.get(pointCollectionId);
+    if (!points) {
+      return;
+    }
+    allPoints = [...allPoints, ...points];
+  });
+  _clearToolState(allPoints);
+  pointCollectionIds.forEach(id => state.points.delete(id));
+}
+
+function _clearToolState(points) {
+  const toolState = globalToolStateManager.saveToolState();
+  points.forEach(p => {
+    const toolData =
+      toolState[p.imageId] && toolState[p.imageId]['MONAILabelProbeTool'];
+    if (!toolData || !toolData.data || !toolData.data.length) {
+      return;
+    }
+    const indexOfData = toolData.data.findIndex(item => item.uuid === p.uuid);
+    if (indexOfData >= 0) {
+      toolData.data.splice(indexOfData, 1);
+    }
+  });
+}
+
+function _getPointCollectionId(SeriesInstanceUID, segmentUid) {
+  const model = client.currentModel;
+  const { name: modelName, type: modelType } = model;
+
+  let pointCollectionId = `${SeriesInstanceUID}_${modelName}`;
+  if (modelType === MONAI_MODEL_TYPES.DEEPGROW) {
+    pointCollectionId += `_${segmentUid}`;
   }
 
-  return imageIdsPoints;
-}
-
-function removePointsForAllSegments(segmentUids, toolType) {
-  let imageIdsPoints = {};
-  segmentUids.forEach(segUid => {
-    const segPoints = removePointsForSegment(segUid, toolType);
-    Object.keys(segPoints).forEach(id => {
-      let idPoints = imageIdsPoints[id];
-      if (idPoints === undefined) {
-        idPoints = [];
-      }
-      imageIdsPoints[id] = [].concat(idPoints, segPoints[id]);
-    });
-  });
-
-  return imageIdsPoints;
-}
-
-function removeAllPointsForSegment(segmentUid) {
-  state.points.delete(segmentUid);
+  return pointCollectionId;
 }
 
 const getters = {
-  segmentPoints: getSegmentPoints,
+  points: getPoints,
 };
 
 const setters = {
-  point: setPoint,
-  removePointsForSegment,
-  removePointsForAllSegments,
-  removeAllPointsForSegment,
+  point: addPoint,
+  removeModelSegmentPoints,
+  removeModelAllPoints,
+  removeSegmentAllPoints,
 };
 
 export default {

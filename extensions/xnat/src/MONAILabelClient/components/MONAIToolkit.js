@@ -35,14 +35,14 @@ export default class MONAIToolkit extends React.Component {
       currentModel: this._monaiClient.currentModel,
     };
 
-    this.onAiaaToolChange = this.onAiaaToolChange.bind(this);
+    this.onMonaiToolChange = this.onMonaiToolChange.bind(this);
     this.filterModelsForCurrentTool = this.filterModelsForCurrentTool.bind(
       this
     );
-    this.onAiaaModelChange = this.onAiaaModelChange.bind(this);
+    this.onMonaiModelChange = this.onMonaiModelChange.bind(this);
   }
 
-  onAiaaToolChange = evt => {
+  onMonaiToolChange = evt => {
     const value = evt.target.value;
     this._monaiClient.currentTool = MONAI_TOOL_TYPES[value];
     this.setState({ currentTool: this._monaiClient.currentTool });
@@ -50,7 +50,7 @@ export default class MONAIToolkit extends React.Component {
     this.props.onToolUpdate();
   };
 
-  onAiaaModelChange = evt => {
+  onMonaiModelChange = evt => {
     const { models } = this.props;
     const value = evt.target.value;
     this._monaiClient.currentModel = models.filter(model => {
@@ -58,6 +58,8 @@ export default class MONAIToolkit extends React.Component {
     })[0];
 
     this.setState({ currentModel: this._monaiClient.currentModel });
+
+    this.props.onToolUpdate();
   };
 
   filterModelsForCurrentTool = () => {
@@ -95,7 +97,7 @@ export default class MONAIToolkit extends React.Component {
         <div className="footerSectionItem" style={{ marginTop: 0 }}>
           <label>{`${currentTool.name} models`}</label>
           <select
-            onChange={this.onAiaaModelChange}
+            onChange={this.onMonaiModelChange}
             defaultValue={this._monaiClient.currentModel.name}
           >
             {toolModels.map((model, key) => (
@@ -116,23 +118,25 @@ export default class MONAIToolkit extends React.Component {
         <div className="footerSectionItem" style={{ marginTop: 0 }}>
           <p>{this._monaiClient.currentModel.description}</p>
         </div>
-        {currentTool.type !== MONAI_MODEL_TYPES.SEGMENTATION && (
+        {currentTool.type === MONAI_MODEL_TYPES.DEEPGROW && (
           <div
             className="footerSectionItem"
             style={{ marginTop: 0, marginBottom: 10 }}
           >
-            <button
-              style={{ marginLeft: 'auto' }}
-              onClick={() => this.props.onClearPoints(false)}
-            >
-              Clear segment points
+            <label style={{ marginLeft: 'auto' }}>Clear model points:</label>
+            <button onClick={() => this.props.onClearPoints(false)}>
+              For active segment
             </button>
-            <button
-              style={{ marginLeft: 5 }}
-              onClick={this.props.onClearPoints}
-            >
-              Clear all points
-            </button>
+            <button onClick={this.props.onClearPoints}>All points</button>
+          </div>
+        )}
+        {currentTool.type === MONAI_MODEL_TYPES.DEEPEDIT && (
+          <div
+            className="footerSectionItem"
+            style={{ marginTop: 0, marginBottom: 10 }}
+          >
+            <label style={{ marginLeft: 'auto' }}>Clear model points:</label>
+            <button onClick={this.props.onClearPoints}>All points</button>
           </div>
         )}
       </React.Fragment>
@@ -158,10 +162,10 @@ export default class MONAIToolkit extends React.Component {
         </div>
         <div className="footerSection" style={{ marginBottom: 5 }}>
           <div className="footerSectionItem">
-            <label htmlFor="monaiToolList">MONAILabel Tool</label>
+            <label htmlFor="monaiToolList">Tool type</label>
             <select
               id="monaiToolList"
-              onChange={this.onAiaaToolChange}
+              onChange={this.onMonaiToolChange}
               defaultValue={currentToolIndex}
             >
               {MONAI_TOOL_TYPES.map((tool, key) => (

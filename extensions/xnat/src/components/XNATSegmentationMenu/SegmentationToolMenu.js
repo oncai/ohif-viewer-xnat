@@ -33,7 +33,7 @@ const SegmentationToolMenu = ({ activeTool, toolData }) => {
         activeIndex={toolData.activeIndex}
         firstImageId={toolData.firstImageId}
         segmentsData={toolData.segmentsData}
-        onNewSegment={toolData.onNewSegment}
+        onNewOrUpdateSegments={toolData.onNewOrUpdateSegments}
       />
     );
   }

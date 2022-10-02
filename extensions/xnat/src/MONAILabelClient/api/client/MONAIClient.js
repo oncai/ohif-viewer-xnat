@@ -1,5 +1,6 @@
 import ApiWrapper from './ApiWrapper';
 import { MONAI_TOOL_TYPES } from '../../monailabel-tools';
+import MONAI_MODEL_TYPES from '../modelTypes';
 import showNotification from '../../../components/common/showNotification';
 import NIFTIReader from '../../../utils/IO/classes/NIFTIReader/NIFTIReader';
 import common from '../../../common';
@@ -22,6 +23,7 @@ export default class MONAIClient {
     this.isConnected = false;
     this.isSuccess = true;
     this.models = [];
+    this.appLabels = [];
     this.currentTool = MONAI_TOOL_TYPES[0];
     this.currentModel = null;
   }
@@ -50,11 +52,48 @@ export default class MONAIClient {
       name: key,
     }));
 
+    const allLabels = [...data.labels];
+
+    const appLabels = { allLabels };
+    this.models.forEach(model => {
+      const modelLabels = [];
+      const valueMap = [0];
+      const srcLabels = Array.isArray(model.labels)
+        ? model.labels
+        : Object.keys(model.labels);
+      const labelNames = [];
+      srcLabels.forEach(
+        label => label !== 'background' && labelNames.push(label)
+      );
+      for (let i = 0; i < labelNames.length; i++) {
+        const label = labelNames[i];
+        let segIndex = allLabels.indexOf(label);
+        if (segIndex < 0) {
+          allLabels.push(label);
+          segIndex = allLabels.length - 1;
+        }
+        const value = i + 1;
+        modelLabels.push({ label, segIndex, value });
+        valueMap.push(segIndex);
+      }
+      appLabels[model.name] = {
+        labels: modelLabels,
+        valueMap,
+      };
+    });
+
+    this.appLabels = appLabels;
+
     return true;
   };
 
   runModel = async (parameters, updateStatusModal) => {
-    const { SeriesInstanceUID, imageIds, segmentPoints } = parameters;
+    const {
+      SeriesInstanceUID,
+      imageIds,
+      segmentPoints,
+      activeSegmentIndex,
+    } = parameters;
 
     const { projectId, subjectId, experimentId } = sessionMap.getScan(
       SeriesInstanceUID
@@ -78,13 +117,15 @@ export default class MONAIClient {
         if (!res) {
           return null;
         }
-        session_id = this._getCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`);
+        session_id = this._getCookie(
+          `${SESSION_ID_PREFIX}${SeriesInstanceUID}`
+        );
       }
     }
 
     let fgPoints = [];
     let bgPoints = [];
-    if (!_.isEmpty(segmentPoints)) {
+    if (segmentPoints) {
       if (USE_NIFTI) {
         const maxZ = imageIds.length - 1;
         for (let p of segmentPoints.fg) {
@@ -102,11 +143,12 @@ export default class MONAIClient {
     // Construct run parameters
     const params = {
       result_extension: USE_NIFTI ? '.nii.gz' : '.nrrd',
-      result_dtype: 'uint16',
+      result_dtype: 'uint8',
       result_compress: true,
       // Points
       foreground: fgPoints,
       background: bgPoints,
+      label: 'spleen',
     };
 
     updateStatusModal(`Running ${this.currentModel.name}, please wait...`);
@@ -120,14 +162,20 @@ export default class MONAIClient {
     );
 
     if (response.status === 200) {
+      const maskImage = { data: undefined, size: undefined };
       if (USE_NIFTI) {
         const niftiReader = new NIFTIReader(imageIds);
-        const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(response.data);
-        return { data: image, size: maskImageSize };
+        const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(
+          response.data
+        );
+        maskImage.data = image;
+        maskImage.size = maskImageSize;
       } else {
         const { image, maskImageSize } = readNrrd(response.data);
-        return { data: image, size: maskImageSize };
+        maskImage.data = image;
+        maskImage.size = maskImageSize;
       }
+      return this._fixLabelMapping(maskImage, activeSegmentIndex);
     } else {
       showNotification(
         `Failed to run ${this.currentModel.name}! Reason: ${response.data}`,
@@ -137,6 +185,55 @@ export default class MONAIClient {
       return null;
     }
   };
+
+  _fixLabelMapping(maskImage, activeSegmentIndex) {
+    const { data, size } = maskImage;
+    const sliceLengthInBytes = data.byteLength / size.numberOfFrames;
+    const sliceLength = size.width * size.height;
+    const bytesPerVoxel = sliceLengthInBytes / sliceLength;
+
+    if (bytesPerVoxel !== 1 && bytesPerVoxel !== 2) {
+      console.error(
+        `No method for parsing ArrayBuffer to ${bytesPerVoxel}-byte array`
+      );
+      return;
+    }
+
+    const typedArray = bytesPerVoxel === 1 ? Uint8Array : Uint16Array;
+    const maskArrayBuffer = new typedArray(data);
+
+    const model = this.currentModel;
+    let valueMap = [0];
+    if (model.type === MONAI_MODEL_TYPES.DEEPGROW) {
+      // Skip value map generated based on the model metadata
+      valueMap.push(activeSegmentIndex);
+    } else {
+      const modelLabels = this.appLabels[model.name];
+      valueMap = modelLabels.valueMap;
+    }
+    const fixedMaskImage = Uint16Array.from(
+      maskArrayBuffer,
+      value => valueMap[value]
+    );
+
+    const segIndices = [...new Set(fixedMaskImage)].filter(
+      value => value !== 0
+    );
+    const allLabels = this.appLabels.allLabels;
+    const matchingLabels = [];
+    if (model.type === MONAI_MODEL_TYPES.DEEPGROW) {
+      // Skip labels provided by the model metadata
+      segIndices.forEach(value => {
+        matchingLabels.push({ label: undefined, value });
+      });
+    } else {
+      segIndices.forEach(value => {
+        matchingLabels.push({ label: allLabels[value], value });
+      });
+    }
+
+    return { maskArray: fixedMaskImage, size, matchingLabels, segIndices };
+  }
 
   _getSession = async SeriesInstanceUID => {
     let session_id = null;
@@ -168,23 +265,22 @@ export default class MONAIClient {
     if (USE_NIFTI) {
       const niftiBuffer = await createNiftiVolume(imageIds);
       volumeBuffer = {
-        data: new Blob([niftiBuffer],
-          { type: 'application/octet-stream' }),
+        data: new Blob([niftiBuffer], { type: 'application/octet-stream' }),
         name: 'image.nii.gz',
       };
     } else {
       volumeBuffer = await createDicomVolume(imageIds);
     }
 
-    const response =
-      await this.api.createSession(volumeBuffer, null, SESSION_EXPIRY);
+    const response = await this.api.createSession(
+      volumeBuffer,
+      null,
+      SESSION_EXPIRY
+    );
 
     if (response.status === 200) {
       const { session_id } = response.data;
-      this._setCookie(
-        `${SESSION_ID_PREFIX}${SeriesInstanceUID}`,
-        session_id
-      );
+      this._setCookie(`${SESSION_ID_PREFIX}${SeriesInstanceUID}`, session_id);
       res = true;
 
       showNotification(
@@ -207,7 +303,7 @@ export default class MONAIClient {
     document.cookie = `${name}=${escape(value)}`;
   };
 
-  _getCookie = (name) => {
+  _getCookie = name => {
     let value = null;
 
     if (document.cookie !== '') {
