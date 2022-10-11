@@ -13,6 +13,7 @@ import { isDisplaySetReconstructable, isSpacingUniform } from '../../utils/isDis
 import errorHandler from '../../errorHandler';
 import isLowPriorityModality from '../../utils/isLowPriorityModality';
 import getXHRRetryRequestHook from '../../utils/xhrRetryRequestHook';
+import { ReconstructionIssues } from '../../enums';
 
 class StudyMetadata extends Metadata {
   constructor(data, uid) {
@@ -882,6 +883,17 @@ const makeDisplaySet = (series, instances) => {
       displayReconstructableInfo.reconstructionIssues.concat(displaySpacingInfo.reconstructionIssues) :
         displayReconstructableInfo.reconstructionIssues;
   }
+
+  // Optional slice display and download order
+  const preferences = window.store.getState().preferences;
+  const DisplayScanFromTheMiddle =
+    preferences.experimentalFeatures.DisplayScanFromTheMiddle;
+  const displayFromTheMiddleEnabled =
+    !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
+  const numImages = imageSet.numberOfImagesPerSubset || instances.length;
+  const middleImageIndex = Math.floor(numImages / 2);
+  imageSet.setAttribute('middleImageIndex', middleImageIndex);
+  imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);
 
   return imageSet;
 };

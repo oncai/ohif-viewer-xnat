@@ -96,6 +96,12 @@ class OHIFCornerstoneViewport extends Component {
     const stack = Object.assign({}, storedStack);
     stack.currentImageIdIndex = frameIndex;
 
+    if (displaySet.firstShow) {
+      stack.currentImageIdIndex = displaySet.middleImageIndex;
+      displaySet.firstShow = false;
+      return stack;
+    }
+
     if (SOPInstanceUID) {
       const index = stack.imageIds.findIndex(imageId => {
         const imageIdSOPInstanceUID = cornerstone.metaData.get(
@@ -228,7 +234,7 @@ class OHIFCornerstoneViewport extends Component {
       const { displaySet } = this.props.viewportData;
       const { StudyInstanceUID } = displaySet;
 
-      if (currentImageIdIndex > 0) {
+      if (currentImageIdIndex >= 0) {
         this.props.onNewImage({
           StudyInstanceUID,
           SOPInstanceUID: sopInstanceUid,

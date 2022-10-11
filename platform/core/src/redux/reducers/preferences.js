@@ -43,6 +43,11 @@ const defaultState = {
       name: 'RTStruct Concurrent Polygon Extraction',
       enabled: true,
     },
+    DisplayScanFromTheMiddle: {
+      id: 'DisplayScanFromTheMiddle',
+      name: 'Load image slices from the middle',
+      enabled: false,
+    },
   },
 };
 
