@@ -329,6 +329,10 @@ class XNATStandaloneRouting extends Component {
     }
   }
 
+  componentWillUnmount() {
+    commandsManager.runCommand('clearStudyLoadingListener', {});
+  }
+
   render() {
     const message = this.state.error
       ? `Error: ${JSON.stringify(this.state.error)}`
@@ -378,6 +382,10 @@ const _mapStudiesToNewFormat = studies => {
   updateXnatSessionMap(updatedStudies);
 
   setValidOverlaySeries(updatedStudies);
+
+  commandsManager.runCommand('initStudyLoadingListener', {
+    studies: updatedStudies,
+  });
 
   return {
     studies: updatedStudies,
