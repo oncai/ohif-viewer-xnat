@@ -229,6 +229,9 @@ export default class MONAIMenu extends React.Component {
     };
     const { activeSegmentIndex } = this.props.segmentsData;
 
+    // Invoke to ensure creating labelmap3D if it is not available yet
+    const _x = segmentationModule.getters.labelmap2D(element);
+
     let result;
     try {
       if (LOCAL_TEST) {
@@ -294,13 +297,13 @@ export default class MONAIMenu extends React.Component {
       return;
     }
 
-    const { firstImageId } = this.props;
-    const { state } = segmentationModule;
-    const brushStackState = state.series[firstImageId];
-    const { activeLabelmapIndex } = brushStackState;
-    const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
-
     try {
+      const { firstImageId } = this.props;
+      const { state } = segmentationModule;
+      const brushStackState = state.series[firstImageId];
+      const { activeLabelmapIndex } = brushStackState;
+      const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
+
       updateLabelmap(
         this._monaiClient.currentModel,
         labelmap3D,
@@ -309,6 +312,8 @@ export default class MONAIMenu extends React.Component {
         pointData && pointData.frameIndex,
         segIndices
       );
+
+      removeEmptyLabelmaps2D(labelmap3D);
     } catch (error) {
       showNotification(
         error.message || 'Unknown error!',
@@ -317,7 +322,6 @@ export default class MONAIMenu extends React.Component {
       );
     }
 
-    removeEmptyLabelmaps2D(labelmap3D);
     this.props.onNewOrUpdateSegments(matchingLabels);
     refreshViewports();
 
