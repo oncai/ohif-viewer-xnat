@@ -7,6 +7,7 @@ import KEY_COMMANDS from './utils/keyCommands';
 import queryAiaaSettings from './utils/IO/queryAiaaSettings';
 import queryRoiColorList from './utils/IO/queryRoiColorList';
 // import { referenceLines } from './utils/CSReferenceLines/referenceLines';
+import { XNATStudyLoadingListener } from './utils/StudyLoadingListener/XNATStudyLoadingListener';
 
 const refreshCornerstoneViewports = () => {
   cornerstone.getEnabledElements().forEach(enabledElement => {
@@ -179,6 +180,26 @@ const definitions = {
     commandFn: actions.brushUndoRedo,
     storeContexts: ['viewports'],
     options: { operation: 'redo' },
+  },
+  initStudyLoadingListener: {
+    commandFn: ({ studies }) => {
+      if (studies && studies.length > 0) {
+        const studyLoadingListener = XNATStudyLoadingListener.getInstance();
+        studyLoadingListener.init(studies);
+      }
+    },
+    storeContexts: [],
+    options: { studies: null },
+    context: 'VIEWER',
+  },
+  clearStudyLoadingListener: {
+    commandFn: () => {
+      const studyLoadingListener = XNATStudyLoadingListener.getInstance();
+      studyLoadingListener.clear();
+    },
+    storeContexts: [],
+    options: {},
+    context: 'VIEWER',
   },
 };
 
