@@ -1,3 +1,11 @@
+**3.4.0 RC-2**
+
+- New settings option to load a scan from the middle rather than from the top slice.
+- Added a progress indicator to monitor the loading progress of images. Currently, does not support multiframe images or images that were removed from cache.
+- Show a dialog upon creating measurements to set name and description.
+- Added support to set and restore presentation state parameters from measurements.
+- Fixed issues caused when switching between the 3D MPR and the standard viewer modes.
+
 **3.4.0 RC-1**
 
 - New feature: Measurement Service to manage and interact with measurement annotations.
