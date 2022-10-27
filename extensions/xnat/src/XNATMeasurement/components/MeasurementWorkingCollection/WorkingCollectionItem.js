@@ -6,6 +6,9 @@ import showModal from '../../../components/common/showModal';
 import MeasurementPropertyModal from '../MeasurementPropertyModal/MeasurementPropertyModal';
 import { toggleVisibility } from '../../utils';
 import getCodingText from '../common/getCodingText';
+import MeasurementJumpToButton from '../MeasurementJumpToButton/MeasurementJumpToButton';
+import { XNATToolTypes } from '../../measurement-tools';
+import refreshViewports from '../../../utils/refreshViewports';
 
 const WorkingCollectionItem = props => {
   const {
@@ -51,22 +54,22 @@ const WorkingCollectionItem = props => {
           title="Edit metadata"
           onClick={event => {
             event.stopPropagation();
-            _onEditClick(metadata, onCodingUpdated);
+            _onEditClick(metadata, csData, onCodingUpdated);
           }}
         />
       </button>
-      {/*<button className="btnAction">*/}
-      {/*  <Icon*/}
-      {/*    name="reset"*/}
-      {/*    width="16px"*/}
-      {/*    height="16px"*/}
-      {/*    title="Reset presentation state"*/}
-      {/*    onClick={event => {*/}
-      {/*      event.stopPropagation();*/}
-      {/*      onResetViewport(measurement);*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*</button>*/}
+      <button className="btnAction">
+        <Icon
+          name="reset"
+          width="16px"
+          height="16px"
+          title="Set to current presentation state"
+          onClick={event => {
+            event.stopPropagation();
+            onResetViewport(measurement);
+          }}
+        />
+      </button>
       {/*<button className="btnAction">*/}
       {/*  <Icon name="palette" width="16px" height="16px" title="Change color" />*/}
       {/*</button>*/}
@@ -94,17 +97,14 @@ const WorkingCollectionItem = props => {
     >
       <td
         className="centered-cell"
-        style={{ cursor: 'pointer' }}
         onClick={event => {
           event.stopPropagation();
-          onJumpToItem(measurement);
         }}
       >
-        <Icon
-          name={icon}
-          width="16px"
-          height="16px"
-          style={{ fill: `${color}`, color: `${color}` }}
+        <MeasurementJumpToButton
+          icon={icon}
+          color={color}
+          onClick={switchViewport => onJumpToItem(measurement, switchViewport)}
         />
       </td>
       <td
@@ -171,7 +171,7 @@ WorkingCollectionItem.propTypes = {
   onResetViewport: PropTypes.func.isRequired,
 };
 
-const _onEditClick = (metadata, onCodingUpdated) => {
+const _onEditClick = (metadata, csData, onCodingUpdated) => {
   const onUpdateProperty = data => {
     const { name, description, categoryUID, typeUID, modifierUID } = data;
     metadata.name = name;
@@ -181,6 +181,12 @@ const _onEditClick = (metadata, onCodingUpdated) => {
       typeUID,
       modifierUID,
     });
+
+    if (csData.measurementReference.toolType === XNATToolTypes.ARROW_ANNOTATE) {
+      csData.text = name;
+      refreshViewports();
+    }
+
     onCodingUpdated();
   };
 

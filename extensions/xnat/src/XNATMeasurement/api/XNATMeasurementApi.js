@@ -8,8 +8,12 @@ import {
   getSeriesAttributes,
   assignViewportParameters,
   refreshToolStateManager,
+  getAnatomyCoding,
 } from '../utils';
 import XNAT_EVENTS from './XNATEvents';
+import showModal from '../../components/common/showModal';
+import MeasurementPropertyModal from '../components/MeasurementPropertyModal/MeasurementPropertyModal';
+import { XNATToolTypes } from '../measurement-tools';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
@@ -66,9 +70,38 @@ class XNATMeasurementApi {
     const color = measurementData.color;
     measurementData.color = color ? color : csTools.toolColors.getToolColor();
 
-    if (this.addMeasurement({ element, measurementData, toolType })) {
-      triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
+    const measurement = this.addMeasurement({
+      element,
+      measurementData,
+      toolType,
+    });
+    if (measurement) {
       // TODO: Notify about the last activated measurement
+      const { metadata } = measurement;
+      if (metadata) {
+        const onUpdateProperty = data => {
+          const { name, description, categoryUID, typeUID, modifierUID } = data;
+          metadata.name = name;
+          metadata.description = description;
+          metadata.codingSequence[0] = getAnatomyCoding({
+            categoryUID,
+            typeUID,
+            modifierUID,
+          });
+        };
+        const onClose = () => {
+          if (toolType === XNATToolTypes.ARROW_ANNOTATE) {
+            measurementData.text = metadata.name;
+            cornerstone.updateImage(element);
+          }
+          triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
+        };
+        showModal(
+          MeasurementPropertyModal,
+          { metadata, onUpdateProperty, onClose },
+          metadata.name
+        );
+      }
     }
   }
 
@@ -106,7 +139,7 @@ class XNATMeasurementApi {
 
     collection.addMeasurement(measurement);
 
-    return true;
+    return measurement;
   }
 
   onMeasurementModified(event) {

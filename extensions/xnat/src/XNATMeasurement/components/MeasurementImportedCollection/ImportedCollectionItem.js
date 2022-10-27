@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {Icon} from "@ohif/ui";
+import { Icon } from '@ohif/ui';
 import { toggleVisibility } from '../../utils';
 import getCodingText from '../common/getCodingText';
+import MeasurementJumpToButton from '../MeasurementJumpToButton/MeasurementJumpToButton';
 
 const ImportedCollectionItem = props => {
   const { measurement, onJumpToItem } = props;
@@ -24,17 +25,14 @@ const ImportedCollectionItem = props => {
     <tr>
       <td
         className="centered-cell"
-        style={{ cursor: 'pointer' }}
         onClick={event => {
           event.stopPropagation();
-          onJumpToItem(measurement);
         }}
       >
-        <Icon
-          name={icon}
-          width="16px"
-          height="16px"
-          style={{ fill: `${color}`, color: `${color}` }}
+        <MeasurementJumpToButton
+          icon={icon}
+          color={color}
+          onClick={switchViewport => onJumpToItem(measurement, switchViewport)}
         />
       </td>
       <td
