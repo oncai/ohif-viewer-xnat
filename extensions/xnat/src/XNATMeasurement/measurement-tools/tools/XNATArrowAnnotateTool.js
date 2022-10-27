@@ -25,6 +25,8 @@ export default class XNATArrowAnnotateTool extends ArrowAnnotateTool {
 
     this.preMouseDownCallback = preMouseDownCallback.bind(this);
     this.mouseMoveCallback = mouseMoveCallback.bind(this);
+
+    this.configuration.getTextCallback = this._getTextCallback.bind(this);
   }
 
   pointNearTool(element, data, coords, interactionType = 'mouse') {
@@ -67,5 +69,15 @@ export default class XNATArrowAnnotateTool extends ArrowAnnotateTool {
     }
 
     super.toolSelectedCallback(evt, toolData, interactionType);
+  }
+
+  _getTextCallback(callback, eventDetails) {
+    // Handled by XNATMeasurementAPI
+    callback('Unnamed measurement');
+  }
+
+  doubleClickCallback(evt) {
+    // Ignore
+    return true;
   }
 }

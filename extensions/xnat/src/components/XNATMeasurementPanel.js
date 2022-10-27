@@ -149,7 +149,7 @@ export default class XNATMeasurementPanel extends React.Component {
     }
   }
 
-  onJumpToItem(measurement) {
+  onJumpToItem(measurement, switchViewport = false) {
     const { viewports, activeIndex, onJumpToItem } = this.props;
 
     const enabledElements = cornerstone.getEnabledElements();
@@ -171,7 +171,6 @@ export default class XNATMeasurementPanel extends React.Component {
       imageId
     );
 
-    const switchViewport = false;
     if (switchViewport) {
       const viewport = cornerstone.getViewport(element);
       assignViewportParameters(viewport, itemViewport);
@@ -189,13 +188,11 @@ export default class XNATMeasurementPanel extends React.Component {
   }
 
   onResetViewport(measurement) {
-    const { viewports, activeIndex } = this.props;
+    const { activeIndex } = this.props;
+    const itemViewport = measurement.viewport;
 
     const enabledElements = cornerstone.getEnabledElements();
     const element = enabledElements[activeIndex].element;
-    const toolState = csTools.getToolState(element, 'stack');
-
-    const { viewport: itemViewport } = measurement.viewport;
     const viewport = cornerstone.getViewport(element);
     assignViewportParameters(itemViewport, viewport);
   }

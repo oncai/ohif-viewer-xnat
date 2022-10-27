@@ -3,6 +3,7 @@ import MeasurementImportedCollection from './MeasurementImportedCollection/Measu
 import MeasurementExportMenu from './MeasurementExportMenu/MeasurementExportMenu';
 import MeasurementImportMenu from './MeasurementImportMenu/MeasurementImportMenu';
 import handleMeasurementContextMenu from './MeasurementContextMenu/handleMeasurementContextMenu';
+import MeasurementJumpToButton from './MeasurementJumpToButton/MeasurementJumpToButton';
 
 export {
   MeasurementWorkingCollection,
@@ -10,4 +11,5 @@ export {
   MeasurementExportMenu,
   MeasurementImportMenu,
   handleMeasurementContextMenu,
+  MeasurementJumpToButton,
 };

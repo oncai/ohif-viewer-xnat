@@ -20,16 +20,17 @@ export default class XNATArrowAnnotate extends ImageMeasurement {
   }
 
   get displayText() {
-    const csData = this.csData;
-    let displayText = null;
-    if (csData && csData.text) {
-      displayText = (
-        <div>
-          <span>{csData.text}</span>
-        </div>
-      );
-    }
-    return displayText;
+    // const csData = this.csData;
+    // let displayText = null;
+    // if (csData && csData.text) {
+    //   displayText = (
+    //     <div>
+    //       <span>{csData.text}</span>
+    //     </div>
+    //   );
+    // }
+    // return displayText;
+    return '-';
   }
 
   generateDataObject() {
