@@ -53,7 +53,9 @@ export default class MONAIClient {
     }));
 
     const allLabels = [...data.labels];
-
+    if (!allLabels.includes('background')) {
+      allLabels.unshift('background');
+    }
     const appLabels = { allLabels };
     this.models.forEach(model => {
       const modelLabels = [];
@@ -148,8 +150,11 @@ export default class MONAIClient {
       // Points
       foreground: fgPoints,
       background: bgPoints,
-      label: 'spleen',
     };
+
+    // if (this.currentModel.type === MONAI_MODEL_TYPES.DEEPGROW) {
+    //   params.label = 'spleen';
+    // }
 
     updateStatusModal(`Running ${this.currentModel.name}, please wait...`);
 
@@ -215,6 +220,7 @@ export default class MONAIClient {
       maskArrayBuffer,
       value => valueMap[value]
     );
+    // const fixedMaskImage = maskArrayBuffer;
 
     const segIndices = [...new Set(fixedMaskImage)].filter(
       value => value !== 0
