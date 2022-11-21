@@ -97,7 +97,7 @@ export default function init({
   freehand3DStore.state.displayStats = config.showFreehandStats;
 
   // register the AIAA module
-  // register('module', 'aiaa', AIAAModule);
+  register('module', 'aiaa', AIAAModule);
 
   register('module', 'monai', MONAIModule);
 
@@ -116,7 +116,7 @@ export default function init({
     FreehandRoi3DTool,
     FreehandRoi3DSculptorTool,
     /* AIAA Tools */
-    // AIAAProbeTool,
+    AIAAProbeTool,
     /* MONAI Tools */
     MONAIProbeTool,
     /* Additional maks tools */

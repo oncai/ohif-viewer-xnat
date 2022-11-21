@@ -1,3 +1,8 @@
+**3.4.0**
+
+- Enabled NVIDIA AIAA tools. Switch between AIAA or MONAILabel tools based on the backend configuration.
+- Fixed label value to label name mapping in the MONAILabel client.
+
 **3.4.0 RC-2**
 
 - New settings option to load a scan from the middle rather than from the top slice.

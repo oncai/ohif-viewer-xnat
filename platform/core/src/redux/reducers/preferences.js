@@ -15,15 +15,15 @@ const defaultState = {
     // language: 'en-US'
   },
   experimentalFeatures: {
-    // NVIDIAClaraAIAA: {
-    //   id: 'NVIDIAClaraAIAA',
-    //   name: 'NVIDIA Clara AIAA',
-    //   enabled: false,
-    //   settings: {
-    //     serverUrl: '',
-    //     overlapSegments: false,
-    //   },
-    // },
+    NVIDIAClaraAIAA: {
+      id: 'NVIDIAClaraAIAA',
+      name: 'NVIDIA Clara AIAA',
+      enabled: false,
+      settings: {
+        serverUrl: '',
+        overlapSegments: false,
+      },
+    },
     MONAILabel: {
       id: 'MONAILabel',
       name: 'MONAILabel Tools',

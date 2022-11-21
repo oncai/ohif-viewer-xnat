@@ -41,6 +41,9 @@ export const ICRAboutContent = () => {
       <h3>
         <span>AIAA experimental feature:</span> NVIDIA and NCITA
       </h3>
+      <h3>
+        <span>MONAILabel experimental feature:</span> NVIDIA and NCITA
+      </h3>
     </div>
   );
-}
+};
