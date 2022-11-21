@@ -37,7 +37,9 @@ function ExperimentalFeatures({ onClose }) {
   const onResetPreferences = () => {};
 
   const onSave = () => {
-    dispatch(actions.setUserPreferences({ experimentalFeatures: state.features }));
+    dispatch(
+      actions.setUserPreferences({ experimentalFeatures: state.features })
+    );
 
     onClose();
 
@@ -60,14 +62,28 @@ function ExperimentalFeatures({ onClose }) {
     const feature = state.features[key];
     const isEnabled = feature.enabled;
 
+    let setStateEntry = {
+      [key]: {
+        ...feature,
+        enabled: !isEnabled,
+      },
+    };
+
+    if (!isEnabled && (key === 'NVIDIAClaraAIAA' || key === 'MONAILabel')) {
+      const keyToDisable =
+        key === 'NVIDIAClaraAIAA' ? 'MONAILabel' : 'NVIDIAClaraAIAA';
+      const featureToDisable = state.features[keyToDisable];
+      setStateEntry[keyToDisable] = {
+        ...featureToDisable,
+        enabled: false,
+      };
+    }
+
     setState(prevState => ({
       ...prevState,
       features: {
         ...prevState.features,
-        [key]: {
-          ...feature,
-          enabled: !isEnabled,
-        }
+        ...setStateEntry,
       },
     }));
   };

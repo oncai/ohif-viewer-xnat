@@ -243,6 +243,8 @@ class Viewer extends Component {
     if (this.props.activeTool !== prevProps.activeTool) {
       if (prevProps.activeTool === 'AIAAProbeTool') {
         csTools.setToolDisabled('AIAAProbeTool', {});
+      } else if (prevProps.activeTool === 'MONAILabelProbeTool') {
+        csTools.setToolDisabled('MONAILabelProbeTool', {});
       }
     }
   }
