@@ -8,6 +8,10 @@ const { setLayout } = redux.actions;
  * @return void
  */
 const setCornerstoneLayout = () => {
+  window.store.dispatch({
+    type: 'SET_ACTIVE_TOOL',
+    activeTool: 'Wwwc',
+  });
   document.querySelector(`.ViewerMain`).style.pointerEvents = '';
   const layout = {
     numRows: 1,

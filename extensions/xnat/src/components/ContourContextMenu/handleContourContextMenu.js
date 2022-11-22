@@ -1,7 +1,11 @@
 import csTools from 'cornerstone-tools';
 import { commandsManager, servicesManager } from '@ohif/viewer/src/App';
-import XNATContextMenu from './XNATContextMenu';
-import { Polygon, generateUID, PEPPERMINT_TOOL_NAMES } from '../../peppermint-tools'
+import ContourContextMenu from './ContourContextMenu';
+import {
+  Polygon,
+  generateUID,
+  PEPPERMINT_TOOL_NAMES,
+} from '../../peppermint-tools';
 import refreshViewports from '../../utils/refreshViewports';
 
 const modules = csTools.store.modules;
@@ -24,12 +28,12 @@ function handleContourContextMenu(event, callbackData) {
     isDraggable: false,
     preservePosition: false,
     defaultPosition: _getDefaultPosition(event.detail),
-    content: XNATContextMenu,
+    content: ContourContextMenu,
     contentProps: {
       eventData: eventData,
       callbackData: callbackData,
       onClose: () => {
-        UIDialogService.dismiss({ id: 'context-menu' })
+        UIDialogService.dismiss({ id: 'context-menu' });
       },
       onDelete: () => {
         const element = eventData.element;
@@ -60,10 +64,10 @@ function handleContourContextMenu(event, callbackData) {
           seriesInstanceUid: seriesInstanceUid,
           structureSetUid: referencedStructureSet.uid,
           ROIContourUid: referencedROIContour.uid,
-          points: points
+          points: points,
         };
       },
-      OnPaste: () => {
+      onPaste: () => {
         console.log('Paste contour...');
         if (!module.clipboard.data) {
           return;
@@ -72,14 +76,18 @@ function handleContourContextMenu(event, callbackData) {
         const copiedData = module.clipboard.data;
 
         // check if it is the same series
-        const series = modules.freehand3D.getters.series(copiedData.seriesInstanceUid);
+        const series = modules.freehand3D.getters.series(
+          copiedData.seriesInstanceUid
+        );
         if (series.uid !== copiedData.seriesInstanceUid) {
           // ToDo: show a UI error message
           console.warn('Cannot paste contour over a different scan');
           return;
         }
 
-        const roiContour = modules.freehand3D.getters.activeROIContour(series.uid);
+        const roiContour = modules.freehand3D.getters.activeROIContour(
+          series.uid
+        );
 
         const polygon = new Polygon(
           copiedData.points,
@@ -116,7 +124,7 @@ function handleContourContextMenu(event, callbackData) {
         modules.freehand3D.setters.incrementPolygonCount(
           copiedData.seriesInstanceUid,
           copiedData.structureSetUid,
-          roiContour.uid, //copiedData.ROIContourUid
+          roiContour.uid //copiedData.ROIContourUid
         );
 
         refreshViewports();

@@ -220,7 +220,7 @@ export default class XNATSegmentationExportMenu extends React.Component {
       segExportListBody = (
         <>
           <h5>
-            Empty segments data. Export is no available.
+            Empty segments data. Export is not available.
           </h5>
         </>
       );

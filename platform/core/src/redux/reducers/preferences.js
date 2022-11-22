@@ -24,6 +24,15 @@ const defaultState = {
         overlapSegments: false,
       },
     },
+    MONAILabel: {
+      id: 'MONAILabel',
+      name: 'MONAILabel Tools',
+      enabled: false,
+      settings: {
+        serverUrl: '',
+        overlapSegments: false,
+      },
+    },
     ContourROILazyLoading: {
       id: 'ContourROILazyLoading',
       name: 'Contour ROI Lazy Loading',
@@ -33,6 +42,11 @@ const defaultState = {
       id: 'ConcurrentPolygonExtraction',
       name: 'RTStruct Concurrent Polygon Extraction',
       enabled: true,
+    },
+    DisplayScanFromTheMiddle: {
+      id: 'DisplayScanFromTheMiddle',
+      name: 'Load image slices from the middle',
+      enabled: false,
     },
   },
 };

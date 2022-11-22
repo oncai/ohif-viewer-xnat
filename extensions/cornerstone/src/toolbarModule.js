@@ -91,75 +91,75 @@ const definitions = [
       behavior: TOOLBAR_BUTTON_BEHAVIORS.CINE,
     },
   },
-  {
-    id: 'Annotations',
-    label: 'Annotations',
-    icon: 'xnat-annotations',
-    buttons: [
-      {
-        id: 'Length',
-        label: 'Length',
-        icon: 'measure-temp',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Length' },
-      },
-      {
-        id: 'ArrowAnnotate',
-        label: 'Annotate',
-        icon: 'measure-non-target',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'ArrowAnnotate' },
-      },
-      {
-        id: 'Angle',
-        label: 'Angle',
-        icon: 'angle-left',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Angle' },
-      },
-      {
-        id: 'Bidirectional',
-        label: 'Bidirectional',
-        icon: 'measure-target',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'Bidirectional' },
-      },
-      {
-        id: 'EllipticalRoi',
-        label: 'Ellipse',
-        icon: 'circle-o',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'EllipticalRoi' },
-      },
-      {
-        id: 'RectangleRoi',
-        label: 'Rectangle',
-        icon: 'square-o',
-        //
-        type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
-        commandName: 'setToolActive',
-        commandOptions: { toolName: 'RectangleRoi' },
-      },
-      {
-        id: 'Clear',
-        label: 'Clear',
-        icon: 'trash',
-        //
-        type: TOOLBAR_BUTTON_TYPES.COMMAND,
-        commandName: 'clearAnnotations',
-      },
-    ],
-  },
+  // {
+  //   id: 'Annotations',
+  //   label: 'Annotations',
+  //   icon: 'xnat-annotations',
+  //   buttons: [
+  //     {
+  //       id: 'Length',
+  //       label: 'Length',
+  //       icon: 'measure-temp',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'Length' },
+  //     },
+  //     {
+  //       id: 'ArrowAnnotate',
+  //       label: 'Annotate',
+  //       icon: 'measure-non-target',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'ArrowAnnotate' },
+  //     },
+  //     {
+  //       id: 'Angle',
+  //       label: 'Angle',
+  //       icon: 'angle-left',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'Angle' },
+  //     },
+  //     {
+  //       id: 'Bidirectional',
+  //       label: 'Bidirectional',
+  //       icon: 'measure-target',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'Bidirectional' },
+  //     },
+  //     {
+  //       id: 'EllipticalRoi',
+  //       label: 'Ellipse',
+  //       icon: 'circle-o',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'EllipticalRoi' },
+  //     },
+  //     {
+  //       id: 'RectangleRoi',
+  //       label: 'Rectangle',
+  //       icon: 'square-o',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
+  //       commandName: 'setToolActive',
+  //       commandOptions: { toolName: 'RectangleRoi' },
+  //     },
+  //     {
+  //       id: 'Clear',
+  //       label: 'Clear',
+  //       icon: 'trash',
+  //       //
+  //       type: TOOLBAR_BUTTON_TYPES.COMMAND,
+  //       commandName: 'clearAnnotations',
+  //     },
+  //   ],
+  // },
   {
     id: 'Tools',
     label: 'Tools',
@@ -258,7 +258,7 @@ const definitions = [
   },
   {
     id: 'Exit2DMPR',
-    label: 'Exit 2D MPR',
+    label: 'Exit 3D MPR',
     icon: 'times',
     //
     type: TOOLBAR_BUTTON_TYPES.COMMAND,

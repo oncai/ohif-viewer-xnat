@@ -549,7 +549,7 @@ class OHIFVTKViewport extends Component {
         }
       );
     } catch (error) {
-      const errorTitle = 'Failed to load 2D MPR';
+      const errorTitle = 'Failed to load 3D MPR';
       console.error(errorTitle, error);
       const {
         UINotificationService,
@@ -566,7 +566,7 @@ class OHIFVTKViewport extends Component {
           type: 'error',
           autoClose: false,
           action: {
-            label: 'Exit 2D MPR',
+            label: 'Exit 3D MPR',
             onClick: ({ close }) => {
               // context: 'ACTIVE_VIEWPORT::VTK',
               close();

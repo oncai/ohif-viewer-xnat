@@ -243,6 +243,8 @@ class Viewer extends Component {
     if (this.props.activeTool !== prevProps.activeTool) {
       if (prevProps.activeTool === 'AIAAProbeTool') {
         csTools.setToolDisabled('AIAAProbeTool', {});
+      } else if (prevProps.activeTool === 'MONAILabelProbeTool') {
+        csTools.setToolDisabled('MONAILabelProbeTool', {});
       }
     }
   }
@@ -635,9 +637,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         // and better than what we have right now.
         altImageText = 'SEG';
       } else if (displaySet.images && displaySet.images.length) {
-        const numImages =
-          displaySet.numberOfImagesPerSubset || displaySet.images.length;
-        const imageIndex = Math.floor(numImages / 2);
+        const imageIndex = displaySet.middleImageIndex;
         imageId = displaySet.images[imageIndex].getImageId();
         SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
           .SOPInstanceUID;

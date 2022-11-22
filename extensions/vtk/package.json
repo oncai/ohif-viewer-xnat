@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
-    "@xnat-ohif/extension-xnat": "^3.3.0",
+    "@xnat-ohif/extension-xnat": "^3.4.0",
     "lodash.throttle": "^4.1.1",
     "react-vtkjs-viewport": "^0.14.4"
   },

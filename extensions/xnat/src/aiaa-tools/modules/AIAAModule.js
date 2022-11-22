@@ -1,5 +1,4 @@
 import AIAAClient from '../client/AIAAClient.js';
-import AIAA_MODEL_TYPES from '../modelTypes.js';
 
 const state = {
   points: new Map(),

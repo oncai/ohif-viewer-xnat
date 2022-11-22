@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDrag } from 'react-dnd';
-import { ImageThumbnail } from '@ohif/ui';
 import classNames from 'classnames';
 import { Icon, Tooltip, OverlayTrigger } from '@ohif/ui';
 import cornerstone from 'cornerstone-core';
@@ -10,6 +9,7 @@ import RoiImportModal, {
   getVolumeImportedContourCollectionLabels,
 } from '../XNATRoiImportModal/RoiImportModal';
 import showNotification from '../common/showNotification';
+import { XNATImageThumbnail } from './XNATImageThumbnail';
 
 import './XNATThumbnail.styl';
 
@@ -303,12 +303,13 @@ function XNATThumbnail(props) {
     >
       {/* SHOW IMAGE */}
       {hasImage && (
-        <ImageThumbnail
+        <XNATImageThumbnail
           active={active}
           imageSrc={imageSrc}
           imageId={imageId}
           error={error}
           stackPercentComplete={stackPercentComplete}
+          displaySetInstanceUID={displaySetInstanceUID}
         />
       )}
       {/* SHOW TEXT ALTERNATIVE */}

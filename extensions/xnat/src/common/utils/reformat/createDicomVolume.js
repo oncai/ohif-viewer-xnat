@@ -10,8 +10,9 @@ async function createDicomVolume(imageIds) {
     // const image = cornerstone.imageCache.imageCache[imageIds[i]];
     // const imageByteArray = image.image.data.byteArray;
     const imageByteArray = images[i].data.byteArray;
-    const imageBlob = new Blob([imageByteArray],
-      { type: 'application/octet-stream' });
+    const imageBlob = new Blob([imageByteArray], {
+      type: 'application/octet-stream',
+    });
     volumeBuffer.push({
       data: imageBlob,
       name: `image_${i}.dcm`,

@@ -74,7 +74,7 @@ const XNATToolStrategiesDialog = ({ toolStrategies, tool }) => {
   );
 };
 
-XNATToolStrategiesDialog.prototypes = {
+XNATToolStrategiesDialog.propTypes = {
   toolStrategies: PropTypes.array.isRequired,
   tool: PropTypes.object.isRequired,
 };

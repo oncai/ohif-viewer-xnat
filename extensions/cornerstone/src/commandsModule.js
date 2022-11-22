@@ -353,6 +353,7 @@ const commandsModule = ({ servicesManager }) => {
       activeViewportIndex,
       refreshViewports = true,
       displaySetInstanceUID,
+      windowingType,
     }) => {
       const studies = studyMetadataManager.all();
       const study = studies.find(
@@ -374,6 +375,12 @@ const commandsModule = ({ servicesManager }) => {
         return;
       }
 
+      if (windowingType) {
+        const element = getEnabledElement(activeViewportIndex);
+        const enabledElement = cornerstone.getEnabledElement(element);
+        setWindowing(enabledElement.uuid, windowingType);
+      }
+
       displaySet.SOPInstanceUID = SOPInstanceUID;
       displaySet.frameIndex = frameIndex;
 
@@ -385,7 +392,11 @@ const commandsModule = ({ servicesManager }) => {
         refreshCornerstoneViewports();
       }
     },
-    subscribeToContextMenuHandler: ({ tools, contextMenuCallback, dialogIds }) => {
+    subscribeToContextMenuHandler: ({
+      tools,
+      contextMenuCallback,
+      dialogIds,
+    }) => {
       contextMenuHandler.subscribe(tools, contextMenuCallback, dialogIds);
     },
     cancelTask: () => {

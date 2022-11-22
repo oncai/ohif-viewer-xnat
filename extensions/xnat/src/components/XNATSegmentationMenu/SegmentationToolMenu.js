@@ -4,6 +4,7 @@ import { PEPPERMINT_TOOL_NAMES } from '../../peppermint-tools';
 import SmartAndAutoBrushSettings from './SmartAndAutoBrushSettings';
 import { AIAA_TOOL_NAMES } from '../../aiaa-tools';
 import { ConnectedAIAAMenu } from '../AIAAMenu';
+import { MONAIMenu, MONAI_TOOL_NAMES } from '../../MONAILabelClient';
 
 const SegmentationToolMenu = ({ activeTool, toolData }) => {
   let toolMenu = null;
@@ -24,13 +25,20 @@ const SegmentationToolMenu = ({ activeTool, toolData }) => {
         onNewSegment={toolData.onNewSegment}
       />
     );
+  } else if (activeTool === MONAI_TOOL_NAMES.MONAI_PROB_TOOL) {
+    toolMenu = (
+      <MONAIMenu
+        studies={toolData.studies}
+        viewports={toolData.viewports}
+        activeIndex={toolData.activeIndex}
+        firstImageId={toolData.firstImageId}
+        segmentsData={toolData.segmentsData}
+        onNewOrUpdateSegments={toolData.onNewOrUpdateSegments}
+      />
+    );
   }
 
-  return (
-    <>
-      {toolMenu}
-      </>
-  );
+  return <>{toolMenu}</>;
 };
 
 SegmentationToolMenu.propTypes = {

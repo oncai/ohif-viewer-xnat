@@ -1,15 +1,18 @@
 import ApiWrapper from './ApiWrapper.js';
 import AIAA_TOOL_TYPES from '../toolTypes.js';
-import createDicomVolume from '../utils/createDicomVolume.js';
-import createNiftiVolume from '../utils/createNiftiVolume.js';
 import prepareRunParameters from '../utils/prepareRunParameters.js';
-import readNrrd from '../utils/readNrrd.js';
-import readNifti from '../utils/readNifti.js';
 import showNotification from '../../components/common/showNotification';
 import { saveFile, readFile } from '../../utils/xnatDev.js';
 import testModelList from './testModelList.js';
 import AIAA_MODEL_TYPES from '../modelTypes';
 import NIFTIReader from '../../utils/IO/classes/NIFTIReader/NIFTIReader';
+import common from '../../common';
+
+const {
+  createDicomVolume,
+  createNiftiVolume,
+  readNrrd,
+} = common.utils.reformat;
 
 const SESSION_ID_PREFIX = 'AIAA_SESSION_ID_';
 const SESSION_EXPIRY = 2 * 60 * 60; //in seconds
@@ -128,8 +131,6 @@ export default class AIAAClient {
       //   { type: 'application/octet-stream' });
       // saveFile(imageBlob, 'mask_image');
       if (USE_NIFTI) {
-        // const { image, maskImageSize } = await readNifti(response.data);
-        // return { data: image, size: maskImageSize };
         const niftiReader = new NIFTIReader(imageIds);
         const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(response.data);
         return { data: image, size: maskImageSize };
@@ -161,8 +162,6 @@ export default class AIAAClient {
     }
 
     if (USE_NIFTI) {
-      // const { image, maskImageSize } = await readNifti(buffer);
-      // return { data: image, size: maskImageSize };
       const niftiReader = new NIFTIReader(imageIds);
       const { image, maskImageSize } = await niftiReader.loadFromArrayBuffer(buffer);
       return { data: image, size: maskImageSize };
