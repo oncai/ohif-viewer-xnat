@@ -165,26 +165,29 @@ export default class XNATMeasurementPanel extends React.Component {
 
     const imageIds = toolState.data[0].imageIds;
     const frameIndex = imageIds.indexOf(imageId);
+    console.log(frameIndex);
     const SOPInstanceUID = cornerstone.metaData.get('SOPInstanceUID', imageId);
     const StudyInstanceUID = cornerstone.metaData.get(
       'StudyInstanceUID',
       imageId
     );
 
-    if (switchViewport) {
-      const viewport = cornerstone.getViewport(element);
-      assignViewportParameters(viewport, itemViewport);
-      cornerstone.setViewport(element, viewport);
-    }
-
-    onJumpToItem({
+    const jumpToData = {
       StudyInstanceUID,
       SOPInstanceUID,
       frameIndex,
       activeViewportIndex: activeIndex,
       displaySetInstanceUID: viewports[activeIndex].displaySetInstanceUID,
-      windowingType: 'Manual',
-    });
+    };
+
+    if (switchViewport) {
+      const viewport = cornerstone.getViewport(element);
+      assignViewportParameters(viewport, itemViewport);
+      cornerstone.setViewport(element, viewport);
+      jumpToData.windowingType = 'Manual';
+    }
+
+    onJumpToItem(jumpToData);
   }
 
   onResetViewport(measurement) {
