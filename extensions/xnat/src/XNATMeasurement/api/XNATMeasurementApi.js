@@ -245,7 +245,8 @@ class XNATMeasurementApi {
         const { SOPInstanceUID, frameIndex } = imageReference;
         const imageId = getImportedImageId(
           displaySetInstanceUID,
-          SOPInstanceUID
+          SOPInstanceUID,
+          frameIndex
         );
         const measurement = new MeasurementTool(true, {
           collectionUID,

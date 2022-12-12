@@ -102,7 +102,7 @@ class OHIFCornerstoneViewport extends Component {
       return stack;
     }
 
-    if (SOPInstanceUID) {
+    if (SOPInstanceUID && !displaySet.isMultiFrame) {
       const index = stack.imageIds.findIndex(imageId => {
         const imageIdSOPInstanceUID = cornerstone.metaData.get(
           'SOPInstanceUID',
