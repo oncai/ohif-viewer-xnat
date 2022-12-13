@@ -1,6 +1,7 @@
 import cornerstoneTools from 'cornerstone-tools';
 import XMLWriter from 'xml-writer';
 import colorTools from '../../colorTools';
+import viewerEquipmentAttributes from '../ViewerEquipmentAttributes';
 
 const modules = cornerstoneTools.store.modules;
 
@@ -112,17 +113,17 @@ export default class AIMWriter extends XMLWriter {
     this._addProperty(
       'manufacturerName',
       'value',
-      this._seriesInfo.equipment.manufacturerName
+      viewerEquipmentAttributes.Manufacturer
     );
     this._addProperty(
       'manufacturerModelName',
       'value',
-      this._seriesInfo.equipment.manufacturerModelName
+      viewerEquipmentAttributes.ManufacturerModelName
     );
     this._addProperty(
       'softwareVersion',
       'value',
-      this._seriesInfo.equipment.softwareVersion
+      viewerEquipmentAttributes.SoftwareVersions
     );
     this.endElement();
   }
