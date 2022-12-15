@@ -1,3 +1,8 @@
+**3.4.1**
+
+- Fixed import and export issues of measurement data for DICOM multiframe images.
+- Set values of the DICOM General Equipment tags based on the viewer attributes: manufacturer, model-name and software-versions.
+
 **3.4.0**
 
 - Enabled NVIDIA AIAA tools. Switch between AIAA or MONAILabel tools based on the backend configuration.
