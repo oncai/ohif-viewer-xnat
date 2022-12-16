@@ -13,7 +13,7 @@ const getImageAttributes = element => {
     imageId
   );
 
-  const splitImageId = imageId.split('&frame');
+  const splitImageId = imageId.split('?frame=');
   const frameIndex =
     splitImageId[1] !== undefined ? Number(splitImageId[1]) : 0;
 
@@ -25,7 +25,11 @@ const getImageAttributes = element => {
   };
 };
 
-const getImportedImageId = (displaySetInstanceUID, SOPInstanceUID) => {
+const getImportedImageId = (
+  displaySetInstanceUID,
+  SOPInstanceUID,
+  frameIndex
+) => {
   let imageId = undefined;
 
   const studies = studyMetadataManager.all();
@@ -42,6 +46,9 @@ const getImportedImageId = (displaySetInstanceUID, SOPInstanceUID) => {
         );
         if (image) {
           imageId = image.getImageId();
+          if (displaySet.isMultiFrame) {
+            imageId += `?frame=${frameIndex}`;
+          }
         }
         break;
       }

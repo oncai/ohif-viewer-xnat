@@ -1,12 +1,13 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
-import dcmjs from 'dcmjs';
-import getElementFromFirstImageId from '../../getElementFromFirstImageId';
+// import dcmjs from 'dcmjs';
+// import getElementFromFirstImageId from '../../getElementFromFirstImageId';
 import { Segmentation_4X_fork } from './_tempDCMJSFork/';
+import viewerEquipmentAttributes from '../ViewerEquipmentAttributes';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
-const globalToolStateManager =
-  cornerstoneTools.globalImageIdSpecificToolStateManager;
+// const globalToolStateManager =
+//   cornerstoneTools.globalImageIdSpecificToolStateManager;
 
 /**
  * @class DICOMSEGWriter - Utilises dcmjs to extract a peppermintTools brush
@@ -35,16 +36,6 @@ export default class DICOMSEGWriter {
       }
 
       const { labelmaps3D } = segmentationModule.getters.labelmaps3D(element);
-      // Temporary workaround to fix DICOM SEG mask orientation
-      // ToDo: check for a reliable fix when upgrading ICR/cornerstone-tools
-      // const maxSliceIndex = imageIds.length - 1;
-      // const orgLabelmaps2D = labelmaps3D[0].labelmaps2D;
-      // const reversedLabelmaps2D = [];
-      // orgLabelmaps2D.forEach((item, index) => {
-      //   reversedLabelmaps2D[maxSliceIndex - index] = item;
-      // });
-      // labelmaps3D[0].labelmaps2D = reversedLabelmaps2D;
-      //
 
       Promise.all(imagePromises)
         .then(images => {
@@ -54,10 +45,10 @@ export default class DICOMSEGWriter {
             includeSliceSpacing: true,
             rleEncode: false, // Not yet currently supported by the XNAT ROI plugin
             SeriesDescription: name,
-            Manufacturer: this._seriesInfo.equipment.manufacturerName,
-            ManufacturerModelName: this._seriesInfo.equipment
-              .manufacturerModelName,
-            SoftwareVersions: this._seriesInfo.equipment.softwareVersion,
+            Manufacturer: viewerEquipmentAttributes.Manufacturer,
+            ManufacturerModelName:
+              viewerEquipmentAttributes.ManufacturerModelName,
+            SoftwareVersions: viewerEquipmentAttributes.SoftwareVersions,
             SeriesDate: date,
             SeriesTime: time,
             ContentDate: date,
@@ -76,9 +67,6 @@ export default class DICOMSEGWriter {
         .catch(err => {
           // console.log(err);
           reject(err);
-        })
-        .finally(() => {
-          // labelmaps3D[0].labelmaps2D = orgLabelmaps2D;
         });
     });
   }
