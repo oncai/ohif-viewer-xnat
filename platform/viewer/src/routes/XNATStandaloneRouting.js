@@ -60,9 +60,9 @@ class XNATStandaloneRouting extends Component {
         );
       }
 
-      const parentProjectId = query.parentProjectId
-        ? query.parentProjectId
-        : projectId;
+      const parentProjectId = query.parentProjectId;
+        // ? query.parentProjectId
+        // : projectId;
 
       if (parentProjectId) {
         console.warn(
@@ -127,15 +127,15 @@ class XNATStandaloneRouting extends Component {
 
           let jsonString = oReq.responseText;
 
-          if (parentProjectId) {
-            console.warn(
-              `replacing ${parentProjectId} with ${projectId} so resources can be fetched`
-            );
-            jsonString = jsonString.replace(
-              new RegExp(parentProjectId, 'g'),
-              projectId
-            );
-          }
+          // if (parentProjectId) {
+          //   console.warn(
+          //     `replacing ${parentProjectId} with ${projectId} so resources can be fetched`
+          //   );
+          //   jsonString = jsonString.replace(
+          //     new RegExp(parentProjectId, 'g'),
+          //     projectId
+          //   );
+          // }
 
           log.info(JSON.stringify(jsonString, null, 2));
 
@@ -232,20 +232,20 @@ class XNATStandaloneRouting extends Component {
 
             console.log(studyList);
 
-            if (parentProjectId) {
-              console.log(`replacing ${parentProjectId} with ${projectId}`);
-
-              let jsonString = JSON.stringify(studyList);
-
-              jsonString = jsonString.replace(
-                new RegExp(parentProjectId, 'g'),
-                projectId
-              );
-
-              studyList = JSON.parse(jsonString);
-            }
-
-            console.log(studyList);
+            // if (parentProjectId) {
+            //   console.log(`replacing ${parentProjectId} with ${projectId}`);
+            //
+            //   let jsonString = JSON.stringify(studyList);
+            //
+            //   jsonString = jsonString.replace(
+            //     new RegExp(parentProjectId, 'g'),
+            //     projectId
+            //   );
+            //
+            //   studyList = JSON.parse(jsonString);
+            // }
+            //
+            // console.log(studyList);
 
             resolve({ studies: studyList.studies, studyInstanceUIDs: [] });
           });
@@ -345,7 +345,7 @@ class XNATStandaloneRouting extends Component {
       <ConnectedViewer
         studies={this.state.studies}
         studyInstanceUIDs={this.state.studyInstanceUIDs}
-        seriesInstanceUIDs={this.state.seriesInstanceUIDs}
+        // seriesInstanceUIDs={this.state.seriesInstanceUIDs}
       />
     ) : (
       <ConnectedViewerRetrieveStudyData
