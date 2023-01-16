@@ -9,7 +9,7 @@ import { getImageData } from 'react-vtkjs-viewport';
 import { vec3 } from 'gl-matrix';
 import setMPRLayout from './utils/setMPRLayout.js';
 import setViewportToVTK from './utils/setViewportToVTK.js';
-import Constants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
+import Constants from '@kitware/vtk.js/Rendering/Core/VolumeMapper/Constants';
 import OHIFVTKViewport from './OHIFVTKViewport';
 import setOrientationMarker, {
   readHumanMarker,

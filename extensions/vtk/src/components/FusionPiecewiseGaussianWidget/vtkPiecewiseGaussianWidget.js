@@ -1,5 +1,4 @@
-import macro from 'vtk.js/Sources/macro';
-import * as vtkMath from 'vtk.js/Sources/Common/Core/Math';
+import macro from '@kitware/vtk.js/macro';
 
 /* eslint-disable no-continue */
 /* eslint-disable prettier/prettier */
