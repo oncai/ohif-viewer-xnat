@@ -640,6 +640,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
 
           // Set the invalidated flag to false so that this data won't automatically be recalculated
           data.invalidated = false;
+
+          data.timestamp = Date.now();
         }
 
         // Only render text if polygon ROI has been completed, and is active,

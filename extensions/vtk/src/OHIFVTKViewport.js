@@ -70,6 +70,7 @@ class OHIFVTKViewport extends Component {
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
         vtkImageFusionData: PropTypes.object,
+        vtkContourRoisData: PropTypes.object,
       }),
     }),
     viewportIndex: PropTypes.number.isRequired,
@@ -513,6 +514,12 @@ class OHIFVTKViewport extends Component {
         fusionIsLoaded = false;
       }
 
+      // Contour ROIs
+      let contourRois = {};
+      if (displaySet.vtkContourRoisData) {
+        contourRois = { ...displaySet.vtkContourRoisData };
+      }
+
       this.setState(
         {
           percentComplete: 0,
@@ -544,6 +551,7 @@ class OHIFVTKViewport extends Component {
               paintFilterLabelMapImageData: labelmapDataObject,
               paintFilterBackgroundImageData: imageDataObject.vtkImageData,
               labelmapColorLUT,
+              contourRois,
             });
           }, 200);
         }
@@ -603,6 +611,10 @@ class OHIFVTKViewport extends Component {
       displaySet.frameIndex !== prevDisplaySet.frameIndex ||
       fusionDisplaySetInstanceUID !== prevFusionDisplaySetInstanceUID
     ) {
+      this.setStateFromProps();
+    }
+
+    if (!_.isEqual(displaySet.vtkContourRoisData, prevDisplaySet.vtkContourRoisData)) {
       this.setStateFromProps();
     }
   }
@@ -766,6 +778,7 @@ class OHIFVTKViewport extends Component {
           {this.state.volumes && (
             <ConnectedVTKViewport
               volumes={this.state.volumes}
+              contourRois={this.state.contourRois}
               paintFilterLabelMapImageData={
                 this.state.paintFilterLabelMapImageData
               }

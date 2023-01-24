@@ -422,12 +422,9 @@ class VTKImageFusionDialog extends PureComponent {
     return (
       <div className={className}>
         <div className="VtkImageFusionDialog">
-          {/*<div className="header">*/}
-          {/*  <Icon name="xnat-image-composition" width="18px" height="18px" />*/}
-          {/*  <button className="closeButton" onClick={onClose}>*/}
-          {/*    x*/}
-          {/*  </button>*/}
-          {/*</div>*/}
+          <div className="header">
+            <Icon name="xnat-image-composition" />
+          </div>
           <div className="row">
             {scanList}
 

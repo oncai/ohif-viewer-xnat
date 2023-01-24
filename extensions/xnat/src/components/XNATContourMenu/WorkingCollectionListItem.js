@@ -5,9 +5,8 @@ import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import showModal from '../common/showModal.js';
 import LabelEditModal from '../common/LabelEditModal.js';
-import refreshViewports from '../../utils/refreshViewports';
 import { ROIContourColorPicker } from '../../elements';
-import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
+import { refreshViewports, ROI_COLOR_TEMPLATES } from '../../utils';
 
 import '../XNATRoiPanel.styl';
 

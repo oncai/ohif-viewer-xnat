@@ -4,11 +4,13 @@ import cornerstoneTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import ProgressColoredCircle from '../common/ProgressColoredCircle';
-import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 import { SortIcon } from '../../elements';
-import getSortIndices from '../../utils/getSortIndices';
-import refreshViewports from '../../utils/refreshViewports';
-import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
+import {
+  getSortIndices,
+  refreshViewports,
+  ROI_COLOR_TEMPLATES,
+  DATA_IMPORT_STATUS,
+} from '../../utils';
 
 import '../XNATRoiPanel.styl';
 

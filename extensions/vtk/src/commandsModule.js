@@ -18,6 +18,7 @@ import setOrientationMarker, {
 import getVOIFromCornerstoneViewport from './utils/getVOIFromCornerstoneViewport';
 import volumeProperties from './utils/volumeProperties';
 import { volumeCache } from './utils/viewportDataCache';
+import { contourRenderingApi } from './utils/contourRois';
 
 const { BlendMode } = Constants;
 
@@ -482,6 +483,12 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
           });
         }
       }
+
+      // Update contour ROI data from cornerstone-tools
+      contourRenderingApi.updateAndReconstruct(
+        displaySetInstanceUID,
+        displaySet.SeriesInstanceUID
+      );
     },
   };
 

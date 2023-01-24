@@ -6,7 +6,7 @@ import TOOL_NAMES from '../toolNames';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 import SORT_ORDER from '../../constants/sortOrder';
 import sessionMap from '../../utils/sessionMap';
-import ROI_COLOR_TEMPLATES from '../roiColorTemplates';
+import { ROI_COLOR_TEMPLATES } from '../../utils';
 
 /**
  * @typedef {series[]} seriesCollection
