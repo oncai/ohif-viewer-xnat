@@ -437,7 +437,6 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       );
 
       if (ROIContourData === undefined) {
-        // ToDo: ROIContour was deleted - remove contour from tool state
         continue;
       }
 

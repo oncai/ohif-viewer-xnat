@@ -12,6 +12,7 @@ import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromV
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
 import refreshViewports from '../utils/refreshViewports';
+import removeContourRoi from '../utils/removeContourRoi';
 
 import { Icon } from '@ohif/ui';
 
@@ -314,16 +315,10 @@ export default class XNATContourPanel extends React.Component {
   }
 
   onRemoveRoiButtonClick(roiContourUid) {
-    const {
-      SeriesInstanceUID,
-      activeROIContourIndex,
-      workingCollection,
-    } = this.state;
-    modules.freehand3D.setters.deleteROIFromStructureSet(
-      SeriesInstanceUID,
-      'DEFAULT',
-      roiContourUid //workingCollection[activeROIContourIndex].metadata.uid
-    );
+    const { SeriesInstanceUID } = this.state;
+
+    removeContourRoi(SeriesInstanceUID, 'DEFAULT', roiContourUid);
+
     this.refreshRoiContourList(SeriesInstanceUID);
     refreshViewports();
   }
