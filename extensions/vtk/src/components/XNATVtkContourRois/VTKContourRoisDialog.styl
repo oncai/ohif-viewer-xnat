@@ -13,10 +13,35 @@
   .VTKContourRoisDialog
     display: flex
     flex-direction: column
-    padding: 1em
-    //width: 450px
+    padding: 1em 0.5em 1em 1em
+    //width: 350px
+    max-height: 300px
+    overflow-y: auto
+    overflow-x: hidden
+    scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
+    word-wrap: break-word
 
-    .header
+    &::-webkit-scrollbar
+      background: var(--ui-gray-darkest)
+      width: 10px
+
+    &::-webkit-scrollbar-thumb
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      border-right: 2px solid
+      border-right-color: var(--ui-gray-darkest)
+
+    .rangeContainer
+      display: flex
+      margin-bottom: 15px
+      font-size: 12px
+
+      label
+        width: 90px
+      span
+        margin: 0 10px
+
+    .dialogHeader
       display: flex
       justify-content: center
       align-items: center
@@ -36,132 +61,95 @@
         width: 18px
         height: 18px
 
-    .row
-      margin: 0
+    .collectionSection
       display: flex
-      flex-direction: row
-      justify-content: space-between
-      align-items: center
-      //height: 20px
+      flex-direction: column
+      color: var(--text-primary-color)
+      font-size: 12px
+      margin-bottom: 10px
+      width: 275px
+      border: 1px solid var(--text-secondary-color)
+      border-radius: 5px
 
-      .group
+      &:last-of-type
+        margin-bottom: 0
+
+      .collectionHeader
         display: flex
         flex-direction: row
         align-items: center
-        margin-left: 10px
+        justify-content: space-between
+        font-weight: bold
+        padding: 5px
 
-        &:first-of-type
-          margin-left: 0
+        .icons
+          display: flex
+          align-items: center
+          border-radius: 5px
 
-        svg
-          margin-right: 5px
-          user-select: none
-          pointer-events: none
+        .icon
+          cursor: pointer
+          color: var(--text-secondary-color)
+          margin-left: 15px
 
-          &.visibility
-            width: 30px
-            margin-right: 0
-            padding: 0 4px
-            border-radius: 5px
-            pointer-events: auto
-            cursor: pointer
-            color: var(--ui-gray-darkest)
-            background-color: var(--text-secondary-color)
+          &:hover
+            color: var(--hover-color)
 
-            &:hover
-              background-color: var(--default-color)
-              border: none
+        &.expanded
+          border-radius: 5px 5px 0 0
 
-          &.invisible
-            color: orangered
-            background-color: transparent
-            border: 1px solid orangered
+      .collectionTable
+        border: 1px solid var(--ui-gray-light)
 
-  .verticalLine
-    margin: 0 5px
-    &:after
-      content: ''
-      border-right: 2px solid var(--ui-border-color)
+        th
+          color: var(--text-secondary-color)
 
-  h5
-    font-size: 15px
-    font-weight: 500
-    text-align: center
-    margin: 0 0 15px 0
-    color: var(--active-color)
-    display: inline
+        button
+          border: 0
+          color: var(--text-secondary-color)
+          background-color: transparent
+          padding: 2px
+          margin: 0
+          outline: none
+          cursor: pointer
 
-  .closeButton
-    cursor: pointer
-    //margin: -8px 0 0 0
-    padding: 0
-    background-color: transparent
-    border: none
-    color: var(--ui-gray-darkest)
-    font-size: 20px
-    font-weight: normal
+          &:hover, &:active
+            color: var(--hover-color)
 
-    &:hover, &:active, &.active
-      background-color: transparent
+          svg
+            width: 16px
+            position: relative
+            top: 2px
 
-  select
-    background-color: transparent
-    border: 1px solid var(--ui-border-color)
-    border-radius: 5px
-    padding: 0 0 0 0
-    color: white
-    outline: none
-    width: 100%
-    max-width: 360px
+      select
+        padding: 0 5px
+        margin: 0 5px
+        height: 22px
+        background-color: transparent
+        border: 1px solid var(--ui-border-color)
+        color: white
+        outline: none
 
-    option, optgroup
-      background-color: var(--ui-gray)
-      color: white
-    optgroup
-      color: var(--text-secondary-color)
+        option
+          background-color: var(--ui-gray)
+          color: white
 
-  button
-    width: 140px
-    border: 0
-    border-radius: 4px
-    margin: 0 5px
-    padding: 0 12px
-    font-weight: normal
-    background-color: var(--active-color)
-    color: var(--text-primary-color)
+        &:focus
+         outline: none
 
-    &:active, &.active, &:hover
-      background-color: var(--text-secondary-color)
+    h5
+      font-weight: bold
+      font-size: 14px
+      margin: 0
 
-    &.jump
-      animation: 1.5s jump ease infinite alternate
-
-.isLoading
-  pointer-events: none
-  opacity: 0.5
-
-.dialogHandle
-  display: flex
-  justify-content: center
-  align-items: center
-  height: 48px
-  width: 38px
-  opacity: 0.5
-  color: var(--ui-gray-darkest)
-  background: var(--active-color)
-
-  svg
-    user-select: none
-    pointer-events: none
-
-//////////////////////////
-@keyframes jump
-  0%
-    //transform: scale(1)
-    box-shadow: 0 1px 2px rgba(0,0,0,.15)
-    background-color: var(--ui-state-error-text)
-
-  100%
-    //transform: scale(1.02)
-    box-shadow: 0 4px 20px rgba(0,0,0,.1)
-    background-color: var(--ui-state-error-border)
+  .roiProgressCircle
+    transform: rotate(-90deg)
+    transform-origin: 50% 50%
+  //
+  .roiColor
+    height: 18px
+    width: 18px
+    background-color: #bbb
+    border-radius: 50%
+    display: inline-block
+    vertical-align: middle

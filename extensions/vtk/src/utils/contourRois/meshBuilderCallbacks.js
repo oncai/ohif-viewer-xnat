@@ -1,58 +1,61 @@
 import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
-import OHIF from '@ohif/core';
-import { DATA_IMPORT_STATUS } from '@xnat-ohif/extension-xnat';
 import contourRenderingApi from './contourRenderingApi';
-
-const { setViewportSpecificData } = OHIF.redux.actions;
+import CONTOUR_ROI_EVENTS from './ContourRoiEvents';
 
 const onProgressUpdate = (uid, progress) => {
+  const roi = contourRenderingApi.getRoi(uid);
+  roi.meshProps.reconstructPercent = progress;
   document.dispatchEvent(
-    new CustomEvent('roimeshbuilder:progress', {
+    new CustomEvent(CONTOUR_ROI_EVENTS.MESH_PROGRESS, {
       detail: { uid, progress },
     })
   );
 };
 
 const onSuccess = (uid, result) => {
-  const roi = contourRenderingApi.getRoiByUid(uid);
-  roi.reconstruct = false;
-  roi.isReconstructed = DATA_IMPORT_STATUS.IMPORTED;
+  const roi = contourRenderingApi.getRoi(uid);
+  const meshProps = roi.meshProps;
+  meshProps.reconstruct = false;
+  meshProps.isReconstructed = true;
+  meshProps.errorMessage = '';
   const polyData = vtkPolyData.newInstance();
   polyData.getPoints().setData(result.points, 3);
   polyData.getPolys().setData(result.polys);
-  roi.polyData = polyData;
+  meshProps.polyData = polyData;
 
-  setTimeout(() => {
-    const viewports = window.store.getState().viewports;
-    const viewportSpecificData = viewports.viewportSpecificData[0];
-    let vtkContourRoisData = viewportSpecificData.vtkContourRoisData || {};
-
-    vtkContourRoisData = {
-      ...vtkContourRoisData,
-      [roi.uid]: {
-        polyData: roi.polyData,
-        color: roi.color,
-      },
-    };
-
-    for (let i = 0; i < 3; i++) {
-      window.store.dispatch(
-        setViewportSpecificData(i, {
-          vtkContourRoisData,
-        })
-      );
-    }
-  }, 3000);
+  document.dispatchEvent(
+    new CustomEvent(CONTOUR_ROI_EVENTS.MESH_READY, {
+      detail: { uid: roi.uid },
+    })
+  );
 };
 
-const onError = (uid, error) => {
-  console.error(error);
+const onError = (uid, errorMessage) => {
+  const roi = contourRenderingApi.getRoi(uid);
+  const meshProps = roi.meshProps;
+  meshProps.errorMessage = errorMessage;
+
+  document.dispatchEvent(
+    new CustomEvent(CONTOUR_ROI_EVENTS.MESH_ERROR, {
+      detail: { uid: roi.uid, errorMessage },
+    })
+  );
+};
+
+const onContourRoiCreated = (uid, contourActor) => {
+  const roi = contourRenderingApi.getRoi(uid);
+  const lineThickness = contourRenderingApi.getLineThickness();
+  // Update properties based on the global state
+  contourActor.setVisibility(roi.meshProps.visible);
+  const property = contourActor.getProperty();
+  property.setLineWidth(lineThickness);
 };
 
 const meshBuilderCallbacks = {
   onProgressUpdate,
   onSuccess,
   onError,
+  onContourRoiCreated,
 };
 
 export default meshBuilderCallbacks;

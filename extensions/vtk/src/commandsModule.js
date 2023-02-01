@@ -485,10 +485,7 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
       }
 
       // Update contour ROI data from cornerstone-tools
-      contourRenderingApi.updateAndReconstruct(
-        displaySetInstanceUID,
-        displaySet.SeriesInstanceUID
-      );
+      contourRenderingApi.init(displaySet.SeriesInstanceUID, apis);
     },
   };
 

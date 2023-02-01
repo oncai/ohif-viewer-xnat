@@ -1,6 +1,8 @@
 import registerWebWorker from 'webworker-promise/lib/register';
 import ICRPolySeg from '../lib/ICRPolySeg';
 
+const MESH_PROGRESS_EVENT = 'xnatmprcontourroi:meshprogress';
+
 registerWebWorker(async (message, emit) => {
   const { uid, pointData } = message;
 
@@ -11,15 +13,11 @@ registerWebWorker(async (message, emit) => {
   );
   const flatPointsArray = new Float32Array(dataBuffer, (numContours + 1) * 4);
 
-  // https://github.com/apache/cordova/issues/93
-  self.document = {
-    dispatchEvent: event => {
-      const percentageFinished = event.detail.percentageFinished;
-      emit('roimeshbuilder:progress', { uid, progress: percentageFinished });
-    },
+  const updateProgress = progress => {
+    emit(MESH_PROGRESS_EVENT, { uid, progress });
   };
 
-  const icrPolySeg = await ICRPolySeg();
+  const icrPolySeg = await ICRPolySeg({ updateProgress: updateProgress });
 
   const result = icrPolySeg.convert(flatPointsArray, numPointsArray);
   const { points, polys } = result;

@@ -1,44 +1,80 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import OHIF from '@ohif/core';
+import { Icon, Range } from '@ohif/ui';
+import { CONTOUR_ROI_EVENTS, contourRenderingApi } from '../../utils/contourRois';
+import ContourRoiCollection from './ContourRoiCollection';
 
 import './VTKContourRoisDialog.styl';
-import { Icon } from '@ohif/ui';
 
 class VTKContourRoisDialog extends PureComponent {
   constructor(props) {
     super(props);
 
+    this.updateLineThickness = this.updateLineThickness.bind(this);
+    this.onRoiListUpdated = this.onRoiListUpdated.bind(this);
+
     this.state = {
-      // ROI data
-      displaySetInstanceUID: 'none',
-      isLoading: false,
+      lineThickness: contourRenderingApi.getLineThickness(),
+      collectionUids: contourRenderingApi.getCollectionUids(),
     };
+
+    document.addEventListener(
+      CONTOUR_ROI_EVENTS.MESH_PROGRESS,
+      this.onRoiListUpdated
+    );
   }
 
-  componentDidMount() {
+  componentWillUnmount() {
+    document.removeEventListener(
+      CONTOUR_ROI_EVENTS.MESH_PROGRESS,
+      this.onRoiListUpdated
+    );
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  onRoiListUpdated() {
+    const collectionUids = contourRenderingApi.getCollectionUids();
+    this.setState({ collectionUids });
+  }
+
+  updateLineThickness(evt) {
+    const value = parseInt(evt.target.value);
+    contourRenderingApi.updateLineThickness(value);
+
+    this.setState({ lineThickness: value });
   }
 
   render() {
-    const {
-      isLoading,
-    } = this.state;
+    const { lineThickness, collectionUids } = this.state;
 
-    let className = 'VTKContourRoisDialogContainer';
-    if (isLoading) {
-      className += ' isLoading';
+    let content = <h5>No Contour ROIs are loaded</h5>;
+    if (collectionUids.length > 0) {
+      content = (
+        <div>
+          <div className="rangeContainer">
+            <label htmlFor="range">Line Width</label>
+            <Range
+              showValue
+              step={1}
+              min={1}
+              max={5}
+              value={lineThickness}
+              onChange={this.updateLineThickness}
+            />
+          </div>
+          {collectionUids.map(uid => (
+            <ContourRoiCollection key={uid} collectionUid={uid} />
+          ))}
+        </div>
+      );
     }
 
     return (
-      <div className={className}>
+      <div className="VTKContourRoisDialogContainer">
         <div className="VTKContourRoisDialog">
-          <div className="header">
+          <div className="dialogHeader">
             <Icon name="xnat-contour" />
           </div>
-          ROIs list
+          <div>{content}</div>
         </div>
       </div>
     );
@@ -47,9 +83,6 @@ class VTKContourRoisDialog extends PureComponent {
 
 VTKContourRoisDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
-  viewportSpecificData: PropTypes.object.isRequired,
-  activeViewportIndex: PropTypes.number.isRequired,
-  setViewportContourRoisData: PropTypes.func.isRequired,
   commandsManager: PropTypes.object,
 };
 

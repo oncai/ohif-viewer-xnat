@@ -4,13 +4,13 @@ const imagePlaneDataCache = new Map();
 
 /**
  * extractContourRoiPoints: Extracts contour ROI points in DICOM PCS
- * @param roi
+ * @param roiMeshProps
  */
-const getRoiDataArray = roi => {
+const getRoiDataArray = roiMeshProps => {
   const contourArray = [];
   const numPointsArray = [];
 
-  const contours = roi.contours;
+  const contours = roiMeshProps.contours;
   Object.keys(contours).forEach(uid => {
     const contour = contours[uid];
     const { row, col, pixDims, pos } = getImagePlaneData(contour.imageId);

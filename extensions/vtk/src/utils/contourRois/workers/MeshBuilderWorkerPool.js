@@ -37,8 +37,12 @@ class MeshBuilderWorkerPool {
             pointData,
           },
           [pointData.buffer],
-          (eventName, message) =>
-            meshBuilderCallbacks.onProgressUpdate(message.uid, message.progress)
+          async (eventName, message) => {
+            meshBuilderCallbacks.onProgressUpdate(
+              message.uid,
+              message.progress
+            );
+          }
         )
       );
       this.cancelablePromises[uid] = { promise, worker };
@@ -48,7 +52,9 @@ class MeshBuilderWorkerPool {
           meshBuilderCallbacks.onSuccess(uid, result);
         })
         .catch(error => {
-          meshBuilderCallbacks.onError(uid, error);
+          const errorMessage =
+            error.message || 'Could not reconstruct this ROI in 3D';
+          meshBuilderCallbacks.onError(uid, errorMessage);
         })
         .finally(res => {
           worker.terminate();

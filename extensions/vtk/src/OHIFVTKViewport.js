@@ -16,6 +16,11 @@ import { volumeCache, labelmapCache } from './utils/viewportDataCache';
 import { DEFAULT_MODALITY_RANGE } from './utils/constants';
 import volumeProperties from './utils/volumeProperties';
 import getModalityScalingParameters from './utils/getModalityScalingParameters';
+import {
+  contourRenderingApi,
+  CONTOUR_ROI_EVENTS,
+  meshBuilderCallbacks,
+} from './utils/contourRois';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -58,6 +63,7 @@ class OHIFVTKViewport extends Component {
     isLoaded: false,
     fusionPercentComplete: 0,
     fusionIsLoaded: false,
+    contourRois: null,
   };
 
   static propTypes = {
@@ -70,7 +76,6 @@ class OHIFVTKViewport extends Component {
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
         vtkImageFusionData: PropTypes.object,
-        vtkContourRoisData: PropTypes.object,
       }),
     }),
     viewportIndex: PropTypes.number.isRequired,
@@ -514,12 +519,6 @@ class OHIFVTKViewport extends Component {
         fusionIsLoaded = false;
       }
 
-      // Contour ROIs
-      let contourRois = {};
-      if (displaySet.vtkContourRoisData) {
-        contourRois = { ...displaySet.vtkContourRoisData };
-      }
-
       this.setState(
         {
           percentComplete: 0,
@@ -551,7 +550,6 @@ class OHIFVTKViewport extends Component {
               paintFilterLabelMapImageData: labelmapDataObject,
               paintFilterBackgroundImageData: imageDataObject.vtkImageData,
               labelmapColorLUT,
-              contourRois,
             });
           }, 200);
         }
@@ -587,7 +585,32 @@ class OHIFVTKViewport extends Component {
     }
   }
 
+  newContourRoiEventHandler = this._newContourRoiEventHandler.bind(this);
+  _newContourRoiEventHandler(evt) {
+    const { contourRois = {} } = this.state;
+
+    const roiUid = evt.detail.uid;
+    const roi = contourRenderingApi.getRoi(roiUid);
+    const meshProps = roi.meshProps;
+
+    const newContourRois = {
+      [roi.uid]: {
+        polyData: meshProps.polyData,
+        color: meshProps.color,
+      },
+      ...contourRois,
+    };
+
+    this.setState({ contourRois: newContourRois });
+  }
+
   componentDidMount() {
+    // Add event listeners
+    document.addEventListener(
+      CONTOUR_ROI_EVENTS.MESH_READY,
+      this.newContourRoiEventHandler
+    );
+
     this.setStateFromProps();
   }
 
@@ -613,10 +636,14 @@ class OHIFVTKViewport extends Component {
     ) {
       this.setStateFromProps();
     }
+  }
 
-    if (!_.isEqual(displaySet.vtkContourRoisData, prevDisplaySet.vtkContourRoisData)) {
-      this.setStateFromProps();
-    }
+  componentWillUnmount() {
+    // Remove event listeners
+    document.removeEventListener(
+      CONTOUR_ROI_EVENTS.MESH_READY,
+      this.newContourRoiEventHandler
+    );
   }
 
   updateVtkViewportApi() {
@@ -779,6 +806,7 @@ class OHIFVTKViewport extends Component {
             <ConnectedVTKViewport
               volumes={this.state.volumes}
               contourRois={this.state.contourRois}
+              onContourRoiCreated={meshBuilderCallbacks.onContourRoiCreated}
               paintFilterLabelMapImageData={
                 this.state.paintFilterLabelMapImageData
               }

@@ -73,6 +73,7 @@ export default class Polygon {
       handles: {
         points: [],
       },
+      timestamp: Date.now(),
     };
 
     if (this._sopInstanceUid) {

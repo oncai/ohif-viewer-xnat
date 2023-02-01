@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import OHIF from '@ohif/core';
 import { ToolbarButton } from '@ohif/ui';
-import ConnectedVTKContourRoisDialog from './ConnectedVTKContourRoisDialog';
+import VTKContourRoisDialog from './VTKContourRoisDialog';
 import volumeProperties from '../../utils/volumeProperties';
 
 const { setViewportSpecificData } = OHIF.redux.actions;
@@ -39,21 +39,21 @@ class VTKContourRoisButton extends PureComponent {
 
     const { isActive } = this.state;
 
-    if (!isActive) {
-      // Wait until the background image is fully loaded
-      const displaySetInstanceUID = this._viewportSpecificData
-        .displaySetInstanceUID;
-      if (!volumeProperties.getProperties(displaySetInstanceUID)) {
-        if (UINotificationService) {
-          UINotificationService.show({
-            title: 'Contour ROIs',
-            message: 'Please wait until the image is fully loaded.',
-            type: 'info',
-          });
-        }
-        return;
-      }
-    }
+    // if (!isActive) {
+    //   // Wait until the background image is fully loaded
+    //   const displaySetInstanceUID = this._viewportSpecificData
+    //     .displaySetInstanceUID;
+    //   if (!volumeProperties.getProperties(displaySetInstanceUID)) {
+    //     if (UINotificationService) {
+    //       UINotificationService.show({
+    //         title: 'Contour ROIs',
+    //         message: 'Please wait until the image is fully loaded.',
+    //         type: 'info',
+    //       });
+    //     }
+    //     return;
+    //   }
+    // }
 
     if (isActive) {
       UIDialogService.dismiss({ id: DIALOG_ID });
@@ -64,7 +64,7 @@ class VTKContourRoisButton extends PureComponent {
         .getBoundingClientRect();
       UIDialogService.create({
         id: DIALOG_ID,
-        content: ConnectedVTKContourRoisDialog,
+        content: VTKContourRoisDialog,
         contentProps: {
           onClose: this.toggleActive,
           commandsManager: commandsManager,

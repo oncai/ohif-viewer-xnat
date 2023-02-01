@@ -271,6 +271,21 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     ROIContour.loadFunc = options.loadFunc;
   }
 
+  // Set mesh properties
+  const previousMeshProps = options.meshProps || {};
+  ROIContour.meshProps = {
+    visible: true,
+    color: [1, 1, 1, 1],
+    isReconstructed: false,
+    //
+    contours: {},
+    errorMessage: '',
+    reconstructPercent: 0,
+    // pointData: undefined,
+    // polyData: undefined,
+    ...previousMeshProps,
+  };
+
   structureSet.ROIContourCollection.push(ROIContour);
 
   return ROIContour.uid;
