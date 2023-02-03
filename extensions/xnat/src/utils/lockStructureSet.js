@@ -63,6 +63,7 @@ export default function(
           polygonCount: oldROIContour.polygonCount,
           color: oldROIContour.color,
           colorTemplates: oldROIContour.colorTemplates,
+          meshProps: oldROIContour.meshProps,
         }
       );
 

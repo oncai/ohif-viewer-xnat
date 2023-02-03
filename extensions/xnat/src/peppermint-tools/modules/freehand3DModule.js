@@ -281,8 +281,6 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     contours: {},
     errorMessage: '',
     reconstructPercent: 0,
-    // pointData: undefined,
-    // polyData: undefined,
     ...previousMeshProps,
   };
 
