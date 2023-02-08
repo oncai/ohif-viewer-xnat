@@ -1,7 +1,7 @@
 import React from 'react';
 import ImageMeasurement from './ImageMeasurement';
 import { XNATToolTypes } from '../../../../measurement-tools';
-import FormattedValue from './utils/FormattedValue';
+import { FormattedValue } from '../../../../../elements';
 
 export default class XNATAngle extends ImageMeasurement {
   static get genericToolType() {

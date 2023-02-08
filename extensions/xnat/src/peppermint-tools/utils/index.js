@@ -4,6 +4,8 @@ import generateSegmentationMetadata from './generateSegmentationMetadata.js';
 import generateUID from './generateUID.js';
 import GeneralAnatomyList from './GeneralAnatomyList.js';
 import removeEmptyLabelmaps2D from './removeEmptyLabelmaps2D.js';
+import calculateContourArea from './calculateContourArea';
+import calculateContourRoiVolume from './calculateContourRoiVolume';
 
 export {
   Polygon,
@@ -12,4 +14,6 @@ export {
   generateUID,
   GeneralAnatomyList,
   removeEmptyLabelmaps2D,
+  calculateContourArea,
+  calculateContourRoiVolume,
 };

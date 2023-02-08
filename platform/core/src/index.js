@@ -20,6 +20,7 @@ import ui from './ui';
 import user from './user.js';
 import errorHandler from './errorHandler.js';
 import utils, { hotkeys } from './utils/';
+import { ReconstructionIssues } from './enums';
 
 import {
   UINotificationService,
@@ -62,6 +63,8 @@ const OHIF = {
   UIDialogService,
   MeasurementService,
   LoggerService,
+  //
+  ReconstructionIssues,
 };
 
 export {

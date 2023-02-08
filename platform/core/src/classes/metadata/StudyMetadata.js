@@ -859,14 +859,16 @@ const makeDisplaySet = (series, instances) => {
   imageSet.numberOfImagesPerSubset =
     displayReconstructableInfo.numberOfImagesPerSubset;
 
+  const datasetIs4D = displayReconstructableInfo.reconstructionIssues.includes(
+    ReconstructionIssues.DATASET_4D
+  );
+
   let displaySpacingInfo = undefined;
   if (shallSort && imageSet.isReconstructable) {
     // sort images by image position
-    imageSet.sortByImagePositionPatient();
+    imageSet.sliceSpacingFirstFrame = imageSet.sortByImagePositionPatient();
 
     // check if the spacing is uniform and update isReconstructable
-    const datasetIs4D = displayReconstructableInfo.reconstructionIssues.find
-      (issue => issue === ReconstructionIssues.DATASET_4D);
     displaySpacingInfo = isSpacingUniform(imageSet.images, datasetIs4D);
     imageSet.isReconstructable = displaySpacingInfo.isUniform;
 
@@ -877,11 +879,13 @@ const makeDisplaySet = (series, instances) => {
     }
   }
 
-  if (!imageSet.displayReconstructableInfo) {
-    // It is not reconstrabale Save type of warning
-    imageSet.reconstructionIssues = displaySpacingInfo ?
-      displayReconstructableInfo.reconstructionIssues.concat(displaySpacingInfo.reconstructionIssues) :
-        displayReconstructableInfo.reconstructionIssues;
+  if (displaySpacingInfo) {
+    imageSet.reconstructionIssues = displayReconstructableInfo.reconstructionIssues.concat(
+      displaySpacingInfo.reconstructionIssues
+    );
+  } else {
+    imageSet.reconstructionIssues =
+      displayReconstructableInfo.reconstructionIssues;
   }
 
   // Optional slice display and download order

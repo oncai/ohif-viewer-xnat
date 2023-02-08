@@ -5,12 +5,18 @@ import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import showModal from '../common/showModal.js';
 import LabelEditModal from '../common/LabelEditModal.js';
-import { ROIContourColorPicker } from '../../elements';
-import { refreshViewports, ROI_COLOR_TEMPLATES } from '../../utils';
+import { ROIContourColorPicker, FormattedValue } from '../../elements';
+import {
+  refreshViewports,
+  ROI_COLOR_TEMPLATES,
+  XNAT_EVENTS,
+} from '../../utils';
 
 import '../XNATRoiPanel.styl';
 
 const modules = store.modules;
+
+const volumeUnit = `cm${String.fromCharCode(179)}`;
 
 /**
  * @class WorkingCollectionListItem - Renders metadata for the working
@@ -46,14 +52,45 @@ export default class WorkingCollectionListItem extends React.Component {
     this.onUpdateLabel = this.onUpdateLabel.bind(this);
     this.onUpdateColor = this.onUpdateColor.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
+    this.eventListenerHandler = this.eventListenerHandler.bind(this);
 
-    const { visible, name, color } = this.props.metadata;
+    const { visible, name, color, stats } = this.props.metadata;
 
     this.state = {
       visible,
       name,
       color,
+      volumeCm3: stats.volumeCm3,
     };
+
+    this.addEventListeners();
+  }
+
+  componentWillUnmount() {
+    this.removeEventListeners();
+  }
+
+  addEventListeners() {
+    this.removeEventListeners();
+
+    document.addEventListener(
+      XNAT_EVENTS.CONTOUR_COMPLETED,
+      this.eventListenerHandler
+    );
+  }
+
+  removeEventListeners() {
+    document.removeEventListener(
+      XNAT_EVENTS.CONTOUR_COMPLETED,
+      this.eventListenerHandler
+    );
+  }
+
+  eventListenerHandler(evt) {
+    const { uid, stats } = this.props.metadata;
+    if (evt.detail.roiContourUid === uid) {
+      this.setState({ volumeCm3: stats.volumeCm3 });
+    }
   }
 
   onUpdateLabel(data) {
@@ -150,7 +187,7 @@ export default class WorkingCollectionListItem extends React.Component {
     const name = metadata.name;
     const polygonCount = metadata.polygonCount;
 
-    const { visible, color } = this.state;
+    const { visible, color, volumeCm3 } = this.state;
     const showHideIcon = visible ? (
       <Icon name="eye" width="13px" height="13px" />
     ) : (
@@ -181,6 +218,14 @@ export default class WorkingCollectionListItem extends React.Component {
                 <Icon name="xnat-pencil" />
               </span>
             </a>
+            {volumeCm3 !== undefined && (
+              <FormattedValue
+                prefix={'Volume'}
+                value={volumeCm3}
+                suffix={volumeUnit}
+                sameLine={true}
+              />
+            )}
           </div>
         </td>
         <td className="centered-cell">

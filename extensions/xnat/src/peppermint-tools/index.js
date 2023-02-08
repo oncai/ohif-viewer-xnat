@@ -24,6 +24,8 @@ import {
   removeEmptyLabelmaps2D,
 } from './utils';
 
+import initXNATRoi from './init';
+
 export {
   PEPPERMINT_TOOL_NAMES,
   /* Modules */
@@ -47,4 +49,6 @@ export {
   generateUID,
   GeneralAnatomyList,
   removeEmptyLabelmaps2D,
+  // Initialization
+  initXNATRoi,
 };

@@ -284,6 +284,14 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
     ...previousMeshProps,
   };
 
+  // Set stats
+  const previousStats = options.stats || {};
+  ROIContour.stats = {
+    areas: {}, // Contour areas
+    volumeCm3: undefined,
+    ...previousStats,
+  };
+
   structureSet.ROIContourCollection.push(ROIContour);
 
   return ROIContour.uid;

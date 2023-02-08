@@ -109,6 +109,14 @@ class ImageSet {
     images.sort(function(a, b) {
       return sortedImages.indexOf(a) - sortedImages.indexOf(b);
     });
+
+    // Slice spacing of the first frame
+    const distance = Math.abs(
+      distanceImagePairs[0].distance - distanceImagePairs[1].distance
+    );
+    const sliceSpacingFirstFrame = parseFloat(distance.toFixed(6));
+
+    return sliceSpacingFirstFrame;
   }
 }
 

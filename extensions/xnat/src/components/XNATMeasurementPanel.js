@@ -4,17 +4,15 @@ import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
 import MenuIOButtons from './common/MenuIOButtons.js';
 import onIOCancel from './common/helpers/onIOCancel';
-import { Icon } from '@ohif/ui';
 import {
   xnatMeasurementApi,
   MeasurementWorkingCollection,
   MeasurementImportedCollection,
   MeasurementExportMenu,
   MeasurementImportMenu,
-  XNAT_EVENTS,
   assignViewportParameters,
 } from '../XNATMeasurement';
-import refreshViewports from '../utils/refreshViewports';
+import { refreshViewports, XNAT_EVENTS } from '../utils';
 
 import './XNATRoiPanel.styl';
 

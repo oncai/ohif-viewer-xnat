@@ -5,7 +5,7 @@ import {
   MeasurementImportMenu,
 } from './components';
 import initXNATMeasurement from './init';
-import { xnatMeasurementApi, XNAT_EVENTS } from './api';
+import { xnatMeasurementApi } from './api';
 import assignViewportParameters from './utils/assignViewportParameters';
 
 export {
@@ -18,7 +18,6 @@ export {
   initXNATMeasurement,
   // API
   xnatMeasurementApi,
-  XNAT_EVENTS,
   // Utils
   assignViewportParameters,
 };

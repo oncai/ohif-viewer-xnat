@@ -98,7 +98,9 @@ function processSingleframe(instances) {
       reconstructionIssues.push(ReconstructionIssues.VARYING_IMAGESDIMENSIONS);
     } else if (SamplesPerPixel !== firstImageSamplesPerPixel) {
       reconstructionIssues.push(ReconstructionIssues.VARYING_IMAGESCOMPONENTS);
-    } else if (!_isSameArray(ImageOrientationPatient, firstImageOrientationPatient)) {
+    } else if (
+      !_isSameArray(ImageOrientationPatient, firstImageOrientationPatient)
+    ) {
       reconstructionIssues.push(ReconstructionIssues.VARYING_IMAGESORIENTATION);
     }
 
@@ -115,7 +117,7 @@ function processSingleframe(instances) {
   }
 
   return {
-    isReconstructable: reconstructionIssues.length === 0 ? true : false,
+    isReconstructable: reconstructionIssues.length === 0,
     reconstructionIssues,
     numberOfImagesPerSubset,
   };
@@ -125,8 +127,8 @@ function processSingleframe(instances) {
  *  Check is the spacing is uniform.
  *  The input metadata array has to be ordered by image position.
  *
- * @param {Object[]} An array of `OHIFInstanceMetadata` objects.
- * @param {boolean} is the dataset 4D.
+ * @param instances {Object[]} An array of `OHIFInstanceMetadata` objects.
+ * @param datasetIs4D {boolean} is the dataset 4D.
  *
  * @returns {Object} isUniform, reconstructionIssues and missingFrames
  */
@@ -142,14 +144,12 @@ function isSpacingUniform(instances, datasetIs4D) {
   // If spacing is on a uniform grid but we are missing frames,
   // Allow reconstruction, but pass back the number of missing frames.
   if (n > 2) {
-    const lastIpp = instances[n - 1].getData().metadata
-      .ImagePositionPatient;
+    const lastIpp = instances[n - 1].getData().metadata.ImagePositionPatient;
 
     // We can't reconstruct if we are missing ImagePositionPatient values
     if (firstImagePositionPatient && lastIpp) {
       const averageSpacingBetweenFrames =
-        _getPerpendicularDistance(firstImagePositionPatient, lastIpp) /
-        (n - 1);
+        _getPerpendicularDistance(firstImagePositionPatient, lastIpp) / (n - 1);
 
       let previousImagePositionPatient = firstImagePositionPatient;
 
@@ -162,7 +162,7 @@ function isSpacingUniform(instances, datasetIs4D) {
           previousImagePositionPatient
         );
 
-        if (datasetIs4D && spacingBetweenFrames < 1.e-3) {
+        if (datasetIs4D && spacingBetweenFrames < 1e-3) {
           // the dataset is 4D, if the distance is zero, means that we are
           // checking the 4th dimension. Do not return, since we want still to
           // check the 3rd dimension spacing.
@@ -190,9 +190,12 @@ function isSpacingUniform(instances, datasetIs4D) {
     }
   }
 
-  return { isUniform: reconstructionIssues.length === 0 ? true : false, missingFrames, reconstructionIssues };
+  return {
+    isUniform: reconstructionIssues.length === 0,
+    missingFrames,
+    reconstructionIssues,
+  };
 }
-
 
 /**
  *  Check if 4D dataset.
@@ -303,8 +306,8 @@ function _getSpacingIssue(spacing, averageSpacing) {
 function _getPerpendicularDistance(a, b) {
   return Math.sqrt(
     Math.pow(a[0] - b[0], 2) +
-    Math.pow(a[1] - b[1], 2) +
-    Math.pow(a[2] - b[2], 2)
+      Math.pow(a[1] - b[1], 2) +
+      Math.pow(a[2] - b[2], 2)
   );
 }
 

@@ -10,7 +10,7 @@ import {
   refreshToolStateManager,
   getAnatomyCoding,
 } from '../utils';
-import XNAT_EVENTS from './XNATEvents';
+import { XNAT_EVENTS } from '../../utils';
 import showModal from '../../components/common/showModal';
 import MeasurementPropertyModal from '../components/MeasurementPropertyModal/MeasurementPropertyModal';
 import { XNATToolTypes } from '../measurement-tools';

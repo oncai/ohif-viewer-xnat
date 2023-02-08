@@ -11,8 +11,7 @@ import onIOCancel from './common/helpers/onIOCancel.js';
 import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromViewport';
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
-import refreshViewports from '../utils/refreshViewports';
-import removeContourRoi from '../utils/removeContourRoi';
+import { refreshViewports, removeContourRoi, XNAT_EVENTS } from '../utils';
 
 import { Icon } from '@ohif/ui';
 
@@ -124,20 +123,18 @@ export default class XNATContourPanel extends React.Component {
   addEventListeners() {
     this.removeEventListeners();
 
-    csTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.addEventListener(
-        csTools.EVENTS.MEASUREMENT_REMOVED,
-        this.cornerstoneEventListenerHandler
-      );
-      enabledElement.addEventListener(
-        csTools.EVENTS.MEASUREMENT_ADDED,
-        this.cornerstoneEventListenerHandler
-      );
-      enabledElement.addEventListener(
-        'peppermintinterpolateevent',
-        this.cornerstoneEventListenerHandler
-      );
-    });
+    document.addEventListener(
+      XNAT_EVENTS.CONTOUR_ADDED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.addEventListener(
+      XNAT_EVENTS.CONTOUR_REMOVED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.addEventListener(
+      XNAT_EVENTS.CONTOUR_INTERPOLATED,
+      this.cornerstoneEventListenerHandler
+    );
     document.addEventListener(
       'finishedcontourimportusingmodalevent',
       this.cornerstoneEventListenerHandler
@@ -149,20 +146,18 @@ export default class XNATContourPanel extends React.Component {
   }
 
   removeEventListeners() {
-    csTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.removeEventListener(
-        csTools.EVENTS.MEASUREMENT_REMOVED,
-        this.cornerstoneEventListenerHandler
-      );
-      enabledElement.removeEventListener(
-        csTools.EVENTS.MEASUREMENT_ADDED,
-        this.cornerstoneEventListenerHandler
-      );
-      enabledElement.removeEventListener(
-        'peppermintinterpolateevent',
-        this.cornerstoneEventListenerHandler
-      );
-    });
+    document.removeEventListener(
+      XNAT_EVENTS.CONTOUR_ADDED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.removeEventListener(
+      XNAT_EVENTS.CONTOUR_REMOVED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.removeEventListener(
+      XNAT_EVENTS.CONTOUR_INTERPOLATED,
+      this.cornerstoneEventListenerHandler
+    );
     document.removeEventListener(
       'finishedcontourimportusingmodalevent',
       this.cornerstoneEventListenerHandler

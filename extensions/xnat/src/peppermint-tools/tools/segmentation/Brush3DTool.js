@@ -81,7 +81,6 @@ export default class Brush3DTool extends BrushTool {
         metadata
       );
 
-      console.log('TRIGGERING EVENT');
       triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
     }
   }

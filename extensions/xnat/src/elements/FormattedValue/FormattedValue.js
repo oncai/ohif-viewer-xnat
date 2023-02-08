@@ -1,11 +1,13 @@
 import React from 'react';
 
-const FormattedValue = ({ prefix, value, suffix }) => {
+const FormattedValue = ({ prefix, value, suffix, sameLine }) => {
+  const style = { color: 'var(--text-secondary-color)' };
+  if (!sameLine) {
+    style.display = 'block';
+  }
   return (
     <div>
-      {prefix && (
-        <span style={{ color: 'var(--text-secondary-color)', display: 'block' }}>{prefix} </span>
-      )}
+      {prefix && <span style={style}>{prefix} </span>}
       <span>{_numbersWithCommas(value)}</span>
       {suffix && (
         <span style={{ color: 'var(--text-secondary-color)' }}> {suffix}</span>
