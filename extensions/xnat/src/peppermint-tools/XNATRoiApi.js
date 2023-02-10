@@ -1,10 +1,16 @@
 import cornerstone from 'cornerstone-core';
+import {
+  globalImageIdSpecificToolStateManager,
+  getToolState,
+} from 'cornerstone-tools';
 import OHIF from '@ohif/core';
 import TOOL_NAMES from './toolNames';
 import { XNAT_EVENTS } from '../utils';
 import { calculateContourArea, calculateContourRoiVolume } from './utils';
 
 const { studyMetadataManager } = OHIF.utils;
+
+const globalToolStateManager = globalImageIdSpecificToolStateManager;
 
 const triggerEvent = (type, detail) => {
   document.dispatchEvent(
@@ -109,15 +115,71 @@ class XNATRoiApi {
 
     if (this.isContourRoiTool && this.isContourRoiTool(eventData.toolName)) {
       const measurementData = eventData.measurementData;
-      const stats = measurementData.referencedROIContour.stats;
-      delete stats[measurementData.uid];
+      const referencedROIContour = measurementData.referencedROIContour;
+      const stats = referencedROIContour.stats;
+      delete stats.areas[measurementData.uid];
 
-      triggerEvent(XNAT_EVENTS.CONTOUR_REMOVED, {});
+      if (stats.canCalculateVolume) {
+        stats.volumeCm3 = calculateContourRoiVolume(
+          Object.values(stats.areas),
+          stats.sliceSpacingFirstFrame
+        );
+      }
+
+      triggerEvent(XNAT_EVENTS.CONTOUR_REMOVED, {
+        roiContourUid: referencedROIContour.uid,
+      });
     }
   }
 
   onContourRoiInterpolated(event) {
-    triggerEvent(XNAT_EVENTS.CONTOUR_INTERPOLATED, {});
+    const eventData = event.detail;
+    const measurementData = eventData.measurementData;
+    if (!measurementData || !measurementData.referencedStructureSet) {
+      return;
+    }
+
+    const referencedROIContour = measurementData.referencedROIContour;
+    const stats = referencedROIContour.stats;
+
+    if (!stats.canCalculateVolume) {
+      return;
+    }
+
+    const image = cornerstone.getEnabledElement(eventData.element).image;
+    const { columnPixelSpacing, rowPixelSpacing } = image;
+    const scaling = (columnPixelSpacing || 1) * (rowPixelSpacing || 1);
+
+    const stackToolState = getToolState(eventData.element, 'stack');
+    const imageIds = stackToolState.data[0].imageIds;
+    const toolStateManager = globalToolStateManager.saveToolState();
+    const roiContourUid = referencedROIContour.uid;
+
+    for (let i = 0; i < imageIds.length; i++) {
+      const imageId = imageIds[i];
+      const imageToolState = toolStateManager[imageId];
+
+      if (!imageToolState || !imageToolState[TOOL_NAMES.FREEHAND_ROI_3D_TOOL]) {
+        continue;
+      }
+
+      const interpolatedContours = imageToolState[
+        TOOL_NAMES.FREEHAND_ROI_3D_TOOL
+      ].data.filter(contour => {
+        return contour.interpolated && contour.ROIContourUid === roiContourUid;
+      });
+
+      interpolatedContours.forEach(contour => {
+        const area = calculateContourArea(contour.handles.points, scaling);
+        stats.areas[contour.uid] = area;
+        contour.area = area;
+      });
+    }
+
+    stats.volumeCm3 = calculateContourRoiVolume(
+      Object.values(stats.areas),
+      stats.sliceSpacingFirstFrame
+    );
   }
 
   getDisplaySetInfo(SeriesInstanceUID) {

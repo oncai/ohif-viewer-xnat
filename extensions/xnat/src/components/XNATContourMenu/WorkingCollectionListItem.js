@@ -77,11 +77,19 @@ export default class WorkingCollectionListItem extends React.Component {
       XNAT_EVENTS.CONTOUR_COMPLETED,
       this.eventListenerHandler
     );
+    document.addEventListener(
+      XNAT_EVENTS.CONTOUR_REMOVED,
+      this.eventListenerHandler
+    );
   }
 
   removeEventListeners() {
     document.removeEventListener(
       XNAT_EVENTS.CONTOUR_COMPLETED,
+      this.eventListenerHandler
+    );
+    document.removeEventListener(
+      XNAT_EVENTS.CONTOUR_REMOVED,
       this.eventListenerHandler
     );
   }
@@ -218,7 +226,7 @@ export default class WorkingCollectionListItem extends React.Component {
                 <Icon name="xnat-pencil" />
               </span>
             </a>
-            {volumeCm3 !== undefined && (
+            {volumeCm3 !== 0 && (
               <FormattedValue
                 prefix={'Volume'}
                 value={volumeCm3}

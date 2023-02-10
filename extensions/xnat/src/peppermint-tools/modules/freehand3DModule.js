@@ -288,7 +288,7 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
   const previousStats = options.stats || {};
   ROIContour.stats = {
     areas: {}, // Contour areas
-    volumeCm3: undefined,
+    volumeCm3: 0,
     ...previousStats,
   };
 

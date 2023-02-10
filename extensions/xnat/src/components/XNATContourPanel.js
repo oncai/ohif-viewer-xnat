@@ -128,14 +128,6 @@ export default class XNATContourPanel extends React.Component {
       this.cornerstoneEventListenerHandler
     );
     document.addEventListener(
-      XNAT_EVENTS.CONTOUR_REMOVED,
-      this.cornerstoneEventListenerHandler
-    );
-    document.addEventListener(
-      XNAT_EVENTS.CONTOUR_INTERPOLATED,
-      this.cornerstoneEventListenerHandler
-    );
-    document.addEventListener(
       'finishedcontourimportusingmodalevent',
       this.cornerstoneEventListenerHandler
     );
@@ -148,14 +140,6 @@ export default class XNATContourPanel extends React.Component {
   removeEventListeners() {
     document.removeEventListener(
       XNAT_EVENTS.CONTOUR_ADDED,
-      this.cornerstoneEventListenerHandler
-    );
-    document.removeEventListener(
-      XNAT_EVENTS.CONTOUR_REMOVED,
-      this.cornerstoneEventListenerHandler
-    );
-    document.removeEventListener(
-      XNAT_EVENTS.CONTOUR_INTERPOLATED,
       this.cornerstoneEventListenerHandler
     );
     document.removeEventListener(

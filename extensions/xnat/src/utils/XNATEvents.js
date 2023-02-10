@@ -5,6 +5,7 @@ const XNAT_EVENTS = {
   CONTOUR_COMPLETED: 'xnatcontourcompleted',
   CONTOUR_REMOVED: 'xnatcontourremoved',
   CONTOUR_INTERPOLATED: 'xnatcontourinterpolateevent',
+  PEPPERMINT_INTERPOLATE_EVENT: 'peppermintinterpolateevent',
   // Measurement Annotation
   MEASUREMENT_ADDED: 'xnatmeasurementadded',
   MEASUREMENT_MODIFIED: 'xnatmeasurementmodified',

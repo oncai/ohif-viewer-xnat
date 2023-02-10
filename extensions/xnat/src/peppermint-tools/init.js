@@ -1,6 +1,5 @@
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
-
 import xnatRoiApi from './XNATRoiApi';
 import PEPPERMINT_TOOL_NAMES from './toolNames.js';
 import { freehand3DModule, extendSegmentationModule } from './modules';
@@ -17,6 +16,7 @@ import {
   XNATCorrectionScissorsTool,
 } from './tools';
 import { handleContourContextMenu } from '../components/ContourContextMenu';
+import { XNAT_EVENTS } from '../utils';
 
 const { store, register, addTool, EVENTS: CS_EVENTS } = cornerstoneTools;
 const { modules } = store;
@@ -100,7 +100,7 @@ const registerEventHandlers = () => {
       onContourRoiCompleted
     );
     element.addEventListener(
-      'peppermintinterpolateevent',
+      XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT,
       onContourRoiInterpolated
     );
   };
@@ -117,7 +117,7 @@ const registerEventHandlers = () => {
       onContourRoiCompleted
     );
     element.removeEventListener(
-      'peppermintinterpolateevent',
+      XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT,
       onContourRoiInterpolated
     );
   };

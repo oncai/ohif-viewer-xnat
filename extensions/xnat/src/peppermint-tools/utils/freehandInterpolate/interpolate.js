@@ -3,6 +3,7 @@ import TOOL_NAMES from '../../toolNames';
 import Polygon from '../classes/Polygon.js';
 import generateUID from '../generateUID.js';
 import generateInterpolationData from './generateInterpolationData.js';
+import { XNAT_EVENTS } from '../../../utils';
 
 const { globalImageIdSpecificToolStateManager, store } = cornerstoneTools;
 
@@ -38,7 +39,10 @@ export default function(toolData, element) {
   }
 
   if (interpolationList.length > 0) {
-    triggerEvent(element, 'peppermintinterpolateevent', {});
+    triggerEvent(element, XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT, {
+      measurementData: toolData,
+      element,
+    });
   }
 }
 

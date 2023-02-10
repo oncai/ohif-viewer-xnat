@@ -10,6 +10,8 @@ import refreshViewports from '../../utils/refreshViewports';
 
 const modules = csTools.store.modules;
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
+const triggerEvent = csTools.importInternal('util/triggerEvent');
+const EVENTS = csTools.EVENTS;
 
 const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
@@ -89,6 +91,10 @@ function handleContourContextMenu(event, callbackData) {
           series.uid
         );
 
+        if (!roiContour) {
+          return;
+        }
+
         const polygon = new Polygon(
           copiedData.points,
           null,
@@ -117,15 +123,22 @@ function handleContourContextMenu(event, callbackData) {
           imageToolState[FREEHAND_ROI_3D_TOOL].data = [];
         }
 
-        imageToolState[FREEHAND_ROI_3D_TOOL].data.push(
-          polygon.getFreehandToolData(false)
-        );
+        const measurementData = polygon.getFreehandToolData(false);
+        imageToolState[FREEHAND_ROI_3D_TOOL].data.push(measurementData);
 
         modules.freehand3D.setters.incrementPolygonCount(
           copiedData.seriesInstanceUid,
           copiedData.structureSetUid,
-          roiContour.uid //copiedData.ROIContourUid
+          roiContour.uid
         );
+
+        const element = eventData.element;
+        triggerEvent(element, EVENTS.MEASUREMENT_COMPLETED, {
+          toolName: FREEHAND_ROI_3D_TOOL,
+          toolType: FREEHAND_ROI_3D_TOOL, // Deprecated
+          element,
+          measurementData,
+        });
 
         refreshViewports();
       },
