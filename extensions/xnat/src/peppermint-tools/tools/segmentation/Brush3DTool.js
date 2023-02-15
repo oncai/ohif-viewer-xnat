@@ -1,14 +1,14 @@
 import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
-import generateSegmentationMetadata from '../../utils/generateSegmentationMetadata.js';
 import TOOL_NAMES from '../../toolNames';
+import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
+import triggerSegmentCompletedEvent from './triggerSegmentCompletedEvent';
 
 const { BrushTool } = cornerstoneTools;
 const { getCircle, drawBrushPixels } = cornerstoneTools.importInternal(
   'util/segmentationUtils'
 );
 const segmentationModule = cornerstoneTools.getModule('segmentation');
-const triggerEvent = cornerstoneTools.importInternal('util/triggerEvent');
 
 export default class Brush3DTool extends BrushTool {
   constructor(props = {}) {
@@ -28,6 +28,13 @@ export default class Brush3DTool extends BrushTool {
 
   touchEndCallback(evt) {
     this._endPainting(evt);
+  }
+
+  _endPainting(evt) {
+    super._endPainting(evt);
+
+    const eventData = evt.detail;
+    triggerSegmentCompletedEvent(eventData.element);
   }
 
   /**
@@ -66,23 +73,7 @@ export default class Brush3DTool extends BrushTool {
       this.paintEventData.previousPixelData = previousPixelData;
     }
 
-    let segmentIndex = labelmap3D.activeSegmentIndex;
-    let metadata = labelmap3D.metadata[segmentIndex];
-
-    if (!metadata) {
-      metadata = generateSegmentationMetadata('Unnamed Segment');
-
-      segmentIndex = labelmap3D.activeSegmentIndex = 1;
-
-      segmentationModule.setters.metadata(
-        element,
-        activeLabelmapIndex,
-        segmentIndex,
-        metadata
-      );
-
-      triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
-    }
+    triggerSegmentGenerationEvent(element);
   }
 
   /**

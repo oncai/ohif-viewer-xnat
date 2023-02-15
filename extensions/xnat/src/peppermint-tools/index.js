@@ -13,6 +13,7 @@ import {
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
   XNATCorrectionScissorsTool,
+  triggerSegmentCompletedEvent
 } from './tools';
 
 import {
@@ -51,4 +52,6 @@ export {
   removeEmptyLabelmaps2D,
   // Initialization
   initXNATRoi,
+  // Events
+  triggerSegmentCompletedEvent,
 };

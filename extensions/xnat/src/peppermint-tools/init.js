@@ -65,6 +65,7 @@ const getDefaultConfiguration = () => {
 };
 
 const ROI_ACTION_MAP = {
+  // Contours
   contourAdded: event => {
     xnatRoiApi.onContourRoiAdded(event);
   },
@@ -77,6 +78,13 @@ const ROI_ACTION_MAP = {
   contourInterpolated: event => {
     xnatRoiApi.onContourRoiInterpolated(event);
   },
+  // Labelmaps
+  labelmapAdded: event => {
+    xnatRoiApi.onLabelmapAdded(event);
+  },
+  labelmapCompleted: event => {
+    xnatRoiApi.onLabelmapCompleted(event);
+  },
 };
 
 const registerEventHandlers = () => {
@@ -87,6 +95,8 @@ const registerEventHandlers = () => {
   const onContourRoiRemoved = onRoiEvent.bind(this, 'contourRemoved');
   const onContourRoiCompleted = onRoiEvent.bind(this, 'contourCompleted');
   const onContourRoiInterpolated = onRoiEvent.bind(this, 'contourInterpolated');
+  const onLabelmapAdded = onRoiEvent.bind(this, 'labelmapAdded');
+  const onLabelmapCompleted = onRoiEvent.bind(this, 'labelmapCompleted');
 
   const elementEnabledHandler = evt => {
     const element = evt.detail.element;
@@ -102,6 +112,14 @@ const registerEventHandlers = () => {
     element.addEventListener(
       XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT,
       onContourRoiInterpolated
+    );
+    element.addEventListener(
+      XNAT_EVENTS.PEPPERMINT_SEGMENT_GENERATION_EVENT,
+      onLabelmapAdded
+    );
+    element.addEventListener(
+      XNAT_EVENTS.PEPPERMINT_SEGMENT_COMPLETE_EVENT,
+      onLabelmapCompleted
     );
   };
 
@@ -119,6 +137,14 @@ const registerEventHandlers = () => {
     element.removeEventListener(
       XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT,
       onContourRoiInterpolated
+    );
+    element.removeEventListener(
+      XNAT_EVENTS.PEPPERMINT_SEGMENT_GENERATION_EVENT,
+      onLabelmapAdded
+    );
+    element.removeEventListener(
+      XNAT_EVENTS.PEPPERMINT_SEGMENT_COMPLETE_EVENT,
+      onLabelmapCompleted
     );
   };
 

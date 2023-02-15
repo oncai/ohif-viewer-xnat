@@ -5,7 +5,7 @@ const calculateContourRoiVolume = (areas, sliceSpacing) => {
 
   const volumeCm3 = totalArea * sliceSpacing * 0.001;
 
-  return parseFloat(volumeCm3.toFixed(2));
+  return parseFloat(volumeCm3.toFixed(3));
 };
 
 export default calculateContourRoiVolume;

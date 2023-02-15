@@ -10,13 +10,12 @@ import {
   refreshViewports,
   ROI_COLOR_TEMPLATES,
   XNAT_EVENTS,
+  RoiMeasurementUnits,
 } from '../../utils';
 
 import '../XNATRoiPanel.styl';
 
 const modules = store.modules;
-
-const volumeUnit = `cm${String.fromCharCode(179)}`;
 
 /**
  * @class WorkingCollectionListItem - Renders metadata for the working
@@ -230,7 +229,7 @@ export default class WorkingCollectionListItem extends React.Component {
               <FormattedValue
                 prefix={'Volume'}
                 value={volumeCm3}
-                suffix={volumeUnit}
+                suffix={RoiMeasurementUnits.VOLUME_CM_3}
                 sameLine={true}
               />
             )}

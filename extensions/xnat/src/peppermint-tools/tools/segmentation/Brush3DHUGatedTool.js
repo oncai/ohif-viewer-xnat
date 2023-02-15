@@ -90,10 +90,6 @@ export default class Brush3DHUGatedTool extends Brush3DTool {
       this._setProbabilityOfFractionalTo100(pointerArray, rows, columns);
     }
 
-    cornerstone.triggerEvent(element, EVENTS.LABELMAP_MODIFIED, {
-      activeLabelmapIndex,
-    });
-
     cornerstone.updateImage(evt.detail.element);
   }
 

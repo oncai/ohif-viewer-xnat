@@ -1,5 +1,6 @@
-import generateSegmentationMetadata from '../../utils/generateSegmentationMetadata';
 import csTools from 'cornerstone-tools';
+import generateSegmentationMetadata from '../../utils/generateSegmentationMetadata';
+import { XNAT_EVENTS } from '../../../utils';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const segmentationModule = csTools.getModule('segmentation');
@@ -26,6 +27,9 @@ export default function triggerSegmentGenerationEvent(element) {
       metadata
     );
 
-    triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
+    triggerEvent(element, XNAT_EVENTS.PEPPERMINT_SEGMENT_GENERATION_EVENT, {
+      element,
+      activeLabelmapIndex,
+    });
   }
 }

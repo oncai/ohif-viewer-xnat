@@ -29,6 +29,9 @@ export default function generateMetadata(
       CodeMeaning: type.CodeMeaning,
     },
     uid: generateUID(),
+    stats: {
+      volumeCm3: 0,
+    },
   };
 
   if (modifierUID) {

@@ -3,6 +3,8 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import '../XNATRoiPanel.styl';
+import { FormattedValue } from '../../elements';
+import { XNAT_EVENTS, RoiMeasurementUnits } from '../../utils';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -16,6 +18,7 @@ export default class SegmentationMenuListItem extends React.Component {
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
     this.onColorChangeCallback = this.onColorChangeCallback.bind(this);
+    this.eventListenerHandler = this.eventListenerHandler.bind(this);
 
     const { segmentIndex, labelmap3D, metadata } = props;
 
@@ -29,7 +32,37 @@ export default class SegmentationMenuListItem extends React.Component {
       visible: !labelmap3D.segmentsHidden[segmentIndex],
       segmentLabel: metadata.SegmentLabel,
       segmentColor,
+      volumeCm3: metadata.stats.volumeCm3,
     };
+
+    this.addEventListeners();
+  }
+
+  componentWillUnmount() {
+    this.removeEventListeners();
+  }
+
+  addEventListeners() {
+    this.removeEventListeners();
+
+    document.addEventListener(
+      XNAT_EVENTS.LABELMAP_COMPLETED,
+      this.eventListenerHandler
+    );
+  }
+
+  removeEventListeners() {
+    document.removeEventListener(
+      XNAT_EVENTS.LABELMAP_COMPLETED,
+      this.eventListenerHandler
+    );
+  }
+
+  eventListenerHandler(evt) {
+    const { uid, stats } = this.props.metadata;
+    if (evt.detail.roiMaskUid === uid) {
+      this.setState({ volumeCm3: stats.volumeCm3 });
+    }
   }
 
   onColorChangeCallback(colorArray) {
@@ -87,7 +120,7 @@ export default class SegmentationMenuListItem extends React.Component {
       onClick,
     } = this.props;
 
-    const { visible, segmentLabel, segmentColor } = this.state;
+    const { visible, segmentLabel, segmentColor, volumeCm3 } = this.state;
 
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
@@ -143,6 +176,14 @@ export default class SegmentationMenuListItem extends React.Component {
                 {segmentCategory}
               </span>
             </a>
+            {volumeCm3 !== 0 && (
+              <FormattedValue
+                prefix={'Volume'}
+                value={volumeCm3}
+                suffix={RoiMeasurementUnits.VOLUME_CM_3}
+                sameLine={true}
+              />
+            )}
           </div>
         </td>
         <td className="centered-cell doNotBreak">

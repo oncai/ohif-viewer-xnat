@@ -8,6 +8,8 @@ import XNATCircleScissorsTool from './segmentation/XNATCircleScissorsTool';
 import XNATFreehandScissorsTool from './segmentation/XNATFreehandScissorsTool';
 import XNATRectangleScissorsTool from './segmentation/XNATRectangleScissorsTool';
 import XNATCorrectionScissorsTool from './segmentation/XNATCorrectionScissorsTool';
+// Events
+import triggerSegmentCompletedEvent from './segmentation/triggerSegmentCompletedEvent';
 
 export {
   FreehandRoi3DTool,
@@ -20,4 +22,6 @@ export {
   XNATFreehandScissorsTool,
   XNATRectangleScissorsTool,
   XNATCorrectionScissorsTool,
+  // Events
+  triggerSegmentCompletedEvent,
 };

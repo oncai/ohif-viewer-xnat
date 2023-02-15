@@ -19,6 +19,7 @@ import { Icon } from '@ohif/ui';
 import MaskRoiPropertyModal from './XNATSegmentationMenu/MaskRoiPropertyModal.js';
 import showModal from './common/showModal.js';
 import refreshViewports from '../utils/refreshViewports';
+import { XNAT_EVENTS } from '../utils';
 
 import './XNATRoiPanel.styl';
 
@@ -136,12 +137,10 @@ export default class XNATSegmentationPanel extends React.Component {
   addEventListeners() {
     this.removeEventListeners();
 
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.addEventListener(
-        'peppermintautosegmentgenerationevent',
-        this.cornerstoneEventListenerHandler
-      );
-    });
+    document.addEventListener(
+      XNAT_EVENTS.LABELMAP_ADDED,
+      this.cornerstoneEventListenerHandler
+    );
     document.addEventListener(
       'finishedmaskimportusingmodalevent',
       this.cornerstoneEventListenerHandler
@@ -149,12 +148,10 @@ export default class XNATSegmentationPanel extends React.Component {
   }
 
   removeEventListeners() {
-    cornerstoneTools.store.state.enabledElements.forEach(enabledElement => {
-      enabledElement.removeEventListener(
-        'peppermintautosegmentgenerationevent',
-        this.cornerstoneEventListenerHandler
-      );
-    });
+    document.removeEventListener(
+      XNAT_EVENTS.LABELMAP_ADDED,
+      this.cornerstoneEventListenerHandler
+    );
     document.removeEventListener(
       'finishedmaskimportusingmodalevent',
       this.cornerstoneEventListenerHandler

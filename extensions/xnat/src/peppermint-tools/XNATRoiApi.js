@@ -2,15 +2,22 @@ import cornerstone from 'cornerstone-core';
 import {
   globalImageIdSpecificToolStateManager,
   getToolState,
+  getModule,
 } from 'cornerstone-tools';
 import OHIF from '@ohif/core';
 import TOOL_NAMES from './toolNames';
 import { XNAT_EVENTS } from '../utils';
-import { calculateContourArea, calculateContourRoiVolume } from './utils';
+import {
+  calculateContourArea,
+  calculateContourRoiVolume,
+  calculateMaskRoiVolume,
+} from './utils';
 
 const { studyMetadataManager } = OHIF.utils;
 
 const globalToolStateManager = globalImageIdSpecificToolStateManager;
+
+const segmentationModule = getModule('segmentation');
 
 const triggerEvent = (type, detail) => {
   document.dispatchEvent(
@@ -180,6 +187,55 @@ class XNATRoiApi {
       Object.values(stats.areas),
       stats.sliceSpacingFirstFrame
     );
+  }
+
+  onLabelmapAdded(event) {
+    triggerEvent(XNAT_EVENTS.LABELMAP_ADDED, {});
+  }
+
+  onLabelmapCompleted(event) {
+    const eventData = event.detail;
+    const { element, activeLabelmapIndex } = eventData;
+
+    const labelmap3D = segmentationModule.getters.labelmap3D(
+      element,
+      activeLabelmapIndex
+    );
+    const segmentIndex = labelmap3D.activeSegmentIndex;
+    const metadata = labelmap3D.metadata[segmentIndex];
+    const stats = metadata.stats;
+
+    const image = cornerstone.getEnabledElement(eventData.element).image;
+    if (!stats.hasOwnProperty('canCalculateVolume')) {
+      const { seriesInstanceUID } = cornerstone.metaData.get(
+        'generalSeriesModule',
+        image.imageId
+      );
+      const {
+        sliceSpacingFirstFrame,
+        canCalculateVolume,
+      } = this.getDisplaySetInfo(seriesInstanceUID);
+      stats.canCalculateVolume = canCalculateVolume;
+      stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
+    }
+
+    if (stats.canCalculateVolume) {
+      const { columnPixelSpacing, rowPixelSpacing } = image;
+      const voxelScaling =
+        (columnPixelSpacing || 1) *
+        (rowPixelSpacing || 1) *
+        (stats.sliceSpacingFirstFrame || 1);
+
+      stats.volumeCm3 = calculateMaskRoiVolume(
+        labelmap3D,
+        segmentIndex,
+        voxelScaling
+      );
+    }
+
+    triggerEvent(XNAT_EVENTS.LABELMAP_COMPLETED, {
+      roiMaskUid: metadata.uid,
+    });
   }
 
   getDisplaySetInfo(SeriesInstanceUID) {
