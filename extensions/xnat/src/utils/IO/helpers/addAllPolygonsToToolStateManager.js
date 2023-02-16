@@ -1,7 +1,68 @@
+import cornerstone from 'cornerstone-core';
+import cornerstoneTools from 'cornerstone-tools';
 import scaleHandles from './scaleHandles';
 import { PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
+import getSopInstanceUidToImageIdMap from './getSopInstanceUidToImageIdMap';
+import allowStateUpdate from '../../awaitStateUpdate';
+
+const globalToolStateManager =
+  cornerstoneTools.globalImageIdSpecificToolStateManager;
+const modules = cornerstoneTools.store.modules;
 
 const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
+
+const { getToolForElement, setToolPassive } = cornerstoneTools;
+
+/**
+ * addAllPolygonsToToolStateManager - Adds polygons to the cornerstoneTools
+ *                                    toolState.
+ *
+ * @param  {Polygon[]} polygons   The polygons to add to cornerstoneTools.
+ * @param  {string} importType The source file type (used for scaling).
+ * @param {function} updateProgressCallback - for default/non-lazy ROI importer
+ * @returns {null}
+ */
+const addAllPolygonsToToolStateManager = async (
+  polygons,
+  importType,
+  updateProgressCallback
+) => {
+  const freehand3DStore = modules.freehand3D;
+  const toolStateManager = globalToolStateManager.saveToolState();
+
+  const sopInstanceUidToImageIdMap = getSopInstanceUidToImageIdMap();
+
+  const numPolygons = polygons.length;
+  let refPercentComplete = 0;
+
+  for (let i = 0; i < numPolygons; i++) {
+    const polygon = polygons[i];
+    const sopInstanceUid = polygon.sopInstanceUid;
+    const correspondingImageId = sopInstanceUidToImageIdMap[sopInstanceUid];
+
+    if (correspondingImageId) {
+      addPolygonToToolStateManager(
+        polygon,
+        toolStateManager,
+        correspondingImageId,
+        importType,
+        freehand3DStore
+      );
+    }
+
+    // updateProgressCallback is provided by the default/non-lazy ROI importer
+    if (updateProgressCallback) {
+      const percentComplete = Math.floor(((i + 1) * 100) / numPolygons);
+      if (percentComplete !== refPercentComplete) {
+        updateProgressCallback(`Updating Tool State: ${percentComplete}%`);
+        refPercentComplete = percentComplete;
+        await allowStateUpdate();
+      }
+    }
+  }
+
+  refreshToolStateManager(toolStateManager);
+};
 
 /**
  * _addOnePolygonToToolStateManager - Adds a single polygon to the
@@ -44,8 +105,6 @@ const addPolygonToToolStateManager = (
 
     freehandToolData.push(data);
   }
-
-  // console.log(toolStateManager);
 };
 
 /**
@@ -109,6 +168,25 @@ const _isPolygonPresentInToolData = (freehandToolData, newPolygonUuid) => {
   return false;
 };
 
+/**
+ * refreshToolStateManager - restores the toolStateManager.
+ *
+ * @param  {object} toolStateManager The toolStateManager
+ */
+const refreshToolStateManager = toolStateManager => {
+  globalToolStateManager.restoreToolState(toolStateManager);
 
+  cornerstone.getEnabledElements().forEach(enabledElement => {
+    const { element } = enabledElement;
+    const tool = getToolForElement(element, FREEHAND_ROI_3D_TOOL);
 
-export default addPolygonToToolStateManager;
+    if (tool.mode !== 'active' && tool.mode !== 'passive') {
+      // If not already active or passive, set passive so contours render.
+      setToolPassive(FREEHAND_ROI_3D_TOOL);
+    }
+
+    cornerstone.updateImage(element);
+  });
+};
+
+export default addAllPolygonsToToolStateManager;

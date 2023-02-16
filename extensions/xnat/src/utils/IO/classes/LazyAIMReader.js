@@ -189,11 +189,7 @@ export default class LazyAIMReader {
         // Reset polygon count
         roiContour.polygonCount = 0;
 
-        this._addPolygonsToToolStateCallback(
-          polygons,
-          'AIM',
-          this._freehand3DStore
-        );
+        this._addPolygonsToToolStateCallback(polygons, 'AIM');
 
         roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTED;
         this._fireContourRoiExtractedEvent(ROIContourUid);

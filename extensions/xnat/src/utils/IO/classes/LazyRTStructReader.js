@@ -253,11 +253,7 @@ export default class LazyRTStructReader {
         // Reset polygon count
         roiContour.polygonCount = 0;
 
-        this._addPolygonsToToolStateCallback(
-          polygons,
-          'RTSTRUCT',
-          this._freehand3DStore
-        );
+        this._addPolygonsToToolStateCallback(polygons, 'RTSTRUCT');
 
         roiContour.importStatus = DATA_IMPORT_STATUS.IMPORTED;
         this._fireContourRoiExtractedEvent(ROIContourUid);
