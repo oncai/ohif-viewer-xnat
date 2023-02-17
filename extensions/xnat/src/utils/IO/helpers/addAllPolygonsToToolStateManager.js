@@ -4,6 +4,11 @@ import scaleHandles from './scaleHandles';
 import { PEPPERMINT_TOOL_NAMES } from '../../../peppermint-tools';
 import getSopInstanceUidToImageIdMap from './getSopInstanceUidToImageIdMap';
 import allowStateUpdate from '../../awaitStateUpdate';
+import {
+  xnatRoiApi,
+  calculateContourArea,
+  calculateContourRoiVolume
+} from '../../../peppermint-tools';
 
 const globalToolStateManager =
   cornerstoneTools.globalImageIdSpecificToolStateManager;
@@ -35,19 +40,55 @@ const addAllPolygonsToToolStateManager = async (
   const numPolygons = polygons.length;
   let refPercentComplete = 0;
 
+  if (numPolygons < 1) {
+    return;
+  }
+
+  const { _seriesInstanceUid, _structureSetUid } = polygons[0];
+  const structureSet = freehand3DStore.getters.structureSet(
+    _seriesInstanceUid,
+    _structureSetUid
+  );
+  const contourRoiStats = new Map();
+
+  const {
+    sliceSpacingFirstFrame,
+    canCalculateVolume,
+  } = xnatRoiApi.getDisplaySetInfo(_seriesInstanceUid);
+
+  const ROIContourCollection = structureSet.ROIContourCollection;
+  ROIContourCollection.forEach(contourRoi => {
+    const stats = contourRoi.stats;
+    stats.canCalculateVolume = canCalculateVolume;
+    stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
+    contourRoiStats.set(contourRoi.uid, stats);
+  });
+
   for (let i = 0; i < numPolygons; i++) {
     const polygon = polygons[i];
     const sopInstanceUid = polygon.sopInstanceUid;
     const correspondingImageId = sopInstanceUidToImageIdMap[sopInstanceUid];
 
     if (correspondingImageId) {
-      addPolygonToToolStateManager(
+      const scaledPoints = addPolygonToToolStateManager(
         polygon,
         toolStateManager,
         correspondingImageId,
         importType,
         freehand3DStore
       );
+
+      // Calculate area
+      if (canCalculateVolume && scaledPoints) {
+        const {
+          rowPixelSpacing,
+          columnPixelSpacing,
+        } = cornerstone.metaData.get('imagePlaneModule', correspondingImageId);
+        const scaling = (columnPixelSpacing || 1) * (rowPixelSpacing || 1);
+        const area = calculateContourArea(scaledPoints, scaling);
+        const roiStats = contourRoiStats.get(polygon._ROIContourUid);
+        roiStats.areas[polygon._polygonUid] = area;
+      }
     }
 
     // updateProgressCallback is provided by the default/non-lazy ROI importer
@@ -59,6 +100,16 @@ const addAllPolygonsToToolStateManager = async (
         await allowStateUpdate();
       }
     }
+  }
+
+  // Calculate volumes
+  if (canCalculateVolume) {
+    contourRoiStats.forEach(stats => {
+      stats.volumeCm3 = calculateContourRoiVolume(
+        Object.values(stats.areas),
+        sliceSpacingFirstFrame
+      );
+    });
   }
 
   refreshToolStateManager(toolStateManager);
@@ -104,6 +155,8 @@ const addPolygonToToolStateManager = (
     scaleHandles(data, correspondingImageId);
 
     freehandToolData.push(data);
+
+    return data.handles.points;
   }
 };
 

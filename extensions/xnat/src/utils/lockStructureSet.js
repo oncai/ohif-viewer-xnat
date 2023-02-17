@@ -64,6 +64,7 @@ export default function(
           color: oldROIContour.color,
           colorTemplates: oldROIContour.colorTemplates,
           meshProps: oldROIContour.meshProps,
+          stats: oldROIContour.stats,
         }
       );
 

@@ -46,6 +46,7 @@ export default function(seriesInstanceUid, structureSetUid) {
         color: ROIContour.color,
         colorTemplates: ROIContour.colorTemplates,
         meshProps: ROIContour.meshProps,
+        stats: ROIContour.stats,
       }
     );
   }

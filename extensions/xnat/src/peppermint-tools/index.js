@@ -27,6 +27,14 @@ import {
 
 import initXNATRoi from './init';
 
+import {
+  calculateContourArea,
+  calculateContourRoiVolume,
+  calculateMaskRoiVolume,
+} from './utils';
+
+import xnatRoiApi from './XNATRoiApi';
+
 export {
   PEPPERMINT_TOOL_NAMES,
   /* Modules */
@@ -54,4 +62,10 @@ export {
   initXNATRoi,
   // Events
   triggerSegmentCompletedEvent,
+  // Stats calculations
+  calculateContourArea,
+  calculateContourRoiVolume,
+  calculateMaskRoiVolume,
+  // API
+  xnatRoiApi,
 };
