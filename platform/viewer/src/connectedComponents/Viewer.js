@@ -627,6 +627,8 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         seriesNotation,
       } = displaySet;
 
+      const modality = displaySet.Modality || 'UN';
+
       let imageId;
       let altImageText;
       let SOPInstanceUID;
@@ -642,7 +644,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
           .SOPInstanceUID;
       } else {
-        altImageText = displaySet.Modality ? displaySet.Modality : 'UN';
+        altImageText = modality;
       }
 
       const hasWarnings = _checkForSeriesInconsistencesWarnings(displaySet, studies);
@@ -660,6 +662,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         hasWarnings,
         seriesNotation,
         SOPInstanceUID,
+        modality,
       };
     });
 

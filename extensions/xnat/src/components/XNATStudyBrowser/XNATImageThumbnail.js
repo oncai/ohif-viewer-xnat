@@ -25,6 +25,7 @@ function XNATImageThumbnail(props) {
     stackPercentComplete,
     error: propsError,
     displaySetInstanceUID,
+    modality,
   } = props;
 
   const [isLoading, setLoading] = useState(false);
@@ -106,6 +107,7 @@ function XNATImageThumbnail(props) {
 
   return (
     <div className={classNames('ImageThumbnail', { active: active })}>
+      <div className="modality-tag">{modality}</div>
       <div className="image-thumbnail-canvas">
         {shouldRenderToCanvas() ? (
           <canvas ref={canvasRef} width={width} height={height} />
@@ -131,7 +133,7 @@ function XNATImageThumbnail(props) {
       {/*    />*/}
       {/*  </div>*/}
       {/*)}*/}
-      {isLoading && <div className="image-thumbnail-loading-indicator"></div>}
+      {isLoading && <div className="image-thumbnail-loading-indicator" />}
     </div>
   );
 }
@@ -144,6 +146,8 @@ XNATImageThumbnail.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
   stackPercentComplete: PropTypes.number.isRequired,
+  displaySetInstanceUID: PropTypes.string,
+  modality: PropTypes.string,
 };
 
 XNATImageThumbnail.defaultProps = {

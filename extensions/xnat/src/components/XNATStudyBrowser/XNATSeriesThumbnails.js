@@ -51,6 +51,7 @@ const XNATSeriesThumbnails = props => {
         hasWarnings,
         seriesNotation,
         SOPInstanceUID,
+        modality,
       } = thumb;
 
       return (
@@ -83,6 +84,8 @@ const XNATSeriesThumbnails = props => {
             hasRois={hasRois}
             seriesNotation={seriesNotation}
             SOPInstanceUID={SOPInstanceUID}
+            //
+            modality={modality}
           />
         </div>
       );
