@@ -250,7 +250,8 @@ class XNATRoiApi {
         if (displaySet.SeriesInstanceUID === SeriesInstanceUID) {
           return {
             sliceSpacingFirstFrame: displaySet.sliceSpacingFirstFrame,
-            canCalculateVolume: displaySet.isReconstructable,
+            canCalculateVolume:
+              displaySet.isReconstructable && !displaySet.isMultiFrame,
           };
         }
       }

@@ -864,7 +864,7 @@ const makeDisplaySet = (series, instances) => {
   );
 
   let displaySpacingInfo = undefined;
-  if (shallSort && imageSet.isReconstructable) {
+  if (shallSort && imageSet.isReconstructable && !imageSet.isMultiFrame) {
     // sort images by image position
     imageSet.sliceSpacingFirstFrame = imageSet.sortByImagePositionPatient();
 

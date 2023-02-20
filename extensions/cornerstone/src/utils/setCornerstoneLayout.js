@@ -18,7 +18,8 @@ const setCornerstoneLayout = () => {
   // Reset MPR data if present
   if (window.vtkApis) {
     window.vtkApis.forEach(
-      api => api.orientationWidget && api.orientationWidget.setEnabled(false)
+      api =>
+        api && api.orientationWidget && api.orientationWidget.setEnabled(false)
     );
     delete window.vtkApis;
   }

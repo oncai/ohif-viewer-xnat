@@ -10,7 +10,7 @@ import { ReconstructionIssues } from './../enums.js';
  */
 function isDisplaySetReconstructable(instances) {
   if (!instances.length) {
-    return { value: false };
+    return { isReconstructable: false };
   }
 
   const firstInstance = instances[0].getData().metadata;
@@ -56,7 +56,13 @@ function processMultiframe(instances) {
   };
   const { metadata } = instances[0].getData();
   // enable for NM image
-  if (metadata.Modality === 'NM' && metadata.NumberOfFrames > 2) {
+  const imageType = metadata.ImageType;
+  const supportedNMImage = imageType[3] && imageType[2] === 'RECON TOMO';
+  if (
+    metadata.Modality === 'NM' &&
+    metadata.NumberOfFrames > 2 &&
+    supportedNMImage
+  ) {
     value.isReconstructable = true;
   } else {
     value.reconstructionIssues.push(ReconstructionIssues.MULTIFRAMES);
