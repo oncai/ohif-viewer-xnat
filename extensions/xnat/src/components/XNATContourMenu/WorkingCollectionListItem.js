@@ -225,12 +225,14 @@ export default class WorkingCollectionListItem extends React.Component {
               </span>
             </a>
             {volumeCm3 !== 0 && (
-              <FormattedValue
-                prefix={'Volume'}
-                value={volumeCm3}
-                suffix={stats.units.volumeUnitCm}
-                sameLine={true}
-              />
+              <div>
+                <FormattedValue
+                  prefix={'Volume'}
+                  value={volumeCm3}
+                  suffix={stats.units.volumeUnitCm}
+                  sameLine={true}
+                />
+              </div>
             )}
           </div>
         </td>

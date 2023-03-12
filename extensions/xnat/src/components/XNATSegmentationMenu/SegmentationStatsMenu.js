@@ -28,6 +28,7 @@ const SegmentationStatsMenu = props => {
 
   const { rowPixelSpacing } = enabledElements[activeViewportIndex].image;
   const units = getRoiMeasurementUnits(modality, rowPixelSpacing);
+  const pixelUnit = units.pixelUnit ? ` (${units.pixelUnit})` : '';
 
   return (
     <div className="roiPanelFooter scrolledFooter">
@@ -42,8 +43,8 @@ const SegmentationStatsMenu = props => {
                 Label
               </th>
               <th className="centered-cell">Area{` (${units.areaUnit})`}</th>
-              <th className="centered-cell">Mean{` (${units.pixelUnit})`}</th>
-              <th className="centered-cell">StdDev{` (${units.pixelUnit})`}</th>
+              <th className="centered-cell">Mean{`${pixelUnit}`}</th>
+              <th className="centered-cell">StdDev{`${pixelUnit}`}</th>
             </tr>
           </thead>
           <tbody>
