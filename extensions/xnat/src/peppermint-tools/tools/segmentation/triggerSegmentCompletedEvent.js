@@ -4,7 +4,7 @@ import { XNAT_EVENTS } from '../../../utils';
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const segmentationModule = csTools.getModule('segmentation');
 
-export default function triggerSegmentCompletedEvent(element) {
+export default function triggerSegmentCompletedEvent(element, toolName) {
   const { activeLabelmapIndex } = segmentationModule.getters.labelmap2D(
     element
   );
@@ -12,5 +12,6 @@ export default function triggerSegmentCompletedEvent(element) {
   triggerEvent(element, XNAT_EVENTS.PEPPERMINT_SEGMENT_COMPLETE_EVENT, {
     element,
     activeLabelmapIndex,
+    toolName,
   });
 }

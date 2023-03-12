@@ -6,7 +6,7 @@ const FormattedValue = ({ prefix, value, suffix, sameLine }) => {
     style.display = 'block';
   }
   return (
-    <div>
+    <div style={{ display: 'inline-block' }}>
       {prefix && <span style={style}>{prefix} </span>}
       <span>{_numbersWithCommas(value)}</span>
       {suffix && (

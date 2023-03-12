@@ -18,7 +18,6 @@ export default class SegmentationMenuListItem extends React.Component {
     this._getTypeWithModifier = this._getTypeWithModifier.bind(this);
     this.onShowHideClick = this.onShowHideClick.bind(this);
     this.onColorChangeCallback = this.onColorChangeCallback.bind(this);
-    this.eventListenerHandler = this.eventListenerHandler.bind(this);
 
     const { segmentIndex, labelmap3D, metadata } = props;
 
@@ -27,47 +26,20 @@ export default class SegmentationMenuListItem extends React.Component {
     );
     const color = colorLUT[segmentIndex];
     const segmentColor = _colorArrayToRGBColor(color);
+    metadata.color = segmentColor;
 
     this.state = {
       visible: !labelmap3D.segmentsHidden[segmentIndex],
       segmentLabel: metadata.SegmentLabel,
       segmentColor,
-      volumeCm3: metadata.stats.volumeCm3,
     };
 
-    this.addEventListeners();
-  }
-
-  componentWillUnmount() {
-    this.removeEventListeners();
-  }
-
-  addEventListeners() {
-    this.removeEventListeners();
-
-    document.addEventListener(
-      XNAT_EVENTS.LABELMAP_COMPLETED,
-      this.eventListenerHandler
-    );
-  }
-
-  removeEventListeners() {
-    document.removeEventListener(
-      XNAT_EVENTS.LABELMAP_COMPLETED,
-      this.eventListenerHandler
-    );
-  }
-
-  eventListenerHandler(evt) {
-    const { uid, stats } = this.props.metadata;
-    if (evt.detail.roiMaskUid === uid) {
-      this.setState({ volumeCm3: stats.volumeCm3 });
-    }
   }
 
   onColorChangeCallback(colorArray) {
+    const { metadata } = this.props;
     const segmentColor = _colorArrayToRGBColor(colorArray);
-
+    metadata.color = segmentColor;
     this.setState({ segmentColor });
   }
 
@@ -120,7 +92,9 @@ export default class SegmentationMenuListItem extends React.Component {
       onClick,
     } = this.props;
 
-    const { visible, segmentLabel, segmentColor, volumeCm3 } = this.state;
+    const { visible, segmentLabel, segmentColor } = this.state;
+
+    const volumeCm3 = metadata.stats.volumeCm3;
 
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;

@@ -22,7 +22,7 @@ export default class XNATFreehandScissorsTool extends FreehandScissorsTool {
   mouseUpOrTouchEndCallback(evt) {
     this._applyStrategy(evt);
     const eventData = evt.detail;
-    triggerSegmentCompletedEvent(eventData.element);
+    triggerSegmentCompletedEvent(eventData.element, this.name);
   }
 
   preMouseDownCallback(evt) {

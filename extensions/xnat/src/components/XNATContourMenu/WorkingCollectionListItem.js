@@ -10,7 +10,6 @@ import {
   refreshViewports,
   ROI_COLOR_TEMPLATES,
   XNAT_EVENTS,
-  RoiMeasurementUnits,
 } from '../../utils';
 
 import '../XNATRoiPanel.styl';
@@ -191,7 +190,7 @@ export default class WorkingCollectionListItem extends React.Component {
     } = this.props;
 
     const checked = activeROIContourIndex === roiContourIndex;
-    const name = metadata.name;
+    const { name, stats } = metadata;
     const polygonCount = metadata.polygonCount;
 
     const { visible, color, volumeCm3 } = this.state;
@@ -229,7 +228,7 @@ export default class WorkingCollectionListItem extends React.Component {
               <FormattedValue
                 prefix={'Volume'}
                 value={volumeCm3}
-                suffix={RoiMeasurementUnits.VOLUME_CM_3}
+                suffix={stats.units.volumeUnitCm}
                 sameLine={true}
               />
             )}

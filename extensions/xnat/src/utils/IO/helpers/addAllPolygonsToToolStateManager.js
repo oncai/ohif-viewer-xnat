@@ -7,7 +7,8 @@ import allowStateUpdate from '../../awaitStateUpdate';
 import {
   xnatRoiApi,
   calculateContourArea,
-  calculateContourRoiVolume
+  calculateContourRoiVolume,
+  getRoiMeasurementUnits,
 } from '../../../peppermint-tools';
 
 const globalToolStateManager =
@@ -54,6 +55,7 @@ const addAllPolygonsToToolStateManager = async (
   const {
     sliceSpacingFirstFrame,
     canCalculateVolume,
+    modality,
   } = xnatRoiApi.getDisplaySetInfo(_seriesInstanceUid);
 
   const ROIContourCollection = structureSet.ROIContourCollection;
@@ -88,6 +90,9 @@ const addAllPolygonsToToolStateManager = async (
         const area = calculateContourArea(scaledPoints, scaling);
         const roiStats = contourRoiStats.get(polygon._ROIContourUid);
         roiStats.areas[polygon._polygonUid] = area;
+        if (!roiStats.units) {
+          roiStats.units = getRoiMeasurementUnits(modality, rowPixelSpacing);
+        }
       }
     }
 

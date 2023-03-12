@@ -34,7 +34,7 @@ export default class Brush3DTool extends BrushTool {
     super._endPainting(evt);
 
     const eventData = evt.detail;
-    triggerSegmentCompletedEvent(eventData.element);
+    triggerSegmentCompletedEvent(eventData.element, this.name);
   }
 
   /**

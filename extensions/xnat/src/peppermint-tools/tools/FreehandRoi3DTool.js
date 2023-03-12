@@ -745,7 +745,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
         textLines.push(areaText);
       }
 
-      textLines.push(`${ROIContour.polygonCount} contours`);
+      // Removed for clarity
+      // textLines.push(`${ROIContour.polygonCount} contours`);
 
       return textLines;
     }

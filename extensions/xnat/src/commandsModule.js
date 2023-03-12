@@ -64,7 +64,7 @@ const actions = {
       );
     });
 
-    triggerSegmentCompletedEvent(element);
+    triggerSegmentCompletedEvent(element, 'MaskUndoRedo');
     refreshCornerstoneViewports();
   },
 };

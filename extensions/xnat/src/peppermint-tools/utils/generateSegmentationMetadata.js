@@ -31,6 +31,7 @@ export default function generateMetadata(
     uid: generateUID(),
     stats: {
       volumeCm3: 0,
+      stats2D: [],
     },
   };
 

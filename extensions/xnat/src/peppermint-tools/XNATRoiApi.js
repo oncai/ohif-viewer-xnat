@@ -11,6 +11,8 @@ import {
   calculateContourArea,
   calculateContourRoiVolume,
   calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
 } from './utils';
 
 const { studyMetadataManager } = OHIF.utils;
@@ -76,6 +78,9 @@ class XNATRoiApi {
       }
 
       if (measurementData.invalidated) {
+        const image = cornerstone.getEnabledElement(eventData.element).image;
+        const { columnPixelSpacing, rowPixelSpacing } = image;
+
         const StructureSet = measurementData.referencedStructureSet;
         if (StructureSet.isLocked) {
           return;
@@ -88,14 +93,14 @@ class XNATRoiApi {
           const {
             sliceSpacingFirstFrame,
             canCalculateVolume,
-          } = this.getDisplaySetInfo(measurementData.seriesInstanceUid);
+            modality,
+          } = this.getDisplaySetInfo();
           stats.canCalculateVolume = canCalculateVolume;
           stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
+          stats.units = getRoiMeasurementUnits(modality, rowPixelSpacing);
         }
 
         if (stats.canCalculateVolume) {
-          const image = cornerstone.getEnabledElement(eventData.element).image;
-          const { columnPixelSpacing, rowPixelSpacing } = image;
           const scaling = (columnPixelSpacing || 1) * (rowPixelSpacing || 1);
           const area = calculateContourArea(
             measurementData.handles.points,
@@ -195,71 +200,76 @@ class XNATRoiApi {
 
   onLabelmapCompleted(event) {
     const eventData = event.detail;
-    const { element, activeLabelmapIndex } = eventData;
+    const { element, activeLabelmapIndex, toolName } = eventData;
+
+    const resetAll2DStats =
+      toolName === 'XNATSphericalBrushTool' || toolName === 'MaskUndoRedo';
+
+    const {
+      sliceSpacingFirstFrame,
+      canCalculateVolume,
+      frameIndex,
+    } = this.getDisplaySetInfo();
+
+    const image = cornerstone.getEnabledElement(eventData.element).image;
+    const { columnPixelSpacing, rowPixelSpacing } = image;
+    const voxelScaling =
+      (columnPixelSpacing || 1) *
+      (rowPixelSpacing || 1) *
+      (sliceSpacingFirstFrame || 1);
 
     const labelmap3D = segmentationModule.getters.labelmap3D(
       element,
       activeLabelmapIndex
     );
-    const segmentIndex = labelmap3D.activeSegmentIndex;
-    const metadata = labelmap3D.metadata[segmentIndex];
-    const stats = metadata.stats;
 
-    const image = cornerstone.getEnabledElement(eventData.element).image;
-    if (!stats.hasOwnProperty('canCalculateVolume')) {
-      const { seriesInstanceUID } = cornerstone.metaData.get(
-        'generalSeriesModule',
-        image.imageId
-      );
-      const {
-        sliceSpacingFirstFrame,
-        canCalculateVolume,
-      } = this.getDisplaySetInfo(seriesInstanceUID);
-      stats.canCalculateVolume = canCalculateVolume;
-      stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
-    }
+    // const activeSegmentIndex = labelmap3D.activeSegmentIndex;
+    const allMetadata = labelmap3D.metadata;
+    Object.keys(allMetadata).forEach(segmentIndex => {
+      if (Number(segmentIndex) === 0) {
+        return;
+      }
 
-    if (stats.canCalculateVolume) {
-      const { columnPixelSpacing, rowPixelSpacing } = image;
-      const voxelScaling =
-        (columnPixelSpacing || 1) *
-        (rowPixelSpacing || 1) *
-        (stats.sliceSpacingFirstFrame || 1);
+      const metadata = labelmap3D.metadata[segmentIndex];
+      const stats = metadata.stats;
 
-      stats.volumeCm3 = calculateMaskRoiVolume(
-        labelmap3D,
-        segmentIndex,
-        voxelScaling
-      );
-    }
+      if (!stats.hasOwnProperty('canCalculateVolume')) {
+        stats.canCalculateVolume = canCalculateVolume;
+        stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
+      }
 
-    triggerEvent(XNAT_EVENTS.LABELMAP_COMPLETED, {
-      roiMaskUid: metadata.uid,
-    });
-  }
-
-  getDisplaySetInfo(SeriesInstanceUID) {
-    const studies = studyMetadataManager.all();
-    for (let i = 0; i < studies.length; i++) {
-      const study = studies[i];
-      const displaySets = study.getDisplaySets();
-
-      for (let j = 0; j < displaySets.length; j++) {
-        const displaySet = displaySets[j];
-
-        if (displaySet.SeriesInstanceUID === SeriesInstanceUID) {
-          return {
-            sliceSpacingFirstFrame: displaySet.sliceSpacingFirstFrame,
-            canCalculateVolume:
-              displaySet.isReconstructable && !displaySet.isMultiFrame,
-          };
+      const stats2D = stats.stats2D;
+      if (resetAll2DStats) {
+        stats2D.forEach(item => (item.invalidated = true));
+      } else {
+        if (stats2D[frameIndex]) {
+          stats2D[frameIndex].invalidated = true;
         }
       }
-    }
+
+      if (stats.canCalculateVolume) {
+        stats.volumeCm3 = calculateMaskRoiVolume(
+          labelmap3D,
+          Number(segmentIndex),
+          voxelScaling
+        );
+      }
+    });
+
+    triggerEvent(XNAT_EVENTS.LABELMAP_COMPLETED, {});
+  }
+
+  getDisplaySetInfo() {
+    const viewports = window.store.getState().viewports;
+    const activeViewportIndex = viewports.activeViewportIndex;
+    const displaySet = viewports.viewportSpecificData[activeViewportIndex];
 
     return {
-      sliceSpacingFirstFrame: undefined,
-      canCalculateVolume: false,
+      sliceSpacingFirstFrame: displaySet.sliceSpacingFirstFrame,
+      canCalculateVolume:
+        displaySet.isReconstructable && !displaySet.isMultiFrame,
+      modality: displaySet.Modality,
+      frameIndex: displaySet.frameIndex,
     };
   }
 }

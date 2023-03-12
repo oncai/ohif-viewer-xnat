@@ -20,6 +20,7 @@ import MaskRoiPropertyModal from './XNATSegmentationMenu/MaskRoiPropertyModal.js
 import showModal from './common/showModal.js';
 import refreshViewports from '../utils/refreshViewports';
 import { XNAT_EVENTS } from '../utils';
+import SegmentationStatsMenu from './XNATSegmentationMenu/SegmentationStatsMenu';
 
 import './XNATRoiPanel.styl';
 
@@ -99,6 +100,7 @@ export default class XNATSegmentationPanel extends React.Component {
       this
     );
     this.onMaskClick = this.onMaskClick.bind(this);
+    this.onShow2DStats = this.onShow2DStats.bind(this);
 
     const { viewports, activeIndex } = props;
     const firstImageId = _getFirstImageId(viewports[activeIndex]);
@@ -125,6 +127,7 @@ export default class XNATSegmentationPanel extends React.Component {
       exporting: false,
       showSegmentationSettings: false,
       labelmap3D,
+      show2DStats: false,
     };
 
     this.addEventListeners();
@@ -142,6 +145,10 @@ export default class XNATSegmentationPanel extends React.Component {
       this.cornerstoneEventListenerHandler
     );
     document.addEventListener(
+      XNAT_EVENTS.LABELMAP_COMPLETED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.addEventListener(
       'finishedmaskimportusingmodalevent',
       this.cornerstoneEventListenerHandler
     );
@@ -150,6 +157,10 @@ export default class XNATSegmentationPanel extends React.Component {
   removeEventListeners() {
     document.removeEventListener(
       XNAT_EVENTS.LABELMAP_ADDED,
+      this.cornerstoneEventListenerHandler
+    );
+    document.removeEventListener(
+      XNAT_EVENTS.LABELMAP_COMPLETED,
       this.cornerstoneEventListenerHandler
     );
     document.removeEventListener(
@@ -390,9 +401,18 @@ export default class XNATSegmentationPanel extends React.Component {
    * onUpdateProperty - A callback for onEditClick.
    */
   onUpdateProperty(data) {
-    const { firstImageId } = this.state;
+    const { labelmap3D, firstImageId } = this.state;
     const element = getElementFromFirstImageId(firstImageId);
+
+    const prevMetadata = labelmap3D.metadata[data.segmentIndex];
+    const { color, stats } = prevMetadata;
+
     segmentInputCallback({ ...data, element });
+
+    const metadata = labelmap3D.metadata[data.segmentIndex];
+    metadata.color = color;
+    metadata.stats = stats;
+
     this.refreshSegmentList(firstImageId);
   }
 
@@ -541,6 +561,11 @@ export default class XNATSegmentationPanel extends React.Component {
     return segments;
   }
 
+  onShow2DStats() {
+    const { show2DStats } = this.state;
+    this.setState({ show2DStats: !show2DStats });
+  }
+
   render() {
     const {
       importMetadata,
@@ -551,10 +576,11 @@ export default class XNATSegmentationPanel extends React.Component {
       showSegmentationSettings,
       firstImageId,
       labelmap3D,
+      show2DStats,
     } = this.state;
 
     const { viewports, activeIndex, showColorSelectModal } = this.props;
-    const { Modality } = viewports[activeIndex];
+    const { Modality, frameIndex } = viewports[activeIndex];
 
     let component;
     let isFractional = false;
@@ -574,9 +600,17 @@ export default class XNATSegmentationPanel extends React.Component {
     }
 
     const addSegmentButton = isFractional ? null : (
-      <button style={{ fontSize: 12 }} onClick={() => this.onNewSegment()}>
-        <Icon name="xnat-tree-plus" /> Mask ROI
-      </button>
+      <div>
+        <button
+          className="stats-toggle-button"
+          onClick={() => this.onShow2DStats()}
+        >
+          {show2DStats ? 'Hide 2D Stats' : 'Show 2D Stats'}
+        </button>
+        <button style={{ fontSize: 12 }} onClick={() => this.onNewSegment()}>
+          <Icon name="xnat-tree-plus" /> Mask ROI
+        </button>
+      </div>
     );
 
     if (showSegmentationSettings) {
@@ -629,13 +663,11 @@ export default class XNATSegmentationPanel extends React.Component {
               exportDisabledMessage={exportDisabledMessage}
             />
           </div>
+          <div className="workingCollectionHeader">
+            <h4> {importMetadata.name} </h4>
+            <div>{addSegmentButton}</div>
+          </div>
           <div className="roiCollectionBody">
-            <div className="workingCollectionHeader">
-              <h4> {importMetadata.name} </h4>
-              <div>
-                {addSegmentButton}
-              </div>
-            </div>
             {/*<SegmentationMenuListHeader importMetadata={importMetadata} />*/}
             <div className="collectionSection">
               <table className="collectionTable">
@@ -675,6 +707,14 @@ export default class XNATSegmentationPanel extends React.Component {
               </table>
             </div>
           </div>
+          {show2DStats && (
+            <SegmentationStatsMenu
+              segments={segments}
+              frameIndex={Number(frameIndex)}
+              activeViewportIndex={activeIndex}
+              modality={Modality}
+            />
+          )}
           <SegmentationToolMenu
             activeTool={this.props.activeTool}
             toolData={{

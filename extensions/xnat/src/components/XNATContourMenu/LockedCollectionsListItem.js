@@ -10,7 +10,6 @@ import {
   refreshViewports,
   ROI_COLOR_TEMPLATES,
   DATA_IMPORT_STATUS,
-  RoiMeasurementUnits,
 } from '../../utils';
 
 import '../XNATRoiPanel.styl';
@@ -288,12 +287,12 @@ export default class LockedCollectionsListItem extends React.Component {
         <tr key={uid}>
           <td className="centered-cell">{indexComponent}</td>
           <td className="left-aligned-cell">
-            {name}
+            <div>{name}</div>
             {stats.volumeCm3 !== 0 && (
               <FormattedValue
                 prefix={'Volume'}
                 value={stats.volumeCm3}
-                suffix={RoiMeasurementUnits.VOLUME_CM_3}
+                suffix={stats.units.volumeUnitCm}
                 sameLine={true}
               />
             )}

@@ -7,6 +7,8 @@ import removeEmptyLabelmaps2D from './removeEmptyLabelmaps2D.js';
 import calculateContourArea from './calculateContourArea';
 import calculateContourRoiVolume from './calculateContourRoiVolume';
 import calculateMaskRoiVolume from './calculateMaskRoiVolume';
+import calculateMaskRoi2DStats from './calculateMaskRoi2DStats';
+import getRoiMeasurementUnits from './getRoiMeasurementUnits';
 
 export {
   Polygon,
@@ -18,4 +20,6 @@ export {
   calculateContourArea,
   calculateContourRoiVolume,
   calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
 };

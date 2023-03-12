@@ -136,6 +136,7 @@ export default class MaskImporter {
               seg.uid = generateUID();
               seg.stats = {
                 volumeCm3: 0,
+                stats2D: [],
               };
               const stats = seg.stats;
               stats.canCalculateVolume = canCalculateVolume && !isFractional;

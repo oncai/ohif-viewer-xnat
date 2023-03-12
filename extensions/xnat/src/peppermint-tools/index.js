@@ -31,6 +31,8 @@ import {
   calculateContourArea,
   calculateContourRoiVolume,
   calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
 } from './utils';
 
 import xnatRoiApi from './XNATRoiApi';
@@ -66,6 +68,8 @@ export {
   calculateContourArea,
   calculateContourRoiVolume,
   calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
   // API
   xnatRoiApi,
 };

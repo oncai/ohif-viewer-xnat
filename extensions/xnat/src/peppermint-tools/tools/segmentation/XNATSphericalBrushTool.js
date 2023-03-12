@@ -46,6 +46,6 @@ export default class XNATSphericalBrushTool extends SphericalBrushTool {
     super._endPainting(evt);
 
     const eventData = evt.detail;
-    triggerSegmentCompletedEvent(eventData.element);
+    triggerSegmentCompletedEvent(eventData.element, this.name);
   }
 }
