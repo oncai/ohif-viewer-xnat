@@ -275,6 +275,7 @@ function XNATThumbnail(props) {
     onDoubleClick,
     onMouseDown,
     supportsDrag,
+    modality,
   } = props;
 
   const [collectedProps, drag, dragPreview] = useDrag({
@@ -310,6 +311,7 @@ function XNATThumbnail(props) {
           error={error}
           stackPercentComplete={stackPercentComplete}
           displaySetInstanceUID={displaySetInstanceUID}
+          modality={modality}
         />
       )}
       {/* SHOW TEXT ALTERNATIVE */}
@@ -349,6 +351,7 @@ XNATThumbnail.propTypes = {
   onDoubleClick: PropTypes.func,
   onClick: PropTypes.func,
   onMouseDown: PropTypes.func,
+  modality: PropTypes.string,
 };
 
 XNATThumbnail.defaultProps = {

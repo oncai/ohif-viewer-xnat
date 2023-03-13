@@ -1,0 +1,155 @@
+.VTKContourRoisDialogContainer
+  display: flex
+  flex-direction: row
+  justify-content: center
+  align-items: center
+  background: var(--ui-gray-darkest)
+  color: var(--text-secondary-color)
+  border: 2px solid var(--text-secondary-color)
+  border-radius: 0 5px 5px 5px
+  width: inherit
+  overflow: hidden
+
+  .VTKContourRoisDialog
+    display: flex
+    flex-direction: column
+    padding: 1em 0.5em 1em 1em
+    //width: 350px
+    max-height: 300px
+    overflow-y: auto
+    overflow-x: hidden
+    scrollbar-color: var(--text-secondary-color --ui-gray-darkest)
+    word-wrap: break-word
+
+    &::-webkit-scrollbar
+      background: var(--ui-gray-darkest)
+      width: 10px
+
+    &::-webkit-scrollbar-thumb
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      border-right: 2px solid
+      border-right-color: var(--ui-gray-darkest)
+
+    .rangeContainer
+      display: flex
+      margin-bottom: 15px
+      font-size: 12px
+
+      label
+        width: 90px
+      span
+        margin: 0 10px
+
+    .dialogHeader
+      display: flex
+      justify-content: center
+      align-items: center
+      color: var(--ui-gray-darkest)
+      position: absolute
+      width: 50px
+      height: 30px
+      top: -29px
+      left: 0
+      border-radius: 8px 8px 0 0
+      border: 2px solid var(--text-secondary-color)
+      background: var(--text-secondary-color)
+
+      svg
+        user-select: none
+        pointer-events: none
+        width: 18px
+        height: 18px
+
+    .collectionSection
+      display: flex
+      flex-direction: column
+      color: var(--text-primary-color)
+      font-size: 12px
+      margin-bottom: 10px
+      width: 275px
+      border: 1px solid var(--text-secondary-color)
+      border-radius: 5px
+
+      &:last-of-type
+        margin-bottom: 0
+
+      .collectionHeader
+        display: flex
+        flex-direction: row
+        align-items: center
+        justify-content: space-between
+        font-weight: bold
+        padding: 5px
+
+        .icons
+          display: flex
+          align-items: center
+          border-radius: 5px
+
+        .icon
+          cursor: pointer
+          color: var(--text-secondary-color)
+          margin-left: 15px
+
+          &:hover
+            color: var(--hover-color)
+
+        &.expanded
+          border-radius: 5px 5px 0 0
+
+      .collectionTable
+        border: 1px solid var(--ui-gray-light)
+
+        th
+          color: var(--text-secondary-color)
+
+        button
+          border: 0
+          color: var(--text-secondary-color)
+          background-color: transparent
+          padding: 2px
+          margin: 0
+          outline: none
+          cursor: pointer
+
+          &:hover, &:active
+            color: var(--hover-color)
+
+          svg
+            width: 16px
+            position: relative
+            top: 2px
+
+      select
+        padding: 0 5px
+        margin: 0 5px
+        height: 22px
+        background-color: transparent
+        border: 1px solid var(--ui-border-color)
+        color: white
+        outline: none
+
+        option
+          background-color: var(--ui-gray)
+          color: white
+
+        &:focus
+         outline: none
+
+    h5
+      font-weight: bold
+      font-size: 14px
+      margin: 0
+
+  .roiProgressCircle
+    transform: rotate(-90deg)
+    transform-origin: 50% 50%
+  //
+  .roiColor
+    height: 18px
+    width: 18px
+    background-color: #bbb
+    border-radius: 50%
+    display: inline-block
+    vertical-align: middle

@@ -5,9 +5,8 @@
   align-items: center
   background: var(--ui-gray-darkest)
   color: var(--text-secondary-color)
-  //filter: drop-shadow(0 0 3px var(--ui-gray-darkest))
-  border: none
-  border-radius: 8px
+  border: 2px solid var(--text-secondary-color)
+  border-radius: 0 5px 5px 5px
   width: inherit
   overflow: hidden
 
@@ -18,18 +17,25 @@
     //width: 450px
 
     .header
-      margin: -1em -1em 1em -1em
-      padding: 5px 10px
       display: flex
-      justify-content: space-between
+      justify-content: center
       align-items: center
       color: var(--ui-gray-darkest)
-      background: var(--active-color)
-      opacity: 0.5
+      position: absolute
+      width: 50px
+      height: 30px
+      top: -29px
+      left: 0
+      border-radius: 8px 8px 0 0
+      border: 2px solid var(--text-secondary-color)
+      background: var(--text-secondary-color)
+
 
       svg
         user-select: none
         pointer-events: none
+        width: 18px
+        height: 18px
 
     .row
       margin: 0

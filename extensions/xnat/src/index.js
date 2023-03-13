@@ -57,3 +57,5 @@ export {
 } from './utils/synchronizers';
 
 export { referenceLines } from './utils/CSReferenceLines/referenceLines';
+
+export { DATA_IMPORT_STATUS, ROI_COLOR_TEMPLATES, colorTools } from './utils';

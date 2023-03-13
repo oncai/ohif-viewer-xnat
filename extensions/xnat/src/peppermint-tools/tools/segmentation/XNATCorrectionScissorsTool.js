@@ -1,6 +1,7 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
 import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
+import triggerSegmentCompletedEvent from './triggerSegmentCompletedEvent';
 
 /*
  *  Operation using a modification of the Tobias Heimann Correction Algorithm:
@@ -17,6 +18,16 @@ export default class XNATCircleScissorsTool extends CorrectionScissorsTool {
 
     const initialProps = Object.assign(defaultProps, props);
     super(initialProps);
+
+    // Override default mixin callbacks
+    this.mouseUpCallback = this.mouseUpOrTouchEndCallback.bind(this);
+    this.touchEndCallback = this.mouseUpOrTouchEndCallback.bind(this);
+  }
+
+  mouseUpOrTouchEndCallback(evt) {
+    this._applyStrategy(evt);
+    const eventData = evt.detail;
+    triggerSegmentCompletedEvent(eventData.element, this.name);
   }
 
   preMouseDownCallback(evt) {

@@ -9,7 +9,7 @@ const storeMeasurementCollection = async (serializedJson, paras) => {
 
   const { collectionLabel, SeriesInstanceUID } = paras;
   const xnatRootUrl = sessionMap.xnatRootUrl;
-  const projectID = sessionMap.getParentProject();
+  const projectID = sessionMap.getProject();
   const experimentID = sessionMap.getScan(SeriesInstanceUID, 'experimentId');
 
   const csrfToken = await fetchCSRFToken();

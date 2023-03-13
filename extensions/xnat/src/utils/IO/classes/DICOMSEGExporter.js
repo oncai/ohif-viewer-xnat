@@ -9,7 +9,7 @@ export default class DICOMSEGExporter {
     this._payload = segBlob;
     this._seriesInstanceUID = seriesInstanceUid;
 
-    this._projectID = sessionMap.getParentProject();
+    this._projectID = sessionMap.getProject();
     this._experimentID = sessionMap.getScan(
       this._seriesInstanceUID,
       'experimentId'

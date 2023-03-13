@@ -4,11 +4,13 @@ import cornerstoneTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
 import ColoredCircle from '../common/ColoredCircle';
 import ProgressColoredCircle from '../common/ProgressColoredCircle';
-import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
-import { SortIcon } from '../../elements';
-import getSortIndices from '../../utils/getSortIndices';
-import refreshViewports from '../../utils/refreshViewports';
-import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
+import { FormattedValue, SortIcon } from '../../elements';
+import {
+  getSortIndices,
+  refreshViewports,
+  ROI_COLOR_TEMPLATES,
+  DATA_IMPORT_STATUS,
+} from '../../utils';
 
 import '../XNATRoiPanel.styl';
 
@@ -253,6 +255,7 @@ export default class LockedCollectionsListItem extends React.Component {
         polygonCount,
         importPercent,
         loadFunc,
+        stats,
       } = contourRoi;
       const importStatus = contourRoiImportStatus[uid];
       const isLoaded = importStatus === DATA_IMPORT_STATUS.IMPORTED;
@@ -283,7 +286,17 @@ export default class LockedCollectionsListItem extends React.Component {
       return (
         <tr key={uid}>
           <td className="centered-cell">{indexComponent}</td>
-          <td className="left-aligned-cell">{name}</td>
+          <td className="left-aligned-cell">
+            <div>{name}</div>
+            {stats.volumeCm3 !== 0 && (
+              <FormattedValue
+                prefix={'Volume'}
+                value={stats.volumeCm3}
+                suffix={stats.units.volumeUnitCm}
+                sameLine={true}
+              />
+            )}
+          </td>
           <td className="centered-cell">
             <button
               className="small"

@@ -2,6 +2,7 @@ import React from 'react';
 import SlabThicknessToolbarComponent from './toolbarComponents/SlabThicknessToolbarComponent';
 import VTKMPRToolbarButton from './toolbarComponents/VTKMPRToolbarButton';
 import { VTKImageFusionButton } from './components/XNATVtkImageFusion';
+import { VTKContourRoisButton } from './components/XNATVtkContourRois';
 
 const TOOLBAR_BUTTON_TYPES = {
   COMMAND: 'command',
@@ -11,6 +12,14 @@ const TOOLBAR_BUTTON_TYPES = {
 const toolbarModule = ({ commandsManager, servicesManager }) => {
   const ExtendedImageFusionButton = props => (
     <VTKImageFusionButton
+      {...props}
+      servicesManager={servicesManager}
+      commandsManager={commandsManager}
+    />
+  );
+
+  const ExtendedVTKContourRoisButton = props => (
+    <VTKContourRoisButton
       {...props}
       servicesManager={servicesManager}
       commandsManager={commandsManager}
@@ -145,6 +154,13 @@ const toolbarModule = ({ commandsManager, servicesManager }) => {
       //
       CustomComponent: ExtendedImageFusionButton,
       // context: 'VIEWER',
+    },
+    {
+      id: 'contourRois',
+      label: 'Contours',
+      icon: 'xnat-contour',
+      //
+      CustomComponent: ExtendedVTKContourRoisButton,
     },
     {
       id: '2DMPR',

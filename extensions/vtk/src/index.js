@@ -5,8 +5,6 @@ import commandsModule from './commandsModule.js';
 import toolbarModule from './toolbarModule.js';
 import withCommandsManager from './withCommandsManager.js';
 import { version } from '../package.json';
-// This feels weird
-// import loadLocales from './loadLocales';
 
 const OHIFVTKViewport = asyncComponent(() =>
   retryImport(() =>
@@ -42,5 +40,3 @@ const vtkExtension = {
 export default vtkExtension;
 
 export { vtkExtension };
-
-// loadLocales();

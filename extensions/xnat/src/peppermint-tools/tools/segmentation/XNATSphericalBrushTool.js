@@ -1,6 +1,7 @@
 import csTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
 import triggerSegmentGenerationEvent from './triggerSegmentGenerationEvent';
+import triggerSegmentCompletedEvent from './triggerSegmentCompletedEvent';
 
 const { SphericalBrushTool } = csTools;
 
@@ -39,5 +40,12 @@ export default class XNATSphericalBrushTool extends SphericalBrushTool {
 
   touchEndCallback(evt) {
     this._endPainting(evt);
+  }
+
+  _endPainting(evt) {
+    super._endPainting(evt);
+
+    const eventData = evt.detail;
+    triggerSegmentCompletedEvent(eventData.element, this.name);
   }
 }

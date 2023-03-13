@@ -15,7 +15,7 @@ const rgbToHex = (rgbString, delimiter) => {
   return colorHex;
 };
 
-const hexToRgb = hex => {
+const hexToRgb = (hex) => {
   const comp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return comp
     ? {

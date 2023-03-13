@@ -49,9 +49,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
-    "@xnat-ohif/extension-xnat": "^3.4.0",
+    "@xnat-ohif/extension-xnat": "^3.5.0",
     "lodash.throttle": "^4.1.1",
-    "react-vtkjs-viewport": "^0.14.4"
+    "react-vtkjs-viewport": "https://github.com/moalsad/icr-react-vtkjs-viewport.git#0.14.5-icr.1"
   },
   "devDependencies": {
     "@ohif/core": "^2.13.13",

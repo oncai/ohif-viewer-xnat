@@ -2,6 +2,7 @@ import csTools from 'cornerstone-tools';
 import showNotification from '../../components/common/showNotification.js';
 import AIAA_MODEL_TYPES from '../modelTypes';
 import { generateSegmentationMetadata } from '../../peppermint-tools';
+import { XNAT_EVENTS } from '../../utils';
 
 const { ProbeTool, getToolState } = csTools;
 const triggerEvent = csTools.importInternal('util/triggerEvent');
@@ -193,7 +194,7 @@ export default class AIAAProbeTool extends ProbeTool {
         metadata
       );
 
-      triggerEvent(element, 'peppermintautosegmentgenerationevent', {});
+      triggerEvent(element, XNAT_EVENTS.PEPPERMINT_SEGMENT_GENERATION_EVENT, {});
     }
 
     return {

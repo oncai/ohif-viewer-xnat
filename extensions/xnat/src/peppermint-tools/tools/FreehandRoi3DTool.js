@@ -26,10 +26,9 @@ import STRATEGY_NAMES from '../strategyNames';
 import insertOrDelete from '../utils/insertOrDelete';
 
 // Cornerstone 3rd party dev kit imports
-const {
-  freehandArea,
-  calculateFreehandStatistics,
-} = importInternal('util/freehandUtils');
+const { freehandArea, calculateFreehandStatistics } = importInternal(
+  'util/freehandUtils'
+);
 const draw = importInternal('drawing/draw');
 const drawJoinedLines = importInternal('drawing/drawJoinedLines');
 const drawHandles = importInternal('drawing/drawHandles');
@@ -437,7 +436,6 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
       );
 
       if (ROIContourData === undefined) {
-        // ToDo: ROIContour was deleted - remove contour from tool state
         continue;
       }
 
@@ -640,6 +638,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
 
           // Set the invalidated flag to false so that this data won't automatically be recalculated
           data.invalidated = false;
+
+          data.timestamp = Date.now();
         }
 
         // Only render text if polygon ROI has been completed, and is active,
@@ -745,7 +745,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
         textLines.push(areaText);
       }
 
-      textLines.push(`${ROIContour.polygonCount} contours`);
+      // Removed for clarity
+      // textLines.push(`${ROIContour.polygonCount} contours`);
 
       return textLines;
     }
@@ -801,6 +802,8 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
     }
 
     updateImage(element);
+
+    this.fireCompletedEvent(element, data);
   }
 
   /**

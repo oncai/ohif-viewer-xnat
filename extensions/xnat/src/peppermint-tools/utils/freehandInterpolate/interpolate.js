@@ -1,9 +1,9 @@
 import cornerstoneTools from 'cornerstone-tools';
 import TOOL_NAMES from '../../toolNames';
-
 import Polygon from '../classes/Polygon.js';
 import generateUID from '../generateUID.js';
 import generateInterpolationData from './generateInterpolationData.js';
+import { XNAT_EVENTS } from '../../../utils';
 
 const { globalImageIdSpecificToolStateManager, store } = cornerstoneTools;
 
@@ -19,6 +19,7 @@ const modules = store.modules;
  * interpolate - Interpolate missing contours in the ROIContour.
  *
  * @param  {object} toolData The tool data of the freehand3D contour.
+ * @param element
  * @return {null}
  */
 export default function(toolData, element) {
@@ -37,7 +38,12 @@ export default function(toolData, element) {
     }
   }
 
-  triggerEvent(element, 'peppermintinterpolateevent', {});
+  if (interpolationList.length > 0) {
+    triggerEvent(element, XNAT_EVENTS.PEPPERMINT_INTERPOLATE_EVENT, {
+      measurementData: toolData,
+      element,
+    });
+  }
 }
 
 /**

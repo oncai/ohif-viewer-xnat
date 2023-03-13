@@ -49,6 +49,8 @@ import SortIcon from './SortIcon/SortIcon';
 
 import ROIContourColorPicker from './colorPickers/ROIContourColorPicker';
 
+import FormattedValue from './FormattedValue/FormattedValue';
+
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
   'xnat-icr-logo': xnatIcrLogo,
@@ -100,4 +102,5 @@ export {
   ReactSlider,
   SortIcon,
   ROIContourColorPicker,
+  FormattedValue,
 };

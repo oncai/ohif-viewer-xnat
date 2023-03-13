@@ -13,6 +13,7 @@ import {
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
   XNATCorrectionScissorsTool,
+  triggerSegmentCompletedEvent
 } from './tools';
 
 import {
@@ -23,6 +24,18 @@ import {
   GeneralAnatomyList,
   removeEmptyLabelmaps2D,
 } from './utils';
+
+import initXNATRoi from './init';
+
+import {
+  calculateContourArea,
+  calculateContourRoiVolume,
+  calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
+} from './utils';
+
+import xnatRoiApi from './XNATRoiApi';
 
 export {
   PEPPERMINT_TOOL_NAMES,
@@ -47,4 +60,16 @@ export {
   generateUID,
   GeneralAnatomyList,
   removeEmptyLabelmaps2D,
+  // Initialization
+  initXNATRoi,
+  // Events
+  triggerSegmentCompletedEvent,
+  // Stats calculations
+  calculateContourArea,
+  calculateContourRoiVolume,
+  calculateMaskRoiVolume,
+  calculateMaskRoi2DStats,
+  getRoiMeasurementUnits,
+  // API
+  xnatRoiApi,
 };

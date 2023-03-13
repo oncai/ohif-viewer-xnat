@@ -457,10 +457,10 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
       inconsistencyWarnings.push('The dataset is not a reconstructable 3D volume. MPR mode is not available.');
     }
 
-    if (displaySet.missingFrames &&
-      (!displaySet.reconstructionIssues ||
-        (displaySet.reconstructionIssues && !displaySet.reconstructionIssues.find(warn => warn === ReconstructionIssues.DATASET_4D)))) {
-          inconsistencyWarnings.push('The dataset is missing frames: ' + displaySet.missingFrames + '.');
+    if (displaySet.missingFrames) {
+      inconsistencyWarnings.push(
+        'The dataset is missing frames: ' + displaySet.missingFrames + '.'
+      );
     }
   } else {
     const segMetadata = displaySet.metadata;
@@ -627,6 +627,8 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         seriesNotation,
       } = displaySet;
 
+      const modality = displaySet.Modality || 'UN';
+
       let imageId;
       let altImageText;
       let SOPInstanceUID;
@@ -642,7 +644,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
           .SOPInstanceUID;
       } else {
-        altImageText = displaySet.Modality ? displaySet.Modality : 'UN';
+        altImageText = modality;
       }
 
       const hasWarnings = _checkForSeriesInconsistencesWarnings(displaySet, studies);
@@ -660,6 +662,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         hasWarnings,
         seriesNotation,
         SOPInstanceUID,
+        modality,
       };
     });
 

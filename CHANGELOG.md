@@ -1,3 +1,20 @@
+**3.5.0**
+
+- ROI contour rendering in the 3D MPR mode.
+- Volume calculation and display for contour and mask ROIs.
+- Calculate and display the 2D statistics of mask ROIs.
+- Refactored the ROI Collections export for shared projects configuration.
+- Populate DICOM Equipment module values from the reference scan for storing ROI Collections.
+- Display scan modality in the scan browser.
+- Upgraded underlying JavaScript packages and tools.
+- Fixed measurement import/export issue for multiframe images. 
+- Fixed issues caused when using Node.js v16.14.0.
+- Restrict NM image fusion only for image type 'RECON TOMO'.
+
+**3.5.0 ALPHA-1**
+
+- Populate instance-level fields that were dropped from the optimised JSON metadata.
+
 **3.4.1**
 
 - Fixed import and export issues of measurement data for DICOM multiframe images.

@@ -4,7 +4,7 @@ function transpileJavaScript(mode) {
   const exclude =
     mode === 'production'
       ? excludeNodeModulesExcept([
-          'vtk.js',
+          // 'vtk.js', // using @kitware/vtk.js
           // 'dicomweb-client',
           // https://github.com/react-dnd/react-dnd/blob/master/babel.config.js
           'react-dnd',

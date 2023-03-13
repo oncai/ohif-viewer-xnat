@@ -4,7 +4,11 @@ import cornerstoneTools from 'cornerstone-tools';
 import { Segmentation_4X_fork } from './_tempDCMJSFork/';
 import { utils } from '@ohif/core';
 import colorMaps from '../../../constants/colorMaps';
-import { generateUID } from '../../../peppermint-tools';
+import {
+  generateUID,
+  xnatRoiApi,
+  calculateMaskRoiVolume,
+} from '../../../peppermint-tools';
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -113,10 +117,30 @@ export default class MaskImporter {
             delete segmentationModule.state.series[firstImageId];
           }
 
+          const {
+            sliceSpacingFirstFrame,
+            canCalculateVolume,
+          } = xnatRoiApi.getDisplaySetInfo(segMetadata.seriesInstanceUid);
+          const {
+            rowPixelSpacing,
+            columnPixelSpacing,
+          } = cornerstone.metaData.get('imagePlaneModule', firstImageId);
+          const voxelScaling =
+            (columnPixelSpacing || 1) *
+            (rowPixelSpacing || 1) *
+            (sliceSpacingFirstFrame || 1);
+
           const metadata = segMetadata.data;
           metadata.forEach(seg => {
             if (seg !== undefined) {
               seg.uid = generateUID();
+              seg.stats = {
+                volumeCm3: 0,
+                stats2D: [],
+              };
+              const stats = seg.stats;
+              stats.canCalculateVolume = canCalculateVolume && !isFractional;
+              stats.sliceSpacingFirstFrame = sliceSpacingFirstFrame;
             }
           });
 
@@ -148,11 +172,30 @@ export default class MaskImporter {
             segmentationModule.setters.labelmap3DByFirstImageId(
               firstImageId,
               labelmapBuffer,
-              0, // TODO -> Can define a color LUT based on colors in the SEG later.
+              0,
               metadata,
               imageIds.length,
               segmentsOnFrame
+              // TODO -> Can define a color LUT based on colors in the SEG later.
             );
+
+            // Calculate segment volume
+            const brushStackState =
+              segmentationModule.state.series[firstImageId];
+            const labelmap3D =
+              brushStackState.labelmaps3D[brushStackState.activeLabelmapIndex];
+            labelmap3D.metadata.forEach((seg, index) => {
+              if (seg !== undefined) {
+                const stats = seg.stats;
+                if (stats.canCalculateVolume) {
+                  stats.volumeCm3 = calculateMaskRoiVolume(
+                    labelmap3D,
+                    index,
+                    voxelScaling
+                  );
+                }
+              }
+            });
 
             // Set labelmap rendering options
             Object.assign(

@@ -91,10 +91,6 @@ export default function init({
       CS_EVENTS.MEASUREMENT_COMPLETED,
       onMeasurementCompleted
     );
-    // element.removeEventListener(
-    //   CS_EVENTS.LABELMAP_MODIFIED,
-    //   onLabelmapModified
-    // );
 
     // element.removeEventListener(CS_EVENTS.TOUCH_PRESS, onTouchPress);
     // element.removeEventListener(CS_EVENTS.MOUSE_CLICK, handleClick);

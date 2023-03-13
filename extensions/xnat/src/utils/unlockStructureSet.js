@@ -45,6 +45,8 @@ export default function(seriesInstanceUid, structureSetUid) {
         polygonCount: ROIContour.polygonCount,
         color: ROIContour.color,
         colorTemplates: ROIContour.colorTemplates,
+        meshProps: ROIContour.meshProps,
+        stats: ROIContour.stats,
       }
     );
   }

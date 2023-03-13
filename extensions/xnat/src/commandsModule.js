@@ -2,12 +2,11 @@ import checkAndSetPermissions from './utils/checkAndSetPermissions';
 import sessionMap from './utils/sessionMap.js';
 import csTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
-import onKeyDownEvent from './utils/onKeyDownEvent';
-import KEY_COMMANDS from './utils/keyCommands';
 import queryAiaaSettings from './utils/IO/queryAiaaSettings';
 import queryRoiColorList from './utils/IO/queryRoiColorList';
-// import { referenceLines } from './utils/CSReferenceLines/referenceLines';
 import { XNATStudyLoadingListener } from './utils/StudyLoadingListener/XNATStudyLoadingListener';
+import { onKeyDownEvent, KEY_COMMANDS } from './utils';
+import { triggerSegmentCompletedEvent } from './peppermint-tools';
 
 const refreshCornerstoneViewports = () => {
   cornerstone.getEnabledElements().forEach(enabledElement => {
@@ -17,9 +16,9 @@ const refreshCornerstoneViewports = () => {
   });
 };
 
-const getEnabledElement = (activeIndex) => {
+const getEnabledElement = activeIndex => {
   const enabledElements = cornerstone.getEnabledElements();
-  return enabledElements[activeIndex].element;
+  return enabledElements[activeIndex];
 };
 
 // "actions" doesn't really mean anything
@@ -31,27 +30,31 @@ const actions = {
       return;
     }
 
+    const element = enabledElement.element;
+
     const segmentationModule = csTools.getModule('segmentation');
 
     const activeLabelmapIndex = segmentationModule.getters.activeLabelmapIndex(
-      enabledElement
+      element
     );
     if (activeLabelmapIndex === undefined) {
       return;
     }
 
     let imageIdIndices = [];
-    const { undo, redo, labelmaps2D } = segmentationModule.getters.labelmap3D(enabledElement);
+    const { undo, redo, labelmaps2D } = segmentationModule.getters.labelmap3D(
+      element
+    );
     if (operation === 'undo' && undo.length) {
       undo[undo.length - 1].forEach(item =>
         imageIdIndices.push(item.imageIdIndex)
       );
-      segmentationModule.setters.undo(enabledElement);
+      segmentationModule.setters.undo(element);
     } else if (operation === 'redo' && redo.length) {
       redo[redo.length - 1].forEach(item =>
         imageIdIndices.push(item.imageIdIndex)
       );
-      segmentationModule.setters.redo(enabledElement);
+      segmentationModule.setters.redo(element);
     }
 
     // Update segments on Labelmap2D
@@ -61,6 +64,7 @@ const actions = {
       );
     });
 
+    triggerSegmentCompletedEvent(element, 'MaskUndoRedo');
     refreshCornerstoneViewports();
   },
 };

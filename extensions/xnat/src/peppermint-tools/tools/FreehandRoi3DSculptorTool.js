@@ -6,12 +6,14 @@ import {
   getToolState,
   getToolForElement,
   importInternal,
+  EVENTS,
 } from 'cornerstone-tools';
 import { updateImage } from 'cornerstone-core';
 import interpolate from '../utils/freehandInterpolate/interpolate.js';
 import TOOL_NAMES from '../toolNames';
 
 const drawHandles = importInternal('drawing/drawHandles');
+const triggerEvent = importInternal('util/triggerEvent');
 
 const { calculateTransform } = internal;
 
@@ -96,6 +98,17 @@ export default class FreehandRoi3DSculptorTool extends FreehandRoiSculptorTool {
     updateImage(eventData.element);
 
     preventPropagation(evt);
+
+    // Fire Completed Event
+    const eventType = EVENTS.MEASUREMENT_COMPLETED;
+    const completedEventData = {
+      toolName: this.name,
+      toolType: this.name, // Deprecation notice: toolType will be replaced by toolName
+      element,
+      measurementData: data,
+    };
+
+    triggerEvent(element, eventType, completedEventData);
   }
 
   /**

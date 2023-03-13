@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import csTools from 'cornerstone-tools';
 import { Icon } from '@ohif/ui';
 import WorkingCollectionListItem from './WorkingCollectionListItem.js';
-import refreshViewports from '../../utils/refreshViewports';
-import ROI_COLOR_TEMPLATES from '../../peppermint-tools/roiColorTemplates';
+import { refreshViewports, ROI_COLOR_TEMPLATES } from '../../utils';
 
 import '../XNATRoiPanel.styl';
 

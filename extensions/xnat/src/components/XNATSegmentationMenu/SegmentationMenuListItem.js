@@ -3,6 +3,8 @@ import cornerstoneTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import { Icon } from '@ohif/ui';
 import '../XNATRoiPanel.styl';
+import { FormattedValue } from '../../elements';
+import { XNAT_EVENTS, RoiMeasurementUnits } from '../../utils';
 
 const segmentationModule = cornerstoneTools.getModule('segmentation');
 
@@ -24,17 +26,20 @@ export default class SegmentationMenuListItem extends React.Component {
     );
     const color = colorLUT[segmentIndex];
     const segmentColor = _colorArrayToRGBColor(color);
+    metadata.color = segmentColor;
 
     this.state = {
       visible: !labelmap3D.segmentsHidden[segmentIndex],
       segmentLabel: metadata.SegmentLabel,
       segmentColor,
     };
+
   }
 
   onColorChangeCallback(colorArray) {
+    const { metadata } = this.props;
     const segmentColor = _colorArrayToRGBColor(colorArray);
-
+    metadata.color = segmentColor;
     this.setState({ segmentColor });
   }
 
@@ -88,6 +93,8 @@ export default class SegmentationMenuListItem extends React.Component {
     } = this.props;
 
     const { visible, segmentLabel, segmentColor } = this.state;
+
+    const volumeCm3 = metadata.stats.volumeCm3;
 
     const segmentCategory =
       metadata.SegmentedPropertyCategoryCodeSequence.CodeMeaning;
@@ -143,6 +150,14 @@ export default class SegmentationMenuListItem extends React.Component {
                 {segmentCategory}
               </span>
             </a>
+            {volumeCm3 !== 0 && (
+              <FormattedValue
+                prefix={'Volume'}
+                value={volumeCm3}
+                suffix={RoiMeasurementUnits.VOLUME_CM_3}
+                sameLine={true}
+              />
+            )}
           </div>
         </td>
         <td className="centered-cell doNotBreak">

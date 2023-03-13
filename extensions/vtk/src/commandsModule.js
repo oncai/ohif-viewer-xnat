@@ -9,7 +9,7 @@ import { getImageData } from 'react-vtkjs-viewport';
 import { vec3 } from 'gl-matrix';
 import setMPRLayout from './utils/setMPRLayout.js';
 import setViewportToVTK from './utils/setViewportToVTK.js';
-import Constants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
+import Constants from '@kitware/vtk.js/Rendering/Core/VolumeMapper/Constants';
 import OHIFVTKViewport from './OHIFVTKViewport';
 import setOrientationMarker, {
   readHumanMarker,
@@ -18,6 +18,7 @@ import setOrientationMarker, {
 import getVOIFromCornerstoneViewport from './utils/getVOIFromCornerstoneViewport';
 import volumeProperties from './utils/volumeProperties';
 import { volumeCache } from './utils/viewportDataCache';
+import { contourRenderingApi } from './utils/contourRois';
 
 const { BlendMode } = Constants;
 
@@ -482,6 +483,9 @@ const commandsModule = ({ commandsManager, servicesManager }) => {
           });
         }
       }
+
+      // Update contour ROI data from cornerstone-tools
+      contourRenderingApi.init(displaySet.SeriesInstanceUID, apis);
     },
   };
 

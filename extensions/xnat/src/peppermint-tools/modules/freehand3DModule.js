@@ -6,7 +6,7 @@ import TOOL_NAMES from '../toolNames';
 import DATA_IMPORT_STATUS from '../../utils/dataImportStatus';
 import SORT_ORDER from '../../constants/sortOrder';
 import sessionMap from '../../utils/sessionMap';
-import ROI_COLOR_TEMPLATES from '../roiColorTemplates';
+import { ROI_COLOR_TEMPLATES } from '../../utils';
 
 /**
  * @typedef {series[]} seriesCollection
@@ -270,6 +270,27 @@ function setROIContour(seriesInstanceUid, structureSetUid, name, options = {}) {
   if (options.loadFunc) {
     ROIContour.loadFunc = options.loadFunc;
   }
+
+  // Set mesh properties
+  const previousMeshProps = options.meshProps || {};
+  ROIContour.meshProps = {
+    visible: true,
+    color: [1, 1, 1, 1],
+    isReconstructed: false,
+    //
+    contours: {},
+    errorMessage: '',
+    reconstructPercent: 0,
+    ...previousMeshProps,
+  };
+
+  // Set stats
+  const previousStats = options.stats || {};
+  ROIContour.stats = {
+    areas: {}, // Contour areas
+    volumeCm3: 0,
+    ...previousStats,
+  };
 
   structureSet.ROIContourCollection.push(ROIContour);
 
