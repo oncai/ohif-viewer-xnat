@@ -4,8 +4,11 @@
 
 This repository is included as a submodule in the [OHIF Viewer XNAT Plugin](https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin/src/) repository.
 
-## 3.5.0 Release Notes:
+## 3.6.0-SNAPSHOT Release Notes:
 For the full list of new features, improvements and bug fixes, please refer to the [CHANGELOG](./CHANGELOG.md).
+
+> :warning: **This is a development release**:
+>development releases are intended for testing only and are not recommended for production use.
 
 ## Development environment
 For testing purposes, and to avoid building and deployment of the XNAT plugin,
