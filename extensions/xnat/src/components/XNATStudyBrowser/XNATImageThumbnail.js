@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import ViewportErrorIndicator from './ViewportErrorIndicator';
 import ViewportLoadingIndicator from './ViewportLoadingIndicator';
 import DisplaySetLoadingIndicator from './DisplaySetLoadingIndicator';
+import renderThumbnailOverlay from './utils/renderThumbnailOverlay';
 
 // TODO: How should we have this component depend on Cornerstone?
 // - Passed in as a prop?
@@ -93,6 +94,7 @@ function XNATImageThumbnail(props) {
   useEffect(() => {
     if (image.imageId) {
       cornerstone.renderToCanvas(canvasRef.current, image);
+      renderThumbnailOverlay(canvasRef.current, image);
       setLoading(false);
     }
   }, [image.imageId]);
