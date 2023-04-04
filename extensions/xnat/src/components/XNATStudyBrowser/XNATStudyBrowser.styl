@@ -1,4 +1,4 @@
-.study-browser
+.xnat-study-browser
   float: left
   height: 100%
   width: 100%
@@ -13,20 +13,27 @@
     font-size: 14px
     margin: 0
 
-  .scrollable-study-thumbnails
+  .xnat-scrollable-study-thumbnails
     height: 100%
     overflow-y: auto
     overflow-x: hidden
     padding-bottom: 50px
-    padding-right: 16px
+    //padding-right: 16px
     padding-left: 4px
-    margin-right: -16px
+    //margin-right: -16px
 
     display: flex;
     flex-direction: column;
 
     &::-webkit-scrollbar
-      display: none
+      background: var(--ui-gray-darkest)
+      width: 8px
+
+    &::-webkit-scrollbar-thumb
+      background: var(--text-secondary-color)
+      border-radius: 10px
+      border-right: 2px solid
+      border-right-color: var(--ui-gray-darkest)
 
     .thumbnail-container
       margin: 0 auto;
