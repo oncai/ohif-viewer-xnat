@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { GeneralAnatomyList } from '../../../peppermint-tools';
+import RoiLabelSelect from '../../../elements/RoiLabelSelect/RoiLabelSelect';
 
 const categories = GeneralAnatomyList.SegmentationCodes.Category;
 
@@ -77,9 +78,7 @@ const MeasurementPropertyModal = props => {
     });
   };
 
-  const onChangeLabel = evt => {
-    const name = evt.target.value;
-
+  const onChangeLabel = name => {
     setState({
       ...state,
       name,
@@ -164,18 +163,10 @@ const MeasurementPropertyModal = props => {
   const name = (
     <div style={{ marginBottom: 10 }}>
       <label>Name</label>
-      <input
-        name="name"
-        className="form-themed form-control input-overload"
+      <RoiLabelSelect
+        value={state.name}
+        roiType={'MEAS'}
         onChange={onChangeLabel}
-        type="text"
-        autoComplete="off"
-        defaultValue={state.name}
-        placeholder="Measurement name.."
-        tabIndex="1"
-        style={{
-          borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)',
-        }}
       />
     </div>
   );

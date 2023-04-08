@@ -1,0 +1,54 @@
+.RoiLabelContainer
+  display: flex
+  flex-direction: row
+  width: 100%
+  height: 25px
+  background: #555
+  border: 1px solid #ccc
+  border-radius: 4px
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.075)
+
+  &.invalid
+    border-color: var(--snackbar-error)
+
+  .inputWrapper
+    position: relative
+    width: 100%
+
+    input[type=text]
+      width: 100%
+      padding: 2px 22px 2px 5px
+      color: white
+      outline: none
+      border: 0
+      background: transparent
+
+    button
+      position: absolute
+      right: 2px
+      font-weight: bold
+      color: var(--active-color)
+      background: transparent
+      outline: none
+      border: 0
+      box-shadow: none
+      border-radius: 0
+      cursor: pointer
+
+  select
+    font-size: 0 // hides the text for the current selection
+    width: 20px
+    background: #337ab7
+    color: white
+    outline: none
+    border: none
+    border-top-right-radius: 4px
+    border-bottom-right-radius: 4px
+    cursor: pointer
+
+    option
+      font-size: 14px
+      background: #555
+
+      &:hover, &:checked, &:active, &:focus
+        background: #337ab7

@@ -48,6 +48,11 @@ class XNATStandaloneRouting extends Component {
         projectId: projectId,
       });
 
+      // Query ROI Presets from the viewer config API
+      commandsManager.runCommand('xnatCheckAndSetRoiPresets', {
+        projectId: projectId,
+      });
+
       // Query user information
       getUserInformation(rootUrl);
 
