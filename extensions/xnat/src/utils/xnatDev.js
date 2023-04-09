@@ -98,6 +98,10 @@ function _xnatAuthenticate(csrfToken) {
     const XNAT_USERNAME = process.env.XNAT_USERNAME;
     const XNAT_PASSWORD = process.env.XNAT_PASSWORD;
 
+    if (!XNAT_USERNAME) {
+      reject('No XNAT_USERNAME was provided. Guest access may be enabled.');
+    }
+
     xhr.open('POST', url);
     // xhr.withCredentials = true;
     xhr.setRequestHeader(
