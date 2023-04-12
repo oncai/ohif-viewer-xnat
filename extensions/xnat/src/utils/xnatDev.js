@@ -100,6 +100,7 @@ function _xnatAuthenticate(csrfToken) {
 
     if (!XNAT_USERNAME) {
       reject('No XNAT_USERNAME was provided. Guest access may be enabled.');
+      return;
     }
 
     xhr.open('POST', url);

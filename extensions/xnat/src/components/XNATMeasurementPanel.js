@@ -13,6 +13,7 @@ import {
   assignViewportParameters,
 } from '../XNATMeasurement';
 import { refreshViewports, XNAT_EVENTS } from '../utils';
+import sessionMap from '../utils/sessionMap';
 
 import './XNATRoiPanel.styl';
 
@@ -241,6 +242,11 @@ export default class XNATMeasurementPanel extends React.Component {
 
     const { viewports, activeIndex } = this.props;
 
+    let exportDisabledMessage;
+    if (!sessionMap.hasCreatePermission()) {
+      exportDisabledMessage = 'Measurements export is not permitted.';
+    }
+
     let component;
 
     if (showSettings) {
@@ -273,20 +279,13 @@ export default class XNATMeasurementPanel extends React.Component {
           <div className="panelHeader">
             <div className="title-with-icon">
               <h3>Measurement Annotations</h3>
-              {/*<Icon*/}
-              {/*  className="settings-icon"*/}
-              {/*  name="cog"*/}
-              {/*  width="20px"*/}
-              {/*  height="20px"*/}
-              {/*  onClick={() => this.setState({ showSettings: true })}*/}
-              {/*  title="Measurement Settings"*/}
-              {/*/>*/}
             </div>
             <MenuIOButtons
               ImportCallbackOrComponent={MeasurementImportMenu}
               ExportCallbackOrComponent={MeasurementExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
+              exportDisabledMessage={exportDisabledMessage}
             />
           </div>
 

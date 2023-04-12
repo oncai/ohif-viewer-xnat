@@ -8,6 +8,11 @@ const _map = {
   parentProject: '',
   experiment: '',
   view: '',
+  permissions: {
+    read: false,
+    edit: false,
+    create: false,
+  },
   aiaaSettings: {
     serverUrl: {
       site: '',
@@ -24,11 +29,6 @@ const _map = {
 
 const sessionMap = {
   xnatRootUrl: undefined,
-  permissions: {
-    writePermissions: false,
-    readPermissions: false,
-    editPermissions: false,
-  },
   /**
    * Returns the metadata for a scan, or just one property, if specified.
    *
@@ -280,6 +280,13 @@ const sessionMap = {
       colorHex: '#000000',
     };
     return [empty, ...preset];
+  },
+
+  setPermissions: permissions => {
+    _map.permissions = { ...permissions };
+  },
+  hasCreatePermission: () => {
+    return _map.permissions.create;
   },
 };
 
