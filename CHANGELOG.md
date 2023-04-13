@@ -1,3 +1,11 @@
+**3.5.1**
+
+- Select ROI labels using a list populated from presets stored on XNAT at project-level.
+- Display overlays in the scan thumbnail view for scans with overlay data.
+- Deactivated the export of ROI Collections in cases of unsupported modalities or insufficient permission.
+- Added scrollbar to the scan browser.
+- Fixed a bug in obtaining XNAT user details for guest access.
+
 **3.5.0**
 
 - ROI contour rendering in the 3D MPR mode.
