@@ -18,12 +18,18 @@ export default function checkAndSetPermissions({
   parentProjectId,
   subjectId,
 }) {
-  const { xnatRootUrl, permissions } = sessionMap;
+  const { xnatRootUrl } = sessionMap;
   const url = `${xnatRootUrl}xapi/roi/projects/${projectId}/permissions/RoiCollection`;
 
   sessionMap.setProject(projectId);
   sessionMap.setParentProject(parentProjectId);
   sessionMap.setSubject(subjectId);
+
+  const permissions = {
+    read: false,
+    edit: false,
+    create: false,
+  };
 
   getPermissionsJson(url)
     .then(result => {
@@ -36,23 +42,20 @@ export default function checkAndSetPermissions({
           edit: ${response.edit}`
         );
 
-        permissions.writePermissions = response.create;
-        permissions.readPermissions = response.read;
-        permissions.editPermissions = response.edit;
+        permissions.read = response.read;
+        permissions.edit = response.edit;
+        permissions.create = response.create;
       } else {
         // Assume read only of project.
         console.log('Can only read from project');
-        permissions.writePermissions = false;
-        permissions.readPermissions = true;
-        permissions.editPermissions = false;
+        permissions.read = true;
       }
     })
     .catch(err => {
       console.log(err);
-
-      permissions.writePermissions = false;
-      permissions.readPermissions = false;
-      permissions.editPermissions = false;
+    })
+    .finally(() => {
+      sessionMap.setPermissions(permissions);
     });
 }
 

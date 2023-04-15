@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import RoiLabelSelect from '../../elements/RoiLabelSelect/RoiLabelSelect';
 
 function LabelEditModal(props) {
   const { labelTag, currentLabel, itemId, onUpdateProperty, onClose } = props;
@@ -9,9 +10,7 @@ function LabelEditModal(props) {
     validLabel: true,
   });
 
-  const onChangeLabel = evt => {
-    const label = evt.target.value;
-
+  const onChangeLabel = label => {
     setState({
       ...state,
       newLabel: label,
@@ -22,19 +21,10 @@ function LabelEditModal(props) {
   const labelEntry = (
     <div style={{ marginBottom: 10 }}>
       <label>{labelTag}</label>
-      <input
-        name="segmentLabel"
-        className="form-themed form-control input-overload"
+      <RoiLabelSelect
+        value={state.newLabel}
+        roiType={'AIM'}
         onChange={onChangeLabel}
-        type="text"
-        autoComplete="off"
-        defaultValue={state.newLabel}
-        placeholder="Enter Label.."
-        tabIndex="0"
-        style={{
-          borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)',
-        }}
-        autoFocus
       />
     </div>
   );

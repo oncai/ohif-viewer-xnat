@@ -12,8 +12,8 @@ function XNATStudyBrowser(props) {
   } = props;
 
   return (
-    <div className="study-browser">
-      <div className="scrollable-study-thumbnails">
+    <div className="xnat-study-browser">
+      <div className="xnat-scrollable-study-thumbnails">
         {studies
           .map((study, studyIndex) => {
             return (

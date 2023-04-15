@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { GeneralAnatomyList } from '../../peppermint-tools';
+import RoiLabelSelect from '../../elements/RoiLabelSelect/RoiLabelSelect';
 
 const categories = GeneralAnatomyList.SegmentationCodes.Category;
 
@@ -80,10 +81,7 @@ function MaskRoiPropertyModal(props) {
     });
   }
 
-  const onChangeSegmentLabel = (evt) => {
-    // const { segmentLabel, validLabel } = state;
-    const label = evt.target.value;
-
+  const onChangeSegmentLabel = label => {
     setState({
       ...state,
       segmentLabel: label,
@@ -158,18 +156,10 @@ function MaskRoiPropertyModal(props) {
   const segmentLabel = (
     <div style={{ marginBottom: 10 }}>
       <label>Label</label>
-      <input
-        name="segmentLabel"
-        className="form-themed form-control input-overload"
+      <RoiLabelSelect
+        value={state.segmentLabel}
+        roiType={'SEG'}
         onChange={onChangeSegmentLabel}
-        type="text"
-        autoComplete="off"
-        defaultValue={state.segmentLabel}
-        placeholder="Enter Segmentation Label.."
-        tabIndex="1"
-        style={{
-          borderColor: state.validLabel ? 'unset' : 'var(--snackbar-error)'
-        }}
       />
     </div>
   );

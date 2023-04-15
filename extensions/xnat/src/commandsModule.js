@@ -4,6 +4,7 @@ import csTools from 'cornerstone-tools';
 import cornerstone from 'cornerstone-core';
 import queryAiaaSettings from './utils/IO/queryAiaaSettings';
 import queryRoiColorList from './utils/IO/queryRoiColorList';
+import queryRoiPresets from './utils/IO/queryRoiPresets';
 import { XNATStudyLoadingListener } from './utils/StudyLoadingListener/XNATStudyLoadingListener';
 import { onKeyDownEvent, KEY_COMMANDS } from './utils';
 import { triggerSegmentCompletedEvent } from './peppermint-tools';
@@ -124,6 +125,12 @@ const definitions = {
   },
   xnatCheckAndSetRoiColorList: {
     commandFn: queryRoiColorList,
+    storeContexts: [],
+    options: { projectId: null },
+    context: 'VIEWER',
+  },
+  xnatCheckAndSetRoiPresets: {
+    commandFn: queryRoiPresets,
     storeContexts: [],
     options: { projectId: null },
     context: 'VIEWER',

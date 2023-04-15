@@ -21,10 +21,11 @@ import showModal from './common/showModal.js';
 import refreshViewports from '../utils/refreshViewports';
 import { XNAT_EVENTS } from '../utils';
 import SegmentationStatsMenu from './XNATSegmentationMenu/SegmentationStatsMenu';
+import sessionMap from '../utils/sessionMap';
 
 import './XNATRoiPanel.styl';
 
-const UNSUPPORTED_EXPORT_MODALITIES = ['MG'];
+const SUPPORTED_EXPORT_MODALITIES = ['CT', 'MR', 'PT', 'US'];
 
 const { studyMetadataManager } = utils;
 const segmentationModule = cornerstoneTools.getModule('segmentation');
@@ -591,12 +592,13 @@ export default class XNATSegmentationPanel extends React.Component {
 
     let exportDisabledMessage;
     if (isFractional) {
-      // Note: For now disable export and adding of segments if the labelmap is fractional.
       exportDisabledMessage =
-        'Exporting fractional segmentation is not supported yet';
-    } else if (UNSUPPORTED_EXPORT_MODALITIES.includes(Modality)) {
+        'Exporting fractional segmentation is not supported yet.';
+    } else if (!SUPPORTED_EXPORT_MODALITIES.includes(Modality)) {
       exportDisabledMessage =
-        'Segmentation export is not supported for this modality';
+        'Segmentation export is not supported for this modality.';
+    } else if (!sessionMap.hasCreatePermission()) {
+      exportDisabledMessage = 'Segmentation export is not permitted.';
     }
 
     const addSegmentButton = isFractional ? null : (

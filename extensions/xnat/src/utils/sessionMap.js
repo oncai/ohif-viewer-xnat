@@ -8,6 +8,11 @@ const _map = {
   parentProject: '',
   experiment: '',
   view: '',
+  permissions: {
+    read: false,
+    edit: false,
+    create: false,
+  },
   aiaaSettings: {
     serverUrl: {
       site: '',
@@ -15,15 +20,15 @@ const _map = {
     },
   },
   roiColorList: [],
+  roiPresets: {
+    AIM: [],
+    SEG: [],
+    MEAS: [],
+  },
 };
 
 const sessionMap = {
   xnatRootUrl: undefined,
-  permissions: {
-    writePermissions: false,
-    readPermissions: false,
-    editPermissions: false,
-  },
   /**
    * Returns the metadata for a scan, or just one property, if specified.
    *
@@ -231,15 +236,57 @@ const sessionMap = {
       const { label, color } = roiColors[i];
       const colorHex = colorTools.rgbToHex(color, ',');
       _map.roiColorList.push({ label: label.toLowerCase(), color: colorHex });
-      // console.error(`Error parsing ROI color: ${label} ${color}`);
     }
   },
   getProjectRoiColorList: () => {
     return _map.roiColorList;
   },
   getProjectRoiColor: roiName => {
-    const item = _map.roiColorList.find(c => c.label === roiName.trim().toLowerCase());
+    const item = _map.roiColorList.find(
+      c => c.label === roiName.trim().toLowerCase()
+    );
     return item ? item.color : '#000000';
+  },
+
+  setProjectRoiPresets: roiPresets => {
+    if (!roiPresets || typeof roiPresets !== 'object') {
+      return;
+    }
+    Object.keys(_map.roiPresets).forEach(roiType => {
+      const inPreset = roiPresets[roiType];
+      if (!inPreset) return;
+
+      const preset = _map.roiPresets[roiType];
+      inPreset.forEach(roi => {
+        preset.push({
+          value: roi.label.trim().toLowerCase(),
+          label: roi.label,
+          color: roi.color,
+          colorHex: colorTools.rgbArrayToHex(roi.color),
+        });
+      });
+    });
+  },
+  getProjectRoiPreset: roiType => {
+    const preset = _map.roiPresets[roiType];
+    if (!preset || preset.length === 0) {
+      return [];
+    }
+    // Include an empty entry at the top
+    const empty = {
+      value: '',
+      label: '',
+      color: [0, 0, 0],
+      colorHex: '#000000',
+    };
+    return [empty, ...preset];
+  },
+
+  setPermissions: permissions => {
+    _map.permissions = { ...permissions };
+  },
+  hasCreatePermission: () => {
+    return _map.permissions.create;
   },
 };
 

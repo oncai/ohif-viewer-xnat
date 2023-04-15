@@ -48,6 +48,11 @@ class XNATStandaloneRouting extends Component {
         projectId: projectId,
       });
 
+      // Query ROI Presets from the viewer config API
+      commandsManager.runCommand('xnatCheckAndSetRoiPresets', {
+        projectId: projectId,
+      });
+
       // Query user information
       getUserInformation(rootUrl);
 
@@ -426,13 +431,18 @@ async function getUserInformation(rootUrl) {
   const promise = new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.onload = () => {
-      resolve(xhr);
+      if (xhr.status === 200) {
+        resolve(xhr);
+      } else {
+        reject(new Error(xhr.statusText ? xhr.statusText : 'Unknown error'));
+      }
     };
     xhr.onerror = () => {
-      reject(xhr.responseText);
+      reject(new Error(xhr.statusText ? xhr.statusText : 'Unknown error'));
     };
     xhr.open('GET', `${rootUrl}xapi/users/username`);
     xhr.responseType = 'text';
+    // xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.send();
   });
 
@@ -450,7 +460,9 @@ async function getUserInformation(rootUrl) {
       }
     })
     .catch(error => {
-      console.warn('Could not retrieve user information from XNAT');
+      console.warn(
+        `Could not retrieve user information from XNAT. ${error.message}.`
+      );
     });
 }
 

@@ -12,8 +12,8 @@ import getSeriesInstanceUidFromViewport from '../utils/getSeriesInstanceUidFromV
 import XNATContourExportMenu from './XNATContourExportMenu/XNATContourExportMenu';
 import XNATContourImportMenu from './XNATContourImportMenu/XNATContourImportMenu';
 import { refreshViewports, removeContourRoi, XNAT_EVENTS } from '../utils';
-
 import { Icon } from '@ohif/ui';
+import sessionMap from '../utils/sessionMap';
 
 import './XNATRoiPanel.styl';
 
@@ -505,12 +505,10 @@ export default class XNATContourPanel extends React.Component {
     const { viewports, activeIndex } = this.props;
     const freehand3DStore = modules.freehand3D;
 
-    // // default structurset
-    // const defaultStructureSet = freehand3DStore.getters.structureSet(
-    //   SeriesInstanceUID
-    // );
-    // const defaultStructureSetName =
-    //   defaultStructureSet.name === '_' ? '' : defaultStructureSet.name;
+    let exportDisabledMessage;
+    if (!sessionMap.hasCreatePermission()) {
+      exportDisabledMessage = 'Contour collection export is not permitted.';
+    }
 
     let component;
 
@@ -584,6 +582,7 @@ export default class XNATContourPanel extends React.Component {
               ExportCallbackOrComponent={XNATContourExportMenu}
               onImportButtonClick={() => this.setState({ importing: true })}
               onExportButtonClick={() => this.setState({ exporting: true })}
+              exportDisabledMessage={exportDisabledMessage}
             />
           </div>
 
