@@ -14,6 +14,7 @@ import { XNAT_EVENTS } from '../../utils';
 import showModal from '../../components/common/showModal';
 import MeasurementPropertyModal from '../components/MeasurementPropertyModal/MeasurementPropertyModal';
 import { XNATToolTypes } from '../measurement-tools';
+import refreshViewports from '../../utils/refreshViewports';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
@@ -94,6 +95,7 @@ class XNATMeasurementApi {
             measurementData.text = metadata.name;
             cornerstone.updateImage(element);
           }
+          refreshViewports(element);
           triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
         };
         showModal(
@@ -155,6 +157,8 @@ class XNATMeasurementApi {
       return;
     }
 
+    refreshViewports(element);
+
     triggerEvent(element, XNAT_EVENTS.MEASUREMENT_MODIFIED, {});
     // TODO: Notify about the last activated measurement
   }
@@ -175,6 +179,8 @@ class XNATMeasurementApi {
     if (this.removeMeasurement(measurementReference)) {
       triggerEvent(element, XNAT_EVENTS.MEASUREMENT_REMOVED, {});
       // TODO: Notify about the last activated measurement
+
+      refreshViewports(element);
     }
   }
 

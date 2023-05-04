@@ -13,7 +13,7 @@ import {
   XNATCircleScissorsTool,
   XNATRectangleScissorsTool,
   XNATCorrectionScissorsTool,
-  triggerSegmentCompletedEvent
+  triggerSegmentCompletedEvent,
 } from './tools';
 
 import {

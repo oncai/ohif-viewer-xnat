@@ -17,7 +17,7 @@ const modules = cornerstoneTools.store.modules;
 
 const { FREEHAND_ROI_3D_TOOL } = PEPPERMINT_TOOL_NAMES;
 
-const { getToolForElement, setToolPassive } = cornerstoneTools;
+const { getToolForElement, setToolPassiveForElement } = cornerstoneTools;
 
 /**
  * addAllPolygonsToToolStateManager - Adds polygons to the cornerstoneTools
@@ -235,12 +235,21 @@ const refreshToolStateManager = toolStateManager => {
   globalToolStateManager.restoreToolState(toolStateManager);
 
   cornerstone.getEnabledElements().forEach(enabledElement => {
-    const { element } = enabledElement;
+    const { element, viewport } = enabledElement;
+
+    const showAnnotations = viewport.hasOwnProperty('showAnnotations')
+      ? viewport.showAnnotations
+      : true;
+
+    if (!showAnnotations) {
+      return;
+    }
+
     const tool = getToolForElement(element, FREEHAND_ROI_3D_TOOL);
 
     if (tool.mode !== 'active' && tool.mode !== 'passive') {
       // If not already active or passive, set passive so contours render.
-      setToolPassive(FREEHAND_ROI_3D_TOOL);
+      setToolPassiveForElement(element, FREEHAND_ROI_3D_TOOL);
     }
 
     cornerstone.updateImage(element);

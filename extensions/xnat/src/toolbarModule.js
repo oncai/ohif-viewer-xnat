@@ -183,7 +183,7 @@ const definitions = [
         icon: 'xnat-brush-eraser',
         type: TOOLBAR_BUTTON_TYPES.SET_TOOL_ACTIVE,
         commandName: 'setToolActive',
-        commandOptions: { toolName: 'BrushEraser' },
+        commandOptions: { toolName: 'BrushEraserTool' },
       },
       {
         id: 'BrushUndo',

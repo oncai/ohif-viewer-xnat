@@ -16,6 +16,8 @@ import {
 // import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
 import XNATSmooth from './XNATSmooth';
 import XNATSync from './XNATSync';
+import XNATAnnotations from './XNATAnnotations';
+// ToDo: pull commandManager through the extension init
 import { commandsManager } from '@ohif/viewer/src/App';
 
 class XNATViewportOverlay extends React.PureComponent {
@@ -181,6 +183,9 @@ class XNATViewportOverlay extends React.PureComponent {
                 : ''}
             </div>
             <div>{seriesDescription}</div>
+            <div>
+              <XNATAnnotations viewportIndex={viewportIndex} />
+            </div>
           </div>
         </div>
       </React.Fragment>

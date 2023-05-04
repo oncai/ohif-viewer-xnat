@@ -4,6 +4,9 @@ import toolbarModule from './toolbarModule.js';
 import panelModule from './panelModule.js';
 import { version } from '../package.json';
 
+import { MEASUREMENT_TOOL_NAMES } from './XNATMeasurement';
+import { PEPPERMINT_TOOL_NAMES as ROI_TOOL_NAMES } from './peppermint-tools';
+
 export default {
   /**
    * Only required property. Should be a unique value across all extensions.
@@ -59,3 +62,15 @@ export {
 export { referenceLines } from './utils/CSReferenceLines/referenceLines';
 
 export { DATA_IMPORT_STATUS, ROI_COLOR_TEMPLATES, colorTools } from './utils';
+
+const XNAT_TOOL_NAMES = {
+  ROI_TOOL_NAMES: [...Object.values(ROI_TOOL_NAMES)],
+  MEASUREMENT_TOOL_NAMES: [...Object.values(MEASUREMENT_TOOL_NAMES)],
+};
+
+XNAT_TOOL_NAMES.ALL_ANNOTAION_TOOL_NAMES = [
+  ...XNAT_TOOL_NAMES.ROI_TOOL_NAMES,
+  ...XNAT_TOOL_NAMES.MEASUREMENT_TOOL_NAMES,
+];
+
+export { XNAT_TOOL_NAMES };

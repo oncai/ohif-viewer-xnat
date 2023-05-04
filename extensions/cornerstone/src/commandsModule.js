@@ -15,6 +15,7 @@ import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
 import {
   referenceLines,
   XNATToolStrategiesDialog,
+  XNAT_TOOL_NAMES,
 } from '@xnat-ohif/extension-xnat';
 
 const scroll = cornerstoneTools.import('util/scroll');
@@ -136,7 +137,31 @@ const commandsModule = ({ servicesManager }) => {
       if (!toolName) {
         console.warn('No toolname provided to setToolActive command');
       }
+      // Set tool active globally
       cornerstoneTools.setToolActive(toolName, toolOptions);
+      cornerstone.getEnabledElements().forEach(enabledElement => {
+        if (enabledElement.image) {
+          let showAnnotations = true;
+          const viewport = enabledElement.viewport;
+          if (viewport) {
+            showAnnotations = viewport.hasOwnProperty('showAnnotations')
+              ? viewport.showAnnotations
+              : true;
+          }
+
+          // Disable tool locally for an element, if applicable
+          if (
+            !showAnnotations &&
+            XNAT_TOOL_NAMES.ALL_ANNOTAION_TOOL_NAMES.includes(toolName)
+          ) {
+            cornerstoneTools.setToolDisabledForElement(
+              enabledElement.element,
+              toolName
+            );
+            cornerstoneTools.setInactiveCursor(enabledElement.element);
+          }
+        }
+      });
 
       /*
       if (toolStrategies && toolStrategies.length) {

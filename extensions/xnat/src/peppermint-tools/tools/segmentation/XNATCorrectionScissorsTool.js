@@ -10,7 +10,7 @@ import triggerSegmentCompletedEvent from './triggerSegmentCompletedEvent';
 
 const { CorrectionScissorsTool } = csTools;
 
-export default class XNATCircleScissorsTool extends CorrectionScissorsTool {
+export default class XNATCorrectionScissorsTool extends CorrectionScissorsTool {
   constructor(props = {}) {
     const defaultProps = {
       name: TOOL_NAMES.XNAT_CORRECTION_SCISSORS_TOOL,

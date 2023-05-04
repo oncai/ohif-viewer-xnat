@@ -71,7 +71,7 @@
     "core-js": "^3.2.1",
     "cornerstone-core": "^2.6.0",
     "cornerstone-math": "^0.1.9",
-    "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#v5.3.0",
+    "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#v5.0.3-Patch.1",
     "cornerstone-wado-image-loader": "^4.1.0",
     "dcmjs": "0.19.2",
     "dicom-parser": "^1.8.11",

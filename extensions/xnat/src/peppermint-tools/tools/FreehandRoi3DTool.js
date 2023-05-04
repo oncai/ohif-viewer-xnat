@@ -902,6 +902,20 @@ export default class FreehandRoi3DTool extends FreehandRoiTool {
 
     return distance;
   }
+
+  /**
+   * @param {Object} image image
+   * @param {Object} element element
+   * @param {Object} data data
+   *
+   * @returns {void}  void
+   */
+  updateCachedStats(image, element, data) {
+    // It can be triggered for other 'BaseAnnotationTool' tools
+    if (data.handles && data.handles.points) {
+      super.updateCachedStats(image, element, data);
+    }
+  }
 }
 
 function defaultFreehandConfiguration() {

@@ -482,6 +482,8 @@ export default class XNATSegmentationPanel extends React.Component {
       labelmap3D.activeSegmentIndex = newSegmentIndex;
     }
 
+    refreshViewports(element);
+
     this.setState({
       segments,
       activeSegmentIndex: newSegmentIndex,
