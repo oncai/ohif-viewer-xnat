@@ -95,7 +95,7 @@ class ImageFusionDialog extends PureComponent {
 
     // Add an empty entry to the list
     updatedLayerList.push({
-      displaySetInstanceUID: undefined,
+      displaySetInstanceUID: 'none',
       SeriesDescription: 'Select fusion image',
     });
 
@@ -126,6 +126,18 @@ class ImageFusionDialog extends PureComponent {
       };
       validDisplaySets.forEach(ds => {
         if (ds.isReconstructable) {
+          let isColor = false;
+          const firstImage = ds.getImage(0);
+          if (firstImage) {
+            const metadata = firstImage.getData().metadata;
+            if (
+              metadata.PhotometricInterpretation === 'RGB' ||
+              metadata.SamplesPerPixel === 3
+            ) {
+              isColor = true;
+            }
+          }
+
           studyLayerList.layers.push({
             displaySetInstanceUID: ds.displaySetInstanceUID,
             SeriesInstanceUID: ds.SeriesInstanceUID,
@@ -133,6 +145,7 @@ class ImageFusionDialog extends PureComponent {
             SeriesNumber: ds.SeriesNumber,
             SeriesDescription: ds.SeriesDescription,
             StudyInstanceUID: StudyInstanceUID,
+            isColor,
           });
         }
       });
@@ -155,10 +168,12 @@ class ImageFusionDialog extends PureComponent {
     const target = evt.target;
     const displaySetInstanceUID = target.value;
     const StudyInstanceUID = target.selectedOptions[0].dataset.studyuid;
+    const isColor = target.selectedOptions[0].dataset.iscolor === 'true';
 
     this.updateStore({
       displaySetInstanceUID,
       StudyInstanceUID,
+      isColor,
     });
   }
 
@@ -198,6 +213,7 @@ class ImageFusionDialog extends PureComponent {
       colormap,
       opacity,
       fusionActive,
+      isColor,
     } = imageFusionData;
 
     if (layerList.length < 2) {
@@ -246,6 +262,7 @@ class ImageFusionDialog extends PureComponent {
                     key={index}
                     value={ds.displaySetInstanceUID}
                     data-studyuid={ds.StudyInstanceUID}
+                    data-iscolor={ds.isColor}
                   >
                     {generateLayerEntryInfo(ds)}
                   </option>
@@ -263,7 +280,7 @@ class ImageFusionDialog extends PureComponent {
           <h5>Image Fusion</h5>
           <div className="row">
             {layerListContent}
-            {displaySetInstanceUID && (
+            {displaySetInstanceUID !== 'none' && (
               <button onClick={this.onApplyFusion}>
                 {fusionActive ? 'Remove' : 'Apply'}
               </button>
@@ -271,17 +288,19 @@ class ImageFusionDialog extends PureComponent {
           </div>
           {fusionActive && (
             <div className="row">
-              <div className="group">
-                <Icon name="xnat-colormap" width="18px" height="18px" />
-                <select value={colormap} onChange={this.onColormapChanged}>
-                  {this.colormapList.map(color => (
-                    <option key={color.id} value={color.id}>
-                      {color.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="group">
+              {!isColor && (
+                <div className="group">
+                  <Icon name="xnat-colormap" width="18px" height="18px"/>
+                  <select value={colormap} onChange={this.onColormapChanged}>
+                    {this.colormapList.map(color => (
+                      <option key={color.id} value={color.id}>
+                        {color.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={`group${isColor ? ' fullWidth' : ''}`}>
                 <Icon name="xnat-opacity" width="22px" height="22px" />
                 <Range
                   value={Number((opacity * 100).toFixed(0))}

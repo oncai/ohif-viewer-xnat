@@ -1,6 +1,6 @@
 const DEFAULT_FUSION_DATA = {
   StudyInstanceUID: undefined,
-  displaySetInstanceUID: undefined,
+  displaySetInstanceUID: 'none',
   colormap: 'hotIron',
   opacity: 0.5,
   fusionActive: false,
