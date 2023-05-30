@@ -23,8 +23,8 @@ export default {
   preRegistration({ servicesManager, commandsManager, configuration = {} }) {
     init({ servicesManager, commandsManager, configuration });
   },
-  getToolbarModule({ servicesManager }) {
-    return toolbarModule;
+  getToolbarModule({ commandsManager, servicesManager }) {
+    return toolbarModule({ commandsManager, servicesManager });
   },
   getCommandsModule({ servicesManager }) {
     return commandsModule;

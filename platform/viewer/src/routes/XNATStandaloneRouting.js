@@ -605,12 +605,19 @@ function setValidOverlaySeries(studies) {
     study.displaySets.forEach((displaySet, displaySetIndex, displaySets) => {
       displaySet.validOverlayDisplaySets = {};
       if (backgroundModalities.includes(displaySet.Modality)) {
+        // Exclude multi-frame images
+        if (displaySet.isMultiFrame) {
+          return;
+        }
         // Add series within this study
         // ToDo: use reliable checks (IOP & IPP)
         const sameStudyOverlays = [];
         for (let i = 0; i < displaySets.length; i++) {
           if (i !== displaySetIndex) {
-            if (overlayModalities.includes(displaySets[i].Modality)) {
+            if (
+              overlayModalities.includes(displaySets[i].Modality) &&
+              !displaySets[i].isMultiFrame
+            ) {
               sameStudyOverlays.push(displaySets[i].displaySetInstanceUID);
             }
           }
@@ -629,7 +636,8 @@ function setValidOverlaySeries(studies) {
             studies[i].displaySets.forEach(ds => {
               if (
                 displaySet.FrameOfReferenceUID === ds.FrameOfReferenceUID &&
-                overlayModalities.includes(ds.Modality)
+                overlayModalities.includes(ds.Modality) &&
+                !ds.isMultiFrame
               ) {
                 otherStudyOverlays.push(ds.displaySetInstanceUID);
               }

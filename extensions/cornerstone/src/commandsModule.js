@@ -17,6 +17,7 @@ import {
   XNATToolStrategiesDialog,
   XNAT_TOOL_NAMES,
 } from '@xnat-ohif/extension-xnat';
+import resetViewport from './utils/resetViewport';
 
 const scroll = cornerstoneTools.import('util/scroll');
 
@@ -109,7 +110,7 @@ const commandsModule = ({ servicesManager }) => {
         const enabledElement = cornerstone.getEnabledElement(element);
         const pixelReplication = enabledElement.viewport.pixelReplication;
         setWindowing(enabledElement.uuid, 'Default');
-        cornerstone.reset(element);
+        resetViewport(enabledElement);
         if (pixelReplication) {
           const updatedEnabledElement = cornerstone.getEnabledElement(element);
           updatedEnabledElement.viewport.pixelReplication = pixelReplication;

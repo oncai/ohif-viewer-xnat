@@ -107,7 +107,6 @@ VTKImageFusionButton.propTypes = {
 };
 
 VTKImageFusionButton.defaultProps = {
-  isVTK: false,
 };
 
 export default VTKImageFusionButton;

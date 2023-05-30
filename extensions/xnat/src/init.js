@@ -5,6 +5,7 @@ import { AIAAProbeTool, AIAAModule } from './aiaa-tools';
 import { MONAIProbeTool, MONAIModule } from './MONAILabelClient';
 
 import { initXNATMeasurement } from './XNATMeasurement';
+import { initImageFusion } from './XNATImageFusion';
 
 const { store, register, addTool } = cornerstoneTools;
 const { modules } = store;
@@ -42,6 +43,12 @@ export default function init({
   });
 
   initXNATMeasurement({
+    servicesManager,
+    commandsManager,
+    configuration,
+  });
+
+  initImageFusion({
     servicesManager,
     commandsManager,
     configuration,

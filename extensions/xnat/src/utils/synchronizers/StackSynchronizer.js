@@ -1,4 +1,5 @@
 import csTools from 'cornerstone-tools';
+import createSynchronizer from './createSynchronizer';
 
 class StackSynchronizer {
   constructor() {
@@ -61,10 +62,7 @@ class StackSynchronizer {
       handler = csTools.stackImagePositionSynchronizer;
     }
 
-    this[strategyName] = new csTools.Synchronizer(
-      'cornerstonenewimage',
-      handler
-    );
+    this[strategyName] = createSynchronizer('cornerstonenewimage', handler);
   }
 
   isSyncEnabled(element) {
