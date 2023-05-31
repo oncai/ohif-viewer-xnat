@@ -165,15 +165,31 @@ class ImageFusionDialog extends PureComponent {
   }
 
   onActiveScanChange(evt) {
+    const { viewportSpecificData } = this.props;
+    const { imageFusionData } = viewportSpecificData;
+
     const target = evt.target;
     const displaySetInstanceUID = target.value;
-    const StudyInstanceUID = target.selectedOptions[0].dataset.studyuid;
-    const isColor = target.selectedOptions[0].dataset.iscolor === 'true';
+    const targetDataset = target.selectedOptions[0].dataset;
+    const StudyInstanceUID = targetDataset.studyuid;
+    const isColor = targetDataset.iscolor === 'true';
+    const seriesNumber = targetDataset.seriesnumber || '';
+
+    const fusionDescription = `Fusion: Ser-${seriesNumber}`;
+    let colormapName = '';
+    if (!isColor) {
+      const colormap = this.colormapList.find(
+        color => color.id === imageFusionData.colormap
+      );
+      colormapName = colormap && colormap.name ? colormap.name : '';
+    }
 
     this.updateStore({
       displaySetInstanceUID,
       StudyInstanceUID,
       isColor,
+      fusionDescription,
+      colormapName,
     });
   }
 
@@ -191,7 +207,12 @@ class ImageFusionDialog extends PureComponent {
 
     this.updateFusionLayer({ colormap });
 
-    this.updateStore({ colormap });
+    const colormapObj = this.colormapList.find(
+      color => color.id === colormap
+    );
+    const colormapName = colormapObj && colormapObj.name ? colormapObj.name : '';
+
+    this.updateStore({ colormap, colormapName });
   }
 
   onOpacityChanged(evt) {
@@ -263,6 +284,7 @@ class ImageFusionDialog extends PureComponent {
                     value={ds.displaySetInstanceUID}
                     data-studyuid={ds.StudyInstanceUID}
                     data-iscolor={ds.isColor}
+                    data-seriesnumber={ds.SeriesNumber}
                   >
                     {generateLayerEntryInfo(ds)}
                   </option>

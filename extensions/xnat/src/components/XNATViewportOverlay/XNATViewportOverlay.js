@@ -140,6 +140,20 @@ class XNATViewportOverlay extends React.PureComponent {
     };
     */
 
+    let fusionDescription = null;
+    const viewportSpecificData = window.store.getState().viewports
+      .viewportSpecificData[viewportIndex];
+    if (viewportSpecificData && viewportSpecificData.imageFusionData) {
+      const imageFusionData = viewportSpecificData.imageFusionData;
+      fusionDescription =
+        imageFusionData.fusionActive && imageFusionData.fusionDescription
+          ? imageFusionData.fusionDescription
+          : null;
+      if (fusionDescription && imageFusionData.colormapName) {
+        fusionDescription += ` [${imageFusionData.colormapName}]`;
+      }
+    }
+
     const normal = (
       <React.Fragment>
         <div className="top-left overlay-element">
@@ -159,6 +173,7 @@ class XNATViewportOverlay extends React.PureComponent {
           <div>{wwwc}</div>
           {windowing && <div>{`Windowing: ${windowing}`}</div>}
           <div className="compressionIndicator">{compression}</div>
+          <div>{fusionDescription}</div>
         </div>
         {/*<div className="bottom-left2 warning">*/}
         {/*  <div>{inconsistencyWarningsOn ? getWarningInfo(seriesNumber, inconsistencyWarnings) : ''}</div>*/}
