@@ -1,4 +1,3 @@
-import { log } from '@ohif/core';
 import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
 import { updateImageSynchronizer } from '../synchronizers';

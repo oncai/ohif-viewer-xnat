@@ -1,3 +1,4 @@
+import React from 'react';
 import cornerstone from 'cornerstone-core';
 import CornerstoneViewport from 'react-cornerstone-viewport';
 import OHIF from '@ohif/core';
@@ -5,6 +6,7 @@ import { connect } from 'react-redux';
 import throttle from 'lodash.throttle';
 import {
   setEnabledElement,
+  getEnabledElement,
   setActiveViewportIndex,
   getActiveViewportIndex,
   setWindowing,
@@ -13,6 +15,7 @@ import {
 import {
   referenceLines,
   updateImageSynchronizer,
+  XNATViewportOverlay,
 } from '@xnat-ohif/extension-xnat';
 import getDisplayedArea from './utils/getDisplayedArea';
 
@@ -221,9 +224,34 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   };
 };
 
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  const { viewportIndex, getWindowing } = ownProps;
+  const { setViewportActive } = dispatchProps;
+
+  const ViewportOverlay = props => {
+    return (
+      <XNATViewportOverlay
+        {...props}
+        viewportIndex={viewportIndex}
+        getWindowing={getWindowing}
+        setViewportActive={setViewportActive}
+        getEnabledElement={getEnabledElement}
+      />
+    );
+  };
+
+  return {
+    ...stateProps,
+    ...dispatchProps,
+    ...ownProps,
+    viewportOverlayComponent: ViewportOverlay,
+  };
+};
+
 const ConnectedCornerstoneViewport = connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
+  mergeProps
 )(CornerstoneViewport);
 
 export default ConnectedCornerstoneViewport;

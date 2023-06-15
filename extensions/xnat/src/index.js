@@ -61,7 +61,12 @@ export {
 
 export { referenceLines } from './utils/CSReferenceLines/referenceLines';
 
-export { DATA_IMPORT_STATUS, ROI_COLOR_TEMPLATES, colorTools } from './utils';
+export {
+  DATA_IMPORT_STATUS,
+  ROI_COLOR_TEMPLATES,
+  colorTools,
+  viewportOptionsManager,
+} from './utils';
 
 const XNAT_TOOL_NAMES = {
   ROI_TOOL_NAMES: [...Object.values(ROI_TOOL_NAMES)],

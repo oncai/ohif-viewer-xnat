@@ -48,8 +48,17 @@ export default {
         jumpData.refreshViewports = false;
         commandsManager.runCommand('jumpToImage', jumpData);
       };
+
+      const getWindowing = viewportIndex => {
+        return commandsManager.runCommand('getWindowing', { viewportIndex });
+      };
+
       return (
-        <OHIFCornerstoneViewport {...props} onNewImage={onNewImageHandler} />
+        <OHIFCornerstoneViewport
+          {...props}
+          onNewImage={onNewImageHandler}
+          getWindowing={getWindowing}
+        />
       );
     };
 
