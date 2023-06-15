@@ -48,6 +48,11 @@ const defaultState = {
       name: 'Load image slices from the middle',
       enabled: false,
     },
+    ShowModalOnNewAnnotation: {
+      id: 'ShowModalOnNewAnnotation',
+      name: 'Show options dialog on creating a new annotation',
+      enabled: true,
+    },
   },
 };
 
