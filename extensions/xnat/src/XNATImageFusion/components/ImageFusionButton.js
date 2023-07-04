@@ -30,7 +30,7 @@ class ImageFusionButton extends PureComponent {
     if (isActive) {
       UIDialogService.dismiss({ id: DIALOG_ID });
     } else {
-      const spacing = 20;
+      const spacing = [35, 5];
       const { x, y } = document
         .querySelector(`.ViewerMain`)
         .getBoundingClientRect();
@@ -42,8 +42,8 @@ class ImageFusionButton extends PureComponent {
           commandsManager: commandsManager,
         },
         defaultPosition: {
-          x: x + spacing || 0,
-          y: y + spacing || 0,
+          x: x + spacing[0] || 0,
+          y: y + spacing[1] || 0,
         },
       });
     }

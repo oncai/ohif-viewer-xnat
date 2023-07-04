@@ -465,15 +465,15 @@ function _handleBuiltIn(button) {
         ],
       }));
     } else {
-      const spacing = 20;
+      const spacing = [35, 5];
       const { x, y } = document
         .querySelector(`.ViewerMain`)
         .getBoundingClientRect();
       const newDialogId = dialog.create({
         content: ConnectedCineDialog,
         defaultPosition: {
-          x: x + spacing || 0,
-          y: y + spacing || 0,
+          x: x + spacing[0] || 0,
+          y: y + spacing[1] || 0,
         },
       });
       this.setState(state => ({
