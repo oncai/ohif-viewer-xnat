@@ -11,7 +11,7 @@ import NotFound from '../routes/NotFound';
 import { isLoggedIn, xnatAuthenticate } from '@xnat-ohif/extension-xnat';
 
 const { log, metadata, utils } = OHIF;
-const { studyMetadataManager } = utils;
+const { studyMetadataManager, metadataUtils } = utils;
 const { OHIFStudyMetadata } = metadata;
 
 class XNATStandaloneRouting extends Component {
@@ -379,6 +379,9 @@ const _mapStudiesToNewFormat = studies => {
     studyMetadataManager.add(studyMetadata);
     uniqueStudyUIDs.add(study.StudyInstanceUID);
 
+    // Create display sets for substacks, where applicable
+    studyMetadata.createDisplaySetsForSubStacks();
+
     return study;
   });
 
@@ -531,7 +534,24 @@ async function updateMetaDataProvider(studies) {
           // OverlayData is loaded conditionally in metadataProvider.addInstance
 
           // Add instance to metadata provider.
-          await metadataProvider.addInstance(naturalizedDicom, { imageId });
+          const addedInstance = await metadataProvider.addInstance(
+            naturalizedDicom,
+            { imageId }
+          );
+          if (metadataUtils.isEnhancedSOP(addedInstance.SOPClassUID)) {
+            const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
+              addedInstance
+            );
+            if (naturalizedMetadataList) {
+              series.subInstances = [];
+              for (let j = 0; j < naturalizedMetadataList.length; j++) {
+                series.subInstances.push({
+                  metadata: naturalizedMetadataList[j],
+                  url: `${imageId}?frame=${j}`,
+                });
+              }
+            }
+          }
 
           // Add imageId specific mapping to this data as the URL isn't necessarily WADO-URI.
           // I.e. here the imageId is added w/o frame number for multi-frame images
@@ -543,6 +563,25 @@ async function updateMetaDataProvider(studies) {
           });
         })
       );
+    }
+  }
+
+  // Parse Enhanced SOPs, if exists, and add their forked instances to MetadataProvider
+  for (const study of studies) {
+    StudyInstanceUID = study.StudyInstanceUID;
+    for (const series of study.series) {
+      SeriesInstanceUID = series.SeriesInstanceUID;
+      if (series.subInstances) {
+        series.subInstances.forEach(instance => {
+          const { url: imageId, metadata: naturalizedDicom } = instance;
+          metadataProvider.addInstancesFromEnhancedSOP(naturalizedDicom);
+          metadataProvider.addImageIdToUIDs(imageId, {
+            StudyInstanceUID,
+            SeriesInstanceUID,
+            SOPInstanceUID: naturalizedDicom.SOPInstanceUID,
+          });
+        });
+      }
     }
   }
 }
@@ -616,7 +655,8 @@ function setValidOverlaySeries(studies) {
           if (i !== displaySetIndex) {
             if (
               overlayModalities.includes(displaySets[i].Modality) &&
-              !displaySets[i].isMultiFrame
+              !displaySets[i].isMultiFrame &&
+              !displaySets[i].isSubStack
             ) {
               sameStudyOverlays.push(displaySets[i].displaySetInstanceUID);
             }
@@ -637,7 +677,8 @@ function setValidOverlaySeries(studies) {
               if (
                 displaySet.FrameOfReferenceUID === ds.FrameOfReferenceUID &&
                 overlayModalities.includes(ds.Modality) &&
-                !ds.isMultiFrame
+                !ds.isMultiFrame &&
+                !ds.isSubStack
               ) {
                 otherStudyOverlays.push(ds.displaySetInstanceUID);
               }

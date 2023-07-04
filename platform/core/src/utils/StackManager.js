@@ -39,7 +39,13 @@ function createAndAddStack(stackMap, study, displaySet, stackUpdatedCallbacks) {
     const naturalizedInstance = instance.getData().metadata;
     const NumberOfFrames = naturalizedInstance.NumberOfFrames;
 
-    if (NumberOfFrames > 1) {
+    if (displaySet.isEnhanced) {
+      for (let i = 0; i < NumberOfFrames; i++) {
+        metaData.frameNumber = i;
+        imageId = getImageId(image, i);
+        imageIds.push(imageId);
+      }
+    } else if (NumberOfFrames > 1) {
       for (let i = 0; i < NumberOfFrames; i++) {
         metaData.frameNumber = i;
         imageId = getImageId(image, i);

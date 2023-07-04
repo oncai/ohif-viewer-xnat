@@ -33,8 +33,8 @@ class XNATViewportOverlay extends React.PureComponent {
     getWindowing: PropTypes.func,
     setViewportActive: PropTypes.func,
     getEnabledElement: PropTypes.func,
-    // setViewportSpecificData: PropTypes.func,
-    // viewportOptions: PropTypes.object,
+    getViewportSpecificData: PropTypes.func,
+    setViewportStackData: PropTypes.func,
   };
 
   static defaultProps = {};
@@ -67,15 +67,79 @@ class XNATViewportOverlay extends React.PureComponent {
     });
   }
 
+  getAuxiliaryInformation() {
+    const { viewportIndex, imageIndex, getViewportSpecificData } = this.props;
+
+    const auxiliaryInformation = {
+      fusionDescription: null,
+      stackDescription: null,
+    };
+
+    // const viewportSpecificData = window.store.getState().viewports
+    //   .viewportSpecificData[viewportIndex];
+    const viewportSpecificData = getViewportSpecificData();
+    if (!viewportSpecificData) {
+      return auxiliaryInformation;
+    }
+
+    // Image fusion information
+    const imageFusionData = viewportSpecificData.imageFusionData;
+    if (imageFusionData) {
+      let fusionDescription =
+        imageFusionData.fusionActive && imageFusionData.fusionDescription
+          ? imageFusionData.fusionDescription
+          : null;
+      if (fusionDescription && imageFusionData.colormapName) {
+        fusionDescription += ` [${imageFusionData.colormapName}]`;
+      }
+      auxiliaryInformation.fusionDescription = fusionDescription;
+    }
+
+    // Stack information
+    if (viewportSpecificData.isSubStack) {
+      const { stackData, getSubStackGroupData } = viewportSpecificData;
+      const {
+        mainDimensionIndex,
+        otherDimensionIndices,
+        stackName,
+        refIndices,
+      } = stackData;
+      const { groupLabels, dimensionValues } = getSubStackGroupData();
+
+      const refIndex = refIndices[imageIndex - 1];
+      const refValues = dimensionValues[refIndex];
+
+      if (refValues !== undefined) {
+        const stackValues = [];
+        for (let i = 1; i < refValues.length; i++) {
+          stackValues.push(`${groupLabels[i].groupName}: ${refValues[i]}`);
+        }
+
+        auxiliaryInformation.stackDescription = (
+          <>
+            <div>{`Stack: ${stackName}`}</div>
+            <div>{`[${stackValues.join(', ')}]`}</div>
+          </>
+        );
+      }
+    }
+
+    return auxiliaryInformation;
+  }
+
   render() {
     const {
       imageId,
       scale,
       windowWidth,
       windowCenter,
+      imageIndex,
+      stackSize,
       viewportIndex,
       getWindowing,
       setViewportActive,
+      getViewportSpecificData,
+      setViewportStackData,
     } = this.props;
 
     const { viewportOptions } = this.state;
@@ -134,23 +198,12 @@ class XNATViewportOverlay extends React.PureComponent {
       } L: ${windowCenter.toFixed ? windowCenter.toFixed(0) : windowCenter}`;
       const imageDimensions = `${columns} x ${rows}`;
 
-      const { imageIndex, stackSize } = this.props;
-
       const windowing = getWindowing(viewportIndex);
 
-      let fusionDescription = null;
-      const viewportSpecificData = window.store.getState().viewports
-        .viewportSpecificData[viewportIndex];
-      if (viewportSpecificData && viewportSpecificData.imageFusionData) {
-        const imageFusionData = viewportSpecificData.imageFusionData;
-        fusionDescription =
-          imageFusionData.fusionActive && imageFusionData.fusionDescription
-            ? imageFusionData.fusionDescription
-            : null;
-        if (fusionDescription && imageFusionData.colormapName) {
-          fusionDescription += ` [${imageFusionData.colormapName}]`;
-        }
-      }
+      const {
+        fusionDescription,
+        stackDescription,
+      } = this.getAuxiliaryInformation();
 
       overlayContent = (
         <React.Fragment>
@@ -194,6 +247,9 @@ class XNATViewportOverlay extends React.PureComponent {
                   : ''}
               </div>
               <div>{seriesDescription}</div>
+              <div style={{ color: 'var(--snackbar-warning)' }}>
+                {stackDescription}
+              </div>
             </div>
           </div>
         </React.Fragment>
@@ -206,6 +262,9 @@ class XNATViewportOverlay extends React.PureComponent {
           viewportIndex={viewportIndex}
           viewportOptions={viewportOptions}
           updateViewportOptions={this.updateViewportOptions}
+          setViewportActive={setViewportActive}
+          getViewportSpecificData={getViewportSpecificData}
+          setViewportStackData={setViewportStackData}
         />
         {overlayContent}
       </div>

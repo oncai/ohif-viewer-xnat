@@ -52,6 +52,7 @@ const XNATSeriesThumbnails = props => {
         seriesNotation,
         SOPInstanceUID,
         modality,
+        isMultiStack,
       } = thumb;
 
       return (
@@ -86,6 +87,7 @@ const XNATSeriesThumbnails = props => {
             SOPInstanceUID={SOPInstanceUID}
             //
             modality={modality}
+            isMultiStack={isMultiStack}
           />
         </div>
       );

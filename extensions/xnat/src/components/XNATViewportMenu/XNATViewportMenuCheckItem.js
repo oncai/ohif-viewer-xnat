@@ -1,4 +1,4 @@
-import React, {memo, useState} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
 import { CheckIcon } from '../../elements';

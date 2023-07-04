@@ -19,7 +19,11 @@ import {
 } from '@xnat-ohif/extension-xnat';
 import getDisplayedArea from './utils/getDisplayedArea';
 
-const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
+const {
+  setViewportActive,
+  setViewportSpecificData,
+  setActiveViewportSpecificData,
+} = OHIF.redux.actions;
 const {
   onAdded,
   onRemoved,
@@ -125,6 +129,10 @@ const mapStateToProps = (state, ownProps) => {
   const viewportSpecificData =
     state.viewports.viewportSpecificData[viewportIndex] || {};
 
+  const getViewportSpecificData = () => {
+    return viewportSpecificData;
+  };
+
   // CINE
   let isPlaying = false;
   let frameRate = 24;
@@ -148,6 +156,7 @@ const mapStateToProps = (state, ownProps) => {
     frameRate,
     //stack: viewportSpecificData.stack,
     // viewport: viewportSpecificData.viewport,
+    getViewportSpecificData,
   };
 };
 
@@ -165,6 +174,10 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
     setViewportSpecificData: data => {
       dispatch(setViewportSpecificData(viewportIndex, data));
+    },
+
+    setActiveViewportSpecificData: data => {
+      dispatch(setActiveViewportSpecificData(data));
     },
 
     /**
@@ -225,8 +238,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 };
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  const { getViewportSpecificData } = stateProps;
   const { viewportIndex, getWindowing } = ownProps;
-  const { setViewportActive } = dispatchProps;
+  const { setViewportActive, setActiveViewportSpecificData } = dispatchProps;
 
   const ViewportOverlay = props => {
     return (
@@ -236,14 +250,16 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
         getWindowing={getWindowing}
         setViewportActive={setViewportActive}
         getEnabledElement={getEnabledElement}
+        getViewportSpecificData={getViewportSpecificData}
+        setViewportStackData={setActiveViewportSpecificData}
       />
     );
   };
 
   return {
+    ...ownProps,
     ...stateProps,
     ...dispatchProps,
-    ...ownProps,
     viewportOverlayComponent: ViewportOverlay,
   };
 };

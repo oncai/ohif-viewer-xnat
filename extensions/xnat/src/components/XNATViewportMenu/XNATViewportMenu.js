@@ -2,6 +2,7 @@ import React, { memo, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
 import XNATViewportMenuCheckItem from './XNATViewportMenuCheckItem';
+import XNATViewportMenuStackSwitch from './XNATViewportMenuStackSwitch';
 
 import './XNATViewportMenu.styl';
 
@@ -40,10 +41,44 @@ const NavButtonWithToggle = props => {
 };
 
 const XNATViewportMenu = props => {
-  const { viewportIndex, viewportOptions, updateViewportOptions } = props;
+  const {
+    viewportIndex,
+    viewportOptions,
+    setViewportActive,
+    getViewportSpecificData,
+    setViewportStackData,
+  } = props;
 
   const [isExpanded, setExpanded] = useState(false);
   const menuRef = useRef(null);
+
+  const updateViewportOptions = optionsObject => {
+    props.updateViewportOptions(optionsObject);
+    setExpanded(false);
+  };
+
+  const updateViewportStackData = data => {
+    if (!data) {
+      return;
+    }
+    setViewportStackData(data);
+  };
+
+  let stackSwitchMenu = null;
+  if (isExpanded) {
+    const stackData = getStackData(getViewportSpecificData, viewportIndex);
+    if (stackData) {
+      stackSwitchMenu = (
+        <XNATViewportMenuStackSwitch
+          stackData={stackData}
+          viewportIndex={viewportIndex}
+          updateViewportStackData={updateViewportStackData}
+          closeViewportMenu={() => setExpanded(false)}
+          setViewportActive={setViewportActive}
+        />
+      );
+    }
+  }
 
   const onClickNavButton = evt => {
     evt.stopPropagation();
@@ -53,6 +88,7 @@ const XNATViewportMenu = props => {
   return (
     <div
       className={`XNATViewportMenu${isExpanded ? ' isExpanded' : ''}`}
+      style={isExpanded && stackSwitchMenu !== null ? { height: 185 } : {}}
       ref={menuRef}
     >
       {/*Top row*/}
@@ -100,6 +136,7 @@ const XNATViewportMenu = props => {
             isChecked={viewportOptions.overlay}
             onClick={updateViewportOptions}
           />
+          {stackSwitchMenu}
         </ul>
       )}
     </div>
@@ -110,8 +147,22 @@ XNATViewportMenu.propTypes = {
   viewportIndex: PropTypes.number.isRequired,
   viewportOptions: PropTypes.object.isRequired,
   updateViewportOptions: PropTypes.func.isRequired,
+  setViewportActive: PropTypes.func.isRequired,
+  getViewportSpecificData: PropTypes.func.isRequired,
+  setViewportStackData: PropTypes.func.isRequired,
 };
 
 XNATViewportMenu.defaultProps = {};
+
+const getStackData = (getViewportSpecificData, viewportIndex) => {
+  const viewportSpecificData = getViewportSpecificData();
+  if (!viewportSpecificData) {
+    return;
+  }
+
+  if (viewportSpecificData.isMultiStack || viewportSpecificData.isSubStack) {
+    return viewportSpecificData.getSubStackGroupData();
+  }
+};
 
 export default memo(XNATViewportMenu);

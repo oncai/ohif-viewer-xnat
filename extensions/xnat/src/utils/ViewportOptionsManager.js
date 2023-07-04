@@ -16,7 +16,6 @@ const defaultSate = {
   sync: false,
   overlay: true,
   annotate: true,
-  subStackUid: undefined,
 };
 
 class ViewportOptionsManager {
@@ -109,14 +108,10 @@ class ViewportOptionsManager {
       cornerstone.updateImage(element);
     }
 
-    if (updatedOptions.subStackUid !== state.subStackUid) {
-    }
-
     state.smooth = updatedOptions.smooth;
     state.sync = updatedOptions.sync;
     state.overlay = updatedOptions.overlay;
     state.annotate = updatedOptions.annotate;
-    state.subStackUid = updatedOptions.subStackUid;
 
     return updatedOptions;
   }

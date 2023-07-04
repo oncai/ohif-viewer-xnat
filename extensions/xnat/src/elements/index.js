@@ -44,6 +44,7 @@ import xnatSmooth from './icons/xnat-smooth.svg';
 import xnatSync from './icons/xnat-sync.svg';
 import xnatAnnotate from './icons/xnat-annotate.svg';
 import xnatViewportOverlay from './icons/xnat-viewport-overlay.svg';
+import xnatStack from './icons/xnat-stack.svg';
 
 import Loader from './Loader/Loader';
 
@@ -103,6 +104,7 @@ const XNATICONS = {
   'xnat-sync': xnatSync,
   'xnat-annotate': xnatAnnotate,
   'xnat-viewport-overlay': xnatViewportOverlay,
+  'xnat-stack': xnatStack,
 };
 
 export {

@@ -80,15 +80,22 @@ class ViewerMain extends Component {
       (viewportAmount !== prevViewportAmount && !isVtk)
     ) {
       const displaySets = this.getDisplaySets(this.props.studies);
-      this.setState({ displaySets }, this.fillEmptyViewportPanes);
+      this.setState({ displaySets }, () => {
+        this.fillEmptyViewportPanes(prevViewportAmount);
+      });
     }
   }
 
-  fillEmptyViewportPanes = () => {
+  fillEmptyViewportPanes = (prevViewportAmount) => {
     // TODO: Here is the entry point for filling viewports on load.
     const dirtyViewportPanes = [];
     const { layout, viewportSpecificData } = this.props;
-    const { displaySets } = this.state;
+    const { displaySets: sourceDisplaySets } = this.state;
+
+    // Filter out substack display sets
+    const displaySets = sourceDisplaySets.filter(
+      displaySet => !displaySet.isSubStack
+    );
 
     if (!displaySets || !displaySets.length) {
       return;
@@ -127,6 +134,7 @@ class ViewerMain extends Component {
           viewportIndex: i,
           StudyInstanceUID: vp.StudyInstanceUID,
           displaySetInstanceUID: vp.displaySetInstanceUID,
+          resetPreviousData: i >= prevViewportAmount,
         });
       }
     });
@@ -136,6 +144,7 @@ class ViewerMain extends Component {
     viewportIndex,
     StudyInstanceUID,
     displaySetInstanceUID,
+    resetPreviousData = false,
   }) => {
     let displaySet = this.findDisplaySet(
       this.props.studies,
@@ -175,7 +184,21 @@ class ViewerMain extends Component {
       }
     }
 
-    this.props.setViewportSpecificData(viewportIndex, displaySet);
+    if (displaySet.isMultiStack && displaySet.getSubStackGroupData) {
+      const subStackGroupData = displaySet.getSubStackGroupData();
+      const stackDisplaySet = subStackGroupData.getStackDisplaySet({
+        viewportIndex,
+      });
+      if (stackDisplaySet) {
+        displaySet = stackDisplaySet;
+      }
+    }
+
+    this.props.setViewportSpecificData(
+      viewportIndex,
+      displaySet,
+      resetPreviousData
+    );
   };
 
   render() {

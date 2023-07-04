@@ -15,7 +15,12 @@ const ViewportPane = function (props) {
       if (canDrop && isOver && onDrop) {
         const { StudyInstanceUID, displaySetInstanceUID } = droppedItem;
 
-        onDrop({ viewportIndex, StudyInstanceUID, displaySetInstanceUID });
+        onDrop({
+          viewportIndex,
+          StudyInstanceUID,
+          displaySetInstanceUID,
+          resetPreviousData: true,
+        });
       }
     },
     // Monitor, and collect props.

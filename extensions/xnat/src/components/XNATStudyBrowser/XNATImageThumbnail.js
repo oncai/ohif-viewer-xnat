@@ -10,6 +10,7 @@ import ViewportErrorIndicator from './ViewportErrorIndicator';
 import ViewportLoadingIndicator from './ViewportLoadingIndicator';
 import DisplaySetLoadingIndicator from './DisplaySetLoadingIndicator';
 import renderThumbnailOverlay from './utils/renderThumbnailOverlay';
+import { Icon } from '@ohif/ui';
 
 // TODO: How should we have this component depend on Cornerstone?
 // - Passed in as a prop?
@@ -27,6 +28,7 @@ function XNATImageThumbnail(props) {
     error: propsError,
     displaySetInstanceUID,
     modality,
+    isMultiStack,
   } = props;
 
   const [isLoading, setLoading] = useState(false);
@@ -107,8 +109,18 @@ function XNATImageThumbnail(props) {
     }
   }, [imageId]);
 
+  let multiStackInfo = null;
+  if (isMultiStack) {
+    multiStackInfo = (
+      <div className="multi-stack-tag">
+        <Icon name="xnat-stack" />
+      </div>
+    );
+  }
+
   return (
     <div className={classNames('ImageThumbnail', { active: active })}>
+      {multiStackInfo}
       <div className="modality-tag">{modality}</div>
       <div className="image-thumbnail-canvas">
         {shouldRenderToCanvas() ? (

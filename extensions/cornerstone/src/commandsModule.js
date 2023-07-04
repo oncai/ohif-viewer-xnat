@@ -392,6 +392,7 @@ const commandsModule = ({ servicesManager }) => {
 
       const displaySet = study.findDisplaySet(ds => {
         return (
+          ds.displaySetInstanceUID === displaySetInstanceUID &&
           ds.images &&
           ds.images.find(i => i.getSOPInstanceUID() === SOPInstanceUID)
         );

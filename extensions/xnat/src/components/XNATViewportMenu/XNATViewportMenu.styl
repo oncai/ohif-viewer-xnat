@@ -1,5 +1,4 @@
-menu-width = 140px
-menu-height = 155px
+menu-width = 200px
 
 .XNATViewportMenu
   position: absolute
@@ -11,7 +10,7 @@ menu-height = 155px
   font-size: 12px
 
   &.isExpanded
-    height: menu-height
+    height: 155px
     width: menu-width
     background: var(--ui-gray-dark)
     border-bottom-right-radius: 8px
@@ -46,8 +45,14 @@ menu-height = 155px
     padding: 7px
     width: 30px
     height: 30px
+    min-width: 30px
     color: var(--default-color)
     cursor: pointer
+
+    &.ActionIcon
+      margin-left: auto
+      //svg
+      //  fill: var(--active-color)
 
     &.NavButton
       outline: none

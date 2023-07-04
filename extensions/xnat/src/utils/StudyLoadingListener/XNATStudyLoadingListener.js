@@ -119,13 +119,9 @@ class XNATStudyLoadingListener {
     this.clear();
 
     studies.forEach(study => {
-      const seriesList = study.series;
       study.displaySets.forEach(displaySet => {
         const displaySetInstanceUID = displaySet.displaySetInstanceUID;
-        const series = seriesList.find(
-          s => s.SeriesInstanceUID === displaySet.SeriesInstanceUID
-        );
-        const imageIds = series.instances.map(instance => instance.url);
+        const imageIds = displaySet.images.map(image => image._data.url);
         displaySet.dataLoadingProgress = {
           loadingStatus: DISPLAY_SET_LOADING_STATUS.NOT_LOADED,
           loadedComplete: 0, // images loaded, or data loaded if multiframe image

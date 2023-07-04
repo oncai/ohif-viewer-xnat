@@ -39,14 +39,14 @@ export class SeriesMetadata extends Metadata {
    */
   _definePublicProperties() {
     /**
-     * Property: this.seriesInstanceUID
+     * Property: this.SeriesInstanceUID
      * Same as this.getSeriesInstanceUID()
      * It's specially useful in contexts where a method call is not suitable like in search criteria. For example:
      * seriesCollection.findBy({
      *   seriesInstanceUID: '1.2.3.4.5.6.77777.8888888.99999999999.0'
      * });
      */
-    Object.defineProperty(this, 'seriesInstanceUID', {
+    Object.defineProperty(this, 'SeriesInstanceUID', {
       configurable: false,
       enumerable: false,
       get: function() {

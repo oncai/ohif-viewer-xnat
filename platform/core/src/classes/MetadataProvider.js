@@ -2,14 +2,19 @@ import dcmjs from 'dcmjs';
 import queryString from 'query-string';
 import dicomParser from 'dicom-parser';
 import cornerstone from 'cornerstone-core';
-import getPixelSpacingInformation from '../utils/metadataProvider/getPixelSpacingInformation';
-import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
-import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
-import validNumber from '../utils/metadataProvider/validNumber';
-import unpackOverlay from '../utils/metadataProvider/unpackOverlay';
-import getImagePlaneInformation from '../utils/metadataProvider/getImagePlaneInformation';
+import { metadataUtils } from '../utils';
 
 const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
+
+const {
+  fetchOverlayData,
+  unpackOverlay,
+  fetchPaletteColorLookupTableData,
+  getImagePlaneInformation,
+  getPixelSpacingInformation,
+  validNumber,
+  isEnhancedSOP,
+} = metadataUtils;
 
 const isXnatConfig =
   process.env.NODE_ENV === 'production' ||
@@ -30,7 +35,6 @@ class MetadataProvider {
       writable: false,
       value: new Map(),
     });
-    this.datasets = {};
     this.isMetadataLoadedFromImage = [];
   }
 
@@ -51,9 +55,8 @@ class MetadataProvider {
   shouldFetchDataset(dicomJSONDataset) {
     const hasPaletteColor =
       dicomJSONDataset.PhotometricInterpretation === 'PALETTE COLOR';
-    // const isMultiFrame = dicomJSONDataset.NumberOfFrames > 1;
-    // const isModalityNM = dicomJSONDataset.Modality === 'NM';
-    return hasPaletteColor;
+    const isEnhanced = isEnhancedSOP(dicomJSONDataset.SOPClassUID);
+    return hasPaletteColor || isEnhanced;
   }
 
   loadMetadataFromImage(imageId) {
@@ -69,7 +72,8 @@ class MetadataProvider {
       imageId0 in cornerstone.imageCache.imageCache;
 
     if (imageIdInCache) {
-      const imageCache = cornerstone.imageCache.imageCache[imageId] ||
+      const imageCache =
+        cornerstone.imageCache.imageCache[imageId] ||
         cornerstone.imageCache.imageCache[imageId0];
 
       if (imageCache.loaded) {
@@ -157,7 +161,6 @@ class MetadataProvider {
       SOPInstanceUID,
     } = naturalizedDataset;
 
-    this._getAndCacheStudyDataset(StudyInstanceUID, dicomJSONDataset);
     const study = this._getAndCacheStudy(StudyInstanceUID);
     const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
     const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
@@ -169,22 +172,28 @@ class MetadataProvider {
     return instance;
   }
 
+  addInstancesFromEnhancedSOP(naturalizedDataset) {
+    const {
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      SOPInstanceUID,
+    } = naturalizedDataset;
+
+    const study = this._getAndCacheStudy(StudyInstanceUID);
+    const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
+    const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
+
+    Object.assign(instance, naturalizedDataset);
+
+    return instance;
+  }
+
   addImageIdToUIDs(imageId, uids) {
     // This method is a fallback for when you don't have WADO-URI or WADO-RS.
     // You can add instances fetched by any method by calling addInstance, and hook an imageId to point at it here.
     // An example would be dicom hosted at some random site.
 
     this.imageIdToUIDs.set(imageId, uids);
-  }
-
-  _getAndCacheStudyDataset(StudyInstanceUID, dataset) {
-    if (!this.datasets[StudyInstanceUID]) {
-      this.datasets[StudyInstanceUID] = dataset;
-    }
-  }
-
-  getStudyDataset(StudyInstanceUID) {
-    return this.datasets[StudyInstanceUID];
   }
 
   _getAndCacheStudy(StudyInstanceUID) {
@@ -262,8 +271,8 @@ class MetadataProvider {
         let imageIdToUse = imageId;
         const qIndex = imageId.indexOf('?frame=');
         if (qIndex > 0) {
-          imageIdToUse = imageId.substr(0, qIndex);
-          frameIndex = imageId.substr(qIndex + 7); //'?frame='.length;
+          imageIdToUse = imageId.substring(0, qIndex);
+          frameIndex = imageId.substring(qIndex + 7); //'?frame='.length;
         }
         this.loadMetadataFromImage(imageIdToUse);
       }
