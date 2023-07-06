@@ -14,6 +14,8 @@ const { log, metadata, utils } = OHIF;
 const { studyMetadataManager } = utils;
 const { OHIFStudyMetadata } = metadata;
 
+const timestamp = Date.now();
+
 class XNATStandaloneRouting extends Component {
   state = {
     studies: null,
@@ -102,7 +104,7 @@ class XNATStandaloneRouting extends Component {
           view: 'session',
         });
 
-        const jsonRequestUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
+        const jsonRequestUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentId}?ts=${timestamp}`;
 
         console.log(jsonRequestUrl);
 
@@ -177,7 +179,7 @@ class XNATStandaloneRouting extends Component {
           view: 'subject',
         });
 
-        const subjectExperimentListUrl = `${rootUrl}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
+        const subjectExperimentListUrl = `${rootUrl}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json&ts=${timestamp}`;
 
         console.log(subjectExperimentListUrl);
 
@@ -196,7 +198,7 @@ class XNATStandaloneRouting extends Component {
 
           for (let i = 0; i < experimentList.length; i++) {
             const experimentIdI = experimentList[i].ID;
-            const experimentJSONFetchUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
+            const experimentJSONFetchUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}?ts=${timestamp}`;
 
             results[i] = _getJson(experimentJSONFetchUrl);
           }
@@ -440,7 +442,7 @@ async function getUserInformation(rootUrl) {
     xhr.onerror = () => {
       reject(new Error(xhr.statusText ? xhr.statusText : 'Unknown error'));
     };
-    xhr.open('GET', `${rootUrl}xapi/users/username`);
+    xhr.open('GET', `${rootUrl}xapi/users/username?ts=${timestamp}`);
     xhr.responseType = 'text';
     // xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.send();
@@ -451,7 +453,9 @@ async function getUserInformation(rootUrl) {
       const { response } = result;
       userInfo.loginName = response;
 
-      return _getJson(`${rootUrl}xapi/users/profile/${response}`);
+      return _getJson(
+        `${rootUrl}xapi/users/profile/${response}?ts=${timestamp}`
+      );
     })
     .then(result => {
       const { firstName, lastName } = result;
