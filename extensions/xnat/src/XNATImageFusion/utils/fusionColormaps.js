@@ -1,19 +1,22 @@
-import cloneDeep from 'lodash.clonedeep';
 import cornerstone from 'cornerstone-core';
 // Custom Colormaps
-import limitLwfPz from './colormaps/limitLwfPz';
-import limitLwfTz from './colormaps/limitLwfTz';
+import colormapsRequiringFalseColorImage from './falseImageDataColormaps';
 
-const customColormaps = {};
+const falseColorImageMaps = colormapsRequiringFalseColorImage;
 
-const buildCustomColormaps = () => {
-  customColormaps[limitLwfPz.id] = limitLwfPz.colormap;
-  customColormaps[limitLwfTz.id] = limitLwfTz.colormap;
-};
-
-buildCustomColormaps();
-
-const colormapList = cornerstone.colors.getColormapsList();
+const colormapList = [
+  {
+    description: 'Generic colormaps',
+    colormaps: cornerstone.colors.getColormapsList(),
+  },
+  {
+    description: 'Project-specific colormaps',
+    colormaps: Object.keys(falseColorImageMaps).map(key => {
+      const colormap = falseColorImageMaps[key];
+      return { id: colormap.id, name: colormap.name };
+    }),
+  },
+];
 
 /**
  *
@@ -21,8 +24,8 @@ const colormapList = cornerstone.colors.getColormapsList();
  * @returns {string|Object}
  */
 const getColormap = id => {
-  if (customColormaps.hasOwnProperty(id)) {
-    return cloneDeep(customColormaps[id]);
+  if (falseColorImageMaps.hasOwnProperty(id)) {
+    return falseColorImageMaps[id];
   }
 
   return id;

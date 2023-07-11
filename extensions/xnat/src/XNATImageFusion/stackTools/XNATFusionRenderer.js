@@ -223,10 +223,22 @@ export default class XNATFusionRenderer {
                 element.removeChild(this.layerLoadingIndicator);
               }
 
-              cornerstone.setLayerImage(element, image, currentLayerId);
+              let imageToRender;
+              const layer = cornerstone.getLayer(element, currentLayerId);
+              const optionsViewport = layer.options.viewport;
 
-              if (image.color) {
-                const layer = cornerstone.getLayer(element, currentLayerId);
+              if (optionsViewport.getFalseColorImage !== undefined) {
+                imageToRender = optionsViewport.getFalseColorImage(
+                  image
+                );
+
+              } else {
+                imageToRender = image;
+              }
+
+              cornerstone.setLayerImage(element, imageToRender, currentLayerId);
+
+              if (imageToRender.color) {
                 layer.viewport.colormap = undefined;
               }
 

@@ -178,9 +178,11 @@ class ImageFusionDialog extends PureComponent {
     const fusionDescription = `Fusion: Ser-${seriesNumber}`;
     let colormapName = '';
     if (!isColor) {
-      const colormap = this.colormapList.find(
-        color => color.id === imageFusionData.colormap
-      );
+      const colormap = this.colormapList.find(group => {
+        return group.colormaps.find(
+          color => color.id === imageFusionData.colormap
+        );
+      });
       colormapName = colormap && colormap.name ? colormap.name : '';
     }
 
@@ -207,10 +209,12 @@ class ImageFusionDialog extends PureComponent {
 
     this.updateFusionLayer({ colormap });
 
-    const colormapObj = this.colormapList.find(
-      color => color.id === colormap
-    );
-    const colormapName = colormapObj && colormapObj.name ? colormapObj.name : '';
+    const colormapObj = this.colormapList.find(group => {
+      return group.colormaps.find(color => color.id === colormap);
+    });
+
+    const colormapName =
+      colormapObj && colormapObj.name ? colormapObj.name : '';
 
     this.updateStore({ colormap, colormapName });
   }
@@ -314,10 +318,14 @@ class ImageFusionDialog extends PureComponent {
                 <div className="group">
                   <Icon name="xnat-colormap" width="18px" height="18px"/>
                   <select value={colormap} onChange={this.onColormapChanged}>
-                    {this.colormapList.map(color => (
-                      <option key={color.id} value={color.id}>
-                        {color.name}
-                      </option>
+                    {this.colormapList.map((group, groupIndex) => (
+                      <optgroup key={groupIndex} label={group.description}>
+                        {group.colormaps.map(color => (
+                          <option key={color.id} value={color.id}>
+                            {color.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>

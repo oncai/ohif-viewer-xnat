@@ -5,6 +5,7 @@ import { colormapList, getColormap } from '../utils/fusionColormaps';
 import DEFAULT_FUSION_DATA from '../constants/DeafultFusionData';
 import XNATFusionRenderer from '../stackTools/XNATFusionRenderer';
 
+const { getToolState } = csTools;
 const { studyMetadataManager, StackManager } = OHIF.utils;
 
 class ImageFusionManager {
@@ -68,24 +69,42 @@ class ImageFusionManager {
 
     if (colormap !== undefined) {
       const colormapIdOrObject = getColormap(colormap);
-      const voiLUT =
-        typeof colormapIdOrObject === 'string'
-          ? undefined
-          : colormapIdOrObject.voiLUT;
+      let getFalseColorImage;
+      let newColormap;
+      if (typeof colormapIdOrObject === 'object') {
+        if (
+          colormapIdOrObject.requiresFalseColorImage &&
+          colormapIdOrObject.getFalseColorImage
+        ) {
+          getFalseColorImage = colormapIdOrObject.getFalseColorImage;
+        }
+      } else {
+        newColormap = colormapIdOrObject;
+      }
 
       layer.options.viewport = {
-        colormap: colormapIdOrObject,
-        voiLUT: voiLUT,
+        colormap: newColormap,
+        getFalseColorImage,
       };
-      layer.viewport.colormap = colormapIdOrObject;
-      layer.viewport.voiLUT = voiLUT;
+      layer.viewport.colormap = newColormap;
     }
 
     if (opacity !== undefined) {
       layer.options.opacity = opacity;
     }
 
-    cornerstone.updateImage(enabledElement.element, true);
+    const element = enabledElement.element;
+    const stackRendererData = getToolState(element, 'stackRenderer');
+    if (
+      stackRendererData &&
+      stackRendererData.data &&
+      stackRendererData.data.length
+    ) {
+      const stackRenderer = stackRendererData.data[0];
+      stackRenderer.render(element);
+    } else {
+      cornerstone.updateImage(enabledElement.element, true);
+    }
   }
 
   _addFusionStack(imageFusionData, enabledElement) {
@@ -118,10 +137,18 @@ class ImageFusionManager {
     const baseStackData = stackToolStateData[0];
 
     const colormapIdOrObject = getColormap(colormap);
-    const voiLUT =
-      typeof colormapIdOrObject === 'string'
-        ? undefined
-        : colormapIdOrObject.voiLUT;
+    let getFalseColorImage;
+    let newColormap;
+    if (typeof colormapIdOrObject === 'object') {
+      if (
+        colormapIdOrObject.requiresFalseColorImage &&
+        colormapIdOrObject.getFalseColorImage
+      ) {
+        getFalseColorImage = colormapIdOrObject.getFalseColorImage;
+      }
+    } else {
+      newColormap = colormapIdOrObject;
+    }
 
     const foreStackData = {
       imageIds: stack.imageIds,
@@ -129,8 +156,8 @@ class ImageFusionManager {
       options: {
         opacity,
         viewport: {
-          colormap: colormapIdOrObject,
-          voiLUT: voiLUT,
+          colormap: newColormap,
+          getFalseColorImage,
         },
       },
     };
