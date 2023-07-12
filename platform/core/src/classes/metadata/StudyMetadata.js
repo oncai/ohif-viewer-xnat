@@ -3,7 +3,6 @@ import DICOMWeb from './../../DICOMWeb';
 import ImageSet from './../ImageSet';
 import { InstanceMetadata } from './InstanceMetadata';
 import { Metadata } from './Metadata';
-import OHIFError from '../OHIFError';
 import { SeriesMetadata } from './SeriesMetadata';
 // - createStacks
 import { api } from 'dicomweb-client';
@@ -13,7 +12,10 @@ import {
   isDisplaySetReconstructable,
   isSpacingUniform,
 } from '../../utils/isDisplaySetReconstructable';
-import { createSubStacks, generateSubStackTree } from '../../utils/createSubStacks';
+import {
+  createSubStacks,
+  generateSubStackTree,
+} from '../../utils/createSubStacks';
 import errorHandler from '../../errorHandler';
 import isLowPriorityModality from '../../utils/isLowPriorityModality';
 import getXHRRetryRequestHook from '../../utils/xhrRetryRequestHook';

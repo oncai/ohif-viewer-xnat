@@ -81,7 +81,11 @@ const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
       const stackId = `${groupLabels[i].groupId}-${index}`;
       let subStack = subStackGroups[i] && subStackGroups[i][stackId];
       if (!subStack) {
-        const stackName = `${groupLabels[i].groupName}-${index}`;
+        let stackName = `${groupLabels[i].groupName}-${index}`;
+        const groupUnit = groupLabels[i].groupUnit;
+        if (groupUnit) {
+          stackName += ` (${dimensionValues[j][i]} ${groupUnit})`;
+        }
         const seriesData = {
           SeriesInstanceUID: `${SeriesInstanceUID}.${i}.${index}`,
           SeriesDescription: `${SeriesDescription}-${stackName}`,
@@ -230,13 +234,14 @@ const generateStackGroupLabels = dimensionPointers => {
   const groupLabels = dimensionPointers.map(dimension => {
     const dimensionName = dimension.indexPointer;
     const dimensionId = dimension.indexAbbreviation;
-    const { groupName, groupId } = getStackGroupNameAndAbbreviation(
+    const { groupName, groupId, groupUnit } = getStackGroupNameAndAbbreviation(
       dimensionName,
       dimensionId
     );
     return {
       groupName,
       groupId,
+      groupUnit,
       dimensionName,
       dimensionId,
     };
@@ -246,7 +251,7 @@ const generateStackGroupLabels = dimensionPointers => {
 };
 
 const getStackGroupNameAndAbbreviation = (dimensionName, dimensionId) => {
-  const data = { groupName: dimensionName, groupId: dimensionId };
+  const data = { groupName: dimensionName, groupId: dimensionId, groupUnit: '' };
 
   if (dimensionName === 'InStackPositionNumber') {
     data.groupName = 'Position';
@@ -254,6 +259,7 @@ const getStackGroupNameAndAbbreviation = (dimensionName, dimensionId) => {
   } else if (dimensionName.includes('Echo')) {
     data.groupName = 'Echo';
     data.groupId = 'ECHO';
+    data.groupUnit = 'ms';
   }
 
   return data;
@@ -272,7 +278,7 @@ const generateSubStackTree = refDisplaySet => {
     stacks: [
       {
         value: refDisplaySet.displaySetInstanceUID,
-        label: 'All Frames',
+        label: 'All Frames (Multi-Stack)',
         displaySet: refDisplaySet,
       },
     ],
