@@ -6656,17 +6656,17 @@ cornerstone-core@^2.6.0:
   resolved "https://registry.yarnpkg.com/cornerstone-core/-/cornerstone-core-2.6.1.tgz#f9a29a49057f286e8c969c7020e979d567449d42"
   integrity sha512-LAXjXwNnK2W65ZxpE7phVLjbijkYUrAQIGv5xqKjK8+dmIGlBxqvPHnyGwEqVDyKOWVrpXP6ymUPwrGGRwzgMg==
 
-cornerstone-math@0.1.9, cornerstone-math@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/cornerstone-math/-/cornerstone-math-0.1.9.tgz#7ce5509e8b9f465b01f7c548470725e7569859fc"
-  integrity sha512-NxdooV73asEQgav1S+0e+a4K+W3CXJdLXyFkVN24qqCtmIpzZzwtw3F9KWPCekzSAJmbhtQ3HicOQj3d4vRtuw==
+cornerstone-math@0.1.10, cornerstone-math@^0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/cornerstone-math/-/cornerstone-math-0.1.10.tgz#a3f99db64d73c5adee61ae0d570128eca1682d07"
+  integrity sha512-23XSAyP7t70ANvhFyqwvva+zFd1bQ2d5GL7tg9qKE932WmImjA2Y9tiy5n0iTtnf51W/78Png8Lia2o4dCdJaQ==
 
-"cornerstone-tools@https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#v5.0.3-Patch.1":
+"cornerstone-tools@https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#v5.0.3-Patch.2":
   version "5.3.0"
-  resolved "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#10827eb5d63858aecce7941f515e366ee5923423"
+  resolved "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#5bc47219fafc23deec57ebd64605bf3f03084811"
   dependencies:
     "@babel/runtime" "7.1.2"
-    cornerstone-math "0.1.9"
+    cornerstone-math "0.1.10"
     dcmjs "0.18.10"
     gl-matrix "^3.1.0"
     lodash.clonedeep "^4.5.0"
