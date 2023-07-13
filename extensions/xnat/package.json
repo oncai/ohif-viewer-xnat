@@ -1,6 +1,6 @@
 {
   "name": "@xnat-ohif/extension-xnat",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "description": "OHIF extension for XNAT functionality.",
   "author": "The Institute For Cancer Research",
   "license": "BSD",
