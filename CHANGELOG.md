@@ -1,3 +1,7 @@
+**3.5.3**
+
+- Fixed rendering overlay data over thumbnail images.
+
 **3.5.2**
 
 - Ensure ROICollections return a non-null, non-empty string to use as a filename. Fixes issue 44.
