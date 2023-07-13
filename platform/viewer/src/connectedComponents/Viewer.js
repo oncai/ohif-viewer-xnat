@@ -445,7 +445,7 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
             inconsistencyWarnings.push('The dataset frames have different orientation.');
             break;
           case ReconstructionIssues.IRREGULAR_SPACING:
-            inconsistencyWarnings.push('The dataset frames have different pixel spacing.');
+            inconsistencyWarnings.push('The dataset frames have different irregular spacing.');
             break;
           case ReconstructionIssues.MULTIFRAMES:
             inconsistencyWarnings.push('The dataset is multi-frame.');

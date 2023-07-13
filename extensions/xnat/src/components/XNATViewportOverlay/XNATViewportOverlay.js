@@ -12,6 +12,7 @@ import {
   getCompression,
 } from './helpers';
 import XNATViewportMenu from '../XNATViewportMenu/XNATViewportMenu';
+import ViewportOverlayWarning from './ViewportOverlayWarning';
 
 import './XNATViewportOverlay.css';
 
@@ -167,12 +168,22 @@ class XNATViewportOverlay extends React.PureComponent {
         </div>
       );
     } else {
+      const warningList = [];
       const zoomPercentage = formatNumberPrecision(scale * 100, 0);
       const seriesMetadata =
         cornerstone.metaData.get('generalSeriesModule', imageId) || {};
       const imagePlaneModule =
         cornerstone.metaData.get('imagePlaneModule', imageId) || {};
-      const { rows, columns, sliceThickness, sliceLocation } = imagePlaneModule;
+      const {
+        rows,
+        columns,
+        sliceThickness,
+        sliceLocation,
+        warnings: imagePlaneModuleWarnings,
+      } = imagePlaneModule;
+      if (imagePlaneModuleWarnings) {
+        warningList.push(imagePlaneModuleWarnings);
+      }
       const { seriesNumber, seriesDescription, modality } = seriesMetadata;
 
       const generalStudyModule =
@@ -226,6 +237,9 @@ class XNATViewportOverlay extends React.PureComponent {
             <div>{fusionDescription}</div>
           </div>
           <div className="bottom-left overlay-element">
+            <div>
+              <ViewportOverlayWarning warningList={warningList} />
+            </div>
             <div>{modality}</div>
             <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
             <div>

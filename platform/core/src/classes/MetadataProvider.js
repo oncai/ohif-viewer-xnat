@@ -361,6 +361,7 @@ class MetadataProvider {
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PLANE_MODULE:
+        let hasInvalidData = false;
         let ImageOrientationPatient;
         let ImagePositionPatient;
 
@@ -379,10 +380,40 @@ class MetadataProvider {
           ImagePositionPatient = instance.ImagePositionPatient;
         }
 
+        if (
+          ImageOrientationPatient &&
+          !Array.isArray(ImageOrientationPatient)
+        ) {
+          ImageOrientationPatient = [1, 0, 0, 0, 1, 0];
+          hasInvalidData = true;
+        }
+        if (ImagePositionPatient && !Array.isArray(ImagePositionPatient)) {
+          ImageOrientationPatient = [0, 0, 0];
+          hasInvalidData = true;
+        }
+
         // Fallback for DX images.
         // TODO: We should use the rest of the results of this function
         // to update the UI somehow
         let { PixelSpacing } = getPixelSpacingInformation(instance);
+        if (PixelSpacing) {
+          if (!Array.isArray(PixelSpacing)) {
+            PixelSpacing = [PixelSpacing, PixelSpacing];
+            hasInvalidData = true;
+          }
+          const isZeroXSpacing = Math.abs(PixelSpacing[0]) < 0.001;
+          const isZeroYSpacing = Math.abs(PixelSpacing[1]) < 0.001;
+          if (isZeroXSpacing && isZeroYSpacing) {
+            PixelSpacing = [1.0, 1.0];
+            hasInvalidData = true;
+          } else if (isZeroXSpacing) {
+            PixelSpacing[0] = PixelSpacing[1];
+            hasInvalidData = true;
+          } else if (isZeroYSpacing) {
+            PixelSpacing[1] = PixelSpacing[0];
+            hasInvalidData = true;
+          }
+        }
 
         // Fallback for Secondary Capture Image IOD
         if (instance.SOPClassUID === '1.2.840.10008.5.1.4.1.1.7') {
@@ -428,6 +459,7 @@ class MetadataProvider {
           pixelSpacing: PixelSpacing,
           rowPixelSpacing,
           columnPixelSpacing,
+          warnings: hasInvalidData ? 'Invalid image position/spacing.' : '',
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PIXEL_MODULE:
