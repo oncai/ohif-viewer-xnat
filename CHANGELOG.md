@@ -1,3 +1,24 @@
+**3.6.0-RC-1**
+
+- Feature: organise and display multi-stack frames into subgroups. Only Enhanced MR storage is currently supported.
+- Feature: viewport options menu to declutter the display and reduce visual search and selection time.
+- Feature: support 2D image fusion using cornerstone layers.
+- Feature: toggle visibility of annotations (masks, contours & measurements) for individual viewports.
+- Notify the user of metadata inconsistencies found in individual images.
+- Added the capability to use false color images instead of colormaps in 2D image fusion.
+- Make the dialog display optional for new measurements.
+- Display fusion description and colormap name on the viewport.
+- Security fix: remove the polyfill script tag from index.html.
+- Fixed line intersection checks for the reference lines tool.
+
+**3.5.3**
+
+- Fixed rendering overlay data over thumbnail images.
+
+**3.5.2**
+
+- Ensure ROICollections return a non-null, non-empty string to use as a filename. Fixes issue 44.
+
 **3.5.1**
 
 - Select ROI labels using a list populated from presets stored on XNAT at project-level.

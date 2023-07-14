@@ -22,11 +22,11 @@ const renderThumbnailOverlay = (canvas, image) => {
 
   const viewport = cornerstone.getDefaultViewport(canvas, image);
 
-  if (!viewport || !viewport.displayedArea) {
+  viewport.displayedArea = image.displayedArea;
+
+  if (!viewport.displayedArea) {
     return;
   }
-
-  viewport.displayedArea = image.displayedArea;
 
   const viewportPixelSpacing = {
     column: viewport.displayedArea.columnPixelSpacing || 1,
