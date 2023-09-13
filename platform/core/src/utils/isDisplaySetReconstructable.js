@@ -22,7 +22,6 @@ function isDisplaySetReconstructable(instances) {
     return {
       isReconstructable: false,
       reconstructionIssues: [],
-      numberOfImagesPerSubset: instances.length,
     };
   }
 
@@ -31,7 +30,6 @@ function isDisplaySetReconstructable(instances) {
     return {
       isReconstructable: false,
       reconstructionIssues: [],
-      numberOfImagesPerSubset: instances.length,
     };
   }
 
@@ -52,7 +50,6 @@ function processMultiframe(instances) {
   const value = {
     isReconstructable: false,
     reconstructionIssues: [],
-    numberOfImagesPerSubset: instances.length,
   };
   const { metadata } = instances[0].getData();
   // enable for NM image
@@ -117,15 +114,14 @@ function processSingleframe(instances) {
 
   // check if dataset is 4D
   // numberOfImagesets = number of images for each set in 4D images
-  const { is4D, numberOfImagesPerSubset } = _isDataset4D(instances);
-  if (is4D) {
-    reconstructionIssues.push(ReconstructionIssues.DATASET_4D);
-  }
+  // const { is4D, numberOfImagesPerSubset } = _isDataset4D(instances);
+  // if (is4D) {
+  //   reconstructionIssues.push(ReconstructionIssues.DATASET_4D);
+  // }
 
   return {
     isReconstructable: reconstructionIssues.length === 0,
     reconstructionIssues,
-    numberOfImagesPerSubset,
   };
 }
 

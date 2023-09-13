@@ -1,30 +1,52 @@
-import cloneDeep from 'lodash.clonedeep';
 import cornerstone from 'cornerstone-core';
 import { OHIFSeriesMetadata, OHIFInstanceMetadata } from '../classes/metadata';
 import metadataUtils from './metadataProvider';
 
-const { getTagName } = metadataUtils;
+const { getTagName, isSameArray } = metadataUtils;
+
+const SUPPORTED_4D_MODALITIES = ['MR'];
 
 const createSubStacks = (displaySet, ohifStudy) => {
+  const refImage = displaySet.getImage(0);
+  const imageId = refImage.getImageId();
+  const refMetadata = cornerstone.metaData.get('instance', imageId);
+
   let subStackGroups;
+  let stackDimensionData;
+  let groupLabels;
 
   try {
-    const refImage = displaySet.getImage(0);
-    const imageId = refImage.getImageId();
-    const refMetadata = cornerstone.metaData.get('instance', imageId);
-
-    const stackDimensionData = buildDimensionData(refMetadata);
-    let groupLabels;
-    if (stackDimensionData) {
-      groupLabels = generateStackGroupLabels(
-        stackDimensionData.dimensionPointers
-      );
-      subStackGroups = sliceStack(
-        stackDimensionData,
-        refImage,
-        ohifStudy,
-        groupLabels
-      );
+    if (displaySet.isEnhanced) {
+      stackDimensionData = buildDimensionDataForEnhanced(refMetadata);
+      if (stackDimensionData) {
+        groupLabels = generateStackGroupLabels(
+          stackDimensionData.dimensionPointers
+        );
+        subStackGroups = sliceStack(
+          stackDimensionData,
+          refImage,
+          ohifStudy,
+          groupLabels,
+          true
+        );
+      }
+    } else if (
+      displaySet.is4D &&
+      SUPPORTED_4D_MODALITIES.includes(displaySet.Modality)
+    ) {
+      stackDimensionData = buildDimensionDataFor4D(displaySet);
+      if (stackDimensionData) {
+        groupLabels = generateStackGroupLabels(
+          stackDimensionData.dimensionPointers
+        );
+        subStackGroups = sliceStack(
+          stackDimensionData,
+          refImage,
+          ohifStudy,
+          groupLabels,
+          false
+        );
+      }
     }
 
     if (
@@ -48,7 +70,13 @@ const createSubStacks = (displaySet, ohifStudy) => {
   return subStackGroups;
 };
 
-const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
+const sliceStack = (
+  dimensionData,
+  refImage,
+  ohifStudy,
+  groupLabels,
+  isSlicingForEnhanced
+) => {
   const {
     dimensionIndices,
     dimensionValues,
@@ -60,10 +88,12 @@ const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
     SeriesInstanceUID,
     SeriesDescription,
     SeriesNumber,
-    instances: _,
+    instances: _, // Omit instances from sharedSeriesMetadata
     subInstances,
     ...sharedSeriesMetadata
   } = _series;
+
+  const instancesSrc = isSlicingForEnhanced ? subInstances : _series.instances;
 
   const subStackGroups = [];
 
@@ -87,7 +117,9 @@ const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
           stackName += ` (${dimensionValues[j][i]} ${groupUnit})`;
         }
         const seriesData = {
-          SeriesInstanceUID: `${SeriesInstanceUID}.${i}.${index}`,
+          SeriesInstanceUID: isSlicingForEnhanced
+            ? `${SeriesInstanceUID}.${i}.${index}`
+            : SeriesInstanceUID,
           SeriesDescription: `${SeriesDescription}-${stackName}`,
           SeriesNumber: `${SeriesNumber}${i}${index}`,
           ...sharedSeriesMetadata,
@@ -112,7 +144,7 @@ const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
       subStack.refIndices.push(j);
       subStack.ohifSeries.addInstance(
         new OHIFInstanceMetadata(
-          subInstances[j],
+          instancesSrc[j],
           subStack.ohifSeries,
           ohifStudy
         )
@@ -123,7 +155,7 @@ const sliceStack = (dimensionData, refImage, ohifStudy, groupLabels) => {
   return subStackGroups;
 };
 
-const buildDimensionData = refMetadata => {
+const buildDimensionDataForEnhanced = refMetadata => {
   const {
     NumberOfFrames,
     DimensionOrganizationSequence,
@@ -230,6 +262,136 @@ const buildDimensionData = refMetadata => {
   };
 };
 
+const buildDimensionDataFor4D = displaySet => {
+  const { numImageFrames, numberOfSubInstances, images } = displaySet;
+  const numSubStacks = numImageFrames / numberOfSubInstances;
+
+  // Check if we have the correct number of images
+  if (numImageFrames % numberOfSubInstances !== 0) {
+    return;
+  }
+
+  const subsetInstances = [];
+  for (let i = 0; i < numberOfSubInstances; i++) {
+    const image = displaySet.getImage(i);
+    const imageId = image.getImageId();
+    subsetInstances.push(cornerstone.metaData.get('instance', imageId));
+  }
+
+  // Validate that the first set of instances share the same position.
+  let firstSetSharesIop = true;
+  const refIop = subsetInstances[0].ImagePositionPatient;
+  if (!refIop) {
+    return;
+  }
+  for (let i = 1; i < numberOfSubInstances; i++) {
+    const iop = subsetInstances[i].ImagePositionPatient;
+    if (!iop || !isSameArray(refIop, iop)) {
+      firstSetSharesIop = false;
+      break;
+    }
+  }
+  if (!firstSetSharesIop) {
+    return;
+  }
+
+  const dimensionPointers = buildDimensionPointersFor4D(subsetInstances);
+
+  if (dimensionPointers.length !== 3) {
+    return;
+  }
+
+  const dimensionValues = [];
+  const dimensionIndices = [];
+  const indexPointer = dimensionPointers[2].indexPointer;
+  const indexPointerValues = subsetInstances.map(
+    instance => instance[indexPointer]
+  );
+  for (let i = 0; i < numSubStacks; i++) {
+    for (let j = 0; j < numberOfSubInstances; j++) {
+      dimensionValues.push([
+        1, // StackID
+        i + 1, // InStackPositionNumber
+        indexPointerValues[j],
+      ]);
+      dimensionIndices.push([
+        1, // StackID
+        i + 1, // InStackPositionNumber
+        j + 1,
+      ]);
+    }
+  }
+
+  return {
+    dimensionIndices,
+    dimensionValues,
+    dimensionPointers,
+  };
+};
+
+const buildDimensionPointersFor4D = instances => {
+  const modality = instances[0].Modality;
+
+  // Build dimension pointers assuming the dataset is 4D:
+  // [Full_Stack_Index, Position_Index, Dimension_Variant]
+  const dimensionPointers = [];
+
+  // Add StackID and InStackPosition pointers
+  dimensionPointers.push({
+    groupPointer: '',
+    indexPointer: 'StackID',
+    indexAbbreviation: 'SID',
+  });
+  dimensionPointers.push({
+    groupPointer: '',
+    indexPointer: 'InStackPositionNumber',
+    indexAbbreviation: 'ISPN',
+  });
+
+  const findValidDimension = indexPointer => {
+    let isDimensionPointer = true;
+    for (let i = 0; i < instances.length; i++) {
+      const itemI = instances[i][indexPointer];
+      if (itemI === undefined || !isDimensionPointer) {
+        isDimensionPointer = false;
+        break;
+      }
+      for (let j = 0; j < instances.length; j++) {
+        if (i === j) {
+          continue;
+        }
+        const itemJ = instances[j][indexPointer];
+        if (itemJ === undefined || itemJ === itemI) {
+          isDimensionPointer = false;
+          break;
+        }
+      }
+    }
+
+    return isDimensionPointer
+      ? {
+          groupPointer: '',
+          indexPointer,
+          indexAbbreviation: indexPointer.match(/[A-Z]/g).join(''),
+        }
+      : undefined;
+  };
+
+  if (modality === 'MR') {
+    // Check for EchoTime
+    const echoTime = findValidDimension('EchoTime');
+    if (echoTime) {
+      dimensionPointers.push(echoTime);
+    }
+    const diffusionBValue = findValidDimension('DiffusionBValue');
+    if (diffusionBValue) {
+      dimensionPointers.push(diffusionBValue);
+    }
+  }
+
+  return dimensionPointers;
+};
+
 const generateStackGroupLabels = dimensionPointers => {
   const groupLabels = dimensionPointers.map(dimension => {
     const dimensionName = dimension.indexPointer;
@@ -251,11 +413,18 @@ const generateStackGroupLabels = dimensionPointers => {
 };
 
 const getStackGroupNameAndAbbreviation = (dimensionName, dimensionId) => {
-  const data = { groupName: dimensionName, groupId: dimensionId, groupUnit: '' };
+  const data = {
+    groupName: dimensionName,
+    groupId: dimensionId,
+    groupUnit: '',
+  };
 
   if (dimensionName === 'InStackPositionNumber') {
     data.groupName = 'Position';
     data.groupId = 'POS';
+  } else if (dimensionName === 'DiffusionBValue') {
+    data.groupName = 'BValue';
+    data.groupId = 'BVALUE';
   } else if (dimensionName.includes('Echo')) {
     data.groupName = 'Echo';
     data.groupId = 'ECHO';

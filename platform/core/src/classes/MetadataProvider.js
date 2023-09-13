@@ -120,7 +120,10 @@ class MetadataProvider {
 
     let dicomJSONDatasetOrP10ArrayBuffer;
     if (isXnatConfig) {
-      if (this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer)) {
+      if (
+        this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer) ||
+        options.shouldFetchDataset
+      ) {
         const image = await cornerstone.loadAndCacheImage(options.imageId);
         const arrayBuffer = image.data.byteArray.buffer;
         dicomJSONDatasetOrP10ArrayBuffer = this.readDataset(

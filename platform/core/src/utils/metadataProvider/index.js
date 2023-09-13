@@ -7,6 +7,8 @@ import validNumber from './validNumber';
 import isEnhancedSOP from './isEnhancedSOP';
 import parseEnhancedSOP from './parseEnhancedSOP';
 import getTagName from './getTagName';
+import isDataset4D from './isDataset4D';
+import isSameArray from './isSameArray';
 
 const metadataUtils = {
   fetchOverlayData,
@@ -18,6 +20,8 @@ const metadataUtils = {
   isEnhancedSOP,
   parseEnhancedSOP,
   getTagName,
+  isDataset4D,
+  isSameArray,
 };
 
 export default metadataUtils;

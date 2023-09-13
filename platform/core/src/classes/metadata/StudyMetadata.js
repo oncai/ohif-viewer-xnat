@@ -20,6 +20,7 @@ import errorHandler from '../../errorHandler';
 import isLowPriorityModality from '../../utils/isLowPriorityModality';
 import getXHRRetryRequestHook from '../../utils/xhrRetryRequestHook';
 import { ReconstructionIssues } from '../../enums';
+import { metadataUtils } from '../../utils';
 
 class StudyMetadata extends Metadata {
   constructor(data, uid) {
@@ -363,7 +364,7 @@ class StudyMetadata extends Metadata {
     const derivedDisplaySets = [];
 
     this.displaySets.forEach(refDisplaySet => {
-      if (refDisplaySet.isEnhanced) {
+      if (refDisplaySet.isEnhanced || refDisplaySet.is4D) {
         createSubStacks(refDisplaySet, this);
         const subStackGroups = refDisplaySet.subStackGroups;
         const subStackGroupData = refDisplaySet.subStackGroupData;
@@ -376,7 +377,6 @@ class StudyMetadata extends Metadata {
                 subStack,
                 refDisplaySet
               );
-              // subStack.displaySetInstanceUID = displaySet.displaySetInstanceUID;
               subStack.displaySet = displaySet;
               displaySet.getSubStackGroupData = () => subStackGroupData;
               derivedDisplaySets.push(displaySet);
@@ -899,12 +899,18 @@ const makeDisplaySet = (series, instances) => {
 
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
   imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
-  imageSet.numberOfImagesPerSubset =
-    displayReconstructableInfo.numberOfImagesPerSubset;
 
-  const datasetIs4D = displayReconstructableInfo.reconstructionIssues.includes(
-    ReconstructionIssues.DATASET_4D
+  const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
+    series.getSeriesInstanceUID()
   );
+  imageSet.is4D = is4D;
+  imageSet.numberOfSubInstances = numberOfSubInstances;
+
+  if (is4D) {
+    displayReconstructableInfo.reconstructionIssues.push(
+      ReconstructionIssues.DATASET_4D
+    );
+  }
 
   let displaySpacingInfo = undefined;
   if (shallSort && imageSet.isReconstructable && !imageSet.isMultiFrame) {
@@ -912,8 +918,10 @@ const makeDisplaySet = (series, instances) => {
     imageSet.sliceSpacingFirstFrame = imageSet.sortByImagePositionPatient();
 
     // check if the spacing is uniform and update isReconstructable
-    displaySpacingInfo = isSpacingUniform(imageSet.images, datasetIs4D);
-    imageSet.isReconstructable = displaySpacingInfo.isUniform;
+    displaySpacingInfo = isSpacingUniform(imageSet.images, is4D);
+
+    imageSet.isReconstructable =
+      imageSet.isReconstructable && displaySpacingInfo.isUniform;
 
     if (displaySpacingInfo.missingFrames) {
       // TODO -> This is currently unused, but may be used for reconstructing
@@ -937,7 +945,8 @@ const makeDisplaySet = (series, instances) => {
     preferences.experimentalFeatures.DisplayScanFromTheMiddle;
   const displayFromTheMiddleEnabled =
     !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
-  const numImages = imageSet.numberOfImagesPerSubset || instances.length;
+  const numImages =
+    numberOfSubInstances > 1 ? numberOfSubInstances : instances.length;
   const middleImageIndex = Math.floor(numImages / 2);
   imageSet.setAttribute('middleImageIndex', middleImageIndex);
   imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);

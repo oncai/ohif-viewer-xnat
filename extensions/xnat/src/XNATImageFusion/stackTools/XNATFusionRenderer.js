@@ -227,11 +227,11 @@ export default class XNATFusionRenderer {
               const layer = cornerstone.getLayer(element, currentLayerId);
               const optionsViewport = layer.options.viewport;
 
-              if (optionsViewport.getFalseColorImage !== undefined) {
-                imageToRender = optionsViewport.getFalseColorImage(
-                  image
-                );
-
+              if (
+                optionsViewport.getFalseColorImage !== undefined &&
+                !image.color
+              ) {
+                imageToRender = optionsViewport.getFalseColorImage(image);
               } else {
                 imageToRender = image;
               }

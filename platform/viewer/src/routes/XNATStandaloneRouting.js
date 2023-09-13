@@ -512,8 +512,13 @@ async function updateMetaDataProvider(studies) {
     StudyInstanceUID = study.StudyInstanceUID;
     for (let series of study.series) {
       SeriesInstanceUID = series.SeriesInstanceUID;
+      const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
+        SeriesInstanceUID, series.instances
+      );
+      series.is4D = is4D;
+      series.numberOfSubInstances = numberOfSubInstances;
       await Promise.all(
-        series.instances.map(async instance => {
+        series.instances.map(async (instance, instanceIndex) => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
           naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
@@ -536,7 +541,10 @@ async function updateMetaDataProvider(studies) {
           // Add instance to metadata provider.
           const addedInstance = await metadataProvider.addInstance(
             naturalizedDicom,
-            { imageId }
+            {
+              imageId,
+              shouldFetchDataset: is4D && instanceIndex < numberOfSubInstances,
+            }
           );
           if (metadataUtils.isEnhancedSOP(addedInstance.SOPClassUID)) {
             const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
