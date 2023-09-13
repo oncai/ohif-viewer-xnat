@@ -1,3 +1,6 @@
+**3.6.0-RC-2**
+- Support organising and displaying of 4-D datasets as multi-stack. 
+
 **3.6.0-RC-1**
 
 - Feature: organise and display multi-stack frames into subgroups. Only Enhanced MR storage is currently supported.
