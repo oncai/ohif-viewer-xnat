@@ -1,4 +1,9 @@
+**3.6.0**
+
+- Minor improvements and bug fixes.
+
 **3.6.0-RC-2**
+
 - Support organising and displaying of 4-D datasets as multi-stack. 
 
 **3.6.0-RC-1**

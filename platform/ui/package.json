@@ -60,7 +60,7 @@
     "react-overlays": "^0.8.0",
     "react-transition-group": "2.0.0",
     "react-with-direction": "1.3.0",
-    "@xnat-ohif/extension-xnat": "^3.6.0-RC"
+    "@xnat-ohif/extension-xnat": "^3.6.0"
   },
   "devDependencies": {
     "@mdx-js/tag": "^0.20.3",
