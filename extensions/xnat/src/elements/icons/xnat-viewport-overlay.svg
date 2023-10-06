@@ -1,0 +1,18 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="5 5 14 14"
+  aria-labelledby="title"
+  width="1em"
+  height="1em"
+  stroke="currentColor"
+  fill="currentColor"
+>
+  <title id="title">Sync</title>
+  <g stroke-width="0">
+    <path d="M5 6H19V7.5H5V6Z" />
+    <path d="M5 16.5H19V18H5V16.5Z" />
+    <path d="M8.88909 12L6.06066 14.8284L5 13.7678L6.76777 12L5 10.2322L6.06066 9.17157L8.88909 12Z" />
+    <path d="M11 13H19V14.5H11V13Z" />
+    <path d="M11 9.5H19V11H11V9.5Z" />
+  </g>
+</svg>

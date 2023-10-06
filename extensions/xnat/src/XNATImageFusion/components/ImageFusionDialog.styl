@@ -5,8 +5,8 @@
   align-items: center
   background: var(--ui-gray-darkest)
   color: var(--text-secondary-color)
-  //filter: drop-shadow(0 0 3px var(--ui-gray-darkest))
-  border: none
+  filter: drop-shadow(0 0 3px var(--ui-gray-darkest))
+  border: 2px solid var(--text-secondary-color)
   border-radius: 8px
   width: inherit
   overflow: hidden
@@ -14,20 +14,13 @@
   .ImageFusionDialog
     display: flex
     flex-direction: column
-    padding: 1em
-
-    .pwgWidget
-      //margin: 0 0 10px 0
-      display: flex
-      flex-direction: row
-      align-items: center
-      //border: 2px solid var(--default-color)
+    padding: 0.5em 1em 1em 1em
 
     .row
-      margin: 15px 0
+      margin: 5px 0
       display: flex
       flex-direction: row
-      //justify-content: center
+      justify-content: space-between
       align-items: center
       //height: 20px
 
@@ -42,8 +35,17 @@
         align-items: center
         margin-left: 10px
 
+        &.fullWidth
+          width: 98%
+
         &:first-of-type
           margin-left: 0
+
+        .opacityValue
+          display: inline-block
+          width: 16px
+          margin-right: 5px
+          font-size: 12px
 
         svg
           margin-right: 5px
@@ -62,34 +64,24 @@
       border-right: 2px solid var(--ui-border-color)
 
   h5
-    font-size: 15px
+    font-size: 14px
     font-weight: 500
-    text-align: center
-    margin: 0 0 15px 0
+    text-align: left
+    margin: 0 0 10px 0
     color: var(--active-color)
     display: inline
 
-  .closeButton
-    cursor: pointer
-    margin: -8px 0 0 0
-    padding: 0
-    background-color: transparent
-    border: none
-    color: var(--text-secondary-color)
-    font-size: 20px
-    font-weight: lighter
-
-    &:hover, &:active, &.active
-      background-color: transparent
-
   select
     background-color: transparent
-    border: none
+    border: 1px solid var(--ui-border-color)
+    border-radius: 5px
     padding: 0 0 0 0
     color: white
     outline: none
-    //width: 100%
-    max-width: 150px
+    width: 100%
+    height: 22px
+    max-width: 260px
+    font-size: 13px
 
     option, optgroup
       background-color: var(--ui-gray)
@@ -100,44 +92,17 @@
   button
     border: 0
     border-radius: 4px
+    width: 76px
     margin: 0 5px
     padding: 0 12px
     font-weight: normal
-    background-color: var(--active-color)
+    background-color: #337ab7
     color: var(--text-primary-color)
 
     &:active, &.active, &:hover
-      background-color: var(--text-secondary-color)
-
-    &.jump
-      animation: 1.5s jump ease infinite alternate
-
-.isLoading
-  pointer-events: none
-  opacity: 0.5
-
-.dialogHandle
-  display: flex
-  justify-content: center
-  align-items: center
-  height: 48px
-  width: 38px
-  opacity: 0.5
-  color: var(--ui-gray-darkest)
-  background: var(--active-color)
+      background-color: var(--active-color)
 
   svg
     user-select: none
     pointer-events: none
 
-//////////////////////////
-@keyframes jump
-  0%
-    //transform: scale(1)
-    box-shadow: 0 1px 2px rgba(0,0,0,.15)
-    background-color: var(--ui-state-error-text)
-
-  100%
-    //transform: scale(1.02)
-    box-shadow: 0 4px 20px rgba(0,0,0,.1)
-    background-color: var(--ui-state-error-border)

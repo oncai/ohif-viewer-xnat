@@ -1,3 +1,4 @@
+import React from 'react';
 import cornerstone from 'cornerstone-core';
 import CornerstoneViewport from 'react-cornerstone-viewport';
 import OHIF from '@ohif/core';
@@ -5,6 +6,7 @@ import { connect } from 'react-redux';
 import throttle from 'lodash.throttle';
 import {
   setEnabledElement,
+  getEnabledElement,
   setActiveViewportIndex,
   getActiveViewportIndex,
   setWindowing,
@@ -13,10 +15,15 @@ import {
 import {
   referenceLines,
   updateImageSynchronizer,
+  XNATViewportOverlay,
 } from '@xnat-ohif/extension-xnat';
 import getDisplayedArea from './utils/getDisplayedArea';
 
-const { setViewportActive, setViewportSpecificData } = OHIF.redux.actions;
+const {
+  setViewportActive,
+  setViewportSpecificData,
+  setActiveViewportSpecificData,
+} = OHIF.redux.actions;
 const {
   onAdded,
   onRemoved,
@@ -122,6 +129,10 @@ const mapStateToProps = (state, ownProps) => {
   const viewportSpecificData =
     state.viewports.viewportSpecificData[viewportIndex] || {};
 
+  const getViewportSpecificData = () => {
+    return viewportSpecificData;
+  };
+
   // CINE
   let isPlaying = false;
   let frameRate = 24;
@@ -145,6 +156,7 @@ const mapStateToProps = (state, ownProps) => {
     frameRate,
     //stack: viewportSpecificData.stack,
     // viewport: viewportSpecificData.viewport,
+    getViewportSpecificData,
   };
 };
 
@@ -162,6 +174,10 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 
     setViewportSpecificData: data => {
       dispatch(setViewportSpecificData(viewportIndex, data));
+    },
+
+    setActiveViewportSpecificData: data => {
+      dispatch(setActiveViewportSpecificData(data));
     },
 
     /**
@@ -221,9 +237,37 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   };
 };
 
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  const { getViewportSpecificData } = stateProps;
+  const { viewportIndex, getWindowing } = ownProps;
+  const { setViewportActive, setActiveViewportSpecificData } = dispatchProps;
+
+  const ViewportOverlay = props => {
+    return (
+      <XNATViewportOverlay
+        {...props}
+        viewportIndex={viewportIndex}
+        getWindowing={getWindowing}
+        setViewportActive={setViewportActive}
+        getEnabledElement={getEnabledElement}
+        getViewportSpecificData={getViewportSpecificData}
+        setViewportStackData={setActiveViewportSpecificData}
+      />
+    );
+  };
+
+  return {
+    ...ownProps,
+    ...stateProps,
+    ...dispatchProps,
+    viewportOverlayComponent: ViewportOverlay,
+  };
+};
+
 const ConnectedCornerstoneViewport = connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
+  mergeProps
 )(CornerstoneViewport);
 
 export default ConnectedCornerstoneViewport;

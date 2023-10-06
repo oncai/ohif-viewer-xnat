@@ -5,7 +5,7 @@ import triggerSegmentCompletedEvent from './triggerSegmentCompletedEvent';
 
 const { RectangleScissorsTool } = csTools;
 
-export default class XNATCircleScissorsTool extends RectangleScissorsTool {
+export default class XNATRectangleScissorsTool extends RectangleScissorsTool {
   constructor(props = {}) {
     const defaultProps = {
       name: TOOL_NAMES.XNAT_RECTANGLE_SCISSORS_TOOL,

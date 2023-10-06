@@ -22,37 +22,15 @@ class ImageFusionButton extends PureComponent {
   }
 
   toggleActive() {
-    const { isVTK, commandsManager, servicesManager, PiecewiseWidget } = this.props;
+    const { commandsManager, servicesManager } = this.props;
     const { UIDialogService, UINotificationService } = servicesManager.services;
 
     const { isActive } = this.state;
 
-    if (isVTK && !isActive) {
-      // Wait until the background image is fully loaded
-      const viewports = window.store.getState().viewports;
-      const displaySetInstanceUID =
-        viewports.viewportSpecificData[0].displaySetInstanceUID;
-      if (
-        !commandsManager.runCommand('getVolumeProperties', {
-          displaySetInstanceUID,
-        })
-      ) {
-        if (UINotificationService) {
-          UINotificationService.show({
-            title: 'Image Fusion',
-            message: 'Please wait until the background image is fully loaded.',
-            type: 'info',
-          });
-        }
-        return;
-      }
-    }
-
     if (isActive) {
       UIDialogService.dismiss({ id: DIALOG_ID });
     } else {
-      const colormaps = commandsManager.runCommand('getColormaps');
-      const spacing = 20;
+      const spacing = [35, 5];
       const { x, y } = document
         .querySelector(`.ViewerMain`)
         .getBoundingClientRect();
@@ -61,14 +39,11 @@ class ImageFusionButton extends PureComponent {
         content: ConnectedImageFusionDialog,
         contentProps: {
           onClose: this.toggleActive,
-          isVTK: isVTK,
-          colormaps: colormaps,
           commandsManager: commandsManager,
-          PiecewiseWidget: PiecewiseWidget,
         },
         defaultPosition: {
-          x: x + spacing || 0,
-          y: y + spacing || 0,
+          x: x + spacing[0] || 0,
+          y: y + spacing[1] || 0,
         },
       });
     }
@@ -101,14 +76,11 @@ ImageFusionButton.propTypes = {
   button: PropTypes.object.isRequired,
   activeButtons: PropTypes.array.isRequired,
   isActive: PropTypes.bool,
-  isVTK: PropTypes.bool,
   servicesManager: PropTypes.object,
   commandsManager: PropTypes.object,
-  PiecewiseWidget: PropTypes.elementType,
 };
 
 ImageFusionButton.defaultProps = {
-  isVTK: false,
 };
 
 export default ImageFusionButton;

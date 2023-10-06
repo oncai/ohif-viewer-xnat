@@ -34,70 +34,101 @@ const mapStateToProps = (state, ownProps) => {
     });
   });
 
+  const activeViewportIndex = state.viewports.activeViewportIndex;
+
   return {
     studies: studiesWithLoadingData,
+    activeViewportIndex,
   };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    onThumbnailClick: displaySetInstanceUID => {
-      let displaySet = findDisplaySetByUID(
-        ownProps.studyMetadata,
-        displaySetInstanceUID
-      );
-
-      if (displaySet.isDerived) {
-        const { Modality } = displaySet;
-        if (Modality === 'SEG' && servicesManager) {
-          const {LoggerService, UINotificationService} = servicesManager.services;
-          const onDisplaySetLoadFailureHandler = error => {
-            LoggerService.error({ error, message: error.message });
-            UINotificationService.show({
-              title: 'DICOM Segmentation Loader',
-              message: error.message,
-              type: 'error',
-              autoClose: true,
-            });
-          };
-
-          const {referencedDisplaySet, activatedLabelmapPromise} = displaySet.getSourceDisplaySet(
-            ownProps.studyMetadata,
-            true,
-            onDisplaySetLoadFailureHandler
-          );
-          displaySet = referencedDisplaySet;
-
-          activatedLabelmapPromise.then((activatedLabelmapIndex) => {
-            const selectionFired = new CustomEvent("extensiondicomsegmentationsegselected", {
-              "detail": {"activatedLabelmapIndex":activatedLabelmapIndex}
-            });
-            document.dispatchEvent(selectionFired);
-          });
-
-        } else {
-          displaySet = displaySet.getSourceDisplaySet(ownProps.studyMetadata);
-        }
-
-        if (!displaySet) {
-          throw new Error(
-            `Referenced series for ${Modality} dataset not present.`
-          );
-        }
-
-        if (!displaySet) {
-          throw new Error('Source data not present');
-        }
-      }
-
+    setActiveViewportDisplaySet: displaySet => {
       dispatch(setActiveViewportSpecificData(displaySet));
     },
   };
 };
 
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  const { studyMetadata } = ownProps;
+  const { activeViewportIndex } = stateProps;
+  const { setActiveViewportDisplaySet } = dispatchProps;
+
+  const onThumbnailClick = displaySetInstanceUID => {
+    let displaySet = findDisplaySetByUID(
+      studyMetadata,
+      displaySetInstanceUID
+    );
+
+    if (displaySet.isDerived) {
+      const { Modality } = displaySet;
+      if (Modality === 'SEG' && servicesManager) {
+        const {LoggerService, UINotificationService} = servicesManager.services;
+        const onDisplaySetLoadFailureHandler = error => {
+          LoggerService.error({ error, message: error.message });
+          UINotificationService.show({
+            title: 'DICOM Segmentation Loader',
+            message: error.message,
+            type: 'error',
+            autoClose: true,
+          });
+        };
+
+        const {referencedDisplaySet, activatedLabelmapPromise} = displaySet.getSourceDisplaySet(
+          ownProps.studyMetadata,
+          true,
+          onDisplaySetLoadFailureHandler
+        );
+        displaySet = referencedDisplaySet;
+
+        activatedLabelmapPromise.then((activatedLabelmapIndex) => {
+          const selectionFired = new CustomEvent("extensiondicomsegmentationsegselected", {
+            "detail": {"activatedLabelmapIndex":activatedLabelmapIndex}
+          });
+          document.dispatchEvent(selectionFired);
+        });
+
+      } else {
+        displaySet = displaySet.getSourceDisplaySet(ownProps.studyMetadata);
+      }
+
+      if (!displaySet) {
+        throw new Error(
+          `Referenced series for ${Modality} dataset not present.`
+        );
+      }
+
+      if (!displaySet) {
+        throw new Error('Source data not present');
+      }
+    }
+
+    if (displaySet.isValidMultiStack && displaySet.getSubStackGroupData) {
+      const subStackGroupData = displaySet.getSubStackGroupData();
+      const stackDisplaySet = subStackGroupData.getStackDisplaySet({
+        viewportIndex: activeViewportIndex,
+      });
+      if (stackDisplaySet) {
+        displaySet = stackDisplaySet;
+      }
+    }
+
+    setActiveViewportDisplaySet(displaySet);
+  };
+
+  return {
+    ...ownProps,
+    ...stateProps,
+    ...dispatchProps,
+    onThumbnailClick,
+  };
+};
+
 const ConnectedStudyBrowser = connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
+  mergeProps
 )(XNATStudyBrowser);
 
 export default ConnectedStudyBrowser;

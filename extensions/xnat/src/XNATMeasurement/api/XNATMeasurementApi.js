@@ -14,6 +14,7 @@ import { XNAT_EVENTS } from '../../utils';
 import showModal from '../../components/common/showModal';
 import MeasurementPropertyModal from '../components/MeasurementPropertyModal/MeasurementPropertyModal';
 import { XNATToolTypes } from '../measurement-tools';
+import refreshViewports from '../../utils/refreshViewports';
 
 const triggerEvent = csTools.importInternal('util/triggerEvent');
 const globalToolStateManager = csTools.globalImageIdSpecificToolStateManager;
@@ -79,27 +80,11 @@ class XNATMeasurementApi {
       // TODO: Notify about the last activated measurement
       const { metadata } = measurement;
       if (metadata) {
-        const onUpdateProperty = data => {
-          const { name, description, categoryUID, typeUID, modifierUID } = data;
-          metadata.name = name;
-          metadata.description = description;
-          metadata.codingSequence[0] = getAnatomyCoding({
-            categoryUID,
-            typeUID,
-            modifierUID,
-          });
-        };
-        const onClose = () => {
-          if (toolType === XNATToolTypes.ARROW_ANNOTATE) {
-            measurementData.text = metadata.name;
-            cornerstone.updateImage(element);
-          }
-          triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
-        };
-        showModal(
-          MeasurementPropertyModal,
-          { metadata, onUpdateProperty, onClose },
-          metadata.name
+        this.showModalOnNewMeasurement(
+          metadata,
+          measurementData,
+          element,
+          toolType
         );
       }
     }
@@ -155,6 +140,8 @@ class XNATMeasurementApi {
       return;
     }
 
+    refreshViewports(element);
+
     triggerEvent(element, XNAT_EVENTS.MEASUREMENT_MODIFIED, {});
     // TODO: Notify about the last activated measurement
   }
@@ -175,6 +162,8 @@ class XNATMeasurementApi {
     if (this.removeMeasurement(measurementReference)) {
       triggerEvent(element, XNAT_EVENTS.MEASUREMENT_REMOVED, {});
       // TODO: Notify about the last activated measurement
+
+      refreshViewports(element);
     }
   }
 
@@ -412,6 +401,43 @@ class XNATMeasurementApi {
     }
 
     return displaySetInstanceUID;
+  }
+
+  showModalOnNewMeasurement(metadata, measurementData, element, toolType) {
+    // Check whether the show modal is enabled
+    const preferences = window.store.getState().preferences;
+    const ShowModalOnNewAnnotation =
+      preferences.experimentalFeatures.ShowModalOnNewAnnotation;
+    const showModalOnNewAnnotation =
+      !!ShowModalOnNewAnnotation && ShowModalOnNewAnnotation.enabled;
+
+    if (!showModalOnNewAnnotation) {
+      return;
+    }
+
+    const onUpdateProperty = data => {
+      const { name, description, categoryUID, typeUID, modifierUID } = data;
+      metadata.name = name;
+      metadata.description = description;
+      metadata.codingSequence[0] = getAnatomyCoding({
+        categoryUID,
+        typeUID,
+        modifierUID,
+      });
+    };
+    const onClose = () => {
+      if (toolType === XNATToolTypes.ARROW_ANNOTATE) {
+        measurementData.text = metadata.name;
+        cornerstone.updateImage(element);
+      }
+      refreshViewports(element);
+      triggerEvent(element, XNAT_EVENTS.MEASUREMENT_COMPLETED, {});
+    };
+    showModal(
+      MeasurementPropertyModal,
+      { metadata, onUpdateProperty, onClose },
+      metadata.name
+    );
   }
 }
 

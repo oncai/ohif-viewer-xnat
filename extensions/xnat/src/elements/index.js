@@ -40,6 +40,11 @@ import xnatMeasureAngle from './icons/xnat-measure-angle.svg';
 import xnatMeasureBidirectional from './icons/xnat-measure-bidirectional.svg';
 import xnatMeasureCircle from './icons/xnat-measure-circle.svg';
 import xnatMeasureRectangle from './icons/xnat-measure-rectangle.svg';
+import xnatSmooth from './icons/xnat-smooth.svg';
+import xnatSync from './icons/xnat-sync.svg';
+import xnatAnnotate from './icons/xnat-annotate.svg';
+import xnatViewportOverlay from './icons/xnat-viewport-overlay.svg';
+import xnatStack from './icons/xnat-stack.svg';
 
 import Loader from './Loader/Loader';
 
@@ -50,6 +55,8 @@ import SortIcon from './SortIcon/SortIcon';
 import ROIContourColorPicker from './colorPickers/ROIContourColorPicker';
 
 import FormattedValue from './FormattedValue/FormattedValue';
+
+import CheckIcon from './CheckIcon/CheckIcon';
 
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
@@ -93,6 +100,11 @@ const XNATICONS = {
   'xnat-measure-bidirectional': xnatMeasureBidirectional,
   'xnat-measure-circle': xnatMeasureCircle,
   'xnat-measure-rectangle': xnatMeasureRectangle,
+  'xnat-smooth': xnatSmooth,
+  'xnat-sync': xnatSync,
+  'xnat-annotate': xnatAnnotate,
+  'xnat-viewport-overlay': xnatViewportOverlay,
+  'xnat-stack': xnatStack,
 };
 
 export {
@@ -103,4 +115,5 @@ export {
   SortIcon,
   ROIContourColorPicker,
   FormattedValue,
+  CheckIcon,
 };

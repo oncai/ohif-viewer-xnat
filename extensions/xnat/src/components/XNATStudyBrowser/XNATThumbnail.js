@@ -276,6 +276,7 @@ function XNATThumbnail(props) {
     onMouseDown,
     supportsDrag,
     modality,
+    isValidMultiStack,
   } = props;
 
   const [collectedProps, drag, dragPreview] = useDrag({
@@ -297,7 +298,7 @@ function XNATThumbnail(props) {
   return (
     <div
       ref={drag}
-      className={classNames('thumbnail', { active: active })}
+      className={classNames('xnat-thumbnail', { active: active })}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       onMouseDown={onMouseDown}
@@ -312,6 +313,7 @@ function XNATThumbnail(props) {
           stackPercentComplete={stackPercentComplete}
           displaySetInstanceUID={displaySetInstanceUID}
           modality={modality}
+          isValidMultiStack={isValidMultiStack}
         />
       )}
       {/* SHOW TEXT ALTERNATIVE */}

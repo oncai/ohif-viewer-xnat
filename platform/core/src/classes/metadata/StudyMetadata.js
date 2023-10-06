@@ -3,17 +3,24 @@ import DICOMWeb from './../../DICOMWeb';
 import ImageSet from './../ImageSet';
 import { InstanceMetadata } from './InstanceMetadata';
 import { Metadata } from './Metadata';
-import OHIFError from '../OHIFError';
 import { SeriesMetadata } from './SeriesMetadata';
 // - createStacks
 import { api } from 'dicomweb-client';
 // - createStacks
 import { isImage } from '../../utils/isImage';
-import { isDisplaySetReconstructable, isSpacingUniform } from '../../utils/isDisplaySetReconstructable';
+import {
+  isDisplaySetReconstructable,
+  isSpacingUniform,
+} from '../../utils/isDisplaySetReconstructable';
+import {
+  createSubStacks,
+  generateSubStackTree,
+} from '../../utils/createSubStacks';
 import errorHandler from '../../errorHandler';
 import isLowPriorityModality from '../../utils/isLowPriorityModality';
 import getXHRRetryRequestHook from '../../utils/xhrRetryRequestHook';
 import { ReconstructionIssues } from '../../enums';
+import { metadataUtils } from '../../utils';
 
 class StudyMetadata extends Metadata {
   constructor(data, uid) {
@@ -78,7 +85,7 @@ class StudyMetadata extends Metadata {
      *   studyInstanceUID: '1.2.3.4.5.6.77777.8888888.99999999999.0'
      * });
      */
-    Object.defineProperty(this, 'studyInstanceUID', {
+    Object.defineProperty(this, 'StudyInstanceUID', {
       configurable: false,
       enumerable: false,
       get: function() {
@@ -254,17 +261,18 @@ class StudyMetadata extends Metadata {
     let noReferencedSeriesAvailable = !referencedSeriesInstanceUIDs ||
       referencedSeriesInstanceUIDs.length === 0;
     if (noReferencedSeriesAvailable) {
-      referencedSeriesInstanceUIDs =
-        _findReferencedSeriesInstanceUIDsFromReferencedSeriesSequence
-          (metadata);
+      referencedSeriesInstanceUIDs = _findReferencedSeriesInstanceUIDsFromReferencedSeriesSequence(
+        metadata
+      );
     }
 
     noReferencedSeriesAvailable = !referencedSeriesInstanceUIDs ||
       referencedSeriesInstanceUIDs.length === 0;
     if (noReferencedSeriesAvailable) {
-      referencedSeriesInstanceUIDs =
-      _findReferencedSeriesInstanceUIDsFromReferencedImageSequence
-          (metadata, otherDisplaySets);
+      referencedSeriesInstanceUIDs = _findReferencedSeriesInstanceUIDsFromReferencedImageSequence(
+        metadata,
+        otherDisplaySets
+      );
     }
 
     const referencedSeriesAvailable = referencedSeriesInstanceUIDs &&
@@ -273,7 +281,6 @@ class StudyMetadata extends Metadata {
       const referencedDisplaySet = otherDisplaySets.find(ds =>
         referencedSeriesInstanceUIDs.includes(ds.SeriesInstanceUID)
       );
-      ;
       return referencedDisplaySet;
     }
   };
@@ -351,6 +358,39 @@ class StudyMetadata extends Metadata {
     });
 
     return this._displaySets;
+  }
+
+  createDisplaySetsForSubStacks() {
+    const derivedDisplaySets = [];
+
+    this.displaySets.forEach(refDisplaySet => {
+      if (refDisplaySet.isMultiStack) {
+        createSubStacks(refDisplaySet, this);
+        const subStackGroups = refDisplaySet.subStackGroups;
+        const subStackGroupData = refDisplaySet.subStackGroupData;
+        if (subStackGroups !== undefined) {
+          // Create display sets for all substacks
+          subStackGroups.forEach(subStacksGroup => {
+            Object.keys(subStacksGroup).forEach(subStackKey => {
+              const subStack = subStacksGroup[subStackKey];
+              const displaySet = makeDisplaySetFromSubStack(
+                subStack,
+                refDisplaySet
+              );
+              subStack.displaySet = displaySet;
+              displaySet.getSubStackGroupData = () => subStackGroupData;
+              derivedDisplaySets.push(displaySet);
+            });
+          });
+          // Generate nested stack info of label and displaySetInstanceUID pairs
+          generateSubStackTree(refDisplaySet);
+          // Shortcut to subStackGroupData
+          refDisplaySet.getSubStackGroupData = () => subStackGroupData;
+        }
+      }
+    });
+
+    derivedDisplaySets.forEach(ds => this._insertDisplaySet(ds));
   }
 
   /**
@@ -834,6 +874,10 @@ const makeDisplaySet = (series, instances) => {
     Modality: instance.getTagValue('Modality'),
     isMultiFrame: isMultiFrame(instance),
     FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
+    isEnhanced: seriesData.isEnhanced,
+    is4D: seriesData.is4D,
+    numberOfSubInstances: seriesData.numberOfSubInstances,
+    isMultiStack: seriesData.isMultiStack,
   });
 
   // Sort the images in this series by instanceNumber
@@ -856,12 +900,13 @@ const makeDisplaySet = (series, instances) => {
 
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
   imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
-  imageSet.numberOfImagesPerSubset =
-    displayReconstructableInfo.numberOfImagesPerSubset;
 
-  const datasetIs4D = displayReconstructableInfo.reconstructionIssues.includes(
-    ReconstructionIssues.DATASET_4D
-  );
+  const { is4D, numberOfSubInstances } = imageSet;
+  if (is4D) {
+    displayReconstructableInfo.reconstructionIssues.push(
+      ReconstructionIssues.DATASET_4D
+    );
+  }
 
   let displaySpacingInfo = undefined;
   if (shallSort && imageSet.isReconstructable && !imageSet.isMultiFrame) {
@@ -869,8 +914,10 @@ const makeDisplaySet = (series, instances) => {
     imageSet.sliceSpacingFirstFrame = imageSet.sortByImagePositionPatient();
 
     // check if the spacing is uniform and update isReconstructable
-    displaySpacingInfo = isSpacingUniform(imageSet.images, datasetIs4D);
-    imageSet.isReconstructable = displaySpacingInfo.isUniform;
+    displaySpacingInfo = isSpacingUniform(imageSet.images, is4D);
+
+    imageSet.isReconstructable =
+      imageSet.isReconstructable && displaySpacingInfo.isUniform;
 
     if (displaySpacingInfo.missingFrames) {
       // TODO -> This is currently unused, but may be used for reconstructing
@@ -894,8 +941,55 @@ const makeDisplaySet = (series, instances) => {
     preferences.experimentalFeatures.DisplayScanFromTheMiddle;
   const displayFromTheMiddleEnabled =
     !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
-  const numImages = imageSet.numberOfImagesPerSubset || instances.length;
+  const numImages =
+    numberOfSubInstances > 1 ? numberOfSubInstances : instances.length;
   const middleImageIndex = Math.floor(numImages / 2);
+  imageSet.setAttribute('middleImageIndex', middleImageIndex);
+  imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);
+
+  return imageSet;
+};
+
+const makeDisplaySetFromSubStack = (subStack, refDisplaySet) => {
+  const { ohifSeries: series, ...stackData } = subStack;
+  const instances = series._instances;
+  const instance = instances[0];
+  const imageSet = new ImageSet(instances);
+  const seriesData = series.getData();
+
+  // set appropriate attributes to image set...
+  imageSet.setAttributes({
+    displaySetInstanceUID: imageSet.uid, // create a local alias for the imageSet UID
+    SeriesDate: seriesData.SeriesDate,
+    SeriesTime: seriesData.SeriesTime,
+    SeriesInstanceUID: seriesData.SeriesInstanceUID,
+    SeriesNumber: seriesData.SeriesNumber,
+    SeriesDescription: seriesData.SeriesDescription,
+    numImageFrames: instances.length,
+    frameRate: instance.getTagValue('FrameTime'),
+    Modality: instance.getTagValue('Modality'),
+    isMultiFrame: isMultiFrame(instance),
+    FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
+    //
+    StudyInstanceUID: refDisplaySet.StudyInstanceUID,
+    //
+    sopClassUIDs: [instance.getTagValue('SOPClassUID')],
+    isReconstructable: true,
+    isSubStack: true,
+    isEnhanced: false,
+    isMultiStack: false,
+    stackData,
+    //
+    refDisplaySet: refDisplaySet,
+  });
+
+  // Optional slice display and download order
+  const preferences = window.store.getState().preferences;
+  const DisplayScanFromTheMiddle =
+    preferences.experimentalFeatures.DisplayScanFromTheMiddle;
+  const displayFromTheMiddleEnabled =
+    !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
+  const middleImageIndex = Math.floor(instances.length / 2);
   imageSet.setAttribute('middleImageIndex', middleImageIndex);
   imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);
 

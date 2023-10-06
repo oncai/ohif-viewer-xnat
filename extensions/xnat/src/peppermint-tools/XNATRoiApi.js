@@ -6,16 +6,14 @@ import {
 } from 'cornerstone-tools';
 import OHIF from '@ohif/core';
 import TOOL_NAMES from './toolNames';
-import { XNAT_EVENTS } from '../utils';
+import { XNAT_EVENTS, refreshViewports } from '../utils';
 import {
   calculateContourArea,
   calculateContourRoiVolume,
   calculateMaskRoiVolume,
-  calculateMaskRoi2DStats,
   getRoiMeasurementUnits,
 } from './utils';
 
-const { studyMetadataManager } = OHIF.utils;
 
 const globalToolStateManager = globalImageIdSpecificToolStateManager;
 
@@ -118,6 +116,8 @@ class XNATRoiApi {
         triggerEvent(XNAT_EVENTS.CONTOUR_COMPLETED, {
           roiContourUid: referencedROIContour.uid,
         });
+
+        refreshViewports(eventData.element);
       }
     }
   }

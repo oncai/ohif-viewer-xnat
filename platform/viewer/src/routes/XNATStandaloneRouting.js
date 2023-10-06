@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import cornerstone from 'cornerstone-core';
 import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import qs from 'querystring';
@@ -11,10 +12,11 @@ import NotFound from '../routes/NotFound';
 import { isLoggedIn, xnatAuthenticate } from '@xnat-ohif/extension-xnat';
 
 const { log, metadata, utils } = OHIF;
-const { studyMetadataManager } = utils;
+const { studyMetadataManager, metadataUtils } = utils;
 const { OHIFStudyMetadata } = metadata;
 
-const timestamp = Date.now();
+const VALID_BACKGROUND_MODALITIES = ['MR', 'CT'];
+const VALID_OVERLAY_MODALITIES = ['PT', 'NM', 'MR'];
 
 class XNATStandaloneRouting extends Component {
   state = {
@@ -104,7 +106,7 @@ class XNATStandaloneRouting extends Component {
           view: 'session',
         });
 
-        const jsonRequestUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentId}?ts=${timestamp}`;
+        const jsonRequestUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentId}`;
 
         console.log(jsonRequestUrl);
 
@@ -179,7 +181,7 @@ class XNATStandaloneRouting extends Component {
           view: 'subject',
         });
 
-        const subjectExperimentListUrl = `${rootUrl}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json&ts=${timestamp}`;
+        const subjectExperimentListUrl = `${rootUrl}data/archive/projects/${projectId}/subjects/${subjectId}/experiments?format=json`;
 
         console.log(subjectExperimentListUrl);
 
@@ -198,7 +200,7 @@ class XNATStandaloneRouting extends Component {
 
           for (let i = 0; i < experimentList.length; i++) {
             const experimentIdI = experimentList[i].ID;
-            const experimentJSONFetchUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}?ts=${timestamp}`;
+            const experimentJSONFetchUrl = `${rootUrl}xapi/viewer/projects/${projectId}/experiments/${experimentIdI}`;
 
             results[i] = _getJson(experimentJSONFetchUrl);
           }
@@ -381,6 +383,9 @@ const _mapStudiesToNewFormat = studies => {
     studyMetadataManager.add(studyMetadata);
     uniqueStudyUIDs.add(study.StudyInstanceUID);
 
+    // Create display sets for substacks, where applicable
+    studyMetadata.createDisplaySetsForSubStacks();
+
     return study;
   });
 
@@ -442,7 +447,7 @@ async function getUserInformation(rootUrl) {
     xhr.onerror = () => {
       reject(new Error(xhr.statusText ? xhr.statusText : 'Unknown error'));
     };
-    xhr.open('GET', `${rootUrl}xapi/users/username?ts=${timestamp}`);
+    xhr.open('GET', `${rootUrl}xapi/users/username`);
     xhr.responseType = 'text';
     // xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.send();
@@ -453,9 +458,7 @@ async function getUserInformation(rootUrl) {
       const { response } = result;
       userInfo.loginName = response;
 
-      return _getJson(
-        `${rootUrl}xapi/users/profile/${response}?ts=${timestamp}`
-      );
+      return _getJson(`${rootUrl}xapi/users/profile/${response}`);
     })
     .then(result => {
       const { firstName, lastName } = result;
@@ -513,8 +516,15 @@ async function updateMetaDataProvider(studies) {
     StudyInstanceUID = study.StudyInstanceUID;
     for (let series of study.series) {
       SeriesInstanceUID = series.SeriesInstanceUID;
+      const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
+        series.instances
+      );
+      series.is4D = is4D;
+      series.numberOfSubInstances = numberOfSubInstances;
+      series.isMultiStack =
+        is4D && metadataUtils.isSameOrientation(series.instances);
       await Promise.all(
-        series.instances.map(async instance => {
+        series.instances.map(async (instance, instanceIndex) => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
           naturalizedDicom.PatientID = study.PatientID;
           naturalizedDicom.PatientName = { Alphabetic: study.PatientName };
@@ -535,7 +545,35 @@ async function updateMetaDataProvider(studies) {
           // OverlayData is loaded conditionally in metadataProvider.addInstance
 
           // Add instance to metadata provider.
-          await metadataProvider.addInstance(naturalizedDicom, { imageId });
+          const addedInstance = await metadataProvider.addInstance(
+            naturalizedDicom,
+            {
+              imageId,
+              shouldFetchDataset: is4D && instanceIndex < numberOfSubInstances,
+            }
+          );
+          if (metadataUtils.isEnhancedSOP(addedInstance.SOPClassUID)) {
+            const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
+              addedInstance
+            );
+            if (naturalizedMetadataList && naturalizedMetadataList.length > 0) {
+              const subInstances = [];
+              for (let j = 0; j < naturalizedMetadataList.length; j++) {
+                subInstances.push({
+                  metadata: naturalizedMetadataList[j],
+                  url: `${imageId}?frame=${j}`,
+                });
+              }
+              series.isEnhanced = metadataUtils.isSameOrientation(subInstances);
+              series.subInstances = subInstances;
+              if (
+                series.isEnhanced &&
+                metadataUtils.isDataset4D(subInstances).is4D
+              ) {
+                series.isMultiStack = true;
+              }
+            }
+          }
 
           // Add imageId specific mapping to this data as the URL isn't necessarily WADO-URI.
           // I.e. here the imageId is added w/o frame number for multi-frame images
@@ -547,6 +585,26 @@ async function updateMetaDataProvider(studies) {
           });
         })
       );
+    }
+  }
+
+  // Parse Enhanced SOPs, if exists, and add their forked
+  // instances to the MetadataProvider
+  for (const study of studies) {
+    StudyInstanceUID = study.StudyInstanceUID;
+    for (const series of study.series) {
+      SeriesInstanceUID = series.SeriesInstanceUID;
+      if (series.subInstances) {
+        series.subInstances.forEach(instance => {
+          const { url: imageId, metadata: naturalizedDicom } = instance;
+          metadataProvider.addInstancesFromEnhancedSOP(naturalizedDicom);
+          metadataProvider.addImageIdToUIDs(imageId, {
+            StudyInstanceUID,
+            SeriesInstanceUID,
+            SOPInstanceUID: naturalizedDicom.SOPInstanceUID,
+          });
+        });
+      }
     }
   }
 }
@@ -603,18 +661,23 @@ function updateXnatSessionMap(studies) {
 }
 
 function setValidOverlaySeries(studies) {
-  const backgroundModalities = ['MR', 'CT'];
-  const overlayModalities = ['PT', 'NM', 'MR'];
   studies.forEach((study, studyIndex, studies) => {
     study.displaySets.forEach((displaySet, displaySetIndex, displaySets) => {
       displaySet.validOverlayDisplaySets = {};
-      if (backgroundModalities.includes(displaySet.Modality)) {
+      if (VALID_BACKGROUND_MODALITIES.includes(displaySet.Modality)) {
+        // Exclude multi-frame images
+        if (displaySet.isMultiFrame && !displaySet.isEnhanced) {
+          return;
+        }
         // Add series within this study
-        // ToDo: use reliable checks (IOP & IPP)
+        const refIop = getImageOrientationPatient(displaySet);
+        if (!refIop) {
+          return;
+        }
         const sameStudyOverlays = [];
         for (let i = 0; i < displaySets.length; i++) {
           if (i !== displaySetIndex) {
-            if (overlayModalities.includes(displaySets[i].Modality)) {
+            if (isValidOverlayDisplaySet(displaySet, refIop, displaySets[i])) {
               sameStudyOverlays.push(displaySets[i].displaySetInstanceUID);
             }
           }
@@ -633,7 +696,9 @@ function setValidOverlaySeries(studies) {
             studies[i].displaySets.forEach(ds => {
               if (
                 displaySet.FrameOfReferenceUID === ds.FrameOfReferenceUID &&
-                overlayModalities.includes(ds.Modality)
+                VALID_OVERLAY_MODALITIES.includes(ds.Modality) &&
+                !ds.isMultiFrame &&
+                !ds.isSubStack
               ) {
                 otherStudyOverlays.push(ds.displaySetInstanceUID);
               }
@@ -648,4 +713,44 @@ function setValidOverlaySeries(studies) {
       }
     });
   });
+}
+
+function isValidOverlayDisplaySet(displaySetI, refIop, displaySetJ) {
+  if (!VALID_OVERLAY_MODALITIES.includes(displaySetJ.Modality)) {
+    return;
+  }
+  // Exclude parent displaySet
+  if (displaySetI.isSubStack) {
+    const refUid = displaySetI.refDisplaySet.displaySetInstanceUID;
+    if (refUid === displaySetJ.displaySetInstanceUID) {
+      return;
+    }
+  }
+  // Exclude substacks
+  if (displaySetJ.isSubStack) {
+    return;
+  }
+  // Exclude multiframe images without extracted frame metadata
+  if (displaySetJ.isMultiFrame && !displaySetJ.isEnhanced) {
+    return;
+  }
+  // Check orientation
+  const iop = getImageOrientationPatient(displaySetJ);
+  if (!metadataUtils.isSameArray(refIop, iop)) {
+    return;
+  }
+  return true;
+}
+
+function getImageOrientationPatient(displaySet) {
+  const firstImage = displaySet.images[0];
+  let imageId = firstImage.getData().url;
+  if (displaySet.isMultiFrame) {
+    imageId += '?frame=0';
+  }
+  const { imageOrientationPatient } = cornerstone.metaData.get(
+    'imagePlaneModule',
+    imageId
+  );
+  return imageOrientationPatient;
 }

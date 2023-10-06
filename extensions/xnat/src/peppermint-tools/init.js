@@ -185,7 +185,7 @@ export default function init({
 
   // Add Brush Eraser tool
   addTool(Brush3DTool, {
-    name: 'BrushEraser',
+    name: 'BrushEraserTool',
     configuration: {
       alwaysEraseOnClick: true,
     },

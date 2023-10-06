@@ -198,18 +198,11 @@ function getFormattedRowsFromTags(tags, meta) {
       });
     } else {
       if (tagInfo.vr === 'xs') {
-        try {
-          const dataset = metadataProvider.getStudyDataset(
-            meta.StudyInstanceUID
-          );
-          const tag = dcmjs.data.Tag.fromPString(tagInfo.tag).toCleanString();
-          const originalTagInfo = dataset[tag];
-          tagInfo.vr = originalTagInfo.vr;
-        } catch (error) {
-          console.error(
-            `Failed to parse value representation for tag '${tagInfo.keyword}'`
-          );
-        }
+        // Ignore xs VR. dcmjs seems to cast xs incorrectly
+        console.error(
+          `Failed to parse value representation for tag '${tagInfo.keyword}'`
+        );
+        return;
       }
 
       rows.push([

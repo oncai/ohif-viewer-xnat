@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
-import './XNATViewportOverlay.css';
+import { Icon } from '@ohif/ui';
+import { viewportOptionsManager } from '../../utils';
 import {
   isValidNumber,
   formatNumberPrecision,
@@ -10,13 +11,10 @@ import {
   formatPN,
   getCompression,
 } from './helpers';
-// import classNames from 'classnames';
-// import { Icon } from '@ohif/ui/src/elements/Icon';
-// import { Tooltip } from '@ohif/ui/src/components/tooltip';
-// import { OverlayTrigger } from '@ohif/ui/src/components/overlayTrigger';
-import XNATSmooth from './XNATSmooth';
-import XNATSync from './XNATSync';
-import { commandsManager } from '@ohif/viewer/src/App';
+import XNATViewportMenu from '../XNATViewportMenu/XNATViewportMenu';
+import ViewportOverlayWarning from './ViewportOverlayWarning';
+
+import './XNATViewportOverlay.css';
 
 class XNATViewportOverlay extends React.PureComponent {
   static propTypes = {
@@ -32,13 +30,103 @@ class XNATViewportOverlay extends React.PureComponent {
     imageId: PropTypes.string.isRequired,
     imageIndex: PropTypes.number.isRequired,
     stackSize: PropTypes.number.isRequired,
-    inconsistencyWarnings: PropTypes.array,
     viewportIndex: PropTypes.number,
+    getWindowing: PropTypes.func,
+    setViewportActive: PropTypes.func,
+    getEnabledElement: PropTypes.func,
+    getViewportSpecificData: PropTypes.func,
+    setViewportStackData: PropTypes.func,
   };
 
-  static defaultProps = {
-    inconsistencyWarnings: [],
-  };
+  static defaultProps = {};
+
+  constructor(props) {
+    super(props);
+
+    const { viewportIndex, getEnabledElement } = props;
+    const element = getEnabledElement(viewportIndex);
+    const viewportOptions = viewportOptionsManager.getViewportOptions(element);
+
+    this.state = {
+      viewportOptions,
+    };
+
+    this.updateViewportOptions = this.updateViewportOptions.bind(this);
+  }
+
+  updateViewportOptions(optionsObject) {
+    const { viewportOptions } = this.state;
+    const { viewportIndex, getEnabledElement } = this.props;
+    const element = getEnabledElement(viewportIndex);
+
+    const updatedOptions = { ...viewportOptions, ...optionsObject };
+
+    viewportOptionsManager.updateViewportOptions(element, updatedOptions);
+
+    this.setState({
+      viewportOptions: updatedOptions,
+    });
+  }
+
+  getAuxiliaryInformation() {
+    const { viewportIndex, imageIndex, getViewportSpecificData } = this.props;
+
+    const auxiliaryInformation = {
+      fusionDescription: null,
+      stackDescription: null,
+    };
+
+    // const viewportSpecificData = window.store.getState().viewports
+    //   .viewportSpecificData[viewportIndex];
+    const viewportSpecificData = getViewportSpecificData();
+    if (!viewportSpecificData) {
+      return auxiliaryInformation;
+    }
+
+    // Image fusion information
+    const imageFusionData = viewportSpecificData.imageFusionData;
+    if (imageFusionData) {
+      let fusionDescription =
+        imageFusionData.fusionActive && imageFusionData.fusionDescription
+          ? imageFusionData.fusionDescription
+          : null;
+      if (fusionDescription && imageFusionData.colormapName) {
+        fusionDescription += ` [${imageFusionData.colormapName}]`;
+      }
+      auxiliaryInformation.fusionDescription = fusionDescription;
+    }
+
+    // Stack information
+    if (viewportSpecificData.isSubStack) {
+      const { stackData, getSubStackGroupData } = viewportSpecificData;
+      const {
+        mainDimensionIndex,
+        otherDimensionIndices,
+        stackName,
+        refIndices,
+      } = stackData;
+      const { groupLabels, dimensionValues } = getSubStackGroupData();
+
+      const refIndex = refIndices[imageIndex - 1];
+      const refValues = dimensionValues[refIndex];
+
+      if (refValues !== undefined) {
+        const stackValues = [];
+        for (let i = 1; i < refValues.length; i++) {
+          stackValues.push(`${groupLabels[i].groupName}: ${refValues[i]}`);
+        }
+
+        auxiliaryInformation.stackDescription = (
+          <>
+            <div>{`Stack: ${stackName}`}</div>
+            <div>{`[${stackValues.join(', ')}]`}</div>
+          </>
+        );
+      }
+    }
+
+    return auxiliaryInformation;
+  }
 
   render() {
     const {
@@ -46,147 +134,155 @@ class XNATViewportOverlay extends React.PureComponent {
       scale,
       windowWidth,
       windowCenter,
+      imageIndex,
+      stackSize,
       viewportIndex,
+      getWindowing,
+      setViewportActive,
+      getViewportSpecificData,
+      setViewportStackData,
     } = this.props;
-    // const { imageId, scale, windowWidth, windowCenter, inconsistencyWarnings } = this.props;
+
+    const { viewportOptions } = this.state;
 
     if (!imageId) {
       return null;
     }
 
-    const zoomPercentage = formatNumberPrecision(scale * 100, 0);
-    const seriesMetadata =
-      cornerstone.metaData.get('generalSeriesModule', imageId) || {};
-    const imagePlaneModule =
-      cornerstone.metaData.get('imagePlaneModule', imageId) || {};
-    const { rows, columns, sliceThickness, sliceLocation } = imagePlaneModule;
-    const { seriesNumber, seriesDescription, modality } = seriesMetadata;
-
-    const generalStudyModule =
-      cornerstone.metaData.get('generalStudyModule', imageId) || {};
-    const { studyDate, studyTime, studyDescription } = generalStudyModule;
-
-    const patientModule =
-      cornerstone.metaData.get('patientModule', imageId) || {};
-    const { patientId, patientName } = patientModule;
-
-    const generalImageModule =
-      cornerstone.metaData.get('generalImageModule', imageId) || {};
-    const { instanceNumber } = generalImageModule;
-
-    const cineModule = cornerstone.metaData.get('cineModule', imageId) || {};
-    let { frameTime } = cineModule;
-
-    frameTime = frameTime === 0 ? -1 : frameTime;
-    const frameRate = formatNumberPrecision(1000 / frameTime, 1);
-    const compression = getCompression(imageId);
-    const wwwc = `W: ${
-      windowWidth.toFixed ? windowWidth.toFixed(0) : windowWidth
-    } L: ${windowCenter.toFixed ? windowCenter.toFixed(0) : windowCenter}`;
-    const imageDimensions = `${columns} x ${rows}`;
-
-    const { imageIndex, stackSize } = this.props;
-
-    const windowing = commandsManager.runCommand('getWindowing', {
-      viewportIndex,
-    });
-    // const windowingDescription = `Windowing: ${wi}`;
-
-    /*
-    const inconsistencyWarningsOn = inconsistencyWarnings && inconsistencyWarnings.length !== 0 ? true : false;
-    const getWarningContent = (warningList) => {
-      if (Array.isArray(warningList)) {
-        const listedWarnings = warningList.map((warn, index) => {
-          return <li key={index}>{warn}</li>;
-        });
-
-        return <ol>{listedWarnings}</ol>;
-      } else {
-        return <React.Fragment>{warningList}</React.Fragment>;
-      }
-    };
-
-    const getWarningInfo = (seriesNumber, inconsistencyWarnings) => {
-      return(
-        <React.Fragment>
-        {inconsistencyWarnings.length != 0 ? (
-          <OverlayTrigger
-            key={seriesNumber}
-            placement="left"
-            overlay={
-              <Tooltip
-                placement="left"
-                className="in tooltip-warning"
-                id="tooltip-left"
-              >
-                <div className="warningTitle">Series Inconsistencies</div>
-                <div className="warningContent">{getWarningContent(inconsistencyWarnings)}</div>
-              </Tooltip>
-            }
-          >
-            <div className={classNames('warning')}>
-              <span className="warning-icon">
-                <Icon name="exclamation-triangle" />
-              </span>
-            </div>
-          </OverlayTrigger>
-        ) : (
-          <React.Fragment></React.Fragment>
-          )}
-      </React.Fragment>
-      );
-    };
-    */
-
-    const normal = (
+    const optionIndicatorContent = (
       <React.Fragment>
-        <div className="top-left overlay-element">
-          <div>{formatPN(patientName)}</div>
-          <div>{patientId}</div>
-        </div>
-        <div className="top-right overlay-element">
-          <div>{studyDescription}</div>
-          <div>
-            {formatDICOMDate(studyDate)} {formatDICOMTime(studyTime)}
-          </div>
-          <XNATSync viewportIndex={viewportIndex} />
-          <XNATSmooth viewportIndex={viewportIndex} />
-        </div>
-        <div className="bottom-right overlay-element">
-          <div>Zoom: {zoomPercentage}%</div>
-          <div>{wwwc}</div>
-          {windowing && <div>{`Windowing: ${windowing}`}</div>}
-          <div className="compressionIndicator">{compression}</div>
-        </div>
-        {/*<div className="bottom-left2 warning">*/}
-        {/*  <div>{inconsistencyWarningsOn ? getWarningInfo(seriesNumber, inconsistencyWarnings) : ''}</div>*/}
-        {/*</div>*/}
-        <div className="bottom-left overlay-element">
-          <div>{modality}</div>
-          <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
-          <div>
-            {stackSize > 1
-              ? `Img: ${instanceNumber} ${imageIndex}/${stackSize}`
-              : ''}
-          </div>
-          <div>
-            {frameRate >= 0 ? `${formatNumberPrecision(frameRate, 2)} FPS` : ''}
-            <div>{imageDimensions}</div>
-            <div>
-              {isValidNumber(sliceLocation)
-                ? `Loc: ${formatNumberPrecision(sliceLocation, 2)} mm `
-                : ''}
-              {sliceThickness
-                ? `Thick: ${formatNumberPrecision(sliceThickness, 2)} mm`
-                : ''}
-            </div>
-            <div>{seriesDescription}</div>
-          </div>
+        <div>
+          {viewportOptions.sync && <Icon name="xnat-sync" />}
+          {viewportOptions.annotate && <Icon name="xnat-annotate" />}
+          {viewportOptions.smooth && <Icon name="xnat-smooth" />}
         </div>
       </React.Fragment>
     );
 
-    return <div className="OHIFCornerstoneViewportOverlay">{normal}</div>;
+    let overlayContent;
+
+    if (!viewportOptions.overlay) {
+      overlayContent = (
+        <div className="top-right overlay-element">
+          {optionIndicatorContent}
+        </div>
+      );
+    } else {
+      const warningList = [];
+      const zoomPercentage = formatNumberPrecision(scale * 100, 0);
+      const seriesMetadata =
+        cornerstone.metaData.get('generalSeriesModule', imageId) || {};
+      const imagePlaneModule =
+        cornerstone.metaData.get('imagePlaneModule', imageId) || {};
+      const {
+        rows,
+        columns,
+        sliceThickness,
+        sliceLocation,
+        warnings: imagePlaneModuleWarnings,
+      } = imagePlaneModule;
+      if (imagePlaneModuleWarnings) {
+        warningList.push(imagePlaneModuleWarnings);
+      }
+      const { seriesNumber, seriesDescription, modality } = seriesMetadata;
+
+      const generalStudyModule =
+        cornerstone.metaData.get('generalStudyModule', imageId) || {};
+      const { studyDate, studyTime, studyDescription } = generalStudyModule;
+
+      const patientModule =
+        cornerstone.metaData.get('patientModule', imageId) || {};
+      const { patientId, patientName } = patientModule;
+
+      const generalImageModule =
+        cornerstone.metaData.get('generalImageModule', imageId) || {};
+      const { instanceNumber } = generalImageModule;
+
+      const cineModule = cornerstone.metaData.get('cineModule', imageId) || {};
+      let { frameTime } = cineModule;
+
+      frameTime = frameTime === 0 ? -1 : frameTime;
+      const frameRate = formatNumberPrecision(1000 / frameTime, 1);
+      const compression = getCompression(imageId);
+      const wwwc = `W: ${
+        windowWidth.toFixed ? windowWidth.toFixed(0) : windowWidth
+      } L: ${windowCenter.toFixed ? windowCenter.toFixed(0) : windowCenter}`;
+      const imageDimensions = `${columns} x ${rows}`;
+
+      const windowing = getWindowing(viewportIndex);
+
+      const {
+        fusionDescription,
+        stackDescription,
+      } = this.getAuxiliaryInformation();
+
+      overlayContent = (
+        <React.Fragment>
+          <div className="top-left overlay-element">
+            <div>{formatPN(patientName)}</div>
+            <div>{patientId}</div>
+          </div>
+          <div className="top-right overlay-element">
+            <div>{studyDescription}</div>
+            <div>
+              {formatDICOMDate(studyDate)} {formatDICOMTime(studyTime)}
+            </div>
+            {optionIndicatorContent}
+          </div>
+          <div className="bottom-right overlay-element">
+            <div>Zoom: {zoomPercentage}%</div>
+            <div>{wwwc}</div>
+            {windowing && <div>{`Windowing: ${windowing}`}</div>}
+            <div className="compressionIndicator">{compression}</div>
+            <div>{fusionDescription}</div>
+          </div>
+          <div className="bottom-left overlay-element">
+            <div>
+              <ViewportOverlayWarning warningList={warningList} />
+            </div>
+            <div>{modality}</div>
+            <div>{seriesNumber >= 0 ? `Ser: ${seriesNumber}` : ''}</div>
+            <div>
+              {stackSize > 1
+                ? `Img: ${instanceNumber} ${imageIndex}/${stackSize}`
+                : ''}
+            </div>
+            <div>
+              {frameRate >= 0
+                ? `${formatNumberPrecision(frameRate, 2)} FPS`
+                : ''}
+              <div>{imageDimensions}</div>
+              <div>
+                {isValidNumber(sliceLocation)
+                  ? `Loc: ${formatNumberPrecision(sliceLocation, 2)} mm `
+                  : ''}
+                {sliceThickness
+                  ? `Thick: ${formatNumberPrecision(sliceThickness, 2)} mm`
+                  : ''}
+              </div>
+              <div>{seriesDescription}</div>
+              <div style={{ color: 'var(--snackbar-warning)' }}>
+                {stackDescription}
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    return (
+      <div className="OHIFCornerstoneViewportOverlay">
+        <XNATViewportMenu
+          viewportIndex={viewportIndex}
+          viewportOptions={viewportOptions}
+          updateViewportOptions={this.updateViewportOptions}
+          setViewportActive={setViewportActive}
+          getViewportSpecificData={getViewportSpecificData}
+          setViewportStackData={setViewportStackData}
+        />
+        {overlayContent}
+      </div>
+    );
   }
 }
 

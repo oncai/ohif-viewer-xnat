@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import cornerstone from 'cornerstone-core';
 
 // import OHIFCornerstoneViewportOverlay from './components/OHIFCornerstoneViewportOverlay';
-import { XNATViewportOverlay } from '@xnat-ohif/extension-xnat';
 import './CustomLoader.css';
 
 const { StackManager } = OHIF.utils;
@@ -26,6 +25,8 @@ class OHIFCornerstoneViewport extends Component {
     viewportIndex: PropTypes.number,
     children: PropTypes.node,
     customProps: PropTypes.object,
+    onNewImage: PropTypes.func,
+    getWindowing: PropTypes.func,
   };
 
   static id = 'OHIFCornerstoneViewport';
@@ -207,8 +208,8 @@ class OHIFCornerstoneViewport extends Component {
     if (!this.state.viewportData) {
       return null;
     }
-    const { viewportIndex } = this.props;
-    const { inconsistencyWarnings } = this.props.viewportData.displaySet;
+    const { viewportIndex, getWindowing } = this.props;
+    // const { inconsistencyWarnings } = this.props.viewportData.displaySet;
     const {
       imageIds,
       currentImageIdIndex,
@@ -245,15 +246,15 @@ class OHIFCornerstoneViewport extends Component {
       }
     };
 
-    const ViewportOverlay = props => {
-      return (
-        <XNATViewportOverlay
-          {...props}
-          viewportIndex={viewportIndex}
-          // inconsistencyWarnings={inconsistencyWarnings}
-        />
-      );
-    };
+    // const ViewportOverlay = props => {
+    //   return (
+    //     <XNATViewportOverlay
+    //       {...props}
+    //       viewportIndex={viewportIndex}
+    //       // inconsistencyWarnings={inconsistencyWarnings}
+    //     />
+    //   );
+    // };
 
     return (
       <>
@@ -263,8 +264,9 @@ class OHIFCornerstoneViewport extends Component {
           imageIdIndex={currentImageIdIndex}
           onNewImageDebounced={newImageHandler}
           onNewImageDebounceTime={300}
-          viewportOverlayComponent={ViewportOverlay}
+          // viewportOverlayComponent={ViewportOverlay}
           loadingIndicatorComponent={CustomLoader}
+          getWindowing={getWindowing}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}
           // isPlaying={false}

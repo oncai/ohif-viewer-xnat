@@ -15,7 +15,9 @@ import CornerstoneViewportDownloadForm from './CornerstoneViewportDownloadForm';
 import {
   referenceLines,
   XNATToolStrategiesDialog,
+  XNAT_TOOL_NAMES,
 } from '@xnat-ohif/extension-xnat';
+import resetViewport from './utils/resetViewport';
 
 const scroll = cornerstoneTools.import('util/scroll');
 
@@ -108,7 +110,7 @@ const commandsModule = ({ servicesManager }) => {
         const enabledElement = cornerstone.getEnabledElement(element);
         const pixelReplication = enabledElement.viewport.pixelReplication;
         setWindowing(enabledElement.uuid, 'Default');
-        cornerstone.reset(element);
+        resetViewport(enabledElement);
         if (pixelReplication) {
           const updatedEnabledElement = cornerstone.getEnabledElement(element);
           updatedEnabledElement.viewport.pixelReplication = pixelReplication;
@@ -136,7 +138,31 @@ const commandsModule = ({ servicesManager }) => {
       if (!toolName) {
         console.warn('No toolname provided to setToolActive command');
       }
+      // Set tool active globally
       cornerstoneTools.setToolActive(toolName, toolOptions);
+      cornerstone.getEnabledElements().forEach(enabledElement => {
+        if (enabledElement.image) {
+          let showAnnotations = true;
+          const viewport = enabledElement.viewport;
+          if (viewport) {
+            showAnnotations = viewport.hasOwnProperty('showAnnotations')
+              ? viewport.showAnnotations
+              : true;
+          }
+
+          // Disable tool locally for an element, if applicable
+          if (
+            !showAnnotations &&
+            XNAT_TOOL_NAMES.ALL_ANNOTAION_TOOL_NAMES.includes(toolName)
+          ) {
+            cornerstoneTools.setToolDisabledForElement(
+              enabledElement.element,
+              toolName
+            );
+            cornerstoneTools.setInactiveCursor(enabledElement.element);
+          }
+        }
+      });
 
       /*
       if (toolStrategies && toolStrategies.length) {
@@ -366,6 +392,7 @@ const commandsModule = ({ servicesManager }) => {
 
       const displaySet = study.findDisplaySet(ds => {
         return (
+          ds.displaySetInstanceUID === displaySetInstanceUID &&
           ds.images &&
           ds.images.find(i => i.getSOPInstanceUID() === SOPInstanceUID)
         );

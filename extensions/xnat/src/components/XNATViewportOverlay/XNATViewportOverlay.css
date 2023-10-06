@@ -12,7 +12,7 @@
 }
 .OHIFCornerstoneViewportOverlay .top-left {
   top: 20px;
-  left: 20px;
+  left: 35px;
 }
 .OHIFCornerstoneViewportOverlay .top-center {
   top: 20px;
@@ -42,20 +42,25 @@
 .OHIFCornerstoneViewportOverlay.controlsVisible .bottomright {
   right: calc(20px + 19px);
 }
-.OHIFCornerstoneViewportOverlay .warning {
-  position: absolute;
+.OHIFCornerstoneViewportOverlay .viewportWarning {
   font-weight: 400;
   text-shadow: 1px 1px #000;
-  pointer-events: inherit;
+  pointer-events: all;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 5px;
 }
 
-.OHIFCornerstoneViewportOverlay .warning svg {
+.OHIFCornerstoneViewportOverlay .viewportWarning svg {
   opacity: 1;
   color: #e29e4a;
   fill: #e29e4a;
   stroke: #e29e4a;
-  width: 32px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
 }
 
 .OHIFCornerstoneViewportOverlay svg {
@@ -66,7 +71,13 @@
   margin: 2px;
   width: 18px;
   height: 18px;
+  filter: drop-shadow(1px 1px #000);
 }
+
+/*.warning-icon {*/
+/*  display: block;*/
+/*  margin: 7px auto 0;*/
+/*}*/
 
 .syncCheckbox {
   pointer-events: all;

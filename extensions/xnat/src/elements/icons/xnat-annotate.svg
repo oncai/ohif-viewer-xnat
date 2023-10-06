@@ -1,0 +1,15 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  aria-labelledby="title"
+  width="1em"
+  height="1em"
+  stroke="currentColor"
+  fill="currentColor"
+>
+  <title id="title">Annotate</title>
+  <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20.59 12 20.59 22.5 1.5 22.5 1.5 3.41 12.96 3.41" />
+    <path d="M12,15.82l-4.77.95L8.18,12l9.71-9.71A2.69,2.69,0,0,1,19.8,1.5h0a2.7,2.7,0,0,1,2.7,2.7h0a2.69,2.69,0,0,1-.79,1.91Z" />
+  </g>
+</svg>

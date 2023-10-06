@@ -128,7 +128,7 @@ export default function getPixelSpacingInformation(instance) {
     };
   }
 
-    log.info(
+  log.info(
     'Unknown combination of PixelSpacing and ImagerPixelSpacing identified. Unable to determine spacing.'
   );
 }

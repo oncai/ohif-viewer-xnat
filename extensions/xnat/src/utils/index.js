@@ -8,6 +8,7 @@ import XNAT_EVENTS from './XNATEvents';
 import RoiMeasurementUnits from './RoiMeasurementUnits';
 import onKeyDownEvent from './onKeyDownEvent';
 import KEY_COMMANDS from './keyCommands';
+import viewportOptionsManager from './ViewportOptionsManager';
 
 export {
   DATA_IMPORT_STATUS,
@@ -20,4 +21,5 @@ export {
   RoiMeasurementUnits,
   onKeyDownEvent,
   KEY_COMMANDS,
+  viewportOptionsManager,
 };

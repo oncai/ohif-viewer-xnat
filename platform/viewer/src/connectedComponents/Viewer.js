@@ -223,11 +223,11 @@ class Viewer extends Component {
     const prevActiveDisplaySetInstanceUID =
       prevActiveViewport ? prevActiveViewport.displaySetInstanceUID : undefined;
 
-    if (studies !== prevProps.studies ||
+    if (
+      studies !== prevProps.studies ||
       activeViewportIndex !== prevProps.activeViewportIndex ||
       activeDisplaySetInstanceUID !== prevActiveDisplaySetInstanceUID
-      ) {
-
+    ) {
       this.setState({
         thumbnails: _mapStudiesToThumbnails(studies, activeDisplaySetInstanceUID),
       });
@@ -445,7 +445,7 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
             inconsistencyWarnings.push('The dataset frames have different orientation.');
             break;
           case ReconstructionIssues.IRREGULAR_SPACING:
-            inconsistencyWarnings.push('The dataset frames have different pixel spacing.');
+            inconsistencyWarnings.push('The dataset frames have different irregular spacing.');
             break;
           case ReconstructionIssues.MULTIFRAMES:
             inconsistencyWarnings.push('The dataset is multi-frame.');
@@ -573,12 +573,14 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
  * @param {string} activeDisplaySetInstanceUID
  * @returns {boolean} is active.
  */
- const _isDisplaySetActive = function(displaySet, studies, activeDisplaySetInstanceUID) {
+const _isDisplaySetActive = function(
+  displaySet,
+  studies,
+  activeDisplaySetInstanceUID
+) {
   let active = false;
 
-  const {
-    displaySetInstanceUID,
-  } = displaySet;
+  const { displaySetInstanceUID } = displaySet;
 
   // TO DO: in the future, we could possibly support new modalities
   // we should have a list of all modalities here, instead of having hard coded checks
@@ -600,6 +602,11 @@ const _checkForSeriesInconsistencesWarnings = async function (displaySet, studie
     }
   }
 
+  if (displaySet.isValidMultiStack && displaySet.getSubStackGroupData) {
+    const subStackGroupData = displaySet.getSubStackGroupData();
+    active = subStackGroupData.hasActiveDisplaySet(activeDisplaySetInstanceUID);
+  }
+
   return active;
 };
 
@@ -617,7 +624,11 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
   return studies.map(study => {
     const { StudyInstanceUID, StudyDescription } = study;
 
-    const thumbnails = study.displaySets.map(displaySet => {
+    const nonSubStackDisplaySets = study.displaySets.filter(
+      displaySet => !displaySet.isSubStack
+    );
+
+    const thumbnails = nonSubStackDisplaySets.map(displaySet => {
       const {
         displaySetInstanceUID,
         SeriesDescription,
@@ -625,6 +636,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         numImageFrames,
         SeriesNumber,
         seriesNotation,
+        isValidMultiStack,
       } = displaySet;
 
       const modality = displaySet.Modality || 'UN';
@@ -647,8 +659,15 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         altImageText = modality;
       }
 
-      const hasWarnings = _checkForSeriesInconsistencesWarnings(displaySet, studies);
-      const active = _isDisplaySetActive(displaySet, studies, activeDisplaySetInstanceUID)
+      const hasWarnings = _checkForSeriesInconsistencesWarnings(
+        displaySet,
+        studies
+      );
+      const active = _isDisplaySetActive(
+        displaySet,
+        studies,
+        activeDisplaySetInstanceUID
+      );
 
       return {
         active,
@@ -663,6 +682,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         seriesNotation,
         SOPInstanceUID,
         modality,
+        isValidMultiStack,
       };
     });
 

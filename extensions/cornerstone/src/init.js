@@ -62,14 +62,13 @@ export default function init({ servicesManager, configuration }) {
   const toolsGroupedByType = {
     touch: [csTools.PanMultiTouchTool, csTools.ZoomTouchPinchTool],
     annotations: [
-      csTools.ArrowAnnotateTool,
-      csTools.BidirectionalTool,
-      // csTools.LengthTool,
-      csTools.AngleTool,
-      csTools.FreehandRoiTool,
-      csTools.EllipticalRoiTool,
-      csTools.DragProbeTool,
-      csTools.RectangleRoiTool,
+      // csTools.ArrowAnnotateTool,
+      // csTools.BidirectionalTool,
+      // // csTools.LengthTool,
+      // csTools.AngleTool,
+      // csTools.FreehandRoiTool,
+      // csTools.EllipticalRoiTool,
+      // csTools.RectangleRoiTool,
     ],
     other: [
       csTools.PanTool,
@@ -80,6 +79,7 @@ export default function init({ servicesManager, configuration }) {
       csTools.StackScrollTool,
       csTools.StackScrollMouseWheelTool,
       csTools.OverlayTool,
+      csTools.DragProbeTool,
     ],
   };
 
@@ -89,7 +89,8 @@ export default function init({ servicesManager, configuration }) {
   );
 
   /* Measurement Service */
-  _connectToolsToMeasurementService(MeasurementService);
+  // XNAT Viewer has its own measurement service
+  // _connectToolsToMeasurementService(MeasurementService);
 
   /* Add extension tools configuration here. */
   const internalToolsConfig = {

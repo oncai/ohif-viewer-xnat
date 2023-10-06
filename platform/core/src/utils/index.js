@@ -19,6 +19,7 @@ import resolveObjectPath from './resolveObjectPath';
 import * as hierarchicalListUtils from './hierarchicalListUtils';
 import * as progressTrackingUtils from './progressTrackingUtils';
 import xhrRetryRequestHook from './xhrRetryRequestHook';
+import metadataUtils from './metadataProvider';
 
 const utils = {
   guid,
@@ -42,6 +43,7 @@ const utils = {
   hierarchicalListUtils,
   progressTrackingUtils,
   xhrRetryRequestHook,
+  metadataUtils,
 };
 
 export {
@@ -66,6 +68,7 @@ export {
   hierarchicalListUtils,
   progressTrackingUtils,
   xhrRetryRequestHook,
+  metadataUtils,
 };
 
 export default utils;

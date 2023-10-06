@@ -53,6 +53,7 @@ class XNATSmooth extends React.PureComponent {
   }
 
   onToggleClick(evt) {
+    evt.stopPropagation();
     if (evt.nativeEvent && evt.nativeEvent.stopImmediatePropagation) {
       evt.nativeEvent.stopImmediatePropagation();
     }

@@ -2,14 +2,19 @@ import dcmjs from 'dcmjs';
 import queryString from 'query-string';
 import dicomParser from 'dicom-parser';
 import cornerstone from 'cornerstone-core';
-import getPixelSpacingInformation from '../utils/metadataProvider/getPixelSpacingInformation';
-import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
-import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
-import validNumber from '../utils/metadataProvider/validNumber';
-import unpackOverlay from '../utils/metadataProvider/unpackOverlay';
-import getImagePlaneInformation from '../utils/metadataProvider/getImagePlaneInformation';
+import { metadataUtils } from '../utils';
 
 const { DicomMessage, DicomMetaDictionary } = dcmjs.data;
+
+const {
+  fetchOverlayData,
+  unpackOverlay,
+  fetchPaletteColorLookupTableData,
+  getImagePlaneInformation,
+  getPixelSpacingInformation,
+  validNumber,
+  isEnhancedSOP,
+} = metadataUtils;
 
 const isXnatConfig =
   process.env.NODE_ENV === 'production' ||
@@ -30,7 +35,6 @@ class MetadataProvider {
       writable: false,
       value: new Map(),
     });
-    this.datasets = {};
     this.isMetadataLoadedFromImage = [];
   }
 
@@ -51,9 +55,8 @@ class MetadataProvider {
   shouldFetchDataset(dicomJSONDataset) {
     const hasPaletteColor =
       dicomJSONDataset.PhotometricInterpretation === 'PALETTE COLOR';
-    // const isMultiFrame = dicomJSONDataset.NumberOfFrames > 1;
-    // const isModalityNM = dicomJSONDataset.Modality === 'NM';
-    return hasPaletteColor;
+    const isEnhanced = isEnhancedSOP(dicomJSONDataset.SOPClassUID);
+    return hasPaletteColor || isEnhanced;
   }
 
   loadMetadataFromImage(imageId) {
@@ -69,7 +72,8 @@ class MetadataProvider {
       imageId0 in cornerstone.imageCache.imageCache;
 
     if (imageIdInCache) {
-      const imageCache = cornerstone.imageCache.imageCache[imageId] ||
+      const imageCache =
+        cornerstone.imageCache.imageCache[imageId] ||
         cornerstone.imageCache.imageCache[imageId0];
 
       if (imageCache.loaded) {
@@ -116,7 +120,10 @@ class MetadataProvider {
 
     let dicomJSONDatasetOrP10ArrayBuffer;
     if (isXnatConfig) {
-      if (this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer)) {
+      if (
+        this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer) ||
+        options.shouldFetchDataset
+      ) {
         const image = await cornerstone.loadAndCacheImage(options.imageId);
         const arrayBuffer = image.data.byteArray.buffer;
         dicomJSONDatasetOrP10ArrayBuffer = this.readDataset(
@@ -157,7 +164,6 @@ class MetadataProvider {
       SOPInstanceUID,
     } = naturalizedDataset;
 
-    this._getAndCacheStudyDataset(StudyInstanceUID, dicomJSONDataset);
     const study = this._getAndCacheStudy(StudyInstanceUID);
     const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
     const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
@@ -169,22 +175,28 @@ class MetadataProvider {
     return instance;
   }
 
+  addInstancesFromEnhancedSOP(naturalizedDataset) {
+    const {
+      StudyInstanceUID,
+      SeriesInstanceUID,
+      SOPInstanceUID,
+    } = naturalizedDataset;
+
+    const study = this._getAndCacheStudy(StudyInstanceUID);
+    const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
+    const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
+
+    Object.assign(instance, naturalizedDataset);
+
+    return instance;
+  }
+
   addImageIdToUIDs(imageId, uids) {
     // This method is a fallback for when you don't have WADO-URI or WADO-RS.
     // You can add instances fetched by any method by calling addInstance, and hook an imageId to point at it here.
     // An example would be dicom hosted at some random site.
 
     this.imageIdToUIDs.set(imageId, uids);
-  }
-
-  _getAndCacheStudyDataset(StudyInstanceUID, dataset) {
-    if (!this.datasets[StudyInstanceUID]) {
-      this.datasets[StudyInstanceUID] = dataset;
-    }
-  }
-
-  getStudyDataset(StudyInstanceUID) {
-    return this.datasets[StudyInstanceUID];
   }
 
   _getAndCacheStudy(StudyInstanceUID) {
@@ -262,8 +274,8 @@ class MetadataProvider {
         let imageIdToUse = imageId;
         const qIndex = imageId.indexOf('?frame=');
         if (qIndex > 0) {
-          imageIdToUse = imageId.substr(0, qIndex);
-          frameIndex = imageId.substr(qIndex + 7); //'?frame='.length;
+          imageIdToUse = imageId.substring(0, qIndex);
+          frameIndex = imageId.substring(qIndex + 7); //'?frame='.length;
         }
         this.loadMetadataFromImage(imageIdToUse);
       }
@@ -352,6 +364,7 @@ class MetadataProvider {
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PLANE_MODULE:
+        let hasInvalidData = false;
         let ImageOrientationPatient;
         let ImagePositionPatient;
 
@@ -370,10 +383,40 @@ class MetadataProvider {
           ImagePositionPatient = instance.ImagePositionPatient;
         }
 
+        if (
+          ImageOrientationPatient &&
+          !Array.isArray(ImageOrientationPatient)
+        ) {
+          ImageOrientationPatient = [1, 0, 0, 0, 1, 0];
+          hasInvalidData = true;
+        }
+        if (ImagePositionPatient && !Array.isArray(ImagePositionPatient)) {
+          ImageOrientationPatient = [0, 0, 0];
+          hasInvalidData = true;
+        }
+
         // Fallback for DX images.
         // TODO: We should use the rest of the results of this function
         // to update the UI somehow
         let { PixelSpacing } = getPixelSpacingInformation(instance);
+        if (PixelSpacing) {
+          if (!Array.isArray(PixelSpacing)) {
+            PixelSpacing = [PixelSpacing, PixelSpacing];
+            hasInvalidData = true;
+          }
+          const isZeroXSpacing = Math.abs(PixelSpacing[0]) < 0.001;
+          const isZeroYSpacing = Math.abs(PixelSpacing[1]) < 0.001;
+          if (isZeroXSpacing && isZeroYSpacing) {
+            PixelSpacing = [1.0, 1.0];
+            hasInvalidData = true;
+          } else if (isZeroXSpacing) {
+            PixelSpacing[0] = PixelSpacing[1];
+            hasInvalidData = true;
+          } else if (isZeroYSpacing) {
+            PixelSpacing[1] = PixelSpacing[0];
+            hasInvalidData = true;
+          }
+        }
 
         // Fallback for Secondary Capture Image IOD
         if (instance.SOPClassUID === '1.2.840.10008.5.1.4.1.1.7') {
@@ -419,6 +462,7 @@ class MetadataProvider {
           pixelSpacing: PixelSpacing,
           rowPixelSpacing,
           columnPixelSpacing,
+          warnings: hasInvalidData ? 'Invalid image position/spacing.' : '',
         };
         break;
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PIXEL_MODULE:

@@ -54,6 +54,7 @@ class XNATSync extends React.PureComponent {
           className="syncCheckbox"
           type="checkbox"
           name="sync"
+          tabIndex="-1"
           checked={isChecked}
           onChange={this.onToggleClick}
         />

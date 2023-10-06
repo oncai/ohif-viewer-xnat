@@ -21,9 +21,10 @@ const renderThumbnailOverlay = (canvas, image) => {
   const canvasContext = canvas.getContext('2d');
 
   const viewport = cornerstone.getDefaultViewport(canvas, image);
+
   viewport.displayedArea = image.displayedArea;
 
-  if (!viewport || !viewport.displayedArea) {
+  if (!viewport.displayedArea) {
     return;
   }
 
