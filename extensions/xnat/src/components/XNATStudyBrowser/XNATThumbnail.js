@@ -276,7 +276,7 @@ function XNATThumbnail(props) {
     onMouseDown,
     supportsDrag,
     modality,
-    isMultiStack,
+    isValidMultiStack,
   } = props;
 
   const [collectedProps, drag, dragPreview] = useDrag({
@@ -313,7 +313,7 @@ function XNATThumbnail(props) {
           stackPercentComplete={stackPercentComplete}
           displaySetInstanceUID={displaySetInstanceUID}
           modality={modality}
-          isMultiStack={isMultiStack}
+          isValidMultiStack={isValidMultiStack}
         />
       )}
       {/* SHOW TEXT ALTERNATIVE */}

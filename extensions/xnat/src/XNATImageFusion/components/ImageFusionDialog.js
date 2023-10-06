@@ -125,7 +125,7 @@ class ImageFusionDialog extends PureComponent {
         layers: [],
       };
       validDisplaySets.forEach(ds => {
-        if (ds.isReconstructable) {
+        if (ds.isReconstructable || ds.isEnhanced) {
           let isColor = false;
           const firstImage = ds.getImage(0);
           if (firstImage) {

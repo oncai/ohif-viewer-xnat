@@ -28,7 +28,7 @@ function XNATImageThumbnail(props) {
     error: propsError,
     displaySetInstanceUID,
     modality,
-    isMultiStack,
+    isValidMultiStack,
   } = props;
 
   const [isLoading, setLoading] = useState(false);
@@ -110,10 +110,10 @@ function XNATImageThumbnail(props) {
   }, [imageId]);
 
   let multiStackInfo = null;
-  if (isMultiStack) {
+  if (isValidMultiStack) {
     multiStackInfo = (
       <div className="multi-stack-tag">
-        <Icon name="xnat-stack" />
+        <Icon name="xnat-stack" title="Multi-stack image" />
       </div>
     );
   }

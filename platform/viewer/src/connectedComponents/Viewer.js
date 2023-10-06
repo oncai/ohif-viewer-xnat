@@ -602,7 +602,7 @@ const _isDisplaySetActive = function(
     }
   }
 
-  if (displaySet.isMultiStack && displaySet.getSubStackGroupData) {
+  if (displaySet.isValidMultiStack && displaySet.getSubStackGroupData) {
     const subStackGroupData = displaySet.getSubStackGroupData();
     active = subStackGroupData.hasActiveDisplaySet(activeDisplaySetInstanceUID);
   }
@@ -636,7 +636,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         numImageFrames,
         SeriesNumber,
         seriesNotation,
-        isMultiStack,
+        isValidMultiStack,
       } = displaySet;
 
       const modality = displaySet.Modality || 'UN';
@@ -682,7 +682,7 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         seriesNotation,
         SOPInstanceUID,
         modality,
-        isMultiStack,
+        isValidMultiStack,
       };
     });
 

@@ -160,7 +160,7 @@ const getStackData = (getViewportSpecificData, viewportIndex) => {
     return;
   }
 
-  if (viewportSpecificData.isMultiStack || viewportSpecificData.isSubStack) {
+  if (viewportSpecificData.isValidMultiStack || viewportSpecificData.isSubStack) {
     return viewportSpecificData.getSubStackGroupData();
   }
 };

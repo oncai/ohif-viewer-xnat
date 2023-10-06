@@ -364,7 +364,7 @@ class StudyMetadata extends Metadata {
     const derivedDisplaySets = [];
 
     this.displaySets.forEach(refDisplaySet => {
-      if (refDisplaySet.isEnhanced || refDisplaySet.is4D) {
+      if (refDisplaySet.isMultiStack) {
         createSubStacks(refDisplaySet, this);
         const subStackGroups = refDisplaySet.subStackGroups;
         const subStackGroupData = refDisplaySet.subStackGroupData;
@@ -874,9 +874,10 @@ const makeDisplaySet = (series, instances) => {
     Modality: instance.getTagValue('Modality'),
     isMultiFrame: isMultiFrame(instance),
     FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
-    isEnhanced:
-      seriesData.subInstances !== undefined &&
-      seriesData.subInstances.length > 0,
+    isEnhanced: seriesData.isEnhanced,
+    is4D: seriesData.is4D,
+    numberOfSubInstances: seriesData.numberOfSubInstances,
+    isMultiStack: seriesData.isMultiStack,
   });
 
   // Sort the images in this series by instanceNumber
@@ -900,12 +901,7 @@ const makeDisplaySet = (series, instances) => {
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
   imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
 
-  const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
-    series.getSeriesInstanceUID()
-  );
-  imageSet.is4D = is4D;
-  imageSet.numberOfSubInstances = numberOfSubInstances;
-
+  const { is4D, numberOfSubInstances } = imageSet;
   if (is4D) {
     displayReconstructableInfo.reconstructionIssues.push(
       ReconstructionIssues.DATASET_4D
@@ -981,6 +977,7 @@ const makeDisplaySetFromSubStack = (subStack, refDisplaySet) => {
     isReconstructable: true,
     isSubStack: true,
     isEnhanced: false,
+    isMultiStack: false,
     stackData,
     //
     refDisplaySet: refDisplaySet,

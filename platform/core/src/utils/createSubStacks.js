@@ -16,7 +16,7 @@ const createSubStacks = (displaySet, ohifStudy) => {
   let groupLabels;
 
   try {
-    if (displaySet.isEnhanced) {
+    if (displaySet.isEnhanced && displaySet.isMultiStack) {
       stackDimensionData = buildDimensionDataForEnhanced(refMetadata);
       if (stackDimensionData) {
         groupLabels = generateStackGroupLabels(
@@ -53,7 +53,7 @@ const createSubStacks = (displaySet, ohifStudy) => {
       subStackGroups &&
       subStackGroups.length === stackDimensionData.dimensionPointers.length
     ) {
-      displaySet.setAttribute('isMultiStack', true);
+      displaySet.setAttribute('isValidMultiStack', true);
       displaySet.setAttribute('subStackGroups', subStackGroups);
       displaySet.setAttribute('subStackGroupData', {
         groupLabels,
@@ -61,8 +61,10 @@ const createSubStacks = (displaySet, ohifStudy) => {
       });
     }
   } catch (error) {
+    const { SeriesDescription, SeriesNumber } = displaySet;
     console.error(
-      'Error while adding sub-stacks. Could not generate stack dimension data.',
+      `Error while adding sub-stacks for series #${SeriesNumber} ${SeriesDescription}.` +
+        'Could not generate stack dimension data.',
       error
     );
   }

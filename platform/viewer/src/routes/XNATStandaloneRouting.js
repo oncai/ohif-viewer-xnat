@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import cornerstone from 'cornerstone-core';
 import OHIF from '@ohif/core';
 import PropTypes from 'prop-types';
 import qs from 'querystring';
@@ -13,6 +14,9 @@ import { isLoggedIn, xnatAuthenticate } from '@xnat-ohif/extension-xnat';
 const { log, metadata, utils } = OHIF;
 const { studyMetadataManager, metadataUtils } = utils;
 const { OHIFStudyMetadata } = metadata;
+
+const VALID_BACKGROUND_MODALITIES = ['MR', 'CT'];
+const VALID_OVERLAY_MODALITIES = ['PT', 'NM', 'MR'];
 
 class XNATStandaloneRouting extends Component {
   state = {
@@ -513,10 +517,12 @@ async function updateMetaDataProvider(studies) {
     for (let series of study.series) {
       SeriesInstanceUID = series.SeriesInstanceUID;
       const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
-        SeriesInstanceUID, series.instances
+        series.instances
       );
       series.is4D = is4D;
       series.numberOfSubInstances = numberOfSubInstances;
+      series.isMultiStack =
+        is4D && metadataUtils.isSameOrientation(series.instances);
       await Promise.all(
         series.instances.map(async (instance, instanceIndex) => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
@@ -550,13 +556,21 @@ async function updateMetaDataProvider(studies) {
             const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
               addedInstance
             );
-            if (naturalizedMetadataList) {
-              series.subInstances = [];
+            if (naturalizedMetadataList && naturalizedMetadataList.length > 0) {
+              const subInstances = [];
               for (let j = 0; j < naturalizedMetadataList.length; j++) {
-                series.subInstances.push({
+                subInstances.push({
                   metadata: naturalizedMetadataList[j],
                   url: `${imageId}?frame=${j}`,
                 });
+              }
+              series.isEnhanced = metadataUtils.isSameOrientation(subInstances);
+              series.subInstances = subInstances;
+              if (
+                series.isEnhanced &&
+                metadataUtils.isDataset4D(subInstances).is4D
+              ) {
+                series.isMultiStack = true;
               }
             }
           }
@@ -574,7 +588,8 @@ async function updateMetaDataProvider(studies) {
     }
   }
 
-  // Parse Enhanced SOPs, if exists, and add their forked instances to MetadataProvider
+  // Parse Enhanced SOPs, if exists, and add their forked
+  // instances to the MetadataProvider
   for (const study of studies) {
     StudyInstanceUID = study.StudyInstanceUID;
     for (const series of study.series) {
@@ -646,26 +661,23 @@ function updateXnatSessionMap(studies) {
 }
 
 function setValidOverlaySeries(studies) {
-  const backgroundModalities = ['MR', 'CT'];
-  const overlayModalities = ['PT', 'NM', 'MR'];
   studies.forEach((study, studyIndex, studies) => {
     study.displaySets.forEach((displaySet, displaySetIndex, displaySets) => {
       displaySet.validOverlayDisplaySets = {};
-      if (backgroundModalities.includes(displaySet.Modality)) {
+      if (VALID_BACKGROUND_MODALITIES.includes(displaySet.Modality)) {
         // Exclude multi-frame images
-        if (displaySet.isMultiFrame) {
+        if (displaySet.isMultiFrame && !displaySet.isEnhanced) {
           return;
         }
         // Add series within this study
-        // ToDo: use reliable checks (IOP & IPP)
+        const refIop = getImageOrientationPatient(displaySet);
+        if (!refIop) {
+          return;
+        }
         const sameStudyOverlays = [];
         for (let i = 0; i < displaySets.length; i++) {
           if (i !== displaySetIndex) {
-            if (
-              overlayModalities.includes(displaySets[i].Modality) &&
-              !displaySets[i].isMultiFrame &&
-              !displaySets[i].isSubStack
-            ) {
+            if (isValidOverlayDisplaySet(displaySet, refIop, displaySets[i])) {
               sameStudyOverlays.push(displaySets[i].displaySetInstanceUID);
             }
           }
@@ -684,7 +696,7 @@ function setValidOverlaySeries(studies) {
             studies[i].displaySets.forEach(ds => {
               if (
                 displaySet.FrameOfReferenceUID === ds.FrameOfReferenceUID &&
-                overlayModalities.includes(ds.Modality) &&
+                VALID_OVERLAY_MODALITIES.includes(ds.Modality) &&
                 !ds.isMultiFrame &&
                 !ds.isSubStack
               ) {
@@ -701,4 +713,44 @@ function setValidOverlaySeries(studies) {
       }
     });
   });
+}
+
+function isValidOverlayDisplaySet(displaySetI, refIop, displaySetJ) {
+  if (!VALID_OVERLAY_MODALITIES.includes(displaySetJ.Modality)) {
+    return;
+  }
+  // Exclude parent displaySet
+  if (displaySetI.isSubStack) {
+    const refUid = displaySetI.refDisplaySet.displaySetInstanceUID;
+    if (refUid === displaySetJ.displaySetInstanceUID) {
+      return;
+    }
+  }
+  // Exclude substacks
+  if (displaySetJ.isSubStack) {
+    return;
+  }
+  // Exclude multiframe images without extracted frame metadata
+  if (displaySetJ.isMultiFrame && !displaySetJ.isEnhanced) {
+    return;
+  }
+  // Check orientation
+  const iop = getImageOrientationPatient(displaySetJ);
+  if (!metadataUtils.isSameArray(refIop, iop)) {
+    return;
+  }
+  return true;
+}
+
+function getImageOrientationPatient(displaySet) {
+  const firstImage = displaySet.images[0];
+  let imageId = firstImage.getData().url;
+  if (displaySet.isMultiFrame) {
+    imageId += '?frame=0';
+  }
+  const { imageOrientationPatient } = cornerstone.metaData.get(
+    'imagePlaneModule',
+    imageId
+  );
+  return imageOrientationPatient;
 }

@@ -184,7 +184,7 @@ class ViewerMain extends Component {
       }
     }
 
-    if (displaySet.isMultiStack && displaySet.getSubStackGroupData) {
+    if (displaySet.isValidMultiStack && displaySet.getSubStackGroupData) {
       const subStackGroupData = displaySet.getSubStackGroupData();
       const stackDisplaySet = subStackGroupData.getStackDisplaySet({
         viewportIndex,

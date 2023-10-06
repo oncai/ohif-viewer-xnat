@@ -1,14 +1,15 @@
 const iopTolerance = 0.01;
 
-const isSameArray = (iop1, iop2) => {
-  if (iop1 === undefined || !iop2 === undefined) {
+const isSameArray = (array1, array2) => {
+  if (array1 === undefined || !array2 === undefined) {
     return;
   }
 
   return (
-    Math.abs(iop1[0] - iop2[0]) < iopTolerance &&
-    Math.abs(iop1[1] - iop2[1]) < iopTolerance &&
-    Math.abs(iop1[2] - iop2[2]) < iopTolerance
+    array1.length === array2.length &&
+    array1.every(
+      (value, index) => Math.abs(value - array2[index]) < iopTolerance
+    )
   );
 };
 

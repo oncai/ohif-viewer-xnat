@@ -9,6 +9,7 @@ import parseEnhancedSOP from './parseEnhancedSOP';
 import getTagName from './getTagName';
 import isDataset4D from './isDataset4D';
 import isSameArray from './isSameArray';
+import isSameOrientation from './isSameOrientation';
 
 const metadataUtils = {
   fetchOverlayData,
@@ -21,6 +22,7 @@ const metadataUtils = {
   parseEnhancedSOP,
   getTagName,
   isDataset4D,
+  isSameOrientation,
   isSameArray,
 };
 

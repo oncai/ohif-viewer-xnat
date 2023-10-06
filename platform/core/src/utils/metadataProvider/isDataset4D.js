@@ -1,16 +1,8 @@
 import isSameArray from './isSameArray';
 
-const seriesUidIs4DInfo = new Map();
-
-const isDataset4D = (seriesInstanceUID, instances) => {
-  let is4DInfo = seriesUidIs4DInfo.get(seriesInstanceUID);
-
-  if (is4DInfo) {
-    return is4DInfo;
-  }
-
+const isDataset4D = (instances) => {
   if (!instances) {
-    return { is4D: false > 1, numberOfSubInstances: 1 };
+    return { is4D: false, numberOfSubInstances: 1 };
   }
 
   // Sort instances by InstanceNumber
@@ -52,10 +44,7 @@ const isDataset4D = (seriesInstanceUID, instances) => {
     }
   }
 
-  is4DInfo = { is4D: numberOfSubInstances > 1, numberOfSubInstances };
-  seriesUidIs4DInfo.set(seriesInstanceUID, is4DInfo);
-
-  return is4DInfo;
+  return { is4D: numberOfSubInstances > 1, numberOfSubInstances };
 };
 
 const _getTagValue = (instance, tag, defaultValue) => {
