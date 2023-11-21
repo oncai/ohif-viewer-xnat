@@ -860,6 +860,12 @@ const makeDisplaySet = (series, instances) => {
   const instance = instances[0];
   const imageSet = new ImageSet(instances);
   const seriesData = series.getData();
+  const series4DConfig = {
+    ...seriesData._4DConfig,
+    numberOfSubInstances: isMultiFrame(instance)
+      ? instances.length
+      : seriesData._4DConfig.numberOfSubInstances,
+  };
 
   // set appropriate attributes to image set...
   imageSet.setAttributes({
@@ -875,9 +881,8 @@ const makeDisplaySet = (series, instances) => {
     isMultiFrame: isMultiFrame(instance),
     FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
     isEnhanced: seriesData.isEnhanced,
-    is4D: seriesData.is4D,
-    numberOfSubInstances: seriesData.numberOfSubInstances,
     isMultiStack: seriesData.isMultiStack,
+    series4DConfig: series4DConfig,
   });
 
   // Sort the images in this series by instanceNumber
@@ -901,7 +906,7 @@ const makeDisplaySet = (series, instances) => {
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
   imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
 
-  const { is4D, numberOfSubInstances } = imageSet;
+  const { is4D, numberOfSubInstances } = series4DConfig;
   if (is4D) {
     displayReconstructableInfo.reconstructionIssues.push(
       ReconstructionIssues.DATASET_4D
@@ -909,11 +914,17 @@ const makeDisplaySet = (series, instances) => {
   }
 
   let displaySpacingInfo = undefined;
-  if (shallSort && imageSet.isReconstructable && !imageSet.isMultiFrame) {
+  if (
+    shallSort &&
+    imageSet.isReconstructable &&
+    !imageSet.isMultiFrame &&
+    !is4D
+  ) {
     // sort images by image position
     imageSet.sliceSpacingFirstFrame = imageSet.sortByImagePositionPatient();
 
-    // check if the spacing is uniform and update isReconstructable
+    // check if the spacing is uniform and update isReconstructable.
+    // TodO: The is4D parameter is redundant?
     displaySpacingInfo = isSpacingUniform(imageSet.images, is4D);
 
     imageSet.isReconstructable =
@@ -941,9 +952,7 @@ const makeDisplaySet = (series, instances) => {
     preferences.experimentalFeatures.DisplayScanFromTheMiddle;
   const displayFromTheMiddleEnabled =
     !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
-  const numImages =
-    numberOfSubInstances > 1 ? numberOfSubInstances : instances.length;
-  const middleImageIndex = Math.floor(numImages / 2);
+  const middleImageIndex = Math.floor(numberOfSubInstances / 2);
   imageSet.setAttribute('middleImageIndex', middleImageIndex);
   imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);
 
