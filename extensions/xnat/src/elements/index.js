@@ -1,5 +1,6 @@
 // ICR/XNAT icons
 import xnatOhifLogo from './icons/xnat-ohif-logo.svg';
+import xnatOhifLogoAnim from './icons/xnat-ohif-logo-animated.svg';
 import xnatIcrLogo from './icons/xnat-icr-logo.svg';
 import xnatSettings from './icons/xnat-settings.svg';
 import xnatAnnotations from './icons/xnat-annotations.svg';
@@ -60,6 +61,7 @@ import CheckIcon from './CheckIcon/CheckIcon';
 
 const XNATICONS = {
   'xnat-ohif-logo': xnatOhifLogo,
+  'xnat-ohif-logo-anim': xnatOhifLogoAnim,
   'xnat-icr-logo': xnatIcrLogo,
   'xnat-settings': xnatSettings,
   'xnat-annotations': xnatAnnotations,
