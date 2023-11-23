@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          mkdir -p output
+          docker build -t ohif-viewer-xnat-build -f oncai/Dockerfile oncai
+          docker run --rm -e VERSION=oncai${{ github.event.release.tag_name }} \
+            -v $(pwd):/plugin/ohifviewerxnat \
+            -v $(pwd)/output:/plugin/output \
+            ohif-viewer-xnat-build
+
+      - name: Release
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: output/libs/ohif-viewer-3.6.0-fat-oncai${{ github.event.release.tag_name }}.jar
