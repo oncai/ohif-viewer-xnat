@@ -1,3 +1,14 @@
+***
+***
+***
+***
+> NOTE: Onc.AI should refer to this [README.md](./oncai/README.md) instead, as
+> it covers the details, installation, and motivation for the fork.
+***
+***
+***
+***
+
 # OHIF-Viewer-XNAT
 
 ***The OHIF-XNAT viewer is based on a fork of [OHIF Viewer 2.0](https://github.com/OHIF/Viewers) and uses the [React](https://reactjs.org/) JavaScript library.***
