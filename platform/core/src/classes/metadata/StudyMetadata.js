@@ -20,7 +20,7 @@ import errorHandler from '../../errorHandler';
 import isLowPriorityModality from '../../utils/isLowPriorityModality';
 import getXHRRetryRequestHook from '../../utils/xhrRetryRequestHook';
 import { ReconstructionIssues } from '../../enums';
-import { metadataUtils } from '../../utils';
+import createDisplaySetGroup from '../../utils/createDisplaySetGroup';
 
 class StudyMetadata extends Metadata {
   constructor(data, uid) {
@@ -166,6 +166,7 @@ class StudyMetadata extends Metadata {
     // into their own specific display sets. Place the rest of each
     // series into another display set.
     const stackableInstances = [];
+    const multiframeDisplaySets = [];
     series.forEachInstance(instance => {
       // All imaging modalities must have a valid value for SOPClassUID (x00080016) or Rows (x00280010)
       if (
@@ -189,7 +190,8 @@ class StudyMetadata extends Metadata {
           InstanceNumber: instance.getTagValue('InstanceNumber'), // Include the instance number
           AcquisitionDatetime: instance.getTagValue('AcquisitionDateTime'), // Include the acquisition datetime
         });
-        displaySets.push(displaySet);
+        // displaySets.push(displaySet);
+        multiframeDisplaySets.push(displaySet);
       } else if (isSingleImageModality(instance.Modality)) {
         displaySet = makeDisplaySet(series, [instance]);
         displaySet.setAttributes({
@@ -212,6 +214,14 @@ class StudyMetadata extends Metadata {
         sopClassUIDs,
       });
       displaySets.push(displaySet);
+    }
+
+    if (multiframeDisplaySets.length === 1) {
+      displaySets.push(multiframeDisplaySets[0]);
+    } else if (multiframeDisplaySets.length > 1) {
+      // Allow only for the first multi-frame instance to be displayed
+      createDisplaySetGroup(multiframeDisplaySets);
+      displaySets.push(...multiframeDisplaySets);
     }
 
     return displaySets;
@@ -883,6 +893,7 @@ const makeDisplaySet = (series, instances) => {
     isEnhanced: seriesData.isEnhanced,
     isMultiStack: seriesData.isMultiStack,
     series4DConfig: series4DConfig,
+    isThumbnailViewEnabled: true,
   });
 
   // Sort the images in this series by instanceNumber
@@ -911,6 +922,7 @@ const makeDisplaySet = (series, instances) => {
     displayReconstructableInfo.reconstructionIssues.push(
       ReconstructionIssues.DATASET_4D
     );
+    imageSet.isReconstructable = false;
   }
 
   let displaySpacingInfo = undefined;

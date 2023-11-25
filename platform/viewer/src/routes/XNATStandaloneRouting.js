@@ -146,9 +146,17 @@ class XNATStandaloneRouting extends Component {
           //   );
           // }
 
-          log.info(JSON.stringify(jsonString, null, 2));
+          // log.info(JSON.stringify(jsonString, null, 2));
 
           const data = JSON.parse(jsonString);
+          const studies = data.studies.filter(
+            study => study.series !== undefined
+          );
+          data.studies = studies;
+          if (studies.length === 0) {
+            resolve({ studies: [], studyInstanceUIDs: [] });
+            return;
+          }
 
           commandsManager.runCommand('xnatSetSession', {
             json: data,
@@ -161,7 +169,9 @@ class XNATStandaloneRouting extends Component {
             },
           });
 
-          console.warn(data);
+          data.studies[0].StudyDescription = experimentLabel || experimentId;
+
+          console.log(data);
 
           resolve({ studies: data.studies, studyInstanceUIDs: [] });
         });
@@ -215,7 +225,13 @@ class XNATStandaloneRouting extends Component {
 
             for (let i = 0; i < jsonFiles.length; i++) {
               const experimentJsonI = jsonFiles[i];
-              const studiesI = experimentJsonI.studies;
+              const studiesI = experimentJsonI.studies.filter(
+                study => study.series !== undefined
+              );
+
+              if (studiesI.length === 0) {
+                continue;
+              }
 
               commandsManager.runCommand('xnatSetSession', {
                 json: experimentJsonI,
@@ -296,7 +312,7 @@ class XNATStandaloneRouting extends Component {
         seriesInstanceUIDs,
       } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
-      if (studies) {
+      if (studies && studies.length > 0) {
         // Set document title
         let documentTitle = studies[0].PatientID || studies[0].PatientName;
         documentTitle = documentTitle
@@ -324,6 +340,8 @@ class XNATStandaloneRouting extends Component {
         } = _mapStudiesToNewFormat(studies);
         studies = updatedStudies;
         studyInstanceUIDs = updatedStudiesInstanceUIDs;
+      } else {
+        throw new Error('Unsupported or no data to display');
       }
 
       this.setState({

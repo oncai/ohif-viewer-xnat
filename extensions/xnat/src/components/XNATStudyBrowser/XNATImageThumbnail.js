@@ -29,6 +29,7 @@ function XNATImageThumbnail(props) {
     displaySetInstanceUID,
     modality,
     isValidMultiStack,
+    hasMultiDisplaySets,
   } = props;
 
   const [isLoading, setLoading] = useState(false);
@@ -109,14 +110,16 @@ function XNATImageThumbnail(props) {
     }
   }, [imageId]);
 
-  let multiStackInfo = null;
-  if (isValidMultiStack) {
-    multiStackInfo = (
-      <div className="multi-stack-tag">
+  const multiStackInfo = (
+    <div className="multi-stack-tag">
+      {hasMultiDisplaySets && (
+        <Icon name="xnat-scan-group" title="Multiple Enhanced images" />
+      )}
+      {isValidMultiStack && (
         <Icon name="xnat-stack" title="Multi-stack image" />
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 
   return (
     <div className={classNames('ImageThumbnail', { active: active })}>

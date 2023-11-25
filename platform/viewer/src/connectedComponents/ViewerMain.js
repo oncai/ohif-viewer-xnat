@@ -184,6 +184,15 @@ class ViewerMain extends Component {
       }
     }
 
+    if (displaySet.hasMultiDisplaySets && displaySet.subDisplaySetGroupData) {
+      const groupActiveDisplaySet = displaySet.subDisplaySetGroupData.getDisplaySet(
+        { viewportIndex }
+      );
+      if (groupActiveDisplaySet) {
+        displaySet = groupActiveDisplaySet;
+      }
+    }
+
     if (displaySet.isValidMultiStack && displaySet.getSubStackGroupData) {
       const subStackGroupData = displaySet.getSubStackGroupData();
       const stackDisplaySet = subStackGroupData.getStackDisplaySet({
