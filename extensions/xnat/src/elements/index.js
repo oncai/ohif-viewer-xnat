@@ -46,6 +46,7 @@ import xnatSync from './icons/xnat-sync.svg';
 import xnatAnnotate from './icons/xnat-annotate.svg';
 import xnatViewportOverlay from './icons/xnat-viewport-overlay.svg';
 import xnatStack from './icons/xnat-stack.svg';
+import xnatScanGroup from './icons/xnat-scan-group.svg';
 
 import Loader from './Loader/Loader';
 
@@ -107,6 +108,7 @@ const XNATICONS = {
   'xnat-annotate': xnatAnnotate,
   'xnat-viewport-overlay': xnatViewportOverlay,
   'xnat-stack': xnatStack,
+  'xnat-scan-group': xnatScanGroup,
 };
 
 export {

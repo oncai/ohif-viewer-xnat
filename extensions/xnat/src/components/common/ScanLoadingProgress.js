@@ -50,6 +50,14 @@ const ScanLoadingProgress = props => {
 
   return (
     <svg height={size} width={size} className="roiProgressCircle">
+      {/*<circle*/}
+      {/*  cx="7"*/}
+      {/*  cy="7"*/}
+      {/*  r="6"*/}
+      {/*  strokeWidth="1"*/}
+      {/*  fill="none"*/}
+      {/*  stroke="var(--ui-gray-light)"*/}
+      {/*></circle>*/}
       <circle
         stroke="var(--active-color)"
         fill="transparent"

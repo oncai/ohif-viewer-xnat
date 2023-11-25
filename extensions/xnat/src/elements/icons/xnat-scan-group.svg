@@ -1,0 +1,23 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 256 256"
+  aria-labelledby="title"
+  width="1em"
+  height="1em"
+  stroke="currentColor"
+  fill="currentColor"
+>
+  <title id="title">Scan Group</title>
+  <g>
+    <line x1="40" y1="25" x2="40" y2="231" stroke-width="30" />
+    <rect x="146" y="0" width="80" height="70" rx="15" />
+    <rect x="146" y="93" width="80" height="70" rx="15" />
+    <rect x="146" y="186" width="80" height="70" rx="15" />
+    <g stroke-width="20">
+      <line x1="90" y1="128" x2="186" y2="128" />
+      <line x1="90" y1="35" x2="186" y2="35" />
+      <line x1="90" y1="221" x2="186" y2="221" />
+      <line x1="80" y1="25" x2="80" y2="231" />
+    </g>
+  </g>
+</svg>
