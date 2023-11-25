@@ -2,42 +2,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { ToolbarButton } from '@ohif/ui';
-import { utils } from '@ohif/core';
-
-const { studyMetadataManager } = utils;
 
 let isVisible = true;
 
-const _isDisplaySetReconstructable = (viewportSpecificData = {}, activeViewportIndex) => {
-  if (!viewportSpecificData[activeViewportIndex]) {
-    return false;
-  };
-
-  const { displaySetInstanceUID, StudyInstanceUID } = viewportSpecificData[
-    activeViewportIndex
-  ];
-
-  const studies = studyMetadataManager.all();
-
-  const study = studies.find(
-    study =>
-      study.getStudyInstanceUID() === StudyInstanceUID &&
-      study.displaySets.some(
-        ds => ds.displaySetInstanceUID === displaySetInstanceUID
-      )
-  );
-
-  if (!study) {
-    return false;
-  }
-
-  const displaySet = study._displaySets.find(set => set.displaySetInstanceUID === displaySetInstanceUID);
-
-  if (!displaySet) {
-    return false;
-  };
-
-  return displaySet.isReconstructable;
+const _isDisplaySetReconstructable = (
+  viewportSpecificData = {},
+  activeViewportIndex
+) => {
+  const displaySet = viewportSpecificData[activeViewportIndex];
+  return displaySet !== undefined && displaySet.isReconstructable;
 };
 
 function VTKMPRToolbarButton({
@@ -56,12 +29,12 @@ function VTKMPRToolbarButton({
     return {
       viewportSpecificData,
       activeViewportIndex,
-    }
+    };
   });
 
   isVisible = _isDisplaySetReconstructable(
     viewportSpecificData,
-    activeViewportIndex,
+    activeViewportIndex
   );
 
   return (
