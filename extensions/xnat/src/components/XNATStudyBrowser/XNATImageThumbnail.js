@@ -10,6 +10,7 @@ import ViewportErrorIndicator from './ViewportErrorIndicator';
 import ViewportLoadingIndicator from './ViewportLoadingIndicator';
 import DisplaySetLoadingIndicator from './DisplaySetLoadingIndicator';
 import renderThumbnailOverlay from './utils/renderThumbnailOverlay';
+import checkAndFixVoi from './utils/checkAndFixVoi';
 import { Icon } from '@ohif/ui';
 
 // TODO: How should we have this component depend on Cornerstone?
@@ -96,6 +97,7 @@ function XNATImageThumbnail(props) {
 
   useEffect(() => {
     if (image.imageId) {
+      checkAndFixVoi(image);
       cornerstone.renderToCanvas(canvasRef.current, image);
       renderThumbnailOverlay(canvasRef.current, image);
       setLoading(false);

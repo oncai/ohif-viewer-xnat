@@ -54,7 +54,7 @@ const XNATViewportMenuDisplaySetSwitch = props => {
   return (
     <li className="ViewportMenuRow" onClick={onShowDisplaySetGroupBrowser}>
       <div className="ViewportMenuIcon">
-        <Icon name="xnat-stack" />
+        <Icon name="xnat-scan-group" />
       </div>
       <div className="ViewportMenuLabel">{selectedDisplaySetInfo.label}</div>
       <div className="ViewportMenuIcon ActionIcon">
