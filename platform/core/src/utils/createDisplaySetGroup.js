@@ -1,4 +1,13 @@
 const createDisplaySetGroup = displaySets => {
+  // Sort using the instance number of the first instance
+  displaySets.sort((a, b) => {
+    const aInstanceNumber =
+      parseInt(a.images[0].getTagValue('InstanceNumber', 0)) || 0;
+    const bInstanceNumber =
+      parseInt(b.images[0].getTagValue('InstanceNumber', 0)) || 0;
+    return aInstanceNumber - bInstanceNumber;
+  });
+
   const displaySetInfoList = displaySets.map((ds, dsIndex) => ({
     uid: ds.uid,
     label: `Instance ${dsIndex + 1}`,
