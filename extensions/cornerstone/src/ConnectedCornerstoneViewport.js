@@ -58,6 +58,10 @@ const onImageLoaded = event => {
     return;
   }
 
+  if (image.windowWidth !== undefined && image.windowWidth === 0) {
+    image.windowWidth = 0.1;
+  }
+
   image.displayedArea = getDisplayedArea(image);
 };
 
