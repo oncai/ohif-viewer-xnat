@@ -69,7 +69,7 @@ const onImageLoaded = event => {
         moMax = vMax * image.slope + image.intercept;
       }
       const windowWidth = moMax - moMin;
-      image.windowWidth = windowWidth === 0 ? 1 : windowWidth;
+      image.windowWidth = windowWidth === 0 ? 10 : windowWidth;
       image.windowCenter = Math.floor(image.windowWidth / 2);
     }
   }
