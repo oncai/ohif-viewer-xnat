@@ -1,3 +1,13 @@
+**3.6.2**
+
+- Support 4-D datasets with duplicate InstanceNumber values.
+- Additional dimension tags for the grouping stacks in 4-D datasets.
+- Dynamic window width calculation when the value is zero.
+- Fixed issues preventing from parsing and displaying NM images.
+- Fixed the detection of orientation upon importing segmentations.
+- Fixed the middle frame calculation used for displaying the thumbnail images.
+- Fixed irregular spacing wrongly detected as missing frames.
+
 **3.6.1**
 
 - Automated the detection of 4-D stack dimensions when creating multi-stack displays.
