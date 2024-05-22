@@ -4,8 +4,8 @@ This repository exists only to serve as an intermediate source for
 the `ohif-viewer-xnat` plugin.
 
 Changes are based on:
-* https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin.git = `v3.6.0`
-* https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat.git = `v3.6.0`
+* https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin.git = `v3.6.1`
+* https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat.git = `v3.6.1`
 * XNAT v1.8.7+ is required for the above plugin.
 
 # Installation

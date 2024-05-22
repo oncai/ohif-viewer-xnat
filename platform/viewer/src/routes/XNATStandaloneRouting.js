@@ -146,9 +146,17 @@ class XNATStandaloneRouting extends Component {
           //   );
           // }
 
-          log.info(JSON.stringify(jsonString, null, 2));
+          // log.info(JSON.stringify(jsonString, null, 2));
 
           const data = JSON.parse(jsonString);
+          const studies = data.studies.filter(
+            study => study.series !== undefined
+          );
+          data.studies = studies;
+          if (studies.length === 0) {
+            resolve({ studies: [], studyInstanceUIDs: [] });
+            return;
+          }
 
           commandsManager.runCommand('xnatSetSession', {
             json: data,
@@ -161,7 +169,9 @@ class XNATStandaloneRouting extends Component {
             },
           });
 
-          console.warn(data);
+          data.studies[0].StudyDescription = experimentLabel || experimentId;
+
+          console.log(data);
 
           resolve({ studies: data.studies, studyInstanceUIDs: [] });
         });
@@ -215,7 +225,13 @@ class XNATStandaloneRouting extends Component {
 
             for (let i = 0; i < jsonFiles.length; i++) {
               const experimentJsonI = jsonFiles[i];
-              const studiesI = experimentJsonI.studies;
+              const studiesI = experimentJsonI.studies.filter(
+                study => study.series !== undefined
+              );
+
+              if (studiesI.length === 0) {
+                continue;
+              }
 
               commandsManager.runCommand('xnatSetSession', {
                 json: experimentJsonI,
@@ -296,7 +312,7 @@ class XNATStandaloneRouting extends Component {
         seriesInstanceUIDs,
       } = await this.parseQueryAndRetrieveDICOMWebData(rootUrl, query);
 
-      if (studies) {
+      if (studies && studies.length > 0) {
         // Set document title
         let documentTitle = studies[0].PatientID || studies[0].PatientName;
         documentTitle = documentTitle
@@ -324,6 +340,8 @@ class XNATStandaloneRouting extends Component {
         } = _mapStudiesToNewFormat(studies);
         studies = updatedStudies;
         studyInstanceUIDs = updatedStudiesInstanceUIDs;
+      } else {
+        throw new Error('Unsupported or no data to display');
       }
 
       this.setState({
@@ -334,6 +352,7 @@ class XNATStandaloneRouting extends Component {
         loading: false,
       });
     } catch (error) {
+      console.error(error);
       this.setState({ error: error.message, loading: false });
     }
   }
@@ -516,13 +535,13 @@ async function updateMetaDataProvider(studies) {
     StudyInstanceUID = study.StudyInstanceUID;
     for (let series of study.series) {
       SeriesInstanceUID = series.SeriesInstanceUID;
-      const { is4D, numberOfSubInstances } = metadataUtils.isDataset4D(
-        series.instances
-      );
-      series.is4D = is4D;
-      series.numberOfSubInstances = numberOfSubInstances;
+      const series4DConfig = metadataUtils.isDataset4D(series.instances);
+      series._4DConfig = series4DConfig;
+      // Check if the series is 4D multi-stack
       series.isMultiStack =
-        is4D && metadataUtils.isSameOrientation(series.instances);
+        series4DConfig.isValid4D &&
+        metadataUtils.isSameOrientation(series.instances);
+
       await Promise.all(
         series.instances.map(async (instance, instanceIndex) => {
           const { url: imageId, metadata: naturalizedDicom } = instance;
@@ -544,15 +563,34 @@ async function updateMetaDataProvider(studies) {
           // PaletteColorLookupTableData is loaded conditionally in metadataProvider.addInstance
           // OverlayData is loaded conditionally in metadataProvider.addInstance
 
+          const isEnhancedSOP = metadataUtils.isEnhancedSOP(
+            naturalizedDicom.SOPClassUID
+          );
+          let shouldFetchDataset = false;
+          if (
+            naturalizedDicom.NumberOfFrames === 1 &&
+            naturalizedDicom.PhotometricInterpretation === 'PALETTE COLOR'
+          ) {
+            shouldFetchDataset = true;
+          } else if (
+            series.isMultiStack &&
+            series4DConfig.sameIppIndices.includes(instanceIndex)
+          ) {
+            shouldFetchDataset = true;
+          } else if (isEnhancedSOP && !series4DConfig.hasMultiFrameInstances) {
+            shouldFetchDataset = true;
+          }
+
           // Add instance to metadata provider.
           const addedInstance = await metadataProvider.addInstance(
             naturalizedDicom,
             {
               imageId,
-              shouldFetchDataset: is4D && instanceIndex < numberOfSubInstances,
+              shouldFetchDataset,
             }
           );
-          if (metadataUtils.isEnhancedSOP(addedInstance.SOPClassUID)) {
+
+          if (isEnhancedSOP && !series4DConfig.hasMultiFrameInstances) {
             const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
               addedInstance
             );
@@ -564,12 +602,15 @@ async function updateMetaDataProvider(studies) {
                   url: `${imageId}?frame=${j}`,
                 });
               }
-              series.isEnhanced = metadataUtils.isSameOrientation(subInstances);
+              series.isEnhanced = isEnhancedSOP;
+              const isUniformOrientation = metadataUtils.isSameOrientation(
+                subInstances
+              );
+              // Update the series 4D config from sub-instances
+              const series4DConfig = metadataUtils.isDataset4D(subInstances);
+              series._4DConfig = series4DConfig;
               series.subInstances = subInstances;
-              if (
-                series.isEnhanced &&
-                metadataUtils.isDataset4D(subInstances).is4D
-              ) {
+              if (isUniformOrientation && series4DConfig.isValid4D) {
                 series.isMultiStack = true;
               }
             }

@@ -76,8 +76,6 @@ class XNATViewportOverlay extends React.PureComponent {
       stackDescription: null,
     };
 
-    // const viewportSpecificData = window.store.getState().viewports
-    //   .viewportSpecificData[viewportIndex];
     const viewportSpecificData = getViewportSpecificData();
     if (!viewportSpecificData) {
       return auxiliaryInformation;
@@ -99,12 +97,7 @@ class XNATViewportOverlay extends React.PureComponent {
     // Stack information
     if (viewportSpecificData.isSubStack) {
       const { stackData, getSubStackGroupData } = viewportSpecificData;
-      const {
-        mainDimensionIndex,
-        otherDimensionIndices,
-        stackName,
-        refIndices,
-      } = stackData;
+      const { stackName, refIndices } = stackData;
       const { groupLabels, dimensionValues } = getSubStackGroupData();
 
       const refIndex = refIndices[imageIndex - 1];
@@ -120,6 +113,22 @@ class XNATViewportOverlay extends React.PureComponent {
           <>
             <div>{`Stack: ${stackName}`}</div>
             <div>{`[${stackValues.join(', ')}]`}</div>
+          </>
+        );
+      }
+    }
+
+    // Multiple display sets
+    if (viewportSpecificData.hasMultiDisplaySets) {
+      const groupData = viewportSpecificData.subDisplaySetGroupData;
+      const viewportInfo = groupData.getViewportDisplaySetInfo(viewportIndex);
+      if (viewportInfo) {
+        const length = groupData.displaySets.length;
+        auxiliaryInformation.multiDisplaySetDescription = (
+          <>
+            <div>
+              {`Multiple Enhanced Images: ${viewportInfo.label}/${length}`}
+            </div>
           </>
         );
       }
@@ -214,6 +223,7 @@ class XNATViewportOverlay extends React.PureComponent {
       const {
         fusionDescription,
         stackDescription,
+        multiDisplaySetDescription,
       } = this.getAuxiliaryInformation();
 
       overlayContent = (
@@ -261,6 +271,9 @@ class XNATViewportOverlay extends React.PureComponent {
                   : ''}
               </div>
               <div>{seriesDescription}</div>
+              <div style={{ color: 'var(--snackbar-warning)' }}>
+                {multiDisplaySetDescription}
+              </div>
               <div style={{ color: 'var(--snackbar-warning)' }}>
                 {stackDescription}
               </div>

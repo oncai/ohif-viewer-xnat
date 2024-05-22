@@ -28,4 +28,4 @@ jobs:
         if: ${{ github.event_name == 'release' }}
         uses: softprops/action-gh-release@v1
         with:
-          files: output/libs/ohif-viewer-3.6.0-fat-oncai${{ github.event.release.tag_name }}.jar
+          files: output/libs/ohif-viewer-3.6.1-fat-oncai${{ github.event.release.tag_name }}.jar

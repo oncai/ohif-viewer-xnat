@@ -99,6 +99,20 @@ const onPreRender = event => {
     return;
   }
 
+  if (isNaN(image.windowCenter) || isNaN(image.windowWidth)) {
+    const { WindowCenter, WindowWidth } = cornerstone.metaData.get(
+      'instance',
+      image.imageId
+    );
+    image.windowCenter = WindowCenter || [80];
+    image.windowWidth = WindowWidth || [400];
+    if (getWindowing(eventDetail.enabledElement.uuid) === 'Default') {
+      const voi = viewport.voi;
+      voi.windowCenter = image.windowCenter;
+      voi.windowWidth = image.windowWidth;
+    }
+  }
+
   viewport.displayedArea = image.displayedArea;
 };
 

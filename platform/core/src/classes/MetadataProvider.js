@@ -52,13 +52,6 @@ class MetadataProvider {
     return dataset;
   }
 
-  shouldFetchDataset(dicomJSONDataset) {
-    const hasPaletteColor =
-      dicomJSONDataset.PhotometricInterpretation === 'PALETTE COLOR';
-    const isEnhanced = isEnhancedSOP(dicomJSONDataset.SOPClassUID);
-    return hasPaletteColor || isEnhanced;
-  }
-
   loadMetadataFromImage(imageId) {
     if (this.isMetadataLoadedFromImage.includes(imageId)) {
       return true;
@@ -120,10 +113,7 @@ class MetadataProvider {
 
     let dicomJSONDatasetOrP10ArrayBuffer;
     if (isXnatConfig) {
-      if (
-        this.shouldFetchDataset(_dicomJSONDatasetOrP10ArrayBuffer) ||
-        options.shouldFetchDataset
-      ) {
+      if (options.shouldFetchDataset) {
         const image = await cornerstone.loadAndCacheImage(options.imageId);
         const arrayBuffer = image.data.byteArray.buffer;
         dicomJSONDatasetOrP10ArrayBuffer = this.readDataset(

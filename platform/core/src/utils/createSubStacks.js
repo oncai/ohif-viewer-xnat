@@ -2,21 +2,30 @@ import cornerstone from 'cornerstone-core';
 import { OHIFSeriesMetadata, OHIFInstanceMetadata } from '../classes/metadata';
 import metadataUtils from './metadataProvider';
 
-const { getTagName, isSameArray } = metadataUtils;
+const { getTagName } = metadataUtils;
 
 const SUPPORTED_4D_MODALITIES = ['MR'];
+
+const PRIVATE_ATTRIBUTES = {
+  // Siemens
+  '0019100C': 'DiffusionBValue',
+};
 
 const createSubStacks = (displaySet, ohifStudy) => {
   const refImage = displaySet.getImage(0);
   const imageId = refImage.getImageId();
   const refMetadata = cornerstone.metaData.get('instance', imageId);
 
+  const isValid4D = displaySet.series4DConfig
+    ? displaySet.series4DConfig.isValid4D
+    : false;
+
   let subStackGroups;
   let stackDimensionData;
   let groupLabels;
 
   try {
-    if (displaySet.isEnhanced && displaySet.isMultiStack) {
+    if (displaySet.isEnhanced) {
       stackDimensionData = buildDimensionDataForEnhanced(refMetadata);
       if (stackDimensionData) {
         groupLabels = generateStackGroupLabels(
@@ -31,7 +40,7 @@ const createSubStacks = (displaySet, ohifStudy) => {
         );
       }
     } else if (
-      displaySet.is4D &&
+      isValid4D &&
       SUPPORTED_4D_MODALITIES.includes(displaySet.Modality)
     ) {
       stackDimensionData = buildDimensionDataFor4D(displaySet);
@@ -265,39 +274,29 @@ const buildDimensionDataForEnhanced = refMetadata => {
 };
 
 const buildDimensionDataFor4D = displaySet => {
-  const { numImageFrames, numberOfSubInstances, images } = displaySet;
-  const numSubStacks = numImageFrames / numberOfSubInstances;
+  const series4DConfig = displaySet.series4DConfig;
+  const {
+    numberOfSubStacks,
+    numberOfSubInstances,
+    inStackPositionDimension,
+    sameIppIndices,
+  } = series4DConfig;
 
-  // Check if we have the correct number of images
-  if (numImageFrames % numberOfSubInstances !== 0) {
-    return;
-  }
+  // Pre-validated in isDataset4D.js:
+  // * Check if we have the correct number of images
+  // * Validate that the first set of instances share the same position
 
-  const subsetInstances = [];
-  for (let i = 0; i < numberOfSubInstances; i++) {
-    const image = displaySet.getImage(i);
+  const sameIppInstances = [];
+  for (let i = 0; i < sameIppIndices.length; i++) {
+    const image = displaySet.getImage(sameIppIndices[i]);
     const imageId = image.getImageId();
-    subsetInstances.push(cornerstone.metaData.get('instance', imageId));
+    sameIppInstances.push(cornerstone.metaData.get('instance', imageId));
   }
 
-  // Validate that the first set of instances share the same position.
-  let firstSetSharesIop = true;
-  const refIop = subsetInstances[0].ImagePositionPatient;
-  if (!refIop) {
-    return;
-  }
-  for (let i = 1; i < numberOfSubInstances; i++) {
-    const iop = subsetInstances[i].ImagePositionPatient;
-    if (!iop || !isSameArray(refIop, iop)) {
-      firstSetSharesIop = false;
-      break;
-    }
-  }
-  if (!firstSetSharesIop) {
-    return;
-  }
-
-  const dimensionPointers = buildDimensionPointersFor4D(subsetInstances);
+  const dimensionPointers = buildDimensionPointersFor4D(
+    sameIppInstances,
+    inStackPositionDimension
+  );
 
   if (dimensionPointers.length !== 3) {
     return;
@@ -306,21 +305,43 @@ const buildDimensionDataFor4D = displaySet => {
   const dimensionValues = [];
   const dimensionIndices = [];
   const indexPointer = dimensionPointers[2].indexPointer;
-  const indexPointerValues = subsetInstances.map(
-    instance => instance[indexPointer]
-  );
-  for (let i = 0; i < numSubStacks; i++) {
-    for (let j = 0; j < numberOfSubInstances; j++) {
-      dimensionValues.push([
-        1, // StackID
-        i + 1, // InStackPositionNumber
-        indexPointerValues[j],
-      ]);
-      dimensionIndices.push([
-        1, // StackID
-        i + 1, // InStackPositionNumber
-        j + 1,
-      ]);
+
+  if (indexPointer === 'InStackPositionNumber') {
+    const indexPointerValues = sameIppInstances.map(
+      instance => instance[dimensionPointers[1].indexPointer]
+    );
+    for (let i = 0; i < numberOfSubStacks; i++) {
+      for (let j = 0; j < numberOfSubInstances; j++) {
+        dimensionValues.push([
+          1, // StackID
+          indexPointerValues[i],
+          j + 1, // InStackPositionNumber
+        ]);
+        dimensionIndices.push([
+          1, // StackID
+          i + 1,
+          j + 1, // InStackPositionNumber
+        ]);
+      }
+    }
+  } else {
+    // Assert sameIppInstances.length === numberOfSubInstances
+    const indexPointerValues = sameIppInstances.map(
+      instance => instance[indexPointer]
+    );
+    for (let i = 0; i < numberOfSubStacks; i++) {
+      for (let j = 0; j < numberOfSubInstances; j++) {
+        dimensionValues.push([
+          1, // StackID
+          i + 1, // InStackPositionNumber
+          indexPointerValues[j],
+        ]);
+        dimensionIndices.push([
+          1, // StackID
+          i + 1, // InStackPositionNumber
+          j + 1,
+        ]);
+      }
     }
   }
 
@@ -331,7 +352,7 @@ const buildDimensionDataFor4D = displaySet => {
   };
 };
 
-const buildDimensionPointersFor4D = instances => {
+const buildDimensionPointersFor4D = (instances, inStackPositionDimension) => {
   const modality = instances[0].Modality;
 
   // Build dimension pointers assuming the dataset is 4D:
@@ -344,11 +365,13 @@ const buildDimensionPointersFor4D = instances => {
     indexPointer: 'StackID',
     indexAbbreviation: 'SID',
   });
-  dimensionPointers.push({
-    groupPointer: '',
-    indexPointer: 'InStackPositionNumber',
-    indexAbbreviation: 'ISPN',
-  });
+  if (inStackPositionDimension === 2) {
+    dimensionPointers.push({
+      groupPointer: '',
+      indexPointer: 'InStackPositionNumber',
+      indexAbbreviation: 'ISPN',
+    });
+  }
 
   const findValidDimension = indexPointer => {
     let isDimensionPointer = true;
@@ -380,15 +403,28 @@ const buildDimensionPointersFor4D = instances => {
   };
 
   if (modality === 'MR') {
-    // Check for EchoTime
-    const echoTime = findValidDimension('EchoTime');
-    if (echoTime) {
-      dimensionPointers.push(echoTime);
+    const mrDimensionTags = [
+      'EchoTime',
+      'DiffusionBValue',
+      ...Object.keys(PRIVATE_ATTRIBUTES),
+    ];
+    // Stop after finding the first dimension since
+    // only 3D sub-stacks is currently supported.
+    for (let i = 0; i < mrDimensionTags.length; i++) {
+      const dimension = findValidDimension(mrDimensionTags[i]);
+      if (dimension) {
+        dimensionPointers.push(dimension);
+        break;
+      }
     }
-    const diffusionBValue = findValidDimension('DiffusionBValue');
-    if (diffusionBValue) {
-      dimensionPointers.push(diffusionBValue);
-    }
+  }
+
+  if (inStackPositionDimension !== 2) {
+    dimensionPointers.push({
+      groupPointer: '',
+      indexPointer: 'InStackPositionNumber',
+      indexAbbreviation: 'ISPN',
+    });
   }
 
   return dimensionPointers;
@@ -396,7 +432,8 @@ const buildDimensionPointersFor4D = instances => {
 
 const generateStackGroupLabels = dimensionPointers => {
   const groupLabels = dimensionPointers.map(dimension => {
-    const dimensionName = dimension.indexPointer;
+    const dimensionName =
+      PRIVATE_ATTRIBUTES[dimension.indexPointer] || dimension.indexPointer;
     const dimensionId = dimension.indexAbbreviation;
     const { groupName, groupId, groupUnit } = getStackGroupNameAndAbbreviation(
       dimensionName,

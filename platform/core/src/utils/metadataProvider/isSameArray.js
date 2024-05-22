@@ -1,7 +1,7 @@
 const iopTolerance = 0.01;
 
 const isSameArray = (array1, array2) => {
-  if (array1 === undefined || !array2 === undefined) {
+  if (array1 === undefined || array2 === undefined) {
     return;
   }
 
