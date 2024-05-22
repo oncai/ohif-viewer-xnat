@@ -56,7 +56,8 @@ function processMultiframe(instances) {
   const imageType = metadata.ImageType;
   const supportedNMImage = imageType[3] && imageType[2] === 'RECON TOMO';
   if (
-    metadata.Modality === 'NM' &&
+    // Exclude NM modality with "RECON TOMO" type
+    metadata.SOPClassUID === '1.2.840.10008.5.1.4.1.1.20' &&
     metadata.NumberOfFrames > 2 &&
     supportedNMImage
   ) {
@@ -138,6 +139,9 @@ function isSpacingUniform(instances, datasetIs4D) {
   const n = instances.length;
   const firstImage = instances[0].getData().metadata;
   const firstImagePositionPatient = firstImage.ImagePositionPatient;
+  const firstInstanceNumber = parseInt(
+    firstImage.InstanceNumber ? firstImage.InstanceNumber : 0
+  );
 
   const reconstructionIssues = [];
   let missingFrames = 0;
@@ -154,10 +158,14 @@ function isSpacingUniform(instances, datasetIs4D) {
         _getPerpendicularDistance(firstImagePositionPatient, lastIpp) / (n - 1);
 
       let previousImagePositionPatient = firstImagePositionPatient;
+      let previousInstanceNumber = firstInstanceNumber;
 
       for (let ii = 1; ii < n; ++ii) {
         const instance = instances[ii].getData().metadata;
         const { ImagePositionPatient } = instance;
+        const instanceNumber = parseInt(
+          instance.InstanceNumber ? instance.InstanceNumber : 0
+        );
 
         const spacingBetweenFrames = _getPerpendicularDistance(
           ImagePositionPatient,
@@ -171,7 +179,12 @@ function isSpacingUniform(instances, datasetIs4D) {
           continue;
         }
 
+        const instanceNumberDiff = Math.abs(
+          instanceNumber - previousInstanceNumber
+        );
+
         const spacingIssue = _getSpacingIssue(
+          instanceNumberDiff,
           spacingBetweenFrames,
           averageSpacingBetweenFrames
         );
@@ -188,6 +201,7 @@ function isSpacingUniform(instances, datasetIs4D) {
         }
 
         previousImagePositionPatient = ImagePositionPatient;
+        previousInstanceNumber = instanceNumber;
       }
     }
   }
@@ -275,17 +289,22 @@ const iopTolerance = 0.01;
 /**
  * Checks for spacing issues.
  *
+ * @param {number} instanceNumberDiff the difference in InstantNumber
  * @param {number} spacing The spacing between two frames.
  * @param {number} averageSpacing The average spacing between all frames.
  *
  * @returns {Object} An object containing the issue and extra information if necessary.
  */
-function _getSpacingIssue(spacing, averageSpacing) {
+function _getSpacingIssue(instanceNumberDiff, spacing, averageSpacing) {
   const equalWithinTolerance =
     Math.abs(spacing - averageSpacing) < averageSpacing * spacingTolerance;
 
   if (equalWithinTolerance) {
     return;
+  }
+
+  if (instanceNumberDiff === 1) {
+    return { issue: ReconstructionIssues.IRREGULAR_SPACING };
   }
 
   const multipleOfAverageSpacing = spacing / averageSpacing;

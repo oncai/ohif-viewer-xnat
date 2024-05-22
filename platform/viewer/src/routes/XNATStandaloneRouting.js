@@ -590,28 +590,39 @@ async function updateMetaDataProvider(studies) {
             }
           );
 
-          if (isEnhancedSOP && !series4DConfig.hasMultiFrameInstances) {
-            const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
-              addedInstance
-            );
-            if (naturalizedMetadataList && naturalizedMetadataList.length > 0) {
-              const subInstances = [];
-              for (let j = 0; j < naturalizedMetadataList.length; j++) {
-                subInstances.push({
-                  metadata: naturalizedMetadataList[j],
-                  url: `${imageId}?frame=${j}`,
-                });
-              }
-              series.isEnhanced = isEnhancedSOP;
-              const isUniformOrientation = metadataUtils.isSameOrientation(
-                subInstances
+          if (isEnhancedSOP) {
+            // NM modality
+            if (addedInstance.SOPClassUID === '1.2.840.10008.5.1.4.1.1.20') {
+              series.isEnhanced = true;
+            } else if (series4DConfig.hasMultiFrameInstances) {
+              // ToDo: should we add further flags here?
+            } else {
+              // Create individual frame metadata from the enhanced instance
+              const naturalizedMetadataList = metadataUtils.parseEnhancedSOP(
+                addedInstance
               );
-              // Update the series 4D config from sub-instances
-              const series4DConfig = metadataUtils.isDataset4D(subInstances);
-              series._4DConfig = series4DConfig;
-              series.subInstances = subInstances;
-              if (isUniformOrientation && series4DConfig.isValid4D) {
-                series.isMultiStack = true;
+              if (
+                naturalizedMetadataList &&
+                naturalizedMetadataList.length > 0
+              ) {
+                const subInstances = [];
+                for (let j = 0; j < naturalizedMetadataList.length; j++) {
+                  subInstances.push({
+                    metadata: naturalizedMetadataList[j],
+                    url: `${imageId}?frame=${j}`,
+                  });
+                }
+                series.isEnhanced = isEnhancedSOP;
+                const isUniformOrientation = metadataUtils.isSameOrientation(
+                  subInstances
+                );
+                // Update the series 4D config from sub-instances
+                const series4DConfig = metadataUtils.isDataset4D(subInstances);
+                series._4DConfig = series4DConfig;
+                series.subInstances = subInstances;
+                if (isUniformOrientation && series4DConfig.isValid4D) {
+                  series.isMultiStack = true;
+                }
               }
             }
           }
@@ -786,12 +797,23 @@ function isValidOverlayDisplaySet(displaySetI, refIop, displaySetJ) {
 function getImageOrientationPatient(displaySet) {
   const firstImage = displaySet.images[0];
   let imageId = firstImage.getData().url;
-  if (displaySet.isMultiFrame) {
-    imageId += '?frame=0';
+
+  if (displaySet.Modality === 'NM') {
+    const instance = cornerstone.metaData.get('instance', imageId);
+    if (instance) {
+      const {
+        ImageOrientationPatient,
+      } = metadataUtils.getImagePlaneInformation(instance, 0);
+      return ImageOrientationPatient;
+    }
+  } else {
+    if (displaySet.isMultiFrame) {
+      imageId += '?frame=0';
+    }
+    const { imageOrientationPatient } = cornerstone.metaData.get(
+      'imagePlaneModule',
+      imageId
+    );
+    return imageOrientationPatient;
   }
-  const { imageOrientationPatient } = cornerstone.metaData.get(
-    'imagePlaneModule',
-    imageId
-  );
-  return imageOrientationPatient;
 }

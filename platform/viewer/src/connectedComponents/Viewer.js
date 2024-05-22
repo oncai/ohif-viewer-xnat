@@ -659,9 +659,15 @@ const _mapStudiesToThumbnails = function(studies, activeDisplaySetInstanceUID) {
         altImageText = 'SEG';
       } else if (displaySet.images && displaySet.images.length) {
         const imageIndex = displaySet.middleImageIndex;
-        imageId = displaySet.images[imageIndex].getImageId();
-        SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
-          .SOPInstanceUID;
+        if (displaySet.isMultiFrame) {
+          imageId = `${displaySet.images[0].getImageId()}?frame=${imageIndex}`;
+          SOPInstanceUID = displaySet.images[0].getData().metadata
+            .SOPInstanceUID;
+        } else {
+          imageId = displaySet.images[imageIndex].getImageId();
+          SOPInstanceUID = displaySet.images[imageIndex].getData().metadata
+            .SOPInstanceUID;
+        }
       } else {
         altImageText = modality;
       }

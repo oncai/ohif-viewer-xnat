@@ -9,4 +9,4 @@ mkdir -p /plugin/output
 mv /plugin/build/* /plugin/output
 
 cd /plugin/output/libs
-mv ohif-viewer-3.6.1-fat.jar ohif-viewer-3.6.1-fat-${VERSION}.jar
+mv ohif-viewer-3.6.2-fat.jar ohif-viewer-3.6.2-fat-${VERSION}.jar

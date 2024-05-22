@@ -207,13 +207,19 @@ class StudyMetadata extends Metadata {
       }
     });
 
+    let stackableDisplaySet;
     if (stackableInstances.length) {
-      const displaySet = makeDisplaySet(series, stackableInstances);
-      displaySet.setAttribute('StudyInstanceUID', study.getStudyInstanceUID());
-      displaySet.setAttributes({
+      stackableDisplaySet = makeDisplaySet(series, stackableInstances);
+      stackableDisplaySet.setAttribute('StudyInstanceUID', study.getStudyInstanceUID());
+      stackableDisplaySet.setAttributes({
         sopClassUIDs,
       });
-      displaySets.push(displaySet);
+    }
+
+    // If mixed stackable and multi-frame group
+    if (stackableDisplaySet && multiframeDisplaySets.length) {
+      multiframeDisplaySets.push(stackableDisplaySet);
+      stackableDisplaySet = undefined;
     }
 
     if (multiframeDisplaySets.length === 1) {
@@ -222,6 +228,10 @@ class StudyMetadata extends Metadata {
       // Allow only for the first multi-frame instance to be displayed
       createDisplaySetGroup(multiframeDisplaySets);
       displaySets.push(...multiframeDisplaySets);
+    }
+
+    if (stackableDisplaySet) {
+      displaySets.push(stackableDisplaySet);
     }
 
     return displaySets;
@@ -870,12 +880,6 @@ const makeDisplaySet = (series, instances) => {
   const instance = instances[0];
   const imageSet = new ImageSet(instances);
   const seriesData = series.getData();
-  const series4DConfig = {
-    ...seriesData._4DConfig,
-    numberOfSubInstances: isMultiFrame(instance)
-      ? instances.length
-      : seriesData._4DConfig.numberOfSubInstances,
-  };
 
   // set appropriate attributes to image set...
   imageSet.setAttributes({
@@ -892,9 +896,18 @@ const makeDisplaySet = (series, instances) => {
     FrameOfReferenceUID: instance.getTagValue('FrameOfReferenceUID'),
     isEnhanced: seriesData.isEnhanced,
     isMultiStack: seriesData.isMultiStack,
-    series4DConfig: series4DConfig,
+    series4DConfig: { ...seriesData._4DConfig },
     isThumbnailViewEnabled: true,
   });
+
+  const { is4D, numberOfSubInstances } = imageSet.series4DConfig;
+  let middleImageIndex = instances.length;
+  if (is4D) {
+    middleImageIndex = numberOfSubInstances;
+  } else if (imageSet.isMultiFrame) {
+    middleImageIndex = instance.getTagValue('NumberOfFrames');
+  }
+  middleImageIndex = Math.floor(middleImageIndex / 2);
 
   // Sort the images in this series by instanceNumber
   const shallSort = true; //!OHIF.utils.ObjectPath.get(Meteor, 'settings.public.ui.sortSeriesByIncomingOrder');
@@ -917,7 +930,6 @@ const makeDisplaySet = (series, instances) => {
   const displayReconstructableInfo = isDisplaySetReconstructable(instances);
   imageSet.isReconstructable = displayReconstructableInfo.isReconstructable;
 
-  const { is4D, numberOfSubInstances } = series4DConfig;
   if (is4D) {
     displayReconstructableInfo.reconstructionIssues.push(
       ReconstructionIssues.DATASET_4D
@@ -964,7 +976,6 @@ const makeDisplaySet = (series, instances) => {
     preferences.experimentalFeatures.DisplayScanFromTheMiddle;
   const displayFromTheMiddleEnabled =
     !!DisplayScanFromTheMiddle && DisplayScanFromTheMiddle.enabled;
-  const middleImageIndex = Math.floor(numberOfSubInstances / 2);
   imageSet.setAttribute('middleImageIndex', middleImageIndex);
   imageSet.setAttribute('firstShow', displayFromTheMiddleEnabled);
 

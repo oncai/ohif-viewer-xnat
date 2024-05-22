@@ -4,9 +4,10 @@ export default function getImagePlaneInformation(instance, frameIndex) {
   let ImageOrientationPatient;
   let ImagePositionPatient;
 
-  const { Modality } = instance;
+  const { SOPClassUID } = instance;
 
-  if (Modality === 'NM') {
+  // 1.2.840.10008.5.1.4.1.1.20 => NM
+  if (SOPClassUID === '1.2.840.10008.5.1.4.1.1.20') {
     const {
       ImageType,
       NumberOfDetectors,
@@ -33,13 +34,13 @@ export default function getImagePlaneInformation(instance, frameIndex) {
         );
 
         let incremant;
-        if (SpacingBetweenSlices) {
+        if (SpacingBetweenSlices !== undefined) {
           incremant = SpacingBetweenSlices;
         } else if (SliceThickness) {
           incremant = SliceThickness;
         }
 
-        if (incremant) {
+        if (incremant !== undefined) {
           axisNormal.multiplyScalar(incremant);
         }
 
