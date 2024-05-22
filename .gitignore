@@ -20,6 +20,7 @@ yalc.lock
 npm-debug.log
 package-lock.json
 yarn-error.log
+lerna-debug.log
 .DS_Store
 .env
 

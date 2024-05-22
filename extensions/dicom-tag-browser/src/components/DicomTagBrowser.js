@@ -25,7 +25,10 @@ const DicomTagBrowser = ({ displaySets, displaySetInstanceUID }) => {
   const [displaySetList, setDisplaySetList] = useState([]);
 
   useEffect(() => {
-    const newDisplaySetList = displaySets.map(displaySet => {
+    const thumbnailEnabledDisplaySets = displaySets.filter(
+      displaySet => displaySet.isThumbnailViewEnabled
+    );
+    const newDisplaySetList = thumbnailEnabledDisplaySets.map(displaySet => {
       const {
         displaySetInstanceUID,
         SeriesDate,

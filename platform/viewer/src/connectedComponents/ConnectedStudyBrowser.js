@@ -75,7 +75,10 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
           });
         };
 
-        const {referencedDisplaySet, activatedLabelmapPromise} = displaySet.getSourceDisplaySet(
+        const {
+          referencedDisplaySet,
+          activatedLabelmapPromise,
+        } = displaySet.getSourceDisplaySet(
           ownProps.studyMetadata,
           true,
           onDisplaySetLoadFailureHandler
@@ -101,6 +104,15 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 
       if (!displaySet) {
         throw new Error('Source data not present');
+      }
+    }
+
+    if (displaySet.hasMultiDisplaySets && displaySet.subDisplaySetGroupData) {
+      const groupActiveDisplaySet = displaySet.subDisplaySetGroupData.getDisplaySet(
+        { viewportIndex: activeViewportIndex }
+      );
+      if (groupActiveDisplaySet) {
+        displaySet = groupActiveDisplaySet;
       }
     }
 

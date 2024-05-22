@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Icon } from '@ohif/ui';
 import XNATViewportMenuCheckItem from './XNATViewportMenuCheckItem';
 import XNATViewportMenuStackSwitch from './XNATViewportMenuStackSwitch';
+import XNATViewportMenuDisplaySetSwitch from './XNATViewportMenuDisplaySetSwitch';
 
 import './XNATViewportMenu.styl';
 
@@ -64,8 +65,24 @@ const XNATViewportMenu = props => {
     setViewportStackData(data);
   };
 
+  const style = { height: 155 };
+  let multiDisplaySetSwitchMenu = null;
   let stackSwitchMenu = null;
   if (isExpanded) {
+    const subDisplaySetGroupData = getSubDisplaySetGroupData(getViewportSpecificData);
+    if (subDisplaySetGroupData) {
+      multiDisplaySetSwitchMenu = (
+        <XNATViewportMenuDisplaySetSwitch
+          subDisplaySetGroupData={subDisplaySetGroupData}
+          viewportIndex={viewportIndex}
+          updateViewportStackData={updateViewportStackData}
+          closeViewportMenu={() => setExpanded(false)}
+          setViewportActive={setViewportActive}
+        />
+      );
+      style.height += 30;
+    }
+    //
     const stackData = getStackData(getViewportSpecificData, viewportIndex);
     if (stackData) {
       stackSwitchMenu = (
@@ -77,6 +94,7 @@ const XNATViewportMenu = props => {
           setViewportActive={setViewportActive}
         />
       );
+      style.height += 30;
     }
   }
 
@@ -88,7 +106,7 @@ const XNATViewportMenu = props => {
   return (
     <div
       className={`XNATViewportMenu${isExpanded ? ' isExpanded' : ''}`}
-      style={isExpanded && stackSwitchMenu !== null ? { height: 185 } : {}}
+      style={style}
       ref={menuRef}
     >
       {/*Top row*/}
@@ -136,6 +154,7 @@ const XNATViewportMenu = props => {
             isChecked={viewportOptions.overlay}
             onClick={updateViewportOptions}
           />
+          {multiDisplaySetSwitchMenu}
           {stackSwitchMenu}
         </ul>
       )}
@@ -160,8 +179,25 @@ const getStackData = (getViewportSpecificData, viewportIndex) => {
     return;
   }
 
-  if (viewportSpecificData.isValidMultiStack || viewportSpecificData.isSubStack) {
+  if (
+    viewportSpecificData.isValidMultiStack ||
+    viewportSpecificData.isSubStack
+  ) {
     return viewportSpecificData.getSubStackGroupData();
+  }
+};
+
+const getSubDisplaySetGroupData = getViewportSpecificData => {
+  const viewportSpecificData = getViewportSpecificData();
+  if (!viewportSpecificData) {
+    return;
+  }
+
+  if (
+    viewportSpecificData.hasMultiDisplaySets &&
+    viewportSpecificData.subDisplaySetGroupData
+  ) {
+    return viewportSpecificData.subDisplaySetGroupData;
   }
 };
 

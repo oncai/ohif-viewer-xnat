@@ -22,6 +22,8 @@ function XNATStudyItem(props) {
     return <Icon name="xnat-tree-plus" />;
   };
 
+  const numScans = study.thumbnails.length;
+
   return (
     <React.Fragment key={studyIndex}>
       <div className="studyDescription">
@@ -31,7 +33,12 @@ function XNATStudyItem(props) {
         >
           {getExpandIcon()}
         </a>
-        {study.StudyDescription}
+        <div>
+          <div>{study.StudyDescription}</div>
+          <div className="studyScans">
+            {numScans} {`${numScans > 1 ? 'Scans' : 'Scan'}`}
+          </div>
+        </div>
       </div>
       {expanded ? (
         <XNATSeriesThumbnails

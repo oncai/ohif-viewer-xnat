@@ -10,6 +10,7 @@ import ViewportErrorIndicator from './ViewportErrorIndicator';
 import ViewportLoadingIndicator from './ViewportLoadingIndicator';
 import DisplaySetLoadingIndicator from './DisplaySetLoadingIndicator';
 import renderThumbnailOverlay from './utils/renderThumbnailOverlay';
+import checkAndFixVoi from './utils/checkAndFixVoi';
 import { Icon } from '@ohif/ui';
 
 // TODO: How should we have this component depend on Cornerstone?
@@ -29,6 +30,7 @@ function XNATImageThumbnail(props) {
     displaySetInstanceUID,
     modality,
     isValidMultiStack,
+    hasMultiDisplaySets,
   } = props;
 
   const [isLoading, setLoading] = useState(false);
@@ -95,6 +97,7 @@ function XNATImageThumbnail(props) {
 
   useEffect(() => {
     if (image.imageId) {
+      checkAndFixVoi(image);
       cornerstone.renderToCanvas(canvasRef.current, image);
       renderThumbnailOverlay(canvasRef.current, image);
       setLoading(false);
@@ -109,14 +112,16 @@ function XNATImageThumbnail(props) {
     }
   }, [imageId]);
 
-  let multiStackInfo = null;
-  if (isValidMultiStack) {
-    multiStackInfo = (
-      <div className="multi-stack-tag">
+  const multiStackInfo = (
+    <div className="multi-stack-tag">
+      {hasMultiDisplaySets && (
+        <Icon name="xnat-scan-group" title="Multiple Enhanced images" />
+      )}
+      {isValidMultiStack && (
         <Icon name="xnat-stack" title="Multi-stack image" />
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 
   return (
     <div className={classNames('ImageThumbnail', { active: active })}>
