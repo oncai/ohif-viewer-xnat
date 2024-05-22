@@ -8,6 +8,7 @@ const SUPPORTED_4D_MODALITIES = ['MR'];
 
 const PRIVATE_ATTRIBUTES = {
   // Siemens
+  // '0019100B': 'SliceMeasurementDuration',
   '0019100C': 'DiffusionBValue',
 };
 
@@ -407,6 +408,9 @@ const buildDimensionPointersFor4D = (instances, inStackPositionDimension) => {
       'EchoTime',
       'DiffusionBValue',
       ...Object.keys(PRIVATE_ATTRIBUTES),
+      'TemporalPositionIdentifier',
+      'TriggerTime',
+      'SequenceName',
     ];
     // Stop after finding the first dimension since
     // only 3D sub-stacks is currently supported.

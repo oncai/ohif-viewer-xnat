@@ -13,6 +13,6 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     npm install -g yarn;
 
 FROM base AS plugin
-RUN git clone --depth=1 --branch=3.6.1 https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin.git /plugin
+RUN git clone --depth=1 --branch=3.6.2 https://bitbucket.org/icrimaginginformatics/ohif-viewer-xnat-plugin.git /plugin
 COPY run.sh /
 ENTRYPOINT ["/run.sh"]

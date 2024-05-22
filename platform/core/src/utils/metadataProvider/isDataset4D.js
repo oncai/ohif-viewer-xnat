@@ -1,4 +1,6 @@
+import { Vector3 } from 'cornerstone-math';
 import isSameArray from './isSameArray';
+import isSameOrientation from './isSameOrientation';
 
 const isDataset4D = instances => {
   const result = {
@@ -24,7 +26,7 @@ const isDataset4D = instances => {
     instance.metadata.ImageType.includes('MOSAIC')
   );
   if (result.hasMultiFrameInstances || result.hasMosaicInstances) {
-    result.is4D = true;
+    // result.is4D = true;
     return result;
   }
 
@@ -35,6 +37,30 @@ const isDataset4D = instances => {
       parseInt(_getTagValue(b.metadata, 'InstanceNumber', 0))
     );
   });
+
+  // Check and re-sort by IPP for duplicate instance numbers
+  const instanceNumbers = instances.map(
+    instance => parseInt(_getTagValue(instance.metadata, 'InstanceNumber', 0))
+  );
+  const instanceNumbersSet = new Set(instanceNumbers);
+  if (instanceNumbersSet.size !== instanceNumbers.length) {
+    // Has duplicate instance numbers
+    if (isSameOrientation(instances)) {
+      instanceNumbersSet.forEach(instanceNumber => {
+        const firstIndex = instanceNumbers.indexOf(instanceNumber);
+        const lastIndex = instanceNumbers.lastIndexOf(instanceNumber);
+        const subInstances = instances.slice(firstIndex, lastIndex + 1);
+        const sortedSubInstances = sortByImagePositionPatient(subInstances);
+        if (sortedSubInstances) {
+          instances.splice(
+            firstIndex,
+            sortedSubInstances.length,
+            ...sortedSubInstances
+          );
+        }
+      })
+    }
+  }
 
   const ippList = instances.map(
     instance => instance.metadata.ImagePositionPatient
@@ -50,6 +76,7 @@ const isDataset4D = instances => {
     for (let j = i + 1; j < n; ++j) {
       if (isSameArray(ippI, validIppList[j])) {
         is4D = true;
+        break;
       }
     }
     if (is4D) {
@@ -73,8 +100,12 @@ const isDataset4D = instances => {
     }
   }
 
-  // Invalid 4D as the first IPP does not repeat
-  if (strideList.length === 0 || sameIppIndices.length === validIppList.length) {
+  // Invalid 4D as the first IPP does not repeat,
+  // or all instances share the same IPP
+  if (
+    strideList.length === 0 ||
+    sameIppIndices.length === validIppList.length
+  ) {
     return result;
   }
 
@@ -152,5 +183,57 @@ const _getTagValue = (instance, tag, defaultValue) => {
   const value = instance[tag];
   return value !== undefined ? value : defaultValue;
 };
+
+const sortByImagePositionPatient = instances => {
+  if (!instances || instances.length < 2) {
+    return;
+  }
+
+  const ippList = instances.map(
+    instance => instance.metadata.ImagePositionPatient
+  );
+  const validIppList = ippList.filter(
+    ipp => Array.isArray(ipp) && ipp.length === 3
+  );
+
+  if (validIppList.length !== instances.length) {
+    return;
+  }
+
+  const refIpp = ippList[0];
+  const refIppVec = new Vector3(refIpp[0], refIpp[1], refIpp[2]);
+
+  const refIop = instances[0].metadata.ImageOrientationPatient;
+  if (!refIop) {
+    return;
+  }
+
+  const scanAxisNormal = new Vector3(refIop[0], refIop[1], refIop[2]).cross(
+    new Vector3(refIop[3], refIop[4], refIop[5])
+  );
+
+  const distanceImagePairs = ippList.map((ipp, index) => {
+    const ippVec = new Vector3(...ipp);
+    const positionVector = refIppVec.clone().sub(ippVec);
+    const distance = positionVector.dot(scanAxisNormal);
+
+    return {
+      distance,
+      instance: instances[index],
+    };
+  });
+
+  distanceImagePairs.sort(function(a, b) {
+    return a.distance - b.distance;
+  });
+
+  const sortedInstances = distanceImagePairs.map(a => a.instance);
+
+  instances.sort(function(a, b) {
+    return sortedInstances.indexOf(a) - sortedInstances.indexOf(b);
+  });
+
+  return instances;
+}
 
 export default isDataset4D;
