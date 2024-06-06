@@ -59,7 +59,7 @@
     "cornerstone-tools": "https://bitbucket.org/icrimaginginformatics/cornerstonetools.git#v5.0.3-Patch.2",
     "cornerstone-wado-image-loader": "^4.13.2",
     "dicom-parser": "^1.8.11",
-    "gh-pages": "^2.0.1",
+    "gh-pages": "^5.0.0",
     "i18next": "^17.0.3",
     "i18next-browser-languagedetector": "^3.0.1",
     "react-i18next": "^10.11.0",
