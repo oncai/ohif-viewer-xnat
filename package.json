@@ -130,6 +130,7 @@
   "resolutions": {
     "**/@babel/runtime": "7.5.5",
     "**/glob-parent": "5.1.2",
+    "**/loader-utils": "^2.0.4",
     "**/nth-check": "^2.0.1",
     "react-transition-group": "4.0.0"
   }
